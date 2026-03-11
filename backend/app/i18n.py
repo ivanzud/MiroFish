@@ -680,13 +680,89 @@ TRANSLATIONS = {
         "zh": "模拟配置不存在，请先调用 /prepare 接口",
         "en": "The simulation config does not exist yet. Call /prepare first.",
     },
+    "simulation.rounds_truncated": {
+        "zh": "轮数已截断: {original_rounds} -> {total_rounds} (max_rounds={max_rounds})",
+        "en": "Rounds truncated: {original_rounds} -> {total_rounds} (max_rounds={max_rounds})",
+    },
     "simulation.graph_id_required_for_memory": {
         "zh": "启用图谱记忆更新时必须提供 graph_id",
         "en": "graph_id is required when graph-memory updates are enabled",
     },
+    "simulation.graph_memory_enabled": {
+        "zh": "已启用图谱记忆更新: simulation_id={simulation_id}, graph_id={graph_id}",
+        "en": "Graph-memory updates enabled: simulation_id={simulation_id}, graph_id={graph_id}",
+    },
+    "simulation.graph_memory_enable_failed": {
+        "zh": "创建图谱记忆更新器失败: {details}",
+        "en": "Failed to create the graph-memory updater: {details}",
+    },
     "simulation.script_path_missing": {
         "zh": "脚本不存在: {script_path}",
         "en": "Script not found: {script_path}",
+    },
+    "simulation.started": {
+        "zh": "模拟启动成功: {simulation_id}, pid={pid}, platform={platform}",
+        "en": "Simulation started: {simulation_id}, pid={pid}, platform={platform}",
+    },
+    "simulation.completed": {
+        "zh": "模拟完成: {simulation_id}",
+        "en": "Simulation completed: {simulation_id}",
+    },
+    "simulation.failed": {
+        "zh": "模拟失败: {simulation_id}, error={error}",
+        "en": "Simulation failed: {simulation_id}, error={error}",
+    },
+    "simulation.monitor_thread_failed": {
+        "zh": "监控线程异常: {simulation_id}, error={error}",
+        "en": "Simulation monitor thread failed: {simulation_id}, error={error}",
+    },
+    "simulation.graph_memory_stopped": {
+        "zh": "已停止图谱记忆更新: simulation_id={simulation_id}",
+        "en": "Stopped graph-memory updates: simulation_id={simulation_id}",
+    },
+    "simulation.graph_memory_stop_failed": {
+        "zh": "停止图谱记忆更新器失败: {details}",
+        "en": "Failed to stop the graph-memory updater: {details}",
+    },
+    "simulation.platform_completed": {
+        "zh": "{platform} 模拟已完成: {simulation_id}, total_rounds={total_rounds}, total_actions={total_actions}",
+        "en": "{platform} simulation completed: {simulation_id}, total_rounds={total_rounds}, total_actions={total_actions}",
+    },
+    "simulation.all_platforms_completed": {
+        "zh": "所有平台模拟已完成: {simulation_id}",
+        "en": "All platform simulations completed: {simulation_id}",
+    },
+    "simulation.read_action_log_failed": {
+        "zh": "读取动作日志失败: {log_path}, error={error}",
+        "en": "Failed to read the action log: {log_path}, error={error}",
+    },
+    "simulation.terminate_process_tree_windows": {
+        "zh": "终止进程树 (Windows): simulation={simulation_id}, pid={pid}",
+        "en": "Terminating process tree (Windows): simulation={simulation_id}, pid={pid}",
+    },
+    "simulation.process_force_kill": {
+        "zh": "进程未响应，强制终止: {simulation_id}",
+        "en": "Process did not respond and will be force-killed: {simulation_id}",
+    },
+    "simulation.taskkill_failed_fallback": {
+        "zh": "taskkill 失败，尝试 terminate: {details}",
+        "en": "taskkill failed, falling back to terminate: {details}",
+    },
+    "simulation.terminate_process_group_unix": {
+        "zh": "终止进程组 (Unix): simulation={simulation_id}, pgid={pgid}",
+        "en": "Terminating process group (Unix): simulation={simulation_id}, pgid={pgid}",
+    },
+    "simulation.process_group_force_kill": {
+        "zh": "进程组未响应 SIGTERM，强制终止: {simulation_id}",
+        "en": "Process group did not respond to SIGTERM and will be force-killed: {simulation_id}",
+    },
+    "simulation.terminate_failed": {
+        "zh": "终止进程组失败: {simulation_id}, error={error}",
+        "en": "Failed to terminate the process group: {simulation_id}, error={error}",
+    },
+    "simulation.stopped": {
+        "zh": "模拟已停止: {simulation_id}",
+        "en": "Simulation stopped: {simulation_id}",
     },
     "simulation.process_exit": {
         "zh": "进程退出码: {exit_code}, 错误: {details}",
@@ -708,9 +784,53 @@ TRANSLATIONS = {
         "zh": "清理模拟日志完成: {simulation_id}, 删除文件: {cleaned_files}",
         "en": "Simulation log cleanup completed: {simulation_id}, deleted files: {cleaned_files}",
     },
+    "simulation.cleanup_all_started": {
+        "zh": "正在清理所有模拟进程...",
+        "en": "Cleaning up all simulation processes...",
+    },
+    "simulation.graph_memory_stop_all_failed": {
+        "zh": "停止图谱记忆更新器失败: {details}",
+        "en": "Failed to stop graph-memory updaters: {details}",
+    },
+    "simulation.terminating_process": {
+        "zh": "终止模拟进程: {simulation_id}, pid={pid}",
+        "en": "Terminating simulation process: {simulation_id}, pid={pid}",
+    },
+    "simulation.state_json_update_attempt": {
+        "zh": "尝试更新 state.json: {state_file}",
+        "en": "Attempting to update state.json: {state_file}",
+    },
+    "simulation.state_json_updated": {
+        "zh": "已更新 state.json 状态为 stopped: {simulation_id}",
+        "en": "Updated state.json status to stopped: {simulation_id}",
+    },
+    "simulation.state_json_missing": {
+        "zh": "state.json 不存在: {state_file}",
+        "en": "state.json does not exist: {state_file}",
+    },
+    "simulation.state_json_update_failed": {
+        "zh": "更新 state.json 失败: {simulation_id}, error={error}",
+        "en": "Failed to update state.json: {simulation_id}, error={error}",
+    },
+    "simulation.cleanup_process_failed": {
+        "zh": "清理进程失败: {simulation_id}, error={error}",
+        "en": "Failed to clean up the process: {simulation_id}, error={error}",
+    },
+    "simulation.cleanup_all_completed": {
+        "zh": "模拟进程清理完成",
+        "en": "Simulation process cleanup completed",
+    },
     "simulation.stopped_server_shutdown": {
         "zh": "服务器关闭，模拟被终止",
         "en": "The server is shutting down, so the simulation was stopped",
+    },
+    "simulation.cleanup_signal_received": {
+        "zh": "收到信号 {signum}，开始清理...",
+        "en": "Received signal {signum}; starting cleanup...",
+    },
+    "simulation.signal_handler_register_failed": {
+        "zh": "无法注册信号处理器（不在主线程），仅使用 atexit",
+        "en": "Could not register signal handlers outside the main thread; using atexit only",
     },
     "simulation.posts_db_missing": {
         "zh": "数据库不存在，模拟可能尚未运行",

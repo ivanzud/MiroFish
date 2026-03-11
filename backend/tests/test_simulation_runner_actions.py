@@ -40,6 +40,22 @@ def _write_actions(path, actions):
             handle.write(json.dumps(action, ensure_ascii=False) + "\n")
 
 
+class _FakeLogger:
+    def __init__(self):
+        self.info_messages = []
+        self.warning_messages = []
+        self.error_messages = []
+
+    def info(self, message):
+        self.info_messages.append(message)
+
+    def warning(self, message):
+        self.warning_messages.append(message)
+
+    def error(self, message):
+        self.error_messages.append(message)
+
+
 def test_get_all_actions_supports_incremental_windows(tmp_path):
     module = _load_simulation_runner_module()
     runner = module.SimulationRunner
@@ -585,3 +601,159 @@ def test_get_run_state_reconciles_stale_running_state_when_process_is_gone(tmp_p
     finally:
         runner.RUN_STATE_DIR = original_run_state_dir
         runner._run_states = original_states
+
+
+def test_read_action_log_localizes_platform_completion_messages_in_english(tmp_path):
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+    original_run_state_dir = runner.RUN_STATE_DIR
+    runner.RUN_STATE_DIR = str(tmp_path)
+
+    simulation_id = "sim-platform-finish-en"
+    simulation_dir = tmp_path / simulation_id
+    twitter_log = simulation_dir / "twitter" / "actions.jsonl"
+    reddit_log = simulation_dir / "reddit" / "actions.jsonl"
+    _write_actions(
+        twitter_log,
+        [
+            {
+                "event_type": "simulation_end",
+                "total_rounds": 3,
+                "total_actions": 9,
+            }
+        ],
+    )
+    _write_actions(
+        reddit_log,
+        [
+            {
+                "event_type": "simulation_end",
+                "total_rounds": 3,
+                "total_actions": 7,
+            }
+        ],
+    )
+    state = module.SimulationRunState(
+        simulation_id=simulation_id,
+        locale="en",
+        runner_status=module.RunnerStatus.RUNNING,
+        twitter_running=True,
+        reddit_running=True,
+    )
+    fake_logger = _FakeLogger()
+
+    try:
+        with mock.patch.object(module, "logger", fake_logger):
+            twitter_position = runner._read_action_log(str(twitter_log), 0, state, "twitter")
+            reddit_position = runner._read_action_log(str(reddit_log), 0, state, "reddit")
+
+        assert twitter_position > 0
+        assert reddit_position > 0
+        assert "twitter simulation completed: sim-platform-finish-en, total_rounds=3, total_actions=9" in fake_logger.info_messages
+        assert "reddit simulation completed: sim-platform-finish-en, total_rounds=3, total_actions=7" in fake_logger.info_messages
+        assert "All platform simulations completed: sim-platform-finish-en" in fake_logger.info_messages
+    finally:
+        runner.RUN_STATE_DIR = original_run_state_dir
+
+
+def test_stop_simulation_logs_english_stop_message(tmp_path):
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+    original_run_state_dir = runner.RUN_STATE_DIR
+    original_processes = runner._processes.copy()
+    original_states = runner._run_states.copy()
+    runner.RUN_STATE_DIR = str(tmp_path)
+    runner._run_states = {}
+    runner._processes = {}
+
+    state = module.SimulationRunState(
+        simulation_id="sim-stop-en",
+        locale="en",
+        runner_status=module.RunnerStatus.RUNNING,
+        twitter_running=True,
+    )
+    runner._save_run_state(state)
+
+    class FakeProcess:
+        pid = 7070
+
+        def poll(self):
+            return None
+
+    runner._processes["sim-stop-en"] = FakeProcess()
+    fake_logger = _FakeLogger()
+
+    try:
+        with mock.patch.object(module, "logger", fake_logger):
+            with mock.patch.object(runner, "_terminate_process", return_value=None):
+                updated = runner.stop_simulation("sim-stop-en")
+
+        assert updated.runner_status == module.RunnerStatus.STOPPED
+        assert "Simulation stopped: sim-stop-en" in fake_logger.info_messages
+    finally:
+        runner.RUN_STATE_DIR = original_run_state_dir
+        runner._run_states = original_states
+        runner._processes = original_processes
+
+
+def test_cleanup_all_simulations_logs_english_lifecycle_messages(tmp_path):
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+    original_run_state_dir = runner.RUN_STATE_DIR
+    original_states = runner._run_states.copy()
+    original_processes = runner._processes.copy()
+    original_action_queues = runner._action_queues.copy()
+    original_stdout_files = runner._stdout_files.copy()
+    original_stderr_files = runner._stderr_files.copy()
+    original_graph_memory_enabled = runner._graph_memory_enabled.copy()
+    original_cleanup_done = runner._cleanup_done
+    runner.RUN_STATE_DIR = str(tmp_path)
+    runner._run_states = {}
+    runner._processes = {}
+    runner._action_queues = {}
+    runner._stdout_files = {}
+    runner._stderr_files = {}
+    runner._graph_memory_enabled = {}
+    runner._cleanup_done = False
+
+    simulation_id = "sim-cleanup-en"
+    simulation_dir = tmp_path / simulation_id
+    simulation_dir.mkdir()
+    (simulation_dir / "state.json").write_text(json.dumps({"status": "running"}), encoding="utf-8")
+    runner._save_run_state(
+        module.SimulationRunState(
+            simulation_id=simulation_id,
+            locale="en",
+            runner_status=module.RunnerStatus.RUNNING,
+            twitter_running=True,
+        )
+    )
+
+    class FakeProcess:
+        pid = 8181
+
+        def poll(self):
+            return None
+
+    runner._processes[simulation_id] = FakeProcess()
+    fake_logger = _FakeLogger()
+
+    try:
+        with mock.patch.object(module, "logger", fake_logger):
+            with mock.patch.object(runner, "_terminate_process", return_value=None):
+                with mock.patch.object(module.ZepGraphMemoryManager, "stop_all", return_value=None):
+                    runner.cleanup_all_simulations()
+
+        assert "Cleaning up all simulation processes..." in fake_logger.info_messages
+        assert f"Terminating simulation process: {simulation_id}, pid=8181" in fake_logger.info_messages
+        assert f"Updated state.json status to stopped: {simulation_id}" in fake_logger.info_messages
+        assert "Simulation process cleanup completed" in fake_logger.info_messages
+    finally:
+        runner.RUN_STATE_DIR = original_run_state_dir
+        runner._run_states = original_states
+        runner._processes = original_processes
+        runner._action_queues = original_action_queues
+        runner._stdout_files = original_stdout_files
+        runner._stderr_files = original_stderr_files
+        runner._graph_memory_enabled = original_graph_memory_enabled
+        runner._cleanup_done = original_cleanup_done
