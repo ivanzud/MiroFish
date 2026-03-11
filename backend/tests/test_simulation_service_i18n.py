@@ -288,3 +288,110 @@ def test_interview_all_agents_missing_config_uses_english_request_locale(tmp_pat
             assert str(exc) == "The simulation config does not exist yet. Call /prepare first."
         else:
             raise AssertionError("expected ValueError for a missing simulation config")
+
+
+def test_simulation_runner_interview_logs_use_english_request_locale(tmp_path, monkeypatch):
+    app = Flask(__name__)
+    monkeypatch.setattr(SimulationRunner, "RUN_STATE_DIR", str(tmp_path))
+    (tmp_path / "sim-123").mkdir()
+
+    class FakeIPCClient:
+        def __init__(self, sim_dir):
+            assert sim_dir == str(tmp_path / "sim-123")
+
+        def check_env_alive(self):
+            return True
+
+        def send_interview(self, **kwargs):
+            return SimpleNamespace(
+                status=SimpleNamespace(value="completed"),
+                result={"ok": True},
+                timestamp="2026-03-11T18:35:00Z",
+            )
+
+    info_messages = []
+    monkeypatch.setattr("app.services.simulation_runner.SimulationIPCClient", FakeIPCClient)
+    monkeypatch.setattr("app.services.simulation_runner.logger", SimpleNamespace(info=info_messages.append))
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        result = SimulationRunner.interview_agent("sim-123", 7, "hello", platform="twitter")
+
+    assert result["success"] is True
+    assert info_messages == [
+        "Sent interview command: simulation_id=sim-123, agent_id=7, platform=twitter"
+    ]
+
+
+def test_simulation_runner_batch_and_global_logs_use_english_request_locale(tmp_path, monkeypatch):
+    app = Flask(__name__)
+    monkeypatch.setattr(SimulationRunner, "RUN_STATE_DIR", str(tmp_path))
+    sim_dir = tmp_path / "sim-123"
+    sim_dir.mkdir()
+    (sim_dir / "simulation_config.json").write_text(
+        json.dumps({"agent_configs": [{"agent_id": 3}, {"agent_id": 9}]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+    class FakeIPCClient:
+        def __init__(self, current_sim_dir):
+            assert current_sim_dir == str(sim_dir)
+
+        def check_env_alive(self):
+            return True
+
+        def send_batch_interview(self, **kwargs):
+            return SimpleNamespace(
+                status=SimpleNamespace(value="completed"),
+                result={"ok": True},
+                timestamp="2026-03-11T18:35:00Z",
+            )
+
+    info_messages = []
+    monkeypatch.setattr("app.services.simulation_runner.SimulationIPCClient", FakeIPCClient)
+    monkeypatch.setattr("app.services.simulation_runner.logger", SimpleNamespace(info=info_messages.append))
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        batch_result = SimulationRunner.interview_agents_batch(
+            "sim-123",
+            interviews=[{"agent_id": 1, "prompt": "a"}, {"agent_id": 2, "prompt": "b"}],
+            platform="reddit",
+        )
+        global_result = SimulationRunner.interview_all_agents("sim-123", "hello", platform="twitter")
+
+    assert batch_result["success"] is True
+    assert global_result["success"] is True
+    assert info_messages == [
+        "Sent batch interview command: simulation_id=sim-123, count=2, platform=reddit",
+        "Sent global interview command: simulation_id=sim-123, agent_count=2, platform=twitter",
+        "Sent batch interview command: simulation_id=sim-123, count=2, platform=twitter",
+    ]
+
+
+def test_simulation_runner_close_env_log_uses_explicit_locale(tmp_path, monkeypatch):
+    monkeypatch.setattr(SimulationRunner, "RUN_STATE_DIR", str(tmp_path))
+    (tmp_path / "sim-123").mkdir()
+
+    class FakeIPCClient:
+        def __init__(self, sim_dir):
+            assert sim_dir == str(tmp_path / "sim-123")
+
+        def check_env_alive(self):
+            return True
+
+        def send_close_env(self, **kwargs):
+            return SimpleNamespace(
+                status=SimpleNamespace(value="completed"),
+                result={"ok": True},
+                timestamp="2026-03-11T18:35:00Z",
+            )
+
+    info_messages = []
+    monkeypatch.setattr("app.services.simulation_runner.SimulationIPCClient", FakeIPCClient)
+    monkeypatch.setattr("app.services.simulation_runner.logger", SimpleNamespace(info=info_messages.append))
+
+    result = SimulationRunner.close_simulation_env("sim-123", locale="en")
+
+    assert result["success"] is True
+    assert info_messages == [
+        "Sent close-environment command: simulation_id=sim-123"
+    ]

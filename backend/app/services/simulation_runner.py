@@ -1928,7 +1928,15 @@ class SimulationRunner:
         if not ipc_client.check_env_alive():
             raise ValueError(tr("simulation.environment_not_alive", locale))
 
-        logger.info(f"发送Interview命令: simulation_id={simulation_id}, agent_id={agent_id}, platform={platform}")
+        logger.info(
+            tr(
+                "simulation.interview_command_sent",
+                locale,
+                simulation_id=simulation_id,
+                agent_id=agent_id,
+                platform=platform,
+            )
+        )
 
         response = ipc_client.send_interview(
             agent_id=agent_id,
@@ -1991,7 +1999,15 @@ class SimulationRunner:
         if not ipc_client.check_env_alive():
             raise ValueError(tr("simulation.environment_not_alive", locale))
 
-        logger.info(f"发送批量Interview命令: simulation_id={simulation_id}, count={len(interviews)}, platform={platform}")
+        logger.info(
+            tr(
+                "simulation.batch_interview_command_sent",
+                locale,
+                simulation_id=simulation_id,
+                count=len(interviews),
+                platform=platform,
+            )
+        )
 
         response = ipc_client.send_batch_interview(
             interviews=interviews,
@@ -2066,7 +2082,15 @@ class SimulationRunner:
                     "prompt": prompt
                 })
 
-        logger.info(f"发送全局Interview命令: simulation_id={simulation_id}, agent_count={len(interviews)}, platform={platform}")
+        logger.info(
+            tr(
+                "simulation.all_interview_command_sent",
+                locale,
+                simulation_id=simulation_id,
+                agent_count=len(interviews),
+                platform=platform,
+            )
+        )
 
         return cls.interview_agents_batch(
             simulation_id=simulation_id,
@@ -2106,7 +2130,13 @@ class SimulationRunner:
                 "message": tr("simulation.env_already_closed", locale)
             }
         
-        logger.info(f"发送关闭环境命令: simulation_id={simulation_id}")
+        logger.info(
+            tr(
+                "simulation.close_env_command_sent",
+                locale,
+                simulation_id=simulation_id,
+            )
+        )
         
         try:
             response = ipc_client.send_close_env(timeout=timeout)

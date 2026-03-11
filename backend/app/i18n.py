@@ -520,6 +520,22 @@ TRANSLATIONS = {
         "zh": "模拟环境未运行或已关闭。请确保模拟已完成并进入等待命令模式。",
         "en": "The simulation environment is not running or has already closed. Make sure the simulation completed and is in wait-for-commands mode.",
     },
+    "simulation.interview_command_sent": {
+        "zh": "发送Interview命令: simulation_id={simulation_id}, agent_id={agent_id}, platform={platform}",
+        "en": "Sent interview command: simulation_id={simulation_id}, agent_id={agent_id}, platform={platform}",
+    },
+    "simulation.batch_interview_command_sent": {
+        "zh": "发送批量Interview命令: simulation_id={simulation_id}, count={count}, platform={platform}",
+        "en": "Sent batch interview command: simulation_id={simulation_id}, count={count}, platform={platform}",
+    },
+    "simulation.all_interview_command_sent": {
+        "zh": "发送全局Interview命令: simulation_id={simulation_id}, agent_count={agent_count}, platform={platform}",
+        "en": "Sent global interview command: simulation_id={simulation_id}, agent_count={agent_count}, platform={platform}",
+    },
+    "simulation.close_env_command_sent": {
+        "zh": "发送关闭环境命令: simulation_id={simulation_id}",
+        "en": "Sent close-environment command: simulation_id={simulation_id}",
+    },
     "simulation.interview_timeout": {
         "zh": "等待Interview响应超时: {details}",
         "en": "Timed out while waiting for the interview response: {details}",
