@@ -20,9 +20,22 @@ from openai import OpenAI
 
 from ..config import Config
 from ..utils.logger import get_logger
+from ..utils.llm_client import LLMClient
 from .zep_entity_reader import EntityNode, ZepEntityReader
 
 logger = get_logger('mirofish.simulation_config')
+
+
+def _supports_json_mode_error(exc: Exception) -> bool:
+    text = str(exc).lower()
+    markers = (
+        "response_format",
+        "json_object",
+        "unsupported",
+        "not support",
+        "invalid parameter",
+    )
+    return any(marker in text for marker in markers)
 
 # 中国作息时间配置（北京时间）
 CHINA_TIMEZONE_CONFIG = {
@@ -238,6 +251,42 @@ class SimulationConfigGenerator:
             api_key=self.api_key,
             base_url=self.base_url
         )
+
+    def _request_json_completion(
+        self,
+        messages: List[Dict[str, str]],
+        temperature: float,
+    ) -> Dict[str, Any]:
+        kwargs = {
+            "model": self.model_name,
+            "messages": messages,
+            "temperature": temperature,
+            "response_format": {"type": "json_object"},
+        }
+
+        try:
+            response = self.client.chat.completions.create(**kwargs)
+        except Exception as exc:
+            if not _supports_json_mode_error(exc):
+                raise
+
+            logger.warning(
+                "LLM backend rejected response_format=json_object; retrying without JSON mode"
+            )
+            kwargs.pop("response_format", None)
+            response = self.client.chat.completions.create(**kwargs)
+
+        content = response.choices[0].message.content or ""
+        finish_reason = response.choices[0].finish_reason
+        if finish_reason == 'length':
+            logger.warning("LLM输出被截断, 尝试修复...")
+            content = self._fix_truncated_json(content)
+
+        parsed_content = LLMClient._extract_json_payload(content)
+        return {
+            "content": parsed_content,
+            "finish_reason": finish_reason,
+        }
     
     def generate_config(
         self,
@@ -439,24 +488,14 @@ class SimulationConfigGenerator:
         
         for attempt in range(max_attempts):
             try:
-                response = self.client.chat.completions.create(
-                    model=self.model_name,
+                completion = self._request_json_completion(
                     messages=[
                         {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": prompt}
+                        {"role": "user", "content": prompt},
                     ],
-                    response_format={"type": "json_object"},
-                    temperature=0.7 - (attempt * 0.1)  # 每次重试降低温度
-                    # 不设置max_tokens，让LLM自由发挥
+                    temperature=0.7 - (attempt * 0.1),
                 )
-                
-                content = response.choices[0].message.content
-                finish_reason = response.choices[0].finish_reason
-                
-                # 检查是否被截断
-                if finish_reason == 'length':
-                    logger.warning(f"LLM输出被截断 (attempt {attempt+1})")
-                    content = self._fix_truncated_json(content)
+                content = completion["content"]
                 
                 # 尝试解析JSON
                 try:

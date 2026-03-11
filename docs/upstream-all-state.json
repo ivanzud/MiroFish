@@ -1,7 +1,7 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T07:28:20.175126+00:00",
+  "captured_at": "2026-03-11T07:31:39.074270+00:00",
   "counts": {
     "issues": {
       "closed": 47,
@@ -922,7 +922,7 @@
       "url": "https://github.com/666ghj/MiroFish/pull/127",
       "state": "closed",
       "created_at": "2026-03-10T22:43:33Z",
-      "updated_at": "2026-03-11T07:24:30Z",
+      "updated_at": "2026-03-11T07:30:24Z",
       "closed_at": "2026-03-11T07:24:30Z",
       "merged_at": null,
       "head": "fix/llm-client-none-content",

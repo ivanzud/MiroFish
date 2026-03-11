@@ -18,4 +18,5 @@ fi
   "${ROOT_DIR}/backend/tests/test_config.py" \
   "${ROOT_DIR}/backend/tests/test_llm_client.py" \
   "${ROOT_DIR}/backend/tests/test_graph_builder.py" \
+  "${ROOT_DIR}/backend/tests/test_openai_compat_services.py" \
   -q
