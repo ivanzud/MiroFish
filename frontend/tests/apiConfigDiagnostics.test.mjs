@@ -7,6 +7,7 @@ const t = (key) => {
   const messages = {
     'common.none': 'None',
     'apiConfig.diagnostics.configured': 'Backend config detected',
+    'apiConfig.diagnostics.configuredOpenAI': 'Direct OPENAI/Codex-compatible path detected',
     'apiConfig.diagnostics.incomplete': 'Backend config needs attention',
     'apiConfig.diagnostics.modeLabel': 'Backend mode',
     'apiConfig.diagnostics.sourceLabel': 'Resolved config source',
@@ -15,6 +16,7 @@ const t = (key) => {
     'apiConfig.diagnostics.modelLabel': 'Backend model',
     'apiConfig.diagnostics.modeOpenAICompatible': 'OpenAI-compatible',
     'apiConfig.diagnostics.sourceOpenAIAliases': 'Direct OPENAI_* aliases',
+    'apiConfig.diagnostics.sourceMixedAliases': 'Mixed OPENAI_* and LLM_* aliases',
     'apiConfig.diagnostics.sourceProjectAliases': 'Project LLM_* aliases',
     'apiConfig.diagnostics.sourceUnknown': 'Not resolved',
   }
@@ -45,7 +47,7 @@ test('buildBackendDiagnosticModel highlights direct OPENAI alias resolution', ()
   }, t)
 
   assert.equal(diagnostic.tone, 'ready')
-  assert.equal(diagnostic.headline, 'Backend config detected')
+  assert.equal(diagnostic.headline, 'Direct OPENAI/Codex-compatible path detected')
   assert.deepEqual(diagnostic.rows, [
     { label: 'Backend mode', value: 'OpenAI-compatible' },
     { label: 'Resolved config source', value: 'Direct OPENAI_* aliases' },
@@ -80,4 +82,34 @@ test('buildBackendDiagnosticModel falls back cleanly for project aliases and mis
     { label: 'Backend LLM base URL', value: 'None' },
     { label: 'Backend model', value: 'None' },
   ])
+})
+
+test('buildBackendDiagnosticModel flags mixed alias resolution explicitly', () => {
+  const diagnostic = buildBackendDiagnosticModel({
+    summary: {
+      llm: {
+        configured: true,
+        backend_mode: 'openai_compatible',
+        base_url: 'https://proxy.example/v1',
+        model: 'gpt-4.1-mini',
+        sources: {
+          api_key_env: 'OPENAI_API_KEY',
+          base_url_env: 'LLM_BASE_URL',
+          model_env: 'OPENAI_MODEL',
+          uses_openai_aliases: true,
+          uses_project_aliases: true,
+        },
+      },
+    },
+    validation: {
+      is_valid: true,
+    },
+  }, t)
+
+  assert.equal(diagnostic.headline, 'Direct OPENAI/Codex-compatible path detected')
+  assert.equal(diagnostic.rows[1].value, 'Mixed OPENAI_* and LLM_* aliases')
+  assert.equal(
+    diagnostic.rows[2].value,
+    'OPENAI_API_KEY / LLM_BASE_URL / OPENAI_MODEL',
+  )
 })

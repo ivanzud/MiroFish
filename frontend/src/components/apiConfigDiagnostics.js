@@ -4,11 +4,16 @@ export const buildBackendDiagnosticModel = (payload, t) => {
   const validation = payload?.validation || {}
   const llm = summary.llm || {}
   const sources = llm.sources || {}
+  const usesOpenAIAliases = Boolean(sources.uses_openai_aliases)
+  const usesProjectAliases = Boolean(sources.uses_project_aliases)
+  const isConfigured = llm.configured && validation.is_valid !== false
 
   let resolvedSource = t('apiConfig.diagnostics.sourceUnknown')
-  if (sources.uses_openai_aliases) {
+  if (usesOpenAIAliases && usesProjectAliases) {
+    resolvedSource = t('apiConfig.diagnostics.sourceMixedAliases')
+  } else if (usesOpenAIAliases) {
     resolvedSource = t('apiConfig.diagnostics.sourceOpenAIAliases')
-  } else if (sources.uses_project_aliases) {
+  } else if (usesProjectAliases) {
     resolvedSource = t('apiConfig.diagnostics.sourceProjectAliases')
   }
 
@@ -19,9 +24,11 @@ export const buildBackendDiagnosticModel = (payload, t) => {
   ].filter(Boolean).join(' / ') || none
 
   return {
-    tone: llm.configured && validation.is_valid !== false ? 'ready' : 'warning',
-    headline: llm.configured && validation.is_valid !== false
-      ? t('apiConfig.diagnostics.configured')
+    tone: isConfigured ? 'ready' : 'warning',
+    headline: isConfigured
+      ? (usesOpenAIAliases
+        ? t('apiConfig.diagnostics.configuredOpenAI')
+        : t('apiConfig.diagnostics.configured'))
       : t('apiConfig.diagnostics.incomplete'),
     rows: [
       {
