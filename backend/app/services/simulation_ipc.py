@@ -108,13 +108,18 @@ class SimulationIPCClient:
             simulation_dir: 模拟数据目录
         """
         self.simulation_dir = simulation_dir
-        self.locale = locale or get_locale()
+        self.locale = locale if locale in {"zh", "en"} else None
         self.commands_dir = os.path.join(simulation_dir, "ipc_commands")
         self.responses_dir = os.path.join(simulation_dir, "ipc_responses")
         
         # 确保目录存在
         os.makedirs(self.commands_dir, exist_ok=True)
         os.makedirs(self.responses_dir, exist_ok=True)
+
+    def _resolve_locale(self) -> str:
+        if self.locale in {"zh", "en"}:
+            return self.locale
+        return get_locale()
     
     def send_command(
         self,
@@ -144,6 +149,7 @@ class SimulationIPCClient:
             command_type=command_type,
             args=args
         )
+        locale = self._resolve_locale()
         
         # 写入命令文件
         command_file = os.path.join(self.commands_dir, f"{command_id}.json")
@@ -153,7 +159,7 @@ class SimulationIPCClient:
         logger.info(
             tr(
                 "simulation.ipc_command_sent",
-                self.locale,
+                locale,
                 command_type=command_type.value,
                 command_id=command_id,
             )
@@ -180,7 +186,7 @@ class SimulationIPCClient:
                     logger.info(
                         tr(
                             "simulation.ipc_response_received",
-                            self.locale,
+                            locale,
                             command_id=command_id,
                             status=response.status.value,
                         )
@@ -190,7 +196,7 @@ class SimulationIPCClient:
                     logger.warning(
                         tr(
                             "simulation.ipc_response_parse_failed",
-                            self.locale,
+                            locale,
                             error=e,
                         )
                     )
@@ -201,7 +207,7 @@ class SimulationIPCClient:
         logger.error(
             tr(
                 "simulation.ipc_timeout",
-                self.locale,
+                locale,
                 timeout=timeout,
             )
         )
@@ -212,7 +218,7 @@ class SimulationIPCClient:
         except OSError:
             pass
         
-        raise TimeoutError(tr("simulation.ipc_timeout", get_locale(), timeout=timeout))
+        raise TimeoutError(tr("simulation.ipc_timeout", locale, timeout=timeout))
     
     def send_interview(
         self,

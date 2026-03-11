@@ -50,6 +50,17 @@ def test_simulation_ipc_timeout_uses_english_request_locale(tmp_path):
             raise AssertionError("expected TimeoutError when no IPC response arrives")
 
 
+def test_simulation_ipc_timeout_uses_explicit_locale_without_request_context(tmp_path):
+    client = SimulationIPCClient(str(tmp_path), locale="en")
+
+    try:
+        client.send_command(CommandType.CLOSE_ENV, {}, timeout=0.01, poll_interval=0.0)
+    except TimeoutError as exc:
+        assert str(exc) == "Timed out while waiting for the command response (0.01s)"
+    else:
+        raise AssertionError("expected TimeoutError when no IPC response arrives")
+
+
 def test_simulation_ipc_logs_english_timeout_diagnostics(tmp_path, monkeypatch):
     app = Flask(__name__)
     fake_logger = SimpleNamespace(info=lambda *_: None, warning=lambda *_: None, error_messages=[])
