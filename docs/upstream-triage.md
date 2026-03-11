@@ -30,9 +30,9 @@ Last refreshed: `2026-03-11`
 
 - `python3 -m unittest tests/test_sync_upstream_github.py` passes for the GitHub sync script pagination/state summary logic.
 - `cd frontend && npm run build` passes after landing `#129` subset and the OpenAI-alias compatibility updates.
+- `npm run test:backend:lite` now provides a repo-native lightweight backend validation path when full `uv` resolution is blocked by Rust/CUDA-heavy dependencies.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes with targeted regression coverage for context-length handling and transient Zep retry behavior.
 - `cd backend && uv run pytest -q` is currently blocked in this environment because dependency resolution reaches `tiktoken`, which attempts a source build and fails without a Rust compiler.
-- Follow-up is tracked in local beads issue `mirofish-ba6` to establish a lighter backend validation path.
 
 ## Snapshot artifacts
 

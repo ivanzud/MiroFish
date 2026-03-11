@@ -274,6 +274,16 @@ npm run backend   # 仅启动后端
 npm run frontend  # 仅启动前端
 ```
 
+#### 4. 轻量后端校验
+
+如果 `uv sync` 或 `uv run pytest` 因 `tiktoken` 等重依赖需要 Rust 工具链而受阻，可先运行仓库内置的快速后端校验路径：
+
+```bash
+npm run test:backend:lite
+```
+
+该路径会按需创建 `.tmp-test-venv/`，只安装当前低风险回归测试所需的最小依赖，并执行 `test_llm_client.py` 与 `test_graph_builder.py`。
+
 ### 二、Docker 部署
 
 ```bash

@@ -274,6 +274,16 @@ npm run backend   # Start backend only
 npm run frontend  # Start frontend only
 ```
 
+#### 4. Lightweight Backend Validation
+
+If `uv sync` or `uv run pytest` is blocked by heavyweight builds such as `tiktoken` requiring a Rust toolchain, run the fast targeted backend suite instead:
+
+```bash
+npm run test:backend:lite
+```
+
+This path creates `.tmp-test-venv/` on demand and installs only the packages needed for the current low-risk regression tests (`test_llm_client.py` and `test_graph_builder.py`).
+
 ### Option 2: Docker Deployment
 
 ```bash
