@@ -156,6 +156,11 @@ def _simulation_error_context(locale: str, context: str) -> str:
     return context
 
 
+def _simulation_log(locale: str, zh_template: str, en_template: str, **params) -> str:
+    template = en_template if locale == "en" else zh_template
+    return template.format(**params)
+
+
 def _handle_simulation_api_exception(error: Exception, locale: str, context: str):
     return handle_api_exception(logger, error, _simulation_error_context(locale, context))
 
@@ -235,7 +240,16 @@ def get_graph_entities(graph_id: str):
         entity_types = [t.strip() for t in entity_types_str.split(',') if t.strip()] if entity_types_str else None
         enrich = request.args.get('enrich', 'true').lower() == 'true'
         
-        logger.info(f"获取图谱实体: graph_id={graph_id}, entity_types={entity_types}, enrich={enrich}")
+        logger.info(
+            _simulation_log(
+                locale,
+                "获取图谱实体: graph_id={graph_id}, entity_types={entity_types}, enrich={enrich}",
+                "Fetching graph entities: graph_id={graph_id}, entity_types={entity_types}, enrich={enrich}",
+                graph_id=graph_id,
+                entity_types=entity_types,
+                enrich=enrich,
+            )
+        )
         
         reader = ZepEntityReader()
         result = reader.filter_defined_entities(
@@ -619,15 +633,45 @@ def prepare_simulation():
         
         # 检查是否强制重新生成
         force_regenerate = data.get('force_regenerate', False)
-        logger.info(f"开始处理 /prepare 请求: simulation_id={simulation_id}, force_regenerate={force_regenerate}")
+        logger.info(
+            _simulation_log(
+                locale,
+                "开始处理 /prepare 请求: simulation_id={simulation_id}, force_regenerate={force_regenerate}",
+                "Handling /prepare request: simulation_id={simulation_id}, force_regenerate={force_regenerate}",
+                simulation_id=simulation_id,
+                force_regenerate=force_regenerate,
+            )
+        )
         
         # 检查是否已经准备完成（避免重复生成）
         if not force_regenerate:
-            logger.debug(f"检查模拟 {simulation_id} 是否已准备完成...")
+            logger.debug(
+                _simulation_log(
+                    locale,
+                    "检查模拟 {simulation_id} 是否已准备完成...",
+                    "Checking whether simulation {simulation_id} is already prepared...",
+                    simulation_id=simulation_id,
+                )
+            )
             is_prepared, prepare_info = _check_simulation_prepared(simulation_id, locale)
-            logger.debug(f"检查结果: is_prepared={is_prepared}, prepare_info={prepare_info}")
+            logger.debug(
+                _simulation_log(
+                    locale,
+                    "检查结果: is_prepared={is_prepared}, prepare_info={prepare_info}",
+                    "Prepare check result: is_prepared={is_prepared}, prepare_info={prepare_info}",
+                    is_prepared=is_prepared,
+                    prepare_info=prepare_info,
+                )
+            )
             if is_prepared:
-                logger.info(f"模拟 {simulation_id} 已准备完成，跳过重复生成")
+                logger.info(
+                    _simulation_log(
+                        locale,
+                        "模拟 {simulation_id} 已准备完成，跳过重复生成",
+                        "Simulation {simulation_id} is already prepared; skipping duplicate generation",
+                        simulation_id=simulation_id,
+                    )
+                )
                 return jsonify({
                     "success": True,
                     "data": {
@@ -639,7 +683,14 @@ def prepare_simulation():
                     }
                 })
             else:
-                logger.info(f"模拟 {simulation_id} 未准备完成，将启动准备任务")
+                logger.info(
+                    _simulation_log(
+                        locale,
+                        "模拟 {simulation_id} 未准备完成，将启动准备任务",
+                        "Simulation {simulation_id} is not prepared yet; starting the preparation task",
+                        simulation_id=simulation_id,
+                    )
+                )
         
         # 从项目获取必要信息
         project = ProjectManager.get_project(state.project_id)
@@ -667,7 +718,14 @@ def prepare_simulation():
         # ========== 同步获取实体数量（在后台任务启动前） ==========
         # 这样前端在调用prepare后立即就能获取到预期Agent总数
         try:
-            logger.info(f"同步获取实体数量: graph_id={state.graph_id}")
+            logger.info(
+                _simulation_log(
+                    locale,
+                    "同步获取实体数量: graph_id={graph_id}",
+                    "Preloading entity count synchronously: graph_id={graph_id}",
+                    graph_id=state.graph_id,
+                )
+            )
             reader = ZepEntityReader()
             # 快速读取实体（不需要边信息，只统计数量）
             filtered_preview = reader.filter_defined_entities(
@@ -678,9 +736,24 @@ def prepare_simulation():
             # 保存实体数量到状态（供前端立即获取）
             state.entities_count = filtered_preview.filtered_count
             state.entity_types = list(filtered_preview.entity_types)
-            logger.info(f"预期实体数量: {filtered_preview.filtered_count}, 类型: {filtered_preview.entity_types}")
+            logger.info(
+                _simulation_log(
+                    locale,
+                    "预期实体数量: {count}, 类型: {entity_types}",
+                    "Expected entity count: {count}, types: {entity_types}",
+                    count=filtered_preview.filtered_count,
+                    entity_types=filtered_preview.entity_types,
+                )
+            )
         except Exception as e:
-            logger.warning(f"同步获取实体数量失败（将在后台任务中重试）: {e}")
+            logger.warning(
+                _simulation_log(
+                    locale,
+                    "同步获取实体数量失败（将在后台任务中重试）: {error}",
+                    "Failed to preload entity count synchronously; the background task will retry: {error}",
+                    error=e,
+                )
+            )
             # 失败不影响后续流程，后台任务会重新获取
         
         # 创建异步任务
@@ -791,7 +864,14 @@ def prepare_simulation():
                 )
                 
             except Exception as e:
-                logger.error(f"准备模拟失败: {str(e)}")
+                logger.error(
+                    _simulation_log(
+                        locale,
+                        "准备模拟失败: {error}",
+                        "Simulation preparation failed: {error}",
+                        error=str(e),
+                    )
+                )
                 task_manager.fail_task(task_id, str(e), locale=locale)
                 
                 # 更新模拟状态为失败

@@ -4,6 +4,7 @@ import csv
 import json
 import sqlite3
 import sys
+import threading
 from types import ModuleType
 
 from flask import Flask
@@ -73,6 +74,36 @@ def test_entities_requires_zep_key_in_english(monkeypatch):
 
     assert response.status_code == 500
     assert response.get_json()["error"] == "ZEP_API_KEY is not configured"
+
+
+def test_entities_request_logs_are_localized(monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    logger = FakeLogger()
+    monkeypatch.setattr(simulation_api, "logger", logger)
+    monkeypatch.setattr(simulation_api.Config, "ZEP_API_KEY", "zep-key")
+
+    class FakeReader:
+        def filter_defined_entities(self, **kwargs):
+            assert kwargs == {
+                "graph_id": "graph_123",
+                "defined_entity_types": ["Person", "Organization"],
+                "enrich_with_edges": False,
+            }
+            return type("Result", (), {"to_dict": lambda self: {"entities": []}})()
+
+    monkeypatch.setattr(simulation_api, "ZepEntityReader", FakeReader)
+
+    response = client.get(
+        "/api/simulation/entities/graph_123?entity_types=Person,Organization&enrich=false",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    assert logger.infos == [
+        "Fetching graph entities: graph_id=graph_123, entity_types=['Person', 'Organization'], enrich=False"
+    ]
 
 
 def test_entity_detail_missing_entity_is_localized(monkeypatch):
@@ -259,6 +290,102 @@ def test_prepare_requires_existing_simulation_in_english(monkeypatch):
 
     assert response.status_code == 404
     assert response.get_json()["error"] == "Simulation not found: sim_missing"
+
+
+def test_prepare_request_logs_are_localized_when_already_prepared(monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    logger = FakeLogger()
+    monkeypatch.setattr(simulation_api, "logger", logger)
+
+    state = SimulationState(
+        simulation_id="sim_123",
+        project_id="proj_123",
+        graph_id="graph_123",
+        status=SimulationStatus.CREATED,
+    )
+    monkeypatch.setattr(simulation_api.SimulationManager, "get_simulation", lambda self, simulation_id: state)
+    monkeypatch.setattr(
+        simulation_api,
+        "_check_simulation_prepared",
+        lambda simulation_id, locale=None: (True, {"status": "ready"}),
+    )
+
+    response = client.post(
+        "/api/simulation/prepare",
+        json={"simulation_id": "sim_123"},
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    assert response.get_json()["data"]["already_prepared"] is True
+    assert logger.infos == [
+        "Handling /prepare request: simulation_id=sim_123, force_regenerate=False",
+        "Simulation sim_123 is already prepared; skipping duplicate generation",
+    ]
+    assert logger.debugs == [
+        "Checking whether simulation sim_123 is already prepared...",
+        "Prepare check result: is_prepared=True, prepare_info={'status': 'ready'}",
+    ]
+
+
+def test_prepare_preview_warning_logs_are_localized(monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    logger = FakeLogger()
+    monkeypatch.setattr(simulation_api, "logger", logger)
+
+    state = SimulationState(
+        simulation_id="sim_123",
+        project_id="proj_123",
+        graph_id="graph_123",
+        status=SimulationStatus.CREATED,
+    )
+    project = type("Project", (), {"simulation_requirement": "predict something"})()
+
+    monkeypatch.setattr(simulation_api.SimulationManager, "get_simulation", lambda self, simulation_id: state)
+    monkeypatch.setattr(simulation_api, "_check_simulation_prepared", lambda simulation_id, locale=None: (False, {}))
+    monkeypatch.setattr(simulation_api.ProjectManager, "get_project", lambda project_id: project)
+    monkeypatch.setattr(simulation_api.ProjectManager, "get_extracted_text", lambda project_id: "context")
+
+    class FakeReader:
+        def filter_defined_entities(self, **kwargs):
+            raise RuntimeError("preview exploded")
+
+    monkeypatch.setattr(simulation_api, "ZepEntityReader", FakeReader)
+
+    class FakeThread:
+        def __init__(self, target, daemon):
+            self.target = target
+            self.daemon = daemon
+
+        def start(self):
+            return None
+
+    monkeypatch.setattr(threading, "Thread", FakeThread)
+    monkeypatch.setattr(
+        "app.models.task.TaskManager.create_task",
+        lambda self, task_type, metadata=None: "task_123",
+    )
+    monkeypatch.setattr(simulation_api.SimulationManager, "_save_simulation_state", lambda self, saved: None)
+
+    response = client.post(
+        "/api/simulation/prepare",
+        json={"simulation_id": "sim_123"},
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    assert logger.infos == [
+        "Handling /prepare request: simulation_id=sim_123, force_regenerate=False",
+        "Simulation sim_123 is not prepared yet; starting the preparation task",
+        "Preloading entity count synchronously: graph_id=graph_123",
+    ]
+    assert logger.warnings == [
+        "Failed to preload entity count synchronously; the background task will retry: preview exploded"
+    ]
 
 
 def test_batch_interview_validation_is_localized(monkeypatch):
