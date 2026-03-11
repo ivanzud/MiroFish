@@ -116,6 +116,82 @@ TRANSLATIONS = {
         "zh": "图谱已删除: {graph_id}",
         "en": "Graph deleted: {graph_id}",
     },
+    "report.simulation_id_required": {
+        "zh": "请提供 simulation_id",
+        "en": "Please provide simulation_id",
+    },
+    "report.task_or_simulation_required": {
+        "zh": "请提供 task_id 或 simulation_id",
+        "en": "Please provide task_id or simulation_id",
+    },
+    "report.task_not_found": {
+        "zh": "任务不存在: {task_id}",
+        "en": "Task not found: {task_id}",
+    },
+    "report.already_exists": {
+        "zh": "报告已存在",
+        "en": "The report already exists",
+    },
+    "report.generation_started": {
+        "zh": "报告生成任务已启动，请通过 /api/report/generate/status 查询进度",
+        "en": "Report generation has started. Query /api/report/generate/status for progress.",
+    },
+    "report.already_generated": {
+        "zh": "报告已生成",
+        "en": "The report has already been generated",
+    },
+    "report.project_not_found": {
+        "zh": "项目不存在: {project_id}",
+        "en": "Project not found: {project_id}",
+    },
+    "report.graph_id_required_built": {
+        "zh": "缺少图谱ID，请确保已构建图谱",
+        "en": "Missing graph_id. Make sure the project graph has been built.",
+    },
+    "report.graph_id_required": {
+        "zh": "缺少图谱ID",
+        "en": "Missing graph_id",
+    },
+    "report.requirement_missing": {
+        "zh": "缺少模拟需求描述",
+        "en": "Missing simulation requirement",
+    },
+    "report.generation_failed": {
+        "zh": "报告生成失败",
+        "en": "Report generation failed",
+    },
+    "report.not_found": {
+        "zh": "报告不存在: {report_id}",
+        "en": "Report not found: {report_id}",
+    },
+    "report.not_available_for_simulation": {
+        "zh": "该模拟暂无报告: {simulation_id}",
+        "en": "No report exists for simulation: {simulation_id}",
+    },
+    "report.deleted": {
+        "zh": "报告已删除: {report_id}",
+        "en": "Report deleted: {report_id}",
+    },
+    "report.message_required": {
+        "zh": "请提供 message",
+        "en": "Please provide message",
+    },
+    "report.progress_not_available": {
+        "zh": "报告不存在或进度信息不可用: {report_id}",
+        "en": "Report not found or progress data is unavailable: {report_id}",
+    },
+    "report.section_not_found": {
+        "zh": "章节不存在: section_{section_index:02d}.md",
+        "en": "Section not found: section_{section_index:02d}.md",
+    },
+    "report.graph_id_and_query_required": {
+        "zh": "请提供 graph_id 和 query",
+        "en": "Please provide graph_id and query",
+    },
+    "report.graph_id_required_for_tools": {
+        "zh": "请提供 graph_id",
+        "en": "Please provide graph_id",
+    },
     "simulation.timeout_invalid_number": {
         "zh": "timeout 必须是大于 0 的数字",
         "en": "timeout must be a number greater than 0",
