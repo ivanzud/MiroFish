@@ -533,3 +533,45 @@ def test_simulation_runner_close_env_log_uses_explicit_locale(tmp_path, monkeypa
     assert info_messages == [
         "Sent close-environment command: simulation_id=sim-123"
     ]
+
+
+def test_get_run_state_logs_english_load_failure(tmp_path, monkeypatch):
+    app = Flask(__name__)
+    monkeypatch.setattr(SimulationRunner, "RUN_STATE_DIR", str(tmp_path))
+    sim_dir = tmp_path / "sim-123"
+    sim_dir.mkdir()
+    (sim_dir / "run_state.json").write_text("{not-json", encoding="utf-8")
+    SimulationRunner._run_states.pop("sim-123", None)
+
+    error_messages = []
+    monkeypatch.setattr("app.services.simulation_runner.logger", SimpleNamespace(error=error_messages.append))
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        result = SimulationRunner.get_run_state("sim-123")
+
+    assert result is None
+    assert error_messages == [
+        "Failed to load the run state: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    ]
+
+
+def test_get_interview_history_logs_english_read_failure(tmp_path, monkeypatch):
+    app = Flask(__name__)
+    monkeypatch.setattr(SimulationRunner, "RUN_STATE_DIR", str(tmp_path))
+    sim_dir = tmp_path / "sim-123" / "twitter"
+    sim_dir.mkdir(parents=True)
+    (tmp_path / "sim-123" / "twitter_simulation.db").write_bytes(b"")
+
+    error_messages = []
+    monkeypatch.setattr(
+        "app.services.simulation_runner.logger",
+        SimpleNamespace(error=error_messages.append),
+    )
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        result = SimulationRunner.get_interview_history("sim-123", platform="twitter", limit=5)
+
+    assert result == []
+    assert error_messages == [
+        "Failed to read interview history (twitter): no such table: trace"
+    ]

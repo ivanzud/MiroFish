@@ -421,7 +421,7 @@ class SimulationRunner:
             
             return state
         except Exception as e:
-            logger.error(f"加载运行状态失败: {str(e)}")
+            logger.error(tr("simulation.run_state_load_failed", get_locale(), error=str(e)))
             return None
 
     @classmethod
@@ -2157,6 +2157,7 @@ class SimulationRunner:
     @classmethod
     def _get_interview_history_from_db(
         cls,
+        simulation_id: str,
         db_path: str,
         platform_name: str,
         agent_id: Optional[int] = None,
@@ -2208,7 +2209,14 @@ class SimulationRunner:
             conn.close()
             
         except Exception as e:
-            logger.error(f"读取Interview历史失败 ({platform_name}): {e}")
+            logger.error(
+                tr(
+                    "simulation.interview_history_read_failed",
+                    cls._resolve_locale_for_simulation(simulation_id),
+                    platform_name=platform_name,
+                    error=str(e),
+                )
+            )
         
         return results
 
@@ -2249,6 +2257,7 @@ class SimulationRunner:
         for p in platforms:
             db_path = os.path.join(sim_dir, f"{p}_simulation.db")
             platform_results = cls._get_interview_history_from_db(
+                simulation_id=simulation_id,
                 db_path=db_path,
                 platform_name=p,
                 agent_id=agent_id,

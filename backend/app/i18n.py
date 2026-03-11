@@ -880,6 +880,14 @@ TRANSLATIONS = {
         "zh": "当前后端未安装可选的 OASIS 仿真运行时依赖。请先执行 `npm run setup:backend:simulation`，或在 backend 目录执行 `uv sync --extra simulation`。",
         "en": "The optional OASIS simulation runtime dependencies are not installed. Run `npm run setup:backend:simulation`, or `uv sync --extra simulation` inside the backend directory first.",
     },
+    "simulation.run_state_load_failed": {
+        "zh": "加载运行状态失败: {error}",
+        "en": "Failed to load the run state: {error}",
+    },
+    "simulation.interview_history_read_failed": {
+        "zh": "读取Interview历史失败 ({platform_name}): {error}",
+        "en": "Failed to read interview history ({platform_name}): {error}",
+    },
     "simulation.already_running": {
         "zh": "模拟已在运行中: {simulation_id}",
         "en": "Simulation is already running: {simulation_id}",
