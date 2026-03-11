@@ -500,7 +500,27 @@ class Report:
 
 # ── 工具描述 ──
 
-TOOL_DESC_INSIGHT_FORGE = """\
+TOOL_SPECS = {
+    "insight_forge": {
+        "description": {
+            "en": """\
+[Deep insight retrieval - powerful analysis tool]
+Our strongest retrieval tool for deep analysis. It:
+1. Breaks your question into focused sub-questions
+2. Searches the simulation graph from multiple angles
+3. Combines semantic search, entity analysis, and relationship tracing
+4. Returns the most comprehensive and detailed supporting material
+
+[Best for]
+- Deep analysis of a topic
+- Understanding multiple facets of an event
+- Gathering rich evidence for a report section
+
+[Returns]
+- Relevant factual excerpts that can be quoted directly
+- Core entity insights
+- Relationship-chain analysis""",
+            "zh": """\
 【深度洞察检索 - 强大的检索工具】
 这是我们强大的检索函数，专为深度分析设计。它会：
 1. 自动将你的问题分解为多个子问题
@@ -516,9 +536,38 @@ TOOL_DESC_INSIGHT_FORGE = """\
 【返回内容】
 - 相关事实原文（可直接引用）
 - 核心实体洞察
-- 关系链分析"""
+- 关系链分析""",
+        },
+        "parameters": {
+            "query": {
+                "en": "Question or topic to analyze deeply",
+                "zh": "你想深入分析的问题或话题",
+            },
+            "report_context": {
+                "en": "Current report-section context (optional, helps generate better sub-questions)",
+                "zh": "当前报告章节的上下文（可选，有助于生成更精准的子问题）",
+            },
+        },
+    },
+    "panorama_search": {
+        "description": {
+            "en": """\
+[Broad search - full-picture view]
+Use this tool to get a wide overview of simulation results, especially to understand how an event evolved. It:
+1. Retrieves all relevant nodes and relationships
+2. Separates currently valid facts from historical or expired ones
+3. Helps you understand how sentiment and discussion evolved
 
-TOOL_DESC_PANORAMA_SEARCH = """\
+[Best for]
+- Understanding the full timeline of an event
+- Comparing sentiment changes across stages
+- Gathering comprehensive entity and relationship information
+
+[Returns]
+- Currently valid facts (latest simulation state)
+- Historical or expired facts (evolution record)
+- All involved entities""",
+            "zh": """\
 【广度搜索 - 获取全貌视图】
 这个工具用于获取模拟结果的完整全貌，特别适合了解事件演变过程。它会：
 1. 获取所有相关节点和关系
@@ -533,9 +582,33 @@ TOOL_DESC_PANORAMA_SEARCH = """\
 【返回内容】
 - 当前有效事实（模拟最新结果）
 - 历史/过期事实（演变记录）
-- 所有涉及的实体"""
+- 所有涉及的实体""",
+        },
+        "parameters": {
+            "query": {
+                "en": "Search query used for relevance ranking",
+                "zh": "搜索查询，用于相关性排序",
+            },
+            "include_expired": {
+                "en": "Whether to include expired or historical facts (default: True)",
+                "zh": "是否包含过期/历史内容（默认True）",
+            },
+        },
+    },
+    "quick_search": {
+        "description": {
+            "en": """\
+[Quick search - fast retrieval]
+A lightweight retrieval tool for simple, direct information lookup.
 
-TOOL_DESC_QUICK_SEARCH = """\
+[Best for]
+- Quickly finding a specific piece of information
+- Verifying a fact
+- Simple information retrieval
+
+[Returns]
+- A list of facts most relevant to the query""",
+            "zh": """\
 【简单搜索 - 快速检索】
 轻量级的快速检索工具，适合简单、直接的信息查询。
 
@@ -545,9 +618,49 @@ TOOL_DESC_QUICK_SEARCH = """\
 - 简单的信息检索
 
 【返回内容】
-- 与查询最相关的事实列表"""
+- 与查询最相关的事实列表""",
+        },
+        "parameters": {
+            "query": {
+                "en": "Search query string",
+                "zh": "搜索查询字符串",
+            },
+            "limit": {
+                "en": "Number of results to return (optional, default: 10)",
+                "zh": "返回结果数量（可选，默认10）",
+            },
+        },
+    },
+    "interview_agents": {
+        "description": {
+            "en": """\
+[Deep interviews - real agent interviews across both platforms]
+Call the OASIS interview API to interview live simulation agents directly.
+This is not an LLM reenactment. It uses the real interview endpoints to fetch raw agent responses.
+By default it interviews across both Twitter and Reddit to gather broader viewpoints.
 
-TOOL_DESC_INTERVIEW_AGENTS = """\
+Workflow:
+1. Read the generated persona files to understand the available agents
+2. Select the agents most relevant to the interview topic
+3. Generate interview questions automatically
+4. Call /api/simulation/interview/batch to run real interviews on both platforms
+5. Consolidate the results into a multi-perspective analysis
+
+[Best for]
+- Understanding how different roles view an event
+- Collecting positions and opinions from multiple sides
+- Quoting raw answers from live simulation agents
+- Making the report more vivid with interview excerpts
+
+[Returns]
+- Interviewed-agent identity details
+- Answers from Twitter and Reddit interviews
+- Key quotes that can be cited directly
+- Interview summaries and viewpoint comparisons
+
+[Important]
+The OASIS simulation environment must be running to use this tool.""",
+            "zh": """\
 【深度采访 - 真实Agent采访（双平台）】
 调用OASIS模拟环境的采访API，对正在运行的模拟Agent进行真实采访！
 这不是LLM模拟，而是调用真实的采访接口获取模拟Agent的原始回答。
@@ -572,7 +685,20 @@ TOOL_DESC_INTERVIEW_AGENTS = """\
 - 关键引言（可直接引用）
 - 采访摘要和观点对比
 
-【重要】需要OASIS模拟环境正在运行才能使用此功能！"""
+【重要】需要OASIS模拟环境正在运行才能使用此功能！""",
+        },
+        "parameters": {
+            "interview_topic": {
+                "en": "Interview topic or request (for example: 'Understand student reactions to the dorm formaldehyde incident')",
+                "zh": "采访主题或需求描述（如：'了解学生对宿舍甲醛事件的看法'）",
+            },
+            "max_agents": {
+                "en": "Maximum number of agents to interview (optional, default: 5, max: 10)",
+                "zh": "最多采访的Agent数量（可选，默认5，最大10）",
+            },
+        },
+    },
+}
 
 # ── 大纲规划 prompt ──
 
@@ -1333,39 +1459,17 @@ class ReportAgent:
     
     def _define_tools(self) -> Dict[str, Dict[str, Any]]:
         """定义可用工具"""
+        locale = "en" if self.locale == "en" else "zh"
         return {
-            "insight_forge": {
-                "name": "insight_forge",
-                "description": TOOL_DESC_INSIGHT_FORGE,
+            name: {
+                "name": name,
+                "description": spec["description"][locale],
                 "parameters": {
-                    "query": "你想深入分析的问题或话题",
-                    "report_context": "当前报告章节的上下文（可选，有助于生成更精准的子问题）"
-                }
-            },
-            "panorama_search": {
-                "name": "panorama_search",
-                "description": TOOL_DESC_PANORAMA_SEARCH,
-                "parameters": {
-                    "query": "搜索查询，用于相关性排序",
-                    "include_expired": "是否包含过期/历史内容（默认True）"
-                }
-            },
-            "quick_search": {
-                "name": "quick_search",
-                "description": TOOL_DESC_QUICK_SEARCH,
-                "parameters": {
-                    "query": "搜索查询字符串",
-                    "limit": "返回结果数量（可选，默认10）"
-                }
-            },
-            "interview_agents": {
-                "name": "interview_agents",
-                "description": TOOL_DESC_INTERVIEW_AGENTS,
-                "parameters": {
-                    "interview_topic": "采访主题或需求描述（如：'了解学生对宿舍甲醛事件的看法'）",
-                    "max_agents": "最多采访的Agent数量（可选，默认5，最大10）"
-                }
+                    param_name: param_spec[locale]
+                    for param_name, param_spec in spec["parameters"].items()
+                },
             }
+            for name, spec in TOOL_SPECS.items()
         }
     
     def _execute_tool(self, tool_name: str, parameters: Dict[str, Any], report_context: str = "") -> str:

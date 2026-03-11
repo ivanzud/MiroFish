@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T22:24:37.950290+00:00",
-  "generated_at": "2026-03-11T22:24:37.950290+00:00",
+  "captured_at": "2026-03-11T22:33:44.078198+00:00",
+  "generated_at": "2026-03-11T22:33:44.078198+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -4176,7 +4176,7 @@
       "local_coverage": {
         "number": 119,
         "status": "partial",
-        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
+        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, English-localized ReportAgent tool descriptions and parameter help, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
         "local_refs": [
           "frontend/src/views/MainView.vue",
           "frontend/src/views/mainViewLogMessages.js",
@@ -4206,9 +4206,9 @@
         ]
       },
       "local_status": "partial",
-      "local_summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
+      "local_summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, English-localized ReportAgent tool descriptions and parameter help, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
       "triage_status": "partial",
-      "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge."
+      "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, English-localized ReportAgent tool descriptions and parameter help, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge."
     },
     {
       "number": 89,

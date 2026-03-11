@@ -251,6 +251,26 @@ def test_plan_outline_english_fallback_outline_is_localized():
     ]
 
 
+def test_report_agent_english_tool_descriptions_are_localized():
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=FakeLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    tools_description = agent._get_tools_description()
+
+    assert "[Deep insight retrieval - powerful analysis tool]" in tools_description
+    assert "Question or topic to analyze deeply" in tools_description
+    assert "[Deep interviews - real agent interviews across both platforms]" in tools_description
+    assert "Maximum number of agents to interview" in tools_description
+    assert "深度洞察检索" not in tools_description
+    assert "采访主题或需求描述" not in tools_description
+
+
 def test_execute_tool_english_errors_are_localized():
     agent = ReportAgent(
         graph_id="graph-test",
