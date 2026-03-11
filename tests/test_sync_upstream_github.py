@@ -308,6 +308,18 @@ class SyncUpstreamGithubTests(unittest.TestCase):
 
         self.assertEqual(args.max_workers, 4)
 
+    def test_build_parser_defaults_lock_wait_seconds_to_five(self):
+        args = sync_upstream_github.build_parser().parse_args(
+            [
+                "--output",
+                "docs/upstream-open-state.json",
+                "--summary",
+                "docs/upstream-open-summary.md",
+            ]
+        )
+
+        self.assertEqual(args.lock_wait_seconds, 5.0)
+
     def test_build_parser_accepts_legacy_positional_repo_argument(self):
         parser = sync_upstream_github.build_parser()
         args = parser.parse_args(

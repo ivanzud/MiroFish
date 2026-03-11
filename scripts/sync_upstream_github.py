@@ -1023,10 +1023,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--lock-wait-seconds",
         type=float,
-        default=0.0,
+        default=5.0,
         help=(
             "How long to wait for another sync_upstream_github.py run holding the repo lock "
-            "before failing. Defaults to 0 for fail-fast behavior."
+            "before failing. Defaults to 5 seconds so sequential refreshes can serialize cleanly."
         ),
     )
     parser.add_argument(
