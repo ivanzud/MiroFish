@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T14:45:31.057867+00:00`
+- Captured: `2026-03-11T14:49:32.216338+00:00`
 - Issues: `86` total (`open=37`, `closed=49`)
 - Pull requests: `50` total (`open=36`, `closed=14`)
 - Mirrored in `origin`: `50` of `50` PR refs
@@ -44,15 +44,15 @@
 
 ## Recently Updated Pull Requests
 
+- #141 [open, mergeable=clean, mirrored=yes] feat: add entity deduplication after graph building (`feature/entity-deduplication` -> `main`)
+  - local coverage [not_safe]: Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.
+  - Hi @666ghj I noticed that during graph building, Zep sometimes creates duplicate entity nodes for the same real-world entity (e.g. "特朗普" and "美国总统特朗普" appear as separate nodes). This affects the accuracy of the knowledge graph. This PR adds an automatic entity deduplication step after graph building, using name similarity pre-filtering + type compatibility check + LLM confirmation to identify and…
 - #144 [open, mergeable=clean, mirrored=yes] feat(kg): add dual-mode knowledge graph support (`feat/local-knowledge-graph` -> `main`)
   - local coverage [tracked]: Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.
   - ## Summary - Add kg_adapter for dual-mode knowledge graph (cloud/local) - Support switching between Zep Cloud and local Graphiti + Neo4j - Improve entity extraction and report agent robustness - Add test_kg_adapter.py with unit tests ## Test plan - [ ] Test cloud mode with Zep Cloud - [ ] Test local mode with Graphiti + Neo4j - [ ] Run unit tests 🤖 Generated with [Claude Code](https://claude.com/…
 - #143 [open, mergeable=clean, mirrored=yes] docs: fix README alt text URL encoding (`docs/urlEncoding` -> `main`)
   - local coverage [landed]: Landed locally as a repo-native docs cleanup: the Shanda logo alt text now uses the correct URL-encoded `666ghj%2FMiroFish` slug across all README variants, not just the primary Chinese README.
   - ## Summary Fix the Shanda image alt text in README.md by changing 666ghj%2MiroFish to 666ghj%2FMiroFish. ## Details 666ghj%2MiroFish is not a valid URL-encoded representation, so it cannot be decoded correctly. Using 666ghj%2FMiroFish correctly encodes the slash and can be properly decoded to 666ghj/ MiroFish. ## Impact Documentation-only change. No code or runtime behavior is affected.
-- #141 [open, mergeable=clean, mirrored=yes] feat: add entity deduplication after graph building (`feature/entity-deduplication` -> `main`)
-  - local coverage [not_safe]: Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.
-  - Hi @666ghj I noticed that during graph building, Zep sometimes creates duplicate entity nodes for the same real-world entity (e.g. "特朗普" and "美国总统特朗普" appear as separate nodes). This affects the accuracy of the knowledge graph. This PR adds an automatic entity deduplication step after graph building, using name similarity pre-filtering + type compatibility check + LLM confirmation to identify and…
 - #127 [closed, mergeable=clean, mirrored=yes] Fix potential crash in LLMClient when content is None (`fix/llm-client-none-content` -> `main`)
   - Added `if content is None: return ""` in `backend/app/utils/llm_client.py` to prevent `re.sub` TypeError. --- *Automated PR created by OpenClaw daily-pr routine.*
   - latest comment by `sjhddh`: Closing this PR as it was submitted with an incorrect Git author configuration. Apologies for the noise!

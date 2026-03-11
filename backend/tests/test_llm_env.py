@@ -118,6 +118,14 @@ def test_script_message_supports_english_runtime_strings():
     assert llm_env.script_message("runner_title", "en", platform="Twitter") == (
         "OASIS Twitter simulation"
     )
+    assert llm_env.script_message("runner_title", "en", platform="dual-platform parallel") == (
+        "OASIS dual-platform parallel simulation"
+    )
+    assert llm_env.script_message("config_path", "en", path="/tmp/config.json") == (
+        "Config file: /tmp/config.json"
+    )
+    assert llm_env.script_message("simulation_params", "en") == "\nSimulation parameters:"
+    assert llm_env.script_message("env_closed", "en") == "Environment closed"
     assert llm_env.script_message("signal_received", "en", signal_name="SIGTERM") == (
         "\nReceived SIGTERM; shutting down..."
     )
@@ -147,5 +155,7 @@ def test_script_message_defaults_to_chinese_runtime_strings():
     assert llm_env.script_message("default_llm_label") == "[通用LLM]"
     assert llm_env.script_message("boost_llm_label") == "[加速LLM]"
     assert llm_env.script_message("default_base_url") == "默认"
+    assert llm_env.script_message("runner_title", platform="双平台并行") == "OASIS 双平台并行模拟"
+    assert llm_env.script_message("config_path", path="/tmp/config.json") == "配置文件: /tmp/config.json"
     assert llm_env.script_message("supported_commands") == "支持的命令: interview, batch_interview, close_env"
     assert llm_env.script_message("wait_mode", state="启用") == "等待命令模式: 启用"

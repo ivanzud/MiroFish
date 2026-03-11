@@ -510,7 +510,12 @@ class ParallelIPCHandler:
                             action_args={"prompt": prompt}
                         )
                     except Exception as e:
-                        print(f"  警告: 无法获取Twitter Agent {agent_id}: {e}")
+                        print(
+                            _t(
+                                f"  警告: 无法获取Twitter Agent {agent_id}: {e}",
+                                f"  Warning: failed to load Twitter agent {agent_id}: {e}",
+                            )
+                        )
                 
                 if twitter_actions:
                     await self.twitter_env.step(twitter_actions)
@@ -537,7 +542,12 @@ class ParallelIPCHandler:
                             action_args={"prompt": prompt}
                         )
                     except Exception as e:
-                        print(f"  警告: 无法获取Reddit Agent {agent_id}: {e}")
+                        print(
+                            _t(
+                                f"  警告: 无法获取Reddit Agent {agent_id}: {e}",
+                                f"  Warning: failed to load Reddit agent {agent_id}: {e}",
+                            )
+                        )
                 
                 if reddit_actions:
                     await self.reddit_env.step(reddit_actions)
@@ -604,7 +614,7 @@ class ParallelIPCHandler:
             conn.close()
             
         except Exception as e:
-            print(f"  读取Interview结果失败: {e}")
+            print(script_message("interview_result_read_failed", SCRIPT_LOCALE, error=e))
         
         return result
     
@@ -623,7 +633,14 @@ class ParallelIPCHandler:
         command_type = command.get("command_type")
         args = command.get("args", {})
         
-        print(f"\n收到IPC命令: {command_type}, id={command_id}")
+        print(
+            script_message(
+                "ipc_command_received",
+                SCRIPT_LOCALE,
+                command_type=command_type,
+                command_id=command_id,
+            )
+        )
         
         if command_type == CommandType.INTERVIEW:
             await self.handle_interview(
@@ -643,7 +660,7 @@ class ParallelIPCHandler:
             return True
             
         elif command_type == CommandType.CLOSE_ENV:
-            print("收到关闭环境命令")
+            print(script_message("close_command_received", SCRIPT_LOCALE))
             self.send_response(
                 command_id,
                 "completed",
@@ -800,7 +817,7 @@ def fetch_new_actions_from_db(
         
         conn.close()
     except Exception as e:
-        print(f"读取数据库动作失败: {e}")
+        print(_t(f"读取数据库动作失败: {e}", f"Failed to read database actions: {e}"))
     
     return actions, new_last_rowid
 
@@ -910,7 +927,7 @@ def _enrich_action_context(
     
     except Exception as e:
         # 补充上下文失败不影响主流程
-        print(f"补充动作上下文失败: {e}")
+        print(_t(f"补充动作上下文失败: {e}", f"Failed to enrich action context: {e}"))
 
 
 def _get_post_info(
@@ -1221,7 +1238,7 @@ async def run_twitter_simulation(
     )
     
     await result.env.reset()
-    log_info("环境已启动")
+    log_info(_t("环境已启动", "Environment started"))
     
     if action_logger:
         action_logger.log_simulation_start(config)
@@ -1265,7 +1282,13 @@ async def run_twitter_simulation(
         
         if initial_actions:
             await result.env.step(initial_actions)
-            log_info(f"已发布 {len(initial_actions)} 条初始帖子")
+            log_info(
+                script_message(
+                    "initial_posts_published",
+                    SCRIPT_LOCALE,
+                    count=len(initial_actions),
+                )
+            )
     
     # 记录 round 0 结束
     if action_logger:
@@ -1282,7 +1305,15 @@ async def run_twitter_simulation(
         original_rounds = total_rounds
         total_rounds = min(total_rounds, max_rounds)
         if total_rounds < original_rounds:
-            log_info(f"轮数已截断: {original_rounds} -> {total_rounds} (max_rounds={max_rounds})")
+            log_info(
+                script_message(
+                    "rounds_truncated",
+                    SCRIPT_LOCALE,
+                    original=original_rounds,
+                    current=total_rounds,
+                    max_rounds=max_rounds,
+                ).strip()
+            )
     
     start_time = datetime.now()
     
@@ -1290,7 +1321,12 @@ async def run_twitter_simulation(
         # 检查是否收到退出信号
         if _shutdown_event and _shutdown_event.is_set():
             if main_logger:
-                main_logger.info(f"收到退出信号，在第 {round_num + 1} 轮停止模拟")
+                main_logger.info(
+                    _t(
+                        f"收到退出信号，在第 {round_num + 1} 轮停止模拟",
+                        f"Received shutdown signal; stopping simulation at round {round_num + 1}",
+                    )
+                )
             break
         
         simulated_minutes = round_num * minutes_per_round
@@ -1346,7 +1382,12 @@ async def run_twitter_simulation(
     
     result.total_actions = total_actions
     elapsed = (datetime.now() - start_time).total_seconds()
-    log_info(f"模拟循环完成! 耗时: {elapsed:.1f}秒, 总动作: {total_actions}")
+    log_info(
+        _t(
+            f"模拟循环完成! 耗时: {elapsed:.1f}秒, 总动作: {total_actions}",
+            f"Simulation loop complete! Elapsed: {elapsed:.1f}s, total actions: {total_actions}",
+        )
+    )
     
     return result
 
@@ -1412,7 +1453,7 @@ async def run_reddit_simulation(
     )
     
     await result.env.reset()
-    log_info("环境已启动")
+    log_info(_t("环境已启动", "Environment started"))
     
     if action_logger:
         action_logger.log_simulation_start(config)
@@ -1464,7 +1505,13 @@ async def run_reddit_simulation(
         
         if initial_actions:
             await result.env.step(initial_actions)
-            log_info(f"已发布 {len(initial_actions)} 条初始帖子")
+            log_info(
+                script_message(
+                    "initial_posts_published",
+                    SCRIPT_LOCALE,
+                    count=len(initial_actions),
+                )
+            )
     
     # 记录 round 0 结束
     if action_logger:
@@ -1481,7 +1528,15 @@ async def run_reddit_simulation(
         original_rounds = total_rounds
         total_rounds = min(total_rounds, max_rounds)
         if total_rounds < original_rounds:
-            log_info(f"轮数已截断: {original_rounds} -> {total_rounds} (max_rounds={max_rounds})")
+            log_info(
+                script_message(
+                    "rounds_truncated",
+                    SCRIPT_LOCALE,
+                    original=original_rounds,
+                    current=total_rounds,
+                    max_rounds=max_rounds,
+                ).strip()
+            )
     
     start_time = datetime.now()
     
@@ -1489,7 +1544,12 @@ async def run_reddit_simulation(
         # 检查是否收到退出信号
         if _shutdown_event and _shutdown_event.is_set():
             if main_logger:
-                main_logger.info(f"收到退出信号，在第 {round_num + 1} 轮停止模拟")
+                main_logger.info(
+                    _t(
+                        f"收到退出信号，在第 {round_num + 1} 轮停止模拟",
+                        f"Received shutdown signal; stopping simulation at round {round_num + 1}",
+                    )
+                )
             break
         
         simulated_minutes = round_num * minutes_per_round
@@ -1545,40 +1605,45 @@ async def run_reddit_simulation(
     
     result.total_actions = total_actions
     elapsed = (datetime.now() - start_time).total_seconds()
-    log_info(f"模拟循环完成! 耗时: {elapsed:.1f}秒, 总动作: {total_actions}")
+    log_info(
+        _t(
+            f"模拟循环完成! 耗时: {elapsed:.1f}秒, 总动作: {total_actions}",
+            f"Simulation loop complete! Elapsed: {elapsed:.1f}s, total actions: {total_actions}",
+        )
+    )
     
     return result
 
 
 async def main():
-    parser = argparse.ArgumentParser(description='OASIS双平台并行模拟')
+    parser = argparse.ArgumentParser(description=_t("OASIS双平台并行模拟", "OASIS dual-platform parallel simulation"))
     parser.add_argument(
         '--config', 
         type=str, 
         required=True,
-        help='配置文件路径 (simulation_config.json)'
+        help=_t('配置文件路径 (simulation_config.json)', 'Path to the config file (simulation_config.json)')
     )
     parser.add_argument(
         '--twitter-only',
         action='store_true',
-        help='只运行Twitter模拟'
+        help=_t('只运行Twitter模拟', 'Run only the Twitter simulation')
     )
     parser.add_argument(
         '--reddit-only',
         action='store_true',
-        help='只运行Reddit模拟'
+        help=_t('只运行Reddit模拟', 'Run only the Reddit simulation')
     )
     parser.add_argument(
         '--max-rounds',
         type=int,
         default=None,
-        help='最大模拟轮数（可选，用于截断过长的模拟）'
+        help=_t('最大模拟轮数（可选，用于截断过长的模拟）', 'Maximum simulation rounds (optional, truncates long simulations)')
     )
     parser.add_argument(
         '--no-wait',
         action='store_true',
         default=False,
-        help='模拟完成后立即关闭环境，不进入等待命令模式'
+        help=_t('模拟完成后立即关闭环境，不进入等待命令模式', 'Close the environment after the simulation and skip wait-for-command mode')
     )
     
     args = parser.parse_args()
@@ -1604,10 +1669,22 @@ async def main():
     reddit_logger = log_manager.get_reddit_logger()
     
     log_manager.info("=" * 60)
-    log_manager.info("OASIS 双平台并行模拟")
-    log_manager.info(f"配置文件: {args.config}")
-    log_manager.info(f"模拟ID: {config.get('simulation_id', 'unknown')}")
-    log_manager.info(f"等待命令模式: {'启用' if wait_for_commands else '禁用'}")
+    log_manager.info(script_message("runner_title", SCRIPT_LOCALE, platform=_t("双平台并行", "dual-platform parallel")))
+    log_manager.info(script_message("config_path", SCRIPT_LOCALE, path=args.config))
+    log_manager.info(
+        script_message(
+            "simulation_id",
+            SCRIPT_LOCALE,
+            simulation_id=config.get('simulation_id', 'unknown'),
+        )
+    )
+    log_manager.info(
+        script_message(
+            "wait_mode",
+            SCRIPT_LOCALE,
+            state=script_message("enabled", SCRIPT_LOCALE) if wait_for_commands else script_message("disabled", SCRIPT_LOCALE),
+        )
+    )
     log_manager.info("=" * 60)
     
     time_config = config.get("time_config", {})
@@ -1615,22 +1692,27 @@ async def main():
     minutes_per_round = time_config.get('minutes_per_round', 30)
     config_total_rounds = (total_hours * 60) // minutes_per_round
     
-    log_manager.info(f"模拟参数:")
-    log_manager.info(f"  - 总模拟时长: {total_hours}小时")
-    log_manager.info(f"  - 每轮时间: {minutes_per_round}分钟")
-    log_manager.info(f"  - 配置总轮数: {config_total_rounds}")
+    log_manager.info(script_message("simulation_params", SCRIPT_LOCALE))
+    log_manager.info(script_message("total_hours", SCRIPT_LOCALE, hours=total_hours))
+    log_manager.info(script_message("minutes_per_round", SCRIPT_LOCALE, minutes=minutes_per_round))
+    log_manager.info(script_message("total_rounds", SCRIPT_LOCALE, rounds=config_total_rounds))
     if args.max_rounds:
-        log_manager.info(f"  - 最大轮数限制: {args.max_rounds}")
+        log_manager.info(script_message("max_rounds_limit", SCRIPT_LOCALE, max_rounds=args.max_rounds))
         if args.max_rounds < config_total_rounds:
-            log_manager.info(f"  - 实际执行轮数: {args.max_rounds} (已截断)")
+            log_manager.info(
+                _t(
+                    f"  - 实际执行轮数: {args.max_rounds} (已截断)",
+                    f"  - Effective rounds: {args.max_rounds} (truncated)",
+                )
+            )
     log_manager.info(
         script_message("agent_count", SCRIPT_LOCALE, count=len(config.get('agent_configs', [])))
     )
     
-    log_manager.info("日志结构:")
-    log_manager.info(f"  - 主日志: simulation.log")
-    log_manager.info(f"  - Twitter动作: twitter/actions.jsonl")
-    log_manager.info(f"  - Reddit动作: reddit/actions.jsonl")
+    log_manager.info(_t("日志结构:", "Log layout:"))
+    log_manager.info(_t("  - 主日志: simulation.log", "  - Main log: simulation.log"))
+    log_manager.info(_t("  - Twitter动作: twitter/actions.jsonl", "  - Twitter actions: twitter/actions.jsonl"))
+    log_manager.info(_t("  - Reddit动作: reddit/actions.jsonl", "  - Reddit actions: reddit/actions.jsonl"))
     log_manager.info("=" * 60)
     
     start_time = datetime.now()
@@ -1653,14 +1735,14 @@ async def main():
     
     total_elapsed = (datetime.now() - start_time).total_seconds()
     log_manager.info("=" * 60)
-    log_manager.info(f"模拟循环完成! 总耗时: {total_elapsed:.1f}秒")
+    log_manager.info(_t(f"模拟循环完成! 总耗时: {total_elapsed:.1f}秒", f"Simulation loop complete! Total elapsed: {total_elapsed:.1f}s"))
     
     # 是否进入等待命令模式
     if wait_for_commands:
         log_manager.info("")
         log_manager.info("=" * 60)
-        log_manager.info("进入等待命令模式 - 环境保持运行")
-        log_manager.info("支持的命令: interview, batch_interview, close_env")
+        log_manager.info(script_message("wait_mode_banner", SCRIPT_LOCALE))
+        log_manager.info(script_message("supported_commands", SCRIPT_LOCALE))
         log_manager.info("=" * 60)
         
         # 创建IPC处理器
@@ -1686,27 +1768,27 @@ async def main():
                 except asyncio.TimeoutError:
                     pass  # 超时继续循环
         except KeyboardInterrupt:
-            print("\n收到中断信号")
+            print(script_message("interrupt_received", SCRIPT_LOCALE))
         except asyncio.CancelledError:
-            print("\n任务被取消")
+            print(script_message("task_cancelled", SCRIPT_LOCALE))
         except Exception as e:
-            print(f"\n命令处理出错: {e}")
+            print(script_message("command_processing_failed", SCRIPT_LOCALE, error=e))
         
-        log_manager.info("\n关闭环境...")
+        log_manager.info(script_message("closing_env", SCRIPT_LOCALE))
         ipc_handler.update_status("stopped")
     
     # 关闭环境
     if twitter_result and twitter_result.env:
         await twitter_result.env.close()
-        log_manager.info("[Twitter] 环境已关闭")
+        log_manager.info(f"[Twitter] {script_message('env_closed', SCRIPT_LOCALE)}")
     
     if reddit_result and reddit_result.env:
         await reddit_result.env.close()
-        log_manager.info("[Reddit] 环境已关闭")
+        log_manager.info(f"[Reddit] {script_message('env_closed', SCRIPT_LOCALE)}")
     
     log_manager.info("=" * 60)
-    log_manager.info(f"全部完成!")
-    log_manager.info(f"日志文件:")
+    log_manager.info(_t("全部完成!", "All tasks completed!"))
+    log_manager.info(_t("日志文件:", "Log files:"))
     log_manager.info(f"  - {os.path.join(simulation_dir, 'simulation.log')}")
     log_manager.info(f"  - {os.path.join(simulation_dir, 'twitter', 'actions.jsonl')}")
     log_manager.info(f"  - {os.path.join(simulation_dir, 'reddit', 'actions.jsonl')}")
@@ -1726,7 +1808,7 @@ def setup_signal_handlers(loop=None):
     def signal_handler(signum, frame):
         global _cleanup_done
         sig_name = "SIGTERM" if signum == signal.SIGTERM else "SIGINT"
-        print(f"\n收到 {sig_name} 信号，正在退出...")
+        print(script_message("signal_received", SCRIPT_LOCALE, signal_name=sig_name))
         
         if not _cleanup_done:
             _cleanup_done = True
@@ -1737,7 +1819,7 @@ def setup_signal_handlers(loop=None):
         # 不要直接 sys.exit()，让 asyncio 循环正常退出并清理资源
         # 如果是重复收到信号，才强制退出
         else:
-            print("强制退出...")
+            print(script_message("force_exit", SCRIPT_LOCALE))
             sys.exit(1)
     
     signal.signal(signal.SIGTERM, signal_handler)
@@ -1749,7 +1831,7 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\n程序被中断")
+        print(script_message("program_interrupted", SCRIPT_LOCALE))
     except SystemExit:
         pass
     finally:
@@ -1759,4 +1841,4 @@ if __name__ == "__main__":
             resource_tracker._resource_tracker._stop()
         except Exception:
             pass
-        print("模拟进程已退出")
+        print(script_message("process_exited", SCRIPT_LOCALE))
