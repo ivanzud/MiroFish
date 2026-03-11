@@ -203,6 +203,34 @@ def test_generate_status_translates_task_progress_message(monkeypatch):
     assert payload["message"] == "[Planning] Generating the report outline..."
 
 
+def test_generate_status_translates_failed_task_progress_stage(monkeypatch):
+    app = create_report_test_app()
+    client = app.test_client()
+
+    monkeypatch.setattr(
+        report_api.TaskManager,
+        "get_task",
+        lambda self, task_id: SimpleNamespace(
+            to_dict=lambda: {
+                "task_id": task_id,
+                "status": "failed",
+                "progress": -1,
+                "message": "[failed] 报告生成失败: boom",
+            }
+        ),
+    )
+
+    response = client.post(
+        "/api/report/generate/status",
+        json={"task_id": "task_123"},
+        headers={"X-Locale": "en"},
+    )
+
+    payload = response.get_json()["data"]
+    assert response.status_code == 200
+    assert payload["message"] == "[Failed] 报告生成失败: boom"
+
+
 def test_report_progress_message_is_localized(monkeypatch):
     app = create_report_test_app()
     client = app.test_client()

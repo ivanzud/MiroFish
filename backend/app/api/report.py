@@ -25,6 +25,7 @@ REPORT_STAGE_LABELS = {
     "planning": "Planning",
     "generating": "Generating",
     "completed": "Completed",
+    "failed": "Failed",
 }
 
 REPORT_PROGRESS_MESSAGE_MAP = {
