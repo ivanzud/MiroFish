@@ -112,6 +112,26 @@ TRANSLATIONS = {
         "zh": "API调用第 {attempt} 次尝试失败: {error}, {delay:.1f}秒后重试...",
         "en": "API call failed on attempt {attempt}: {error}, retrying in {delay:.1f}s...",
     },
+    "zep.paging_failed_attempt": {
+        "zh": "Zep {page_description} 第 {attempt} 次尝试失败: {error}, {delay:.1f}秒后重试...",
+        "en": "Zep {page_description} failed on attempt {attempt}: {error}, retrying in {delay:.1f}s...",
+    },
+    "zep.paging_failed_final": {
+        "zh": "Zep {page_description} 在 {max_retries} 次尝试后仍失败: {error}",
+        "en": "Zep {page_description} still failed after {max_retries} attempts: {error}",
+    },
+    "zep.paging_node_limit": {
+        "zh": "节点数量达到上限 ({max_items})，停止图谱 {graph_id} 的分页读取",
+        "en": "Node count reached the limit ({max_items}); stopping pagination for graph {graph_id}",
+    },
+    "zep.paging_node_missing_uuid": {
+        "zh": "节点缺少 uuid 字段，在读取 {count} 个节点后停止分页",
+        "en": "A node is missing the uuid field; stopping pagination after reading {count} nodes",
+    },
+    "zep.paging_edge_missing_uuid": {
+        "zh": "边缺少 uuid 字段，在读取 {count} 条边后停止分页",
+        "en": "An edge is missing the uuid field; stopping pagination after reading {count} edges",
+    },
     "retry.batch_item_failed": {
         "zh": "处理第 {index} 项失败: {error}",
         "en": "Failed to process item {index}: {error}",

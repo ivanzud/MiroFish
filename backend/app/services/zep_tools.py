@@ -29,6 +29,15 @@ def _localized_text(locale: str, zh: str, en: str) -> str:
     return en if locale == "en" else zh
 
 
+def _fetch_with_optional_locale(fetcher, client, graph_id: str, locale: str):
+    try:
+        return fetcher(client, graph_id, locale=locale)
+    except TypeError as exc:
+        if "unexpected keyword argument 'locale'" not in str(exc):
+            raise
+        return fetcher(client, graph_id)
+
+
 @dataclass
 class SearchResult:
     """搜索结果"""
@@ -835,7 +844,7 @@ class ZepToolsService:
             locale,
         )
 
-        nodes = fetch_all_nodes(self.client, graph_id)
+        nodes = _fetch_with_optional_locale(fetch_all_nodes, self.client, graph_id, locale)
 
         result = []
         for node in nodes:
@@ -1091,7 +1100,7 @@ class ZepToolsService:
             locale,
         )
 
-        edges = fetch_all_edges(self.client, graph_id)
+        edges = _fetch_with_optional_locale(fetch_all_edges, self.client, graph_id, locale)
 
         result = []
         for edge in edges:

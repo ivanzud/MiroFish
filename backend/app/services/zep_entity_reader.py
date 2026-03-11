@@ -21,6 +21,15 @@ logger = get_logger('mirofish.zep_entity_reader')
 # 用于泛型返回类型
 T = TypeVar('T')
 
+
+def _fetch_with_optional_locale(fetcher: Callable[..., T], client: Zep, graph_id: str, locale: str) -> T:
+    try:
+        return fetcher(client, graph_id, locale=locale)
+    except TypeError as exc:
+        if "unexpected keyword argument 'locale'" not in str(exc):
+            raise
+        return fetcher(client, graph_id)
+
 _NON_WORD_RE = re.compile(r"[\W_]+", re.UNICODE)
 _PERSON_PREFIXES = (
     "美国总统",
@@ -219,7 +228,7 @@ class ZepEntityReader:
         """
         logger.info(tr("zep.reader_get_all_nodes_start", self._get_locale(), graph_id=graph_id))
 
-        nodes = fetch_all_nodes(self.client, graph_id)
+        nodes = _fetch_with_optional_locale(fetch_all_nodes, self.client, graph_id, self._get_locale())
 
         nodes_data = []
         for node in nodes:
@@ -246,7 +255,7 @@ class ZepEntityReader:
         """
         logger.info(tr("zep.reader_get_all_edges_start", self._get_locale(), graph_id=graph_id))
 
-        edges = fetch_all_edges(self.client, graph_id)
+        edges = _fetch_with_optional_locale(fetch_all_edges, self.client, graph_id, self._get_locale())
 
         edges_data = []
         for edge in edges:

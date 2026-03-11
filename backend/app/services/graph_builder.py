@@ -25,6 +25,15 @@ from .text_processor import TextProcessor
 from .zep_entity_reader import EntityNode, ZepEntityReader
 
 
+def _fetch_with_optional_locale(fetcher: Callable[..., Any], client: Zep, graph_id: str, locale: str) -> Any:
+    try:
+        return fetcher(client, graph_id, locale=locale)
+    except TypeError as exc:
+        if "unexpected keyword argument 'locale'" not in str(exc):
+            raise
+        return fetcher(client, graph_id)
+
+
 @dataclass
 class GraphInfo:
     """图谱信息"""
@@ -833,10 +842,10 @@ class GraphBuilderService:
     def _get_graph_info(self, graph_id: str) -> GraphInfo:
         """获取图谱信息"""
         # 获取节点（分页）
-        nodes = fetch_all_nodes(self.client, graph_id)
+        nodes = _fetch_with_optional_locale(fetch_all_nodes, self.client, graph_id, self.locale)
 
         # 获取边（分页）
-        edges = fetch_all_edges(self.client, graph_id)
+        edges = _fetch_with_optional_locale(fetch_all_edges, self.client, graph_id, self.locale)
 
         # 统计实体类型
         entity_types = set()
@@ -863,8 +872,8 @@ class GraphBuilderService:
         Returns:
             包含nodes和edges的字典，包括时间信息、属性等详细数据
         """
-        nodes = fetch_all_nodes(self.client, graph_id)
-        edges = fetch_all_edges(self.client, graph_id)
+        nodes = _fetch_with_optional_locale(fetch_all_nodes, self.client, graph_id, self.locale)
+        edges = _fetch_with_optional_locale(fetch_all_edges, self.client, graph_id, self.locale)
 
         # 创建节点映射用于获取节点名称
         node_map = {}
