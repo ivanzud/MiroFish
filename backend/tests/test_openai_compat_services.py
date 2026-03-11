@@ -428,9 +428,13 @@ def test_simulation_config_generator_english_prompts_switch_user_facing_language
     )
 
     assert "Generate a time-configuration JSON for this social simulation." in time_prompt
+    assert "Write the reasoning text in English." in time_prompt
     assert "Return strict JSON only." in time_system
+    assert "Any free-text output fields must be written in English." in time_system
     assert "Generate the event configuration JSON for this simulation." in event_prompt
+    assert "Write `narrative_direction`, every `initial_posts[].content` value, and `reasoning` in English." in event_prompt
     assert "poster_type must match one of the available entity types exactly" in event_system
+    assert "Any free-text output fields must be written in English." in event_system
     assert "Generate social-media activity configurations for each entity below." in agent_prompt
     assert "social-media behavior analyst" in agent_system
 

@@ -683,10 +683,14 @@ Field notes:
 - off_peak_hours (int[]): low-activity hours, usually late night / early morning
 - morning_hours (int[]): morning hours
 - work_hours (int[]): workday hours
-- reasoning (string): brief explanation of why this schedule fits the scenario"""
+- reasoning (string): brief explanation of why this schedule fits the scenario
+
+Language requirement:
+- Write the reasoning text in English."""
             system_prompt = (
                 "You are a social-media simulation expert. Return strict JSON only. "
-                "The time configuration should default to China Standard Time activity patterns unless the scenario suggests otherwise."
+                "The time configuration should default to China Standard Time activity patterns unless the scenario suggests otherwise. "
+                "Any free-text output fields must be written in English."
             )
         else:
             prompt = f"""基于以下模拟需求，生成时间模拟配置。
@@ -882,6 +886,9 @@ Return event-configuration JSON that:
 Important: `poster_type` must be chosen from the available entity types listed above so each initial post can be assigned to a matching agent.
 For example: official statements should come from Official/University types, news posts from MediaOutlet, student viewpoints from Student.
 
+Language requirement:
+- Write `narrative_direction`, every `initial_posts[].content` value, and `reasoning` in English.
+
 Return JSON only (no markdown):
 {{
     "hot_topics": ["keyword1", "keyword2"],
@@ -894,7 +901,8 @@ Return JSON only (no markdown):
 }}"""
             system_prompt = (
                 "You are a public-opinion analysis expert. Return strict JSON only. "
-                "poster_type must match one of the available entity types exactly."
+                "poster_type must match one of the available entity types exactly. "
+                "Any free-text output fields must be written in English."
             )
         else:
             prompt = f"""基于以下模拟需求，生成事件配置。
