@@ -34,6 +34,9 @@ class FakeLogger:
     def __init__(self) -> None:
         self.messages = []
 
+    def debug(self, message):
+        self.messages.append(("debug", str(message)))
+
     def info(self, message):
         self.messages.append(("info", str(message)))
 
@@ -91,6 +94,149 @@ def test_search_graph_localizes_fallback_logs_in_english(monkeypatch):
     assert any("falling back to local search" in message for _, message in fake_logger.messages)
     assert any("Local search completed: found 1 relevant facts" in message for _, message in fake_logger.messages)
     assert all("图谱搜索" not in message for _, message in fake_logger.messages)
+
+
+def test_graph_introspection_logs_are_localized_in_english(monkeypatch):
+    app = Flask(__name__)
+    service = _make_service()
+    fake_logger = FakeLogger()
+
+    class FakeNode:
+        def __init__(self, uuid_, name):
+            self.uuid_ = uuid_
+            self.name = name
+            self.labels = ["Entity", "Analyst"]
+            self.summary = "Tracks sentiment shifts."
+            self.attributes = {}
+
+    class FakeEdge:
+        def __init__(self):
+            self.uuid_ = "edge-1"
+            self.name = "influences"
+            self.fact = "Alice influences Bob"
+            self.source_node_uuid = "node-1"
+            self.target_node_uuid = "node-2"
+            self.created_at = None
+            self.valid_at = None
+            self.invalid_at = None
+            self.expired_at = None
+
+    class FakeNodeAPI:
+        @staticmethod
+        def get(uuid_):
+            return FakeNode(uuid_, "Alice")
+
+    class FakeGraphAPI:
+        node = FakeNodeAPI()
+
+    class FakeClient:
+        graph = FakeGraphAPI()
+
+    service.client = FakeClient()
+    monkeypatch.setattr(zep_tools_module, "logger", fake_logger)
+    monkeypatch.setattr(zep_tools_module, "fetch_all_nodes", lambda client, graph_id: [FakeNode("node-1", "Alice")])
+    monkeypatch.setattr(zep_tools_module, "fetch_all_edges", lambda client, graph_id: [FakeEdge()])
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        nodes = service.get_all_nodes("graph-1")
+        edges = service.get_all_edges("graph-1")
+        detail = service.get_node_detail("node-1")
+        related_edges = service.get_node_edges("graph-1", "node-1")
+        stats = service.get_graph_statistics("graph-1")
+
+    assert len(nodes) == 1
+    assert len(edges) == 1
+    assert detail is not None
+    assert len(related_edges) == 1
+    assert stats["total_nodes"] == 1
+    assert any("Fetching all nodes for graph graph-1..." in message for _, message in fake_logger.messages)
+    assert any("Fetched 1 nodes" in message for _, message in fake_logger.messages)
+    assert any("Fetching node details: node-1..." in message for _, message in fake_logger.messages)
+    assert any("Fetching edges related to node node-1..." in message for _, message in fake_logger.messages)
+    assert any("Found 1 edges related to the node" in message for _, message in fake_logger.messages)
+    assert any("Fetching graph statistics for graph-1..." in message for _, message in fake_logger.messages)
+    assert all("获取图谱" not in message for _, message in fake_logger.messages)
+    assert all("获取节点" not in message for _, message in fake_logger.messages)
+
+
+def test_panorama_quicksearch_and_insightforge_logs_are_localized_in_english(monkeypatch):
+    app = Flask(__name__)
+    service = _make_service()
+    fake_logger = FakeLogger()
+
+    monkeypatch.setattr(zep_tools_module, "logger", fake_logger)
+    service.search_graph = lambda **kwargs: SearchResult(
+        facts=["Alice influences Bob"],
+        edges=[
+            {
+                "name": "influences",
+                "fact": "Alice influences Bob",
+                "source_node_uuid": "node-1",
+                "target_node_uuid": "node-2",
+            }
+        ],
+        nodes=[],
+        query=kwargs["query"],
+        total_count=1,
+        locale="en",
+    )
+    service.get_all_nodes = lambda graph_id: [
+        NodeInfo(
+            uuid="node-1",
+            name="Alice",
+            labels=["Entity", "Analyst"],
+            summary="Tracks sentiment shifts.",
+            attributes={},
+            locale="en",
+        ),
+        NodeInfo(
+            uuid="node-2",
+            name="Bob",
+            labels=["Entity", "Citizen"],
+            summary="Responds to policy changes.",
+            attributes={},
+            locale="en",
+        ),
+    ]
+    service.get_all_edges = lambda graph_id, include_temporal=True: [
+        EdgeInfo(
+            uuid="edge-1",
+            name="influences",
+            fact="Alice influences Bob",
+            source_node_uuid="node-1",
+            target_node_uuid="node-2",
+            source_node_name="Alice",
+            target_node_name="Bob",
+            locale="en",
+        )
+    ]
+    service._generate_sub_queries = lambda **kwargs: ["Who influenced the discussion?"]
+    service.get_node_detail = lambda uuid: NodeInfo(
+        uuid=uuid,
+        name="Alice" if uuid == "node-1" else "Bob",
+        labels=["Entity", "Analyst" if uuid == "node-1" else "Citizen"],
+        summary="Context",
+        attributes={},
+        locale="en",
+    )
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        quick = service.quick_search("graph-1", "Alice")
+        panorama = service.panorama_search("graph-1", "Alice")
+        insight = service.insight_forge("graph-1", "Who influenced the discussion?", "Track policy sentiment")
+
+    assert quick.total_count == 1
+    assert panorama.active_count == 1
+    assert insight.total_facts == 1
+    assert any("QuickSearch: Alice..." in message for _, message in fake_logger.messages)
+    assert any("QuickSearch completed: 1 results" in message for _, message in fake_logger.messages)
+    assert any("PanoramaSearch overview: Alice..." in message for _, message in fake_logger.messages)
+    assert any("PanoramaSearch completed: 1 active facts, 0 historical facts" in message for _, message in fake_logger.messages)
+    assert any("InsightForge deep analysis: Who influenced the discussion?..." in message for _, message in fake_logger.messages)
+    assert any("Generated 1 sub-queries" in message for _, message in fake_logger.messages)
+    assert any("InsightForge completed: 1 facts, 2 entities, 1 relationships" in message for _, message in fake_logger.messages)
+    assert all("深度洞察检索" not in message for _, message in fake_logger.messages)
+    assert all("条有效" not in message for _, message in fake_logger.messages)
 
 
 def test_interview_agents_localizes_missing_profile_logs_in_english(monkeypatch):

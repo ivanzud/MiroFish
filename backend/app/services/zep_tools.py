@@ -827,7 +827,13 @@ class ZepToolsService:
         Returns:
             节点列表
         """
-        logger.info(f"获取图谱 {graph_id} 的所有节点...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取图谱 {graph_id} 的所有节点...",
+            f"Fetching all nodes for graph {graph_id}...",
+            locale,
+        )
 
         nodes = fetch_all_nodes(self.client, graph_id)
 
@@ -843,7 +849,12 @@ class ZepToolsService:
                 locale=self._locale(),
             ))
 
-        logger.info(f"获取到 {len(result)} 个节点")
+        self._log(
+            "info",
+            f"获取到 {len(result)} 个节点",
+            f"Fetched {len(result)} nodes",
+            locale,
+        )
         return result
 
     @staticmethod
@@ -1072,7 +1083,13 @@ class ZepToolsService:
         Returns:
             边列表（包含created_at, valid_at, invalid_at, expired_at）
         """
-        logger.info(f"获取图谱 {graph_id} 的所有边...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取图谱 {graph_id} 的所有边...",
+            f"Fetching all edges for graph {graph_id}...",
+            locale,
+        )
 
         edges = fetch_all_edges(self.client, graph_id)
 
@@ -1097,7 +1114,12 @@ class ZepToolsService:
 
             result.append(edge_info)
 
-        logger.info(f"获取到 {len(result)} 条边")
+        self._log(
+            "info",
+            f"获取到 {len(result)} 条边",
+            f"Fetched {len(result)} edges",
+            locale,
+        )
         return result
     
     def get_node_detail(self, node_uuid: str) -> Optional[NodeInfo]:
@@ -1110,12 +1132,22 @@ class ZepToolsService:
         Returns:
             节点信息或None
         """
-        logger.info(f"获取节点详情: {node_uuid[:8]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取节点详情: {node_uuid[:8]}...",
+            f"Fetching node details: {node_uuid[:8]}...",
+            locale,
+        )
         
         try:
             node = self._call_with_retry(
                 func=lambda: self.client.graph.node.get(uuid_=node_uuid),
-                operation_name=f"获取节点详情(uuid={node_uuid[:8]}...)"
+                operation_name=self._text(
+                    f"获取节点详情(uuid={node_uuid[:8]}...)",
+                    f"fetch node details (uuid={node_uuid[:8]}...)",
+                    locale,
+                )
             )
             
             if not node:
@@ -1130,7 +1162,12 @@ class ZepToolsService:
                 locale=self._locale(),
             )
         except Exception as e:
-            logger.error(f"获取节点详情失败: {str(e)}")
+            self._log(
+                "error",
+                f"获取节点详情失败: {str(e)}",
+                f"Failed to fetch node details: {str(e)}",
+                locale,
+            )
             return None
     
     def get_node_edges(self, graph_id: str, node_uuid: str) -> List[EdgeInfo]:
@@ -1146,7 +1183,13 @@ class ZepToolsService:
         Returns:
             边列表
         """
-        logger.info(f"获取节点 {node_uuid[:8]}... 的相关边")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取节点 {node_uuid[:8]}... 的相关边",
+            f"Fetching edges related to node {node_uuid[:8]}...",
+            locale,
+        )
         
         try:
             # 获取图谱所有边，然后过滤
@@ -1158,11 +1201,21 @@ class ZepToolsService:
                 if edge.source_node_uuid == node_uuid or edge.target_node_uuid == node_uuid:
                     result.append(edge)
             
-            logger.info(f"找到 {len(result)} 条与节点相关的边")
+            self._log(
+                "info",
+                f"找到 {len(result)} 条与节点相关的边",
+                f"Found {len(result)} edges related to the node",
+                locale,
+            )
             return result
             
         except Exception as e:
-            logger.warning(f"获取节点边失败: {str(e)}")
+            self._log(
+                "warning",
+                f"获取节点边失败: {str(e)}",
+                f"Failed to fetch node edges: {str(e)}",
+                locale,
+            )
             return []
     
     def get_entities_by_type(
@@ -1180,7 +1233,13 @@ class ZepToolsService:
         Returns:
             符合类型的实体列表
         """
-        logger.info(f"获取类型为 {entity_type} 的实体...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取类型为 {entity_type} 的实体...",
+            f"Fetching entities of type {entity_type}...",
+            locale,
+        )
         
         all_nodes = self.get_all_nodes(graph_id)
         
@@ -1191,7 +1250,12 @@ class ZepToolsService:
                 filtered.append(node)
 
         deduplicated, _ = self._deduplicate_nodes(filtered, "typed entity list")
-        logger.info(f"找到 {len(deduplicated)} 个 {entity_type} 类型的实体")
+        self._log(
+            "info",
+            f"找到 {len(deduplicated)} 个 {entity_type} 类型的实体",
+            f"Found {len(deduplicated)} entities of type {entity_type}",
+            locale,
+        )
         return deduplicated
     
     def get_entity_summary(
@@ -1211,7 +1275,13 @@ class ZepToolsService:
         Returns:
             实体摘要信息
         """
-        logger.info(f"获取实体 {entity_name} 的关系摘要...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取实体 {entity_name} 的关系摘要...",
+            f"Fetching relationship summary for entity {entity_name}...",
+            locale,
+        )
         
         # 先搜索该实体相关的信息
         search_result = self.search_graph(
@@ -1282,7 +1352,13 @@ class ZepToolsService:
         Returns:
             统计信息
         """
-        logger.info(f"获取图谱 {graph_id} 的统计信息...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取图谱 {graph_id} 的统计信息...",
+            f"Fetching graph statistics for {graph_id}...",
+            locale,
+        )
         
         nodes, uuid_remap = self._deduplicate_nodes(
             self.get_all_nodes(graph_id),
@@ -1334,7 +1410,13 @@ class ZepToolsService:
         Returns:
             模拟上下文信息
         """
-        logger.info(f"获取模拟上下文: {simulation_requirement[:50]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取模拟上下文: {simulation_requirement[:50]}...",
+            f"Fetching simulation context: {simulation_requirement[:50]}...",
+            locale,
+        )
         
         # 搜索与模拟需求相关的信息
         search_result = self.search_graph(
@@ -1401,7 +1483,13 @@ class ZepToolsService:
         Returns:
             InsightForgeResult: 深度洞察检索结果
         """
-        logger.info(f"InsightForge 深度洞察检索: {query[:50]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"InsightForge 深度洞察检索: {query[:50]}...",
+            f"InsightForge deep analysis: {query[:50]}...",
+            locale,
+        )
         
         result = InsightForgeResult(
             query=query,
@@ -1418,7 +1506,12 @@ class ZepToolsService:
             max_queries=max_sub_queries
         )
         result.sub_queries = sub_queries
-        logger.info(f"生成 {len(sub_queries)} 个子问题")
+        self._log(
+            "info",
+            f"生成 {len(sub_queries)} 个子问题",
+            f"Generated {len(sub_queries)} sub-queries",
+            locale,
+        )
         
         # Step 2: 对每个子问题进行语义搜索
         all_facts = []
@@ -1477,7 +1570,12 @@ class ZepToolsService:
                 if node:
                     raw_nodes.append(node)
             except Exception as e:
-                logger.debug(f"获取节点 {uuid} 失败: {e}")
+                self._log(
+                    "debug",
+                    f"获取节点 {uuid} 失败: {e}",
+                    f"Failed to fetch node {uuid}: {e}",
+                    locale,
+                )
                 continue
 
         deduplicated_nodes, node_uuid_remap = self._deduplicate_nodes(
@@ -1533,7 +1631,12 @@ class ZepToolsService:
         result.relationship_chains = relationship_chains
         result.total_relationships = len(relationship_chains)
         
-        logger.info(f"InsightForge完成: {result.total_facts}条事实, {result.total_entities}个实体, {result.total_relationships}条关系")
+        self._log(
+            "info",
+            f"InsightForge完成: {result.total_facts}条事实, {result.total_entities}个实体, {result.total_relationships}条关系",
+            f"InsightForge completed: {result.total_facts} facts, {result.total_entities} entities, {result.total_relationships} relationships",
+            locale,
+        )
         return result
     
     def _generate_sub_queries(
@@ -1580,7 +1683,12 @@ class ZepToolsService:
             return [str(sq) for sq in sub_queries[:max_queries]]
             
         except Exception as e:
-            logger.warning(f"生成子问题失败: {str(e)}，使用默认子问题")
+            self._log(
+                "warning",
+                f"生成子问题失败: {str(e)}，使用默认子问题",
+                f"Failed to generate sub-queries: {str(e)}. Using default sub-queries.",
+                self._locale(),
+            )
             # 降级：返回基于原问题的变体
             return [
                 query,
@@ -1615,7 +1723,13 @@ class ZepToolsService:
         Returns:
             PanoramaResult: 广度搜索结果
         """
-        logger.info(f"PanoramaSearch 广度搜索: {query[:50]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"PanoramaSearch 广度搜索: {query[:50]}...",
+            f"PanoramaSearch overview: {query[:50]}...",
+            locale,
+        )
         
         result = PanoramaResult(query=query, locale=self._locale())
         
@@ -1686,7 +1800,12 @@ class ZepToolsService:
         result.active_count = len(active_facts)
         result.historical_count = len(historical_facts)
         
-        logger.info(f"PanoramaSearch完成: {result.active_count}条有效, {result.historical_count}条历史")
+        self._log(
+            "info",
+            f"PanoramaSearch完成: {result.active_count}条有效, {result.historical_count}条历史",
+            f"PanoramaSearch completed: {result.active_count} active facts, {result.historical_count} historical facts",
+            locale,
+        )
         return result
     
     def quick_search(
@@ -1711,7 +1830,13 @@ class ZepToolsService:
         Returns:
             SearchResult: 搜索结果
         """
-        logger.info(f"QuickSearch 简单搜索: {query[:50]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"QuickSearch 简单搜索: {query[:50]}...",
+            f"QuickSearch: {query[:50]}...",
+            locale,
+        )
         
         # 直接调用现有的search_graph方法
         result = self.search_graph(
@@ -1721,7 +1846,12 @@ class ZepToolsService:
             scope="edges"
         )
         
-        logger.info(f"QuickSearch完成: {result.total_count}条结果")
+        self._log(
+            "info",
+            f"QuickSearch完成: {result.total_count}条结果",
+            f"QuickSearch completed: {result.total_count} results",
+            locale,
+        )
         return result
     
     def interview_agents(
