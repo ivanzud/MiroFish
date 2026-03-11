@@ -357,6 +357,147 @@ class SyncUpstreamGithubTests(unittest.TestCase):
             self.assertEqual(payload["generated_at"], "2026-03-11T09:00:00+00:00")
             self.assertIn("2026-03-11T09:00:00+00:00", summary_path.read_text(encoding="utf-8"))
 
+    def test_main_reuses_recent_cached_snapshot_when_pr_hydration_rate_limited(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir) / "state.json"
+            summary_path = Path(tmpdir) / "summary.md"
+            cached_payload = {
+                "repo": "666ghj/MiroFish",
+                "state": "open",
+                "captured_at": "2026-03-11T08:30:00+00:00",
+                "fork_remote": "origin",
+                "issues": [
+                    {
+                        "number": 1,
+                        "title": "Issue",
+                        "url": "https://example.test/issues/1",
+                        "state": "open",
+                        "created_at": "2026-03-10T00:00:00Z",
+                        "updated_at": "2026-03-11T00:00:00Z",
+                        "closed_at": None,
+                        "labels": [],
+                        "author": "alice",
+                        "body_excerpt": "Issue body",
+                        "comment_count": 0,
+                        "recent_comments": [],
+                    }
+                ],
+                "pull_requests": [
+                    {
+                        "number": 2,
+                        "title": "PR",
+                        "url": "https://example.test/pull/2",
+                        "state": "open",
+                        "created_at": "2026-03-10T00:00:00Z",
+                        "updated_at": "2026-03-11T00:00:00Z",
+                        "closed_at": None,
+                        "merged_at": None,
+                        "head": "feature",
+                        "head_sha": "abc123",
+                        "head_repo": "fork/repo",
+                        "head_clone_url": "https://example.test/fork/repo.git",
+                        "base": "main",
+                        "base_repo": "666ghj/MiroFish",
+                        "draft": False,
+                        "mergeable_state": "clean",
+                        "labels": [],
+                        "author": "bob",
+                        "body_excerpt": "PR body",
+                        "comment_count": 0,
+                        "review_comment_count": 0,
+                        "recent_comments": [],
+                        "fork_mirrored": True,
+                        "fork_mirror_ref": "origin/mirror/upstream-pr-2",
+                    }
+                ],
+            }
+            output_path.write_text(json.dumps(cached_payload), encoding="utf-8")
+
+            stderr = io.StringIO()
+            stdout = io.StringIO()
+            rate_limit_error = RuntimeError("GitHub API rate limit exceeded while hydrating pull request details.")
+
+            with (
+                patch.object(
+                    sync_upstream_github.sys,
+                    "argv",
+                    [
+                        "sync_upstream_github.py",
+                        "--repo",
+                        "666ghj/MiroFish",
+                        "--state",
+                        "open",
+                        "--output",
+                        str(output_path),
+                        "--summary",
+                        str(summary_path),
+                        "--fork-remote",
+                        "origin",
+                    ],
+                ),
+                patch.object(
+                    sync_upstream_github,
+                    "github_api_paginated",
+                    side_effect=[
+                        [
+                            {
+                                "number": 1,
+                                "title": "Issue title",
+                                "html_url": "https://example.test/issues/1",
+                                "state": "open",
+                                "created_at": "2026-03-10T00:00:00Z",
+                                "updated_at": "2026-03-11T00:00:00Z",
+                                "closed_at": None,
+                                "labels": [],
+                                "user": {"login": "alice"},
+                                "body": "Issue body",
+                                "comments": 0,
+                            }
+                        ],
+                        [
+                            {
+                                "number": 2,
+                                "title": "PR title",
+                                "html_url": "https://example.test/pull/2",
+                                "state": "open",
+                                "created_at": "2026-03-10T00:00:00Z",
+                                "updated_at": "2026-03-11T00:00:00Z",
+                                "closed_at": None,
+                                "merged_at": None,
+                                "head": {"ref": "feature"},
+                                "base": {"ref": "main"},
+                                "comments": 0,
+                                "review_comments": 0,
+                            }
+                        ],
+                    ],
+                ),
+                patch.object(
+                    sync_upstream_github,
+                    "compact_issues",
+                    return_value=cached_payload["issues"],
+                ),
+                patch.object(
+                    sync_upstream_github,
+                    "hydrate_pull_requests",
+                    side_effect=rate_limit_error,
+                ),
+                patch("sys.stderr", stderr),
+                patch("sys.stdout", stdout),
+                patch.object(sync_upstream_github, "datetime") as mocked_datetime,
+            ):
+                mocked_datetime.now.return_value = __import__("datetime").datetime(
+                    2026, 3, 11, 9, 0, tzinfo=__import__("datetime").timezone.utc
+                )
+                mocked_datetime.fromisoformat = __import__("datetime").datetime.fromisoformat
+                result = sync_upstream_github.main()
+
+            self.assertEqual(result, 0)
+            self.assertTrue(summary_path.exists())
+            self.assertIn("reusing fresh cached snapshot", stderr.getvalue())
+            self.assertIn("Reused cached snapshot", stdout.getvalue())
+            self.assertIn("captured_at=2026-03-11T08:30:00+00:00", stderr.getvalue())
+
     def test_repo_lock_rejects_overlapping_run(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "state.json"

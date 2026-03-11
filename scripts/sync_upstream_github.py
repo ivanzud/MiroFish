@@ -458,6 +458,46 @@ def snapshot_is_fresh(payload: dict[str, Any], stale_after_hours: int) -> bool:
     return age_seconds <= stale_after_hours * 3600
 
 
+def try_reuse_cached_snapshot(
+    cached_payload: dict[str, Any] | None,
+    *,
+    repo: str,
+    state: str,
+    summary_path: Path,
+    exc: RuntimeError,
+    stale_cache_hours: int,
+) -> bool:
+    rate_limited = "rate limit" in str(exc).lower()
+    if not rate_limited or not cached_payload or not snapshot_is_fresh(cached_payload, stale_cache_hours):
+        return False
+
+    issues = cached_payload.get("issues") or []
+    prs = cached_payload.get("pull_requests") or []
+    captured_at = cached_payload.get("captured_at") or cached_payload.get("generated_at")
+    if not isinstance(issues, list) or not isinstance(prs, list):
+        return False
+
+    write_summary(
+        summary_path,
+        repo,
+        state,
+        issues,
+        prs,
+        cached_payload.get("fork_remote"),
+        captured_at=captured_at,
+    )
+    print(
+        f"warning: {exc}; reusing fresh cached snapshot from "
+        f"{cached_payload.get('_cache_path', 'cache')} (captured_at={captured_at})",
+        file=sys.stderr,
+    )
+    print(
+        f"Reused cached snapshot with {len(issues)} issues and {len(prs)} pull requests "
+        f"from {repo} into {os.path.relpath(cached_payload.get('_cache_path', summary_path))}"
+    )
+    return True
+
+
 def lock_path_for(output_path: Path, repo: str) -> Path:
     repo_slug = re.sub(r"[^A-Za-z0-9._-]+", "-", repo)
     repo_root = output_path.resolve().parents[1]
@@ -547,6 +587,8 @@ def main() -> int:
     output_path = Path(args.output)
     summary_path = Path(args.summary)
     cached_payload = load_cached_snapshot(output_path, args.repo, args.state)
+    if cached_payload is not None:
+        cached_payload["_cache_path"] = str(output_path)
     owner, name = args.repo.split("/", 1)
 
     with repo_lock(output_path, args.repo):
@@ -562,45 +604,43 @@ def main() -> int:
                 args.limit,
             )
         except RuntimeError as exc:
-            rate_limited = "rate limit" in str(exc).lower()
-            if rate_limited and cached_payload and snapshot_is_fresh(cached_payload, args.stale_cache_hours):
-                issues = cached_payload.get("issues") or []
-                prs = cached_payload.get("pull_requests") or []
-                captured_at = cached_payload.get("captured_at") or cached_payload.get("generated_at")
-                if isinstance(issues, list) and isinstance(prs, list):
-                    write_summary(
-                        summary_path,
-                        args.repo,
-                        args.state,
-                        issues,
-                        prs,
-                        cached_payload.get("fork_remote"),
-                        captured_at=captured_at,
-                    )
-                    print(
-                        f"warning: {exc}; reusing fresh cached snapshot from {output_path} "
-                        f"(captured_at={captured_at})",
-                        file=sys.stderr,
-                    )
-                    print(
-                        f"Reused cached snapshot with {len(issues)} issues and {len(prs)} pull requests "
-                        f"from {args.repo} into {os.path.relpath(output_path)}"
-                    )
-                    return 0
+            if try_reuse_cached_snapshot(
+                cached_payload,
+                repo=args.repo,
+                state=args.state,
+                summary_path=summary_path,
+                exc=exc,
+                stale_cache_hours=args.stale_cache_hours,
+            ):
+                return 0
             raise
 
-        issues = compact_issues(
-            [item for item in issue_items if "pull_request" not in item],
-            max_workers=max_workers,
-        )
-        pr_details = hydrate_pull_requests(owner, name, pr_items, max_workers=max_workers)
-        mirrored_pr_numbers = list_mirrored_pull_request_numbers(args.fork_remote) if args.fork_remote else None
-        prs = compact_pull_requests(
-            pr_details,
-            mirrored_pr_numbers,
-            args.fork_remote,
-            max_workers=max_workers,
-        )
+        try:
+            issues = compact_issues(
+                [item for item in issue_items if "pull_request" not in item],
+                max_workers=max_workers,
+            )
+            pr_details = hydrate_pull_requests(owner, name, pr_items, max_workers=max_workers)
+            mirrored_pr_numbers = (
+                list_mirrored_pull_request_numbers(args.fork_remote) if args.fork_remote else None
+            )
+            prs = compact_pull_requests(
+                pr_details,
+                mirrored_pr_numbers,
+                args.fork_remote,
+                max_workers=max_workers,
+            )
+        except RuntimeError as exc:
+            if try_reuse_cached_snapshot(
+                cached_payload,
+                repo=args.repo,
+                state=args.state,
+                summary_path=summary_path,
+                exc=exc,
+                stale_cache_hours=args.stale_cache_hours,
+            ):
+                return 0
+            raise
         captured_at = datetime.now(timezone.utc).isoformat()
         payload = {
             "repo": args.repo,
