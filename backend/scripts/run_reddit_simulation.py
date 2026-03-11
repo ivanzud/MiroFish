@@ -684,10 +684,19 @@ class RedditSimulationRunner:
             if (round_num + 1) % 10 == 0 or round_num == 0:
                 elapsed = (datetime.now() - start_time).total_seconds()
                 progress = (round_num + 1) / total_rounds * 100
-                print(f"  [Day {simulated_day}, {simulated_hour:02d}:00] "
-                      f"Round {round_num + 1}/{total_rounds} ({progress:.1f}%) "
-                      f"- {len(active_agents)} agents active "
-                      f"- elapsed: {elapsed:.1f}s")
+                print(
+                    script_message(
+                        "round_progress",
+                        SCRIPT_LOCALE,
+                        day=simulated_day,
+                        hour=simulated_hour,
+                        round=round_num + 1,
+                        total_rounds=total_rounds,
+                        progress=progress,
+                        agent_count=len(active_agents),
+                        elapsed=elapsed,
+                    )
+                )
         
         total_elapsed = (datetime.now() - start_time).total_seconds()
         print(script_message("simulation_loop_complete", SCRIPT_LOCALE))
@@ -732,24 +741,26 @@ class RedditSimulationRunner:
 
 
 async def main():
-    parser = argparse.ArgumentParser(description='OASIS Reddit模拟')
+    parser = argparse.ArgumentParser(
+        description=script_message("runner_title", SCRIPT_LOCALE, platform="Reddit")
+    )
     parser.add_argument(
         '--config', 
         type=str, 
         required=True,
-        help='配置文件路径 (simulation_config.json)'
+        help=script_message("cli_config_help", SCRIPT_LOCALE)
     )
     parser.add_argument(
         '--max-rounds',
         type=int,
         default=None,
-        help='最大模拟轮数（可选，用于截断过长的模拟）'
+        help=script_message("cli_max_rounds_help", SCRIPT_LOCALE)
     )
     parser.add_argument(
         '--no-wait',
         action='store_true',
         default=False,
-        help='模拟完成后立即关闭环境，不进入等待命令模式'
+        help=script_message("cli_no_wait_help", SCRIPT_LOCALE)
     )
     
     args = parser.parse_args()

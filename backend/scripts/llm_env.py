@@ -137,6 +137,18 @@ SCRIPT_MESSAGES = {
         "zh": "OASIS {platform}模拟",
         "en": "OASIS {platform} simulation",
     },
+    "cli_config_help": {
+        "zh": "配置文件路径 (simulation_config.json)",
+        "en": "Path to the configuration file (simulation_config.json)",
+    },
+    "cli_max_rounds_help": {
+        "zh": "最大模拟轮数（可选，用于截断过长的模拟）",
+        "en": "Maximum simulation rounds (optional, truncates long simulations)",
+    },
+    "cli_no_wait_help": {
+        "zh": "模拟完成后立即关闭环境，不进入等待命令模式",
+        "en": "Close the environment after the simulation and skip wait-for-command mode",
+    },
     "config_path": {
         "zh": "配置文件: {path}",
         "en": "Config file: {path}",
@@ -212,6 +224,10 @@ SCRIPT_MESSAGES = {
     "simulation_loop_complete": {
         "zh": "\n模拟循环完成!",
         "en": "\nSimulation loop complete!",
+    },
+    "round_progress": {
+        "zh": "  [第{day}天, {hour:02d}:00] 第 {round}/{total_rounds} 轮 ({progress:.1f}%) - 活跃 Agent {agent_count} 个 - 已耗时: {elapsed:.1f}秒",
+        "en": "  [Day {day}, {hour:02d}:00] Round {round}/{total_rounds} ({progress:.1f}%) - {agent_count} agents active - elapsed: {elapsed:.1f}s",
     },
     "total_elapsed": {
         "zh": "  - 总耗时: {seconds:.1f}秒",
