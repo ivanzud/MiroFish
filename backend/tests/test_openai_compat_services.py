@@ -610,3 +610,36 @@ def test_zep_graph_memory_updater_missing_key_uses_requested_locale(monkeypatch)
         assert str(exc) == "ZEP_API_KEY is not configured"
     else:
         raise AssertionError("expected ValueError when ZEP_API_KEY is missing")
+
+
+def test_zep_graph_memory_manager_stop_all_prefers_updater_locale(monkeypatch):
+    info_messages = []
+    fake_logger = SimpleNamespace(
+        info=info_messages.append,
+        warning=lambda *_: None,
+        error=lambda *_: None,
+        debug=lambda *_: None,
+    )
+    monkeypatch.setattr("app.services.zep_graph_memory_updater.logger", fake_logger)
+    monkeypatch.setattr("app.services.zep_graph_memory_updater.get_locale", lambda: "zh")
+
+    stopped = []
+
+    class FakeUpdater:
+        def __init__(self, locale):
+            self.locale = locale
+
+        def stop(self):
+            stopped.append(self.locale)
+
+    ZepGraphMemoryManager._updaters = {"sim-en": FakeUpdater("en")}
+    ZepGraphMemoryManager._stop_all_done = False
+
+    ZepGraphMemoryManager.stop_all()
+
+    assert stopped == ["en"]
+    assert info_messages[-1] == "Stopped all graph memory updaters"
+    assert all(not any("\u4e00" <= ch <= "\u9fff" for ch in message) for message in info_messages)
+
+    ZepGraphMemoryManager._updaters = {}
+    ZepGraphMemoryManager._stop_all_done = False

@@ -607,6 +607,14 @@ class ZepGraphMemoryManager:
     @staticmethod
     def _text(locale: str, en: str, zh: str) -> str:
         return en if locale == "en" else zh
+
+    @classmethod
+    def _stop_all_locale(cls) -> str:
+        for updater in cls._updaters.values():
+            if getattr(updater, "locale", None) in {"zh", "en"}:
+                return updater.locale
+        fallback = get_locale()
+        return fallback if fallback in {"zh", "en"} else "zh"
     
     @classmethod
     def create_updater(
@@ -674,6 +682,7 @@ class ZepGraphMemoryManager:
         if cls._stop_all_done:
             return
         cls._stop_all_done = True
+        stop_locale = cls._stop_all_locale()
         
         with cls._lock:
             if cls._updaters:
@@ -691,7 +700,7 @@ class ZepGraphMemoryManager:
                 cls._updaters.clear()
             logger.info(
                 cls._text(
-                    get_locale(),
+                    stop_locale,
                     "Stopped all graph memory updaters",
                     "已停止所有图谱记忆更新器",
                 )
