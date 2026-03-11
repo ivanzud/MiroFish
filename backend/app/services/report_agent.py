@@ -33,6 +33,14 @@ from .zep_tools import (
 logger = get_logger('mirofish.report_agent')
 
 
+def _locale_text(locale: str, en_text: str, zh_text: str) -> str:
+    return en_text if locale == "en" else zh_text
+
+
+def _log_with_locale(level: str, locale: str, en_text: str, zh_text: str, *args: Any) -> None:
+    getattr(logger, level)(_locale_text(locale, en_text, zh_text), *args)
+
+
 class ReportLogger:
     """
     Report Agent 详细日志记录器
@@ -975,10 +983,19 @@ class ReportAgent:
         # 控制台日志记录器（在 generate_report 中初始化）
         self.console_logger: Optional[ReportConsoleLogger] = None
         
-        logger.info(f"ReportAgent 初始化完成: graph_id={graph_id}, simulation_id={simulation_id}")
+        self._log(
+            "info",
+            "ReportAgent initialized: graph_id=%s, simulation_id=%s",
+            "ReportAgent 初始化完成: graph_id=%s, simulation_id=%s",
+            graph_id,
+            simulation_id,
+        )
 
     def _text(self, en_text: str, zh_text: str) -> str:
         return en_text if self.locale == "en" else zh_text
+
+    def _log(self, level: str, en_text: str, zh_text: str, *args: Any) -> None:
+        _log_with_locale(level, self.locale, en_text, zh_text, *args)
 
     def _report_language_name(self) -> str:
         return "English" if self.locale == "en" else "中文"
@@ -1083,7 +1100,13 @@ class ReportAgent:
             is_too_generic = normalized in {"未来预测报告", "模拟分析报告", "预测报告"}
 
         if requirement_subject and not has_subject_overlap and (has_abstract_marker or is_too_generic):
-            logger.info("报告标题过于抽象，回退到需求导向标题: %s -> %s", normalized, fallback_title)
+            self._log(
+                "info",
+                "Outline title is too abstract; falling back to requirement-anchored title: %s -> %s",
+                "报告标题过于抽象，回退到需求导向标题: %s -> %s",
+                normalized,
+                fallback_title,
+            )
             return fallback_title
 
         return normalized
@@ -1137,7 +1160,13 @@ class ReportAgent:
         Returns:
             工具执行结果（文本格式）
         """
-        logger.info(f"执行工具: {tool_name}, 参数: {parameters}")
+        self._log(
+            "info",
+            "Executing tool: %s, parameters: %s",
+            "执行工具: %s, 参数: %s",
+            tool_name,
+            parameters,
+        )
         
         try:
             if tool_name == "insight_forge":
@@ -1196,7 +1225,11 @@ class ReportAgent:
             
             elif tool_name == "search_graph":
                 # 重定向到 quick_search
-                logger.info("search_graph 已重定向到 quick_search")
+                self._log(
+                    "info",
+                    "search_graph redirected to quick_search",
+                    "search_graph 已重定向到 quick_search",
+                )
                 return self._execute_tool("quick_search", parameters, report_context)
             
             elif tool_name == "get_graph_statistics":
@@ -1213,7 +1246,11 @@ class ReportAgent:
             
             elif tool_name == "get_simulation_context":
                 # 重定向到 insight_forge，因为它更强大
-                logger.info("get_simulation_context 已重定向到 insight_forge")
+                self._log(
+                    "info",
+                    "get_simulation_context redirected to insight_forge",
+                    "get_simulation_context 已重定向到 insight_forge",
+                )
                 query = parameters.get("query", self.simulation_requirement)
                 return self._execute_tool("insight_forge", {"query": query}, report_context)
             
@@ -1233,7 +1270,13 @@ class ReportAgent:
                 )
                 
         except Exception as e:
-            logger.error(f"工具执行失败: {tool_name}, 错误: {str(e)}")
+            self._log(
+                "error",
+                "Tool execution failed: %s, error: %s",
+                "工具执行失败: %s, 错误: %s",
+                tool_name,
+                str(e),
+            )
             return self._text(
                 f"Tool execution failed: {str(e)}",
                 f"工具执行失败: {str(e)}",
@@ -1327,7 +1370,7 @@ class ReportAgent:
         Returns:
             ReportOutline: 报告大纲
         """
-        logger.info("开始规划报告大纲...")
+        self._log("info", "Starting report outline planning...", "开始规划报告大纲...")
         
         if progress_callback:
             progress_callback("planning", 0, self._text("Analyzing the simulation requirement...", "正在分析模拟需求..."))
@@ -1392,11 +1435,21 @@ class ReportAgent:
             if progress_callback:
                 progress_callback("planning", 100, self._text("Outline planning completed", "大纲规划完成"))
             
-            logger.info(f"大纲规划完成: {len(sections)} 个章节")
+            self._log(
+                "info",
+                "Outline planning completed: %s sections",
+                "大纲规划完成: %s 个章节",
+                len(sections),
+            )
             return outline
             
         except Exception as e:
-            logger.error(f"大纲规划失败: {str(e)}")
+            self._log(
+                "error",
+                "Outline planning failed: %s",
+                "大纲规划失败: %s",
+                str(e),
+            )
             # 返回默认大纲（3个章节，作为fallback）
             return ReportOutline(
                 title=self._text("Forecast Report", "未来预测报告"),
@@ -1439,7 +1492,7 @@ class ReportAgent:
         Returns:
             章节内容（Markdown格式）
         """
-        logger.info(f"ReACT生成章节: {section.title}")
+        self._log("info", "Generating section with ReACT: %s", "ReACT生成章节: %s", section.title)
         
         # 记录章节开始日志
         if self.report_logger:
@@ -1505,7 +1558,13 @@ class ReportAgent:
 
             # 检查 LLM 返回是否为 None（API 异常或内容为空）
             if response is None:
-                logger.warning(f"章节 {section.title} 第 {iteration + 1} 次迭代: LLM 返回 None")
+                self._log(
+                    "warning",
+                    "Section %s iteration %s: LLM returned None",
+                    "章节 %s 第 %s 次迭代: LLM 返回 None",
+                    section.title,
+                    iteration + 1,
+                )
                 # 如果还有迭代次数，添加消息并重试
                 if iteration < max_iterations - 1:
                     messages.append({"role": "assistant", "content": "（响应为空）"})
@@ -1524,9 +1583,13 @@ class ReportAgent:
             # ── 冲突处理：LLM 同时输出了工具调用和 Final Answer ──
             if has_tool_calls and has_final_answer:
                 conflict_retries += 1
-                logger.warning(
-                    f"章节 {section.title} 第 {iteration+1} 轮: "
-                    f"LLM 同时输出工具调用和 Final Answer（第 {conflict_retries} 次冲突）"
+                self._log(
+                    "warning",
+                    "Section %s iteration %s: LLM emitted both tool calls and Final Answer (conflict #%s)",
+                    "章节 %s 第 %s 轮: LLM 同时输出工具调用和 Final Answer（第 %s 次冲突）",
+                    section.title,
+                    iteration + 1,
+                    conflict_retries,
                 )
 
                 if conflict_retries <= 2:
@@ -1545,9 +1608,12 @@ class ReportAgent:
                     continue
                 else:
                     # 第三次：降级处理，截断到第一个工具调用，强制执行
-                    logger.warning(
-                        f"章节 {section.title}: 连续 {conflict_retries} 次冲突，"
-                        "降级为截断执行第一个工具调用"
+                    self._log(
+                        "warning",
+                        "Section %s hit %s consecutive format conflicts; degrading to execute only the first tool call",
+                        "章节 %s 连续 %s 次冲突，降级为截断执行第一个工具调用",
+                        section.title,
+                        conflict_retries,
                     )
                     first_tool_end = response.find('</tool_call>')
                     if first_tool_end != -1:
@@ -1587,7 +1653,13 @@ class ReportAgent:
 
                 # 正常结束
                 final_answer = response.split("Final Answer:")[-1].strip()
-                logger.info(f"章节 {section.title} 生成完成（工具调用: {tool_calls_count}次）")
+                self._log(
+                    "info",
+                    "Section %s completed (%s tool calls)",
+                    "章节 %s 生成完成（工具调用: %s次）",
+                    section.title,
+                    tool_calls_count,
+                )
 
                 if self.report_logger:
                     self.report_logger.log_section_content(
@@ -1615,7 +1687,13 @@ class ReportAgent:
                 # 只执行第一个工具调用
                 call = tool_calls[0]
                 if len(tool_calls) > 1:
-                    logger.info(f"LLM 尝试调用 {len(tool_calls)} 个工具，只执行第一个: {call['name']}")
+                    self._log(
+                        "info",
+                        "LLM attempted %s tool calls; executing only the first: %s",
+                        "LLM 尝试调用 %s 个工具，只执行第一个: %s",
+                        len(tool_calls),
+                        call["name"],
+                    )
 
                 if self.report_logger:
                     self.report_logger.log_tool_call(
@@ -1684,7 +1762,13 @@ class ReportAgent:
 
             # 工具调用已足够，LLM 输出了内容但没带 "Final Answer:" 前缀
             # 直接将这段内容作为最终答案，不再空转
-            logger.info(f"章节 {section.title} 未检测到 'Final Answer:' 前缀，直接采纳LLM输出作为最终内容（工具调用: {tool_calls_count}次）")
+            self._log(
+                "info",
+                "Section %s had no 'Final Answer:' prefix; accepting raw LLM output as final content (%s tool calls)",
+                "章节 %s 未检测到 'Final Answer:' 前缀，直接采纳LLM输出作为最终内容（工具调用: %s次）",
+                section.title,
+                tool_calls_count,
+            )
             final_answer = response.strip()
 
             if self.report_logger:
@@ -1697,7 +1781,12 @@ class ReportAgent:
             return final_answer
         
         # 达到最大迭代次数，强制生成内容
-        logger.warning(f"章节 {section.title} 达到最大迭代次数，强制生成")
+        self._log(
+            "warning",
+            "Section %s reached the maximum iteration count; forcing final generation",
+            "章节 %s 达到最大迭代次数，强制生成",
+            section.title,
+        )
         messages.append({"role": "user", "content": REACT_FORCE_FINAL_MSG})
         messages = self._prune_messages_for_retry(messages)
         
@@ -1709,7 +1798,12 @@ class ReportAgent:
 
         # 检查强制收尾时 LLM 返回是否为 None
         if response is None:
-            logger.error(f"章节 {section.title} 强制收尾时 LLM 返回 None，使用默认错误提示")
+            self._log(
+                "error",
+                "Section %s returned None during forced finalization; using the fallback error text",
+                "章节 %s 强制收尾时 LLM 返回 None，使用默认错误提示",
+                section.title,
+            )
             final_answer = f"（本章节生成失败：LLM 返回空响应，请稍后重试）"
         elif "Final Answer:" in response:
             final_answer = response.split("Final Answer:")[-1].strip()
@@ -1791,7 +1885,7 @@ class ReportAgent:
                 report_id, "pending", 0, self._text("Initializing report...", "初始化报告..."),
                 completed_sections=[]
             )
-            ReportManager.save_report(report)
+            ReportManager.save_report(report, locale=self.locale)
             
             # 阶段1: 规划大纲
             report.status = ReportStatus.PLANNING
@@ -1816,7 +1910,7 @@ class ReportAgent:
             self.report_logger.log_planning_complete(outline.to_dict())
             
             # 保存大纲到文件
-            ReportManager.save_outline(report_id, outline)
+            ReportManager.save_outline(report_id, outline, locale=self.locale)
             ReportManager.update_progress(
                 report_id,
                 "planning",
@@ -1827,9 +1921,14 @@ class ReportAgent:
                 ),
                 completed_sections=[]
             )
-            ReportManager.save_report(report)
+            ReportManager.save_report(report, locale=self.locale)
             
-            logger.info(f"大纲已保存到文件: {report_id}/outline.json")
+            self._log(
+                "info",
+                "Outline saved to file: %s/outline.json",
+                "大纲已保存到文件: %s/outline.json",
+                report_id,
+            )
             
             # 阶段2: 逐章节生成（分章节保存）
             report.status = ReportStatus.GENERATING
@@ -1880,7 +1979,7 @@ class ReportAgent:
                 generated_sections.append(f"## {section.title}\n\n{section_content}")
 
                 # 保存章节
-                ReportManager.save_section(report_id, section_num, section)
+                ReportManager.save_section(report_id, section_num, section, locale=self.locale)
                 completed_section_titles.append(section.title)
 
                 # 记录章节完成日志
@@ -1893,7 +1992,13 @@ class ReportAgent:
                         full_content=full_section_content.strip()
                     )
 
-                logger.info(f"章节已保存: {report_id}/section_{section_num:02d}.md")
+                self._log(
+                    "info",
+                    "Section saved: %s/section_%02d.md",
+                    "章节已保存: %s/section_%02d.md",
+                    report_id,
+                    section_num,
+                )
                 
                 # 更新进度
                 ReportManager.update_progress(
@@ -1914,7 +2019,7 @@ class ReportAgent:
             )
             
             # 使用ReportManager组装完整报告
-            report.markdown_content = ReportManager.assemble_full_report(report_id, outline)
+            report.markdown_content = ReportManager.assemble_full_report(report_id, outline, locale=self.locale)
             report.status = ReportStatus.COMPLETED
             report.completed_at = datetime.now().isoformat()
             
@@ -1929,7 +2034,7 @@ class ReportAgent:
                 )
             
             # 保存最终报告
-            ReportManager.save_report(report)
+            ReportManager.save_report(report, locale=self.locale)
             ReportManager.update_progress(
                 report_id, "completed", 100, self._text("Report generation completed", "报告生成完成"),
                 completed_sections=completed_section_titles
@@ -1938,7 +2043,7 @@ class ReportAgent:
             if progress_callback:
                 progress_callback("completed", 100, self._text("Report generation completed", "报告生成完成"))
             
-            logger.info(f"报告生成完成: {report_id}")
+            self._log("info", "Report generation completed: %s", "报告生成完成: %s", report_id)
             
             # 关闭控制台日志记录器
             if self.console_logger:
@@ -1948,7 +2053,7 @@ class ReportAgent:
             return report
             
         except Exception as e:
-            logger.error(f"报告生成失败: {str(e)}")
+            self._log("error", "Report generation failed: %s", "报告生成失败: %s", str(e))
             report.status = ReportStatus.FAILED
             report.error = str(e)
             
@@ -1958,7 +2063,7 @@ class ReportAgent:
             
             # 保存失败状态
             try:
-                ReportManager.save_report(report)
+                ReportManager.save_report(report, locale=self.locale)
                 ReportManager.update_progress(
                     report_id,
                     "failed",
@@ -1997,7 +2102,7 @@ class ReportAgent:
                 "sources": [信息来源]
             }
         """
-        logger.info(f"Report Agent对话: {message[:50]}...")
+        self._log("info", "Report Agent chat: %s...", "Report Agent对话: %s...", message[:50])
         
         chat_history = chat_history or []
         
@@ -2011,7 +2116,7 @@ class ReportAgent:
                 if len(report.markdown_content) > 15000:
                     report_content += "\n\n... [报告内容已截断] ..."
         except Exception as e:
-            logger.warning(f"获取报告内容失败: {e}")
+            self._log("warning", "Failed to load report content: %s", "获取报告内容失败: %s", e)
         
         system_prompt = CHAT_SYSTEM_PROMPT_TEMPLATE.format(
             simulation_requirement=self.simulation_requirement,
@@ -2291,7 +2396,7 @@ class ReportManager:
         return result["logs"]
     
     @classmethod
-    def save_outline(cls, report_id: str, outline: ReportOutline) -> None:
+    def save_outline(cls, report_id: str, outline: ReportOutline, locale: str = "zh") -> None:
         """
         保存报告大纲
         
@@ -2302,14 +2407,15 @@ class ReportManager:
         with open(cls._get_outline_path(report_id), 'w', encoding='utf-8') as f:
             json.dump(outline.to_dict(), f, ensure_ascii=False, indent=2)
         
-        logger.info(f"大纲已保存: {report_id}")
+        _log_with_locale("info", locale, "Outline saved: %s", "大纲已保存: %s", report_id)
     
     @classmethod
     def save_section(
         cls,
         report_id: str,
         section_index: int,
-        section: ReportSection
+        section: ReportSection,
+        locale: str = "zh",
     ) -> str:
         """
         保存单个章节
@@ -2338,7 +2444,7 @@ class ReportManager:
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(md_content)
 
-        logger.info(f"章节已保存: {report_id}/{file_suffix}")
+        _log_with_locale("info", locale, "Section saved: %s/%s", "章节已保存: %s/%s", report_id, file_suffix)
         return file_path
     
     @classmethod
@@ -2481,7 +2587,7 @@ class ReportManager:
         return sections
     
     @classmethod
-    def assemble_full_report(cls, report_id: str, outline: ReportOutline) -> str:
+    def assemble_full_report(cls, report_id: str, outline: ReportOutline, locale: str = "zh") -> str:
         """
         组装完整报告
         
@@ -2507,7 +2613,7 @@ class ReportManager:
         with open(full_path, 'w', encoding='utf-8') as f:
             f.write(md_content)
         
-        logger.info(f"完整报告已组装: {report_id}")
+        _log_with_locale("info", locale, "Full report assembled: %s", "完整报告已组装: %s", report_id)
         return md_content
     
     @classmethod
@@ -2637,7 +2743,7 @@ class ReportManager:
         return '\n'.join(result_lines)
     
     @classmethod
-    def save_report(cls, report: Report) -> None:
+    def save_report(cls, report: Report, locale: str = "zh") -> None:
         """保存报告元信息和完整报告"""
         cls._ensure_report_folder(report.report_id)
         
@@ -2647,14 +2753,14 @@ class ReportManager:
         
         # 保存大纲
         if report.outline:
-            cls.save_outline(report.report_id, report.outline)
+            cls.save_outline(report.report_id, report.outline, locale=locale)
         
         # 保存完整Markdown报告
         if report.markdown_content:
             with open(cls._get_report_markdown_path(report.report_id), 'w', encoding='utf-8') as f:
                 f.write(report.markdown_content)
         
-        logger.info(f"报告已保存: {report.report_id}")
+        _log_with_locale("info", locale, "Report saved: %s", "报告已保存: %s", report.report_id)
     
     @classmethod
     def get_report(cls, report_id: str) -> Optional[Report]:
@@ -2758,7 +2864,7 @@ class ReportManager:
         return reports[:limit]
     
     @classmethod
-    def delete_report(cls, report_id: str) -> bool:
+    def delete_report(cls, report_id: str, locale: str = "zh") -> bool:
         """删除报告（整个文件夹）"""
         import shutil
         
@@ -2767,7 +2873,7 @@ class ReportManager:
         # 新格式：删除整个文件夹
         if os.path.exists(folder_path) and os.path.isdir(folder_path):
             shutil.rmtree(folder_path)
-            logger.info(f"报告文件夹已删除: {report_id}")
+            _log_with_locale("info", locale, "Report folder deleted: %s", "报告文件夹已删除: %s", report_id)
             return True
         
         # 兼容旧格式：删除单独的文件

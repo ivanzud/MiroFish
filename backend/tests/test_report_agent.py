@@ -276,3 +276,31 @@ def test_generate_report_localizes_persisted_agent_log_messages_in_english(tmp_p
     assert "Starting section generation: 潜在人群画像" in messages
     assert "Section generation completed: 潜在人群画像" in messages
     assert "Report generation completed" in messages
+
+
+def test_generate_report_localizes_console_log_messages_in_english(tmp_path, monkeypatch):
+    monkeypatch.setattr(ReportManager, "REPORTS_DIR", str(tmp_path / "reports"))
+    monkeypatch.setattr("app.services.report_agent.Config.UPLOAD_FOLDER", str(tmp_path))
+
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=EmptySectionLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    report = agent.generate_report(report_id="report_en_console")
+
+    assert report.status == ReportStatus.COMPLETED
+
+    console_log_path = tmp_path / "reports" / "report_en_console" / "console_log.txt"
+    console_output = console_log_path.read_text(encoding="utf-8")
+
+    assert "Starting report outline planning..." in console_output
+    assert "Outline planning completed: 1 sections" in console_output
+    assert "Generating section with ReACT: 潜在人群画像" in console_output
+    assert "Section saved: report_en_console/section_01.md" in console_output
+    assert "Full report assembled: report_en_console" in console_output
+    assert "Report generation completed: report_en_console" in console_output

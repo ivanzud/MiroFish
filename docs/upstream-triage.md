@@ -13,6 +13,9 @@ Last refreshed: `2026-03-11`
 
 ## Reviewed This Pass
 
+- Upstream intake was refreshed again on March 11, 2026 at `2026-03-11T16:10:44.278332+00:00` for the open queue and `2026-03-11T16:10:55.960341+00:00` for the full history snapshot. The local machine-readable summaries remain current at `38` open issues / `36` open PRs and `87` total issues / `50` total PRs, with all `36` open PR refs mirrored into `origin`.
+- The refreshed open-PR queue still does not contain a new safe cherry-pick target. The remaining open PRs are unchanged: already landed or superseded locally, intentionally partial (`#119`), or still unsafe broad branches (`#141`, `#144`, `#118`, `#108`, `#70`, `#38`, `#49`).
+- English-mode report console logs are now localized for deterministic report-agent output. `backend/app/services/report_agent.py` routes outline-planning, tool-execution, section-generation/save, full-report assembly, and report completion/failure logger messages through the active locale, and the helper `ReportManager` save/assemble paths now accept the locale so `console_log.txt` no longer leaks Chinese during Step 4 when `X-Locale=en`.
 - Upstream intake was refreshed again on March 11, 2026 at `2026-03-11T15:53:05.941364+00:00` for the open queue and `2026-03-11T15:53:31.222576+00:00` for the full history snapshot. The local machine-readable summaries remain current at `38` open issues / `36` open PRs and `87` total issues / `50` total PRs, with all open and historical upstream issues mirrored into fork issue summaries on `ivanzud/MiroFish` and all `50` reviewed PR refs mirrored into `origin`.
 - The latest open-PR review pass did not expose a new safe cherry-pick target. The remaining open PRs are either already superseded locally, intentionally partial (`#119`), or still unsafe broad branches (`#141`, `#144`, `#118`, `#108`, `#70`, `#38`, `#49`), so this pass shifted to a repo-native direct-backend verification improvement instead of forcing a stale merge.
 - Direct Codex/OpenAI-compatible backend support is now visible in the app chrome as well as the docs. `ApiEndpointControl` now fetches `/api/graph/config/status` on demand and shows the resolved backend mode, active env-source family (`OPENAI_*` vs `LLM_*`), concrete env var names, effective base URL, and model, which makes it obvious when MiroFish is pointed at a direct OpenAI-compatible gateway without relying on provider-specific setup.
@@ -141,6 +144,8 @@ Last refreshed: `2026-03-11`
 - `#49` Local graph-memory backend work remains deferred behind the broader graph-backend abstraction/design follow-up instead of landing a stale monolithic backend branch.
 ## Validation status
 
+- `cd backend && uv run pytest -q tests/test_report_agent.py tests/test_report_api_i18n.py` passes after localizing deterministic report-agent logger output for English-mode `console_log.txt`.
+- `bash ./scripts/test_backend_lite.sh` passes after threading locale through the `ReportManager` save/assemble logging paths and adding focused console-log regression coverage.
 - `python3 -m unittest tests/test_sync_upstream_github.py` passes for the GitHub sync script pagination/state summary logic.
 - `python3 -m unittest tests/test_sync_upstream_github.py` passes after adding a `gh api` fallback path, and the sync script now refreshes upstream snapshots successfully in this environment even when anonymous GitHub API requests are rate-limited.
 - `cd frontend && npm run build` passes after landing `#104` and the prior OpenAI-alias compatibility updates.

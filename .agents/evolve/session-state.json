@@ -1,0 +1,26 @@
+{
+  "cycle": 5,
+  "mode": "standard",
+  "test_first": true,
+  "repo_profile_path": null,
+  "generator_empty_streak": 0,
+  "last_selected_source": "beads",
+  "claimed_work": null,
+  "queue_refresh_count": 5,
+  "pinned_queue": null,
+  "pinned_queue_file": null,
+  "pinned_queue_index": 0,
+  "pinned_queue_completed": [],
+  "pinned_queue_escalated": [],
+  "unblock_depth": 0,
+  "unblock_failures": 0,
+  "unblock_chain": [],
+  "last_completed_issue": "mirofish-kwk",
+  "last_validation_commands": [
+    "cd backend && uv run pytest -q tests/test_report_agent.py tests/test_report_api_i18n.py",
+    "bash ./scripts/test_backend_lite.sh"
+  ],
+  "last_upstream_snapshot": "docs/upstream-all-state.json",
+  "last_cycle_timestamp": "2026-03-11T16:14:23Z",
+  "last_cycle_head": "d7bcac21bdec027518beed5ff358e1da17fe750c"
+}
