@@ -21,17 +21,19 @@ from enum import Enum
 from queue import Queue
 
 from ..config import Config
+from ..i18n import get_locale, tr
 from ..utils.logger import get_logger
 from .zep_graph_memory_updater import ZepGraphMemoryManager
 from .simulation_ipc import SimulationIPCClient, CommandType, IPCResponse
 
 logger = get_logger('mirofish.simulation_runner')
 
-SIMULATION_DEPENDENCY_ERROR = (
-    "当前后端未安装可选的 OASIS 仿真运行时依赖。"
-    "请先执行 `npm run setup:backend:simulation`，"
-    "或在 backend 目录执行 `uv sync --extra simulation`。"
-)
+
+def simulation_dependency_error(locale: str | None = None) -> str:
+    return tr("simulation.runner_dependency_error", locale)
+
+
+SIMULATION_DEPENDENCY_ERROR = simulation_dependency_error()
 
 # 标记是否已注册清理函数
 _cleanup_registered = False
@@ -109,6 +111,7 @@ class RoundSummary:
 class SimulationRunState:
     """模拟运行状态（实时）"""
     simulation_id: str
+    locale: str = "zh"
     runner_status: RunnerStatus = RunnerStatus.IDLE
     
     # 进度信息
@@ -167,6 +170,7 @@ class SimulationRunState:
     def to_dict(self) -> Dict[str, Any]:
         return {
             "simulation_id": self.simulation_id,
+            "locale": self.locale,
             "runner_status": self.runner_status.value,
             "current_round": self.current_round,
             "total_rounds": self.total_rounds,
@@ -259,6 +263,7 @@ class SimulationRunner:
             
             state = SimulationRunState(
                 simulation_id=simulation_id,
+                locale=data.get("locale", "zh"),
                 runner_status=RunnerStatus(data.get("runner_status", "idle")),
                 current_round=data.get("current_round", 0),
                 total_rounds=data.get("total_rounds", 0),
@@ -330,7 +335,8 @@ class SimulationRunner:
         platform: str = "parallel",  # twitter / reddit / parallel
         max_rounds: int = None,  # 最大模拟轮数（可选，用于截断过长的模拟）
         enable_graph_memory_update: bool = False,  # 是否将活动更新到Zep图谱
-        graph_id: str = None  # Zep图谱ID（启用图谱更新时必需）
+        graph_id: str = None,  # Zep图谱ID（启用图谱更新时必需）
+        locale: str | None = None,
     ) -> SimulationRunState:
         """
         启动模拟
@@ -345,17 +351,21 @@ class SimulationRunner:
         Returns:
             SimulationRunState
         """
+        resolved_locale = get_locale(locale)
+
         # 检查是否已在运行
         existing = cls.get_run_state(simulation_id)
         if existing and existing.runner_status in [RunnerStatus.RUNNING, RunnerStatus.STARTING]:
-            raise ValueError(f"模拟已在运行中: {simulation_id}")
+            raise ValueError(
+                tr("simulation.already_running", resolved_locale, simulation_id=simulation_id)
+            )
         
         # 加载模拟配置
         sim_dir = os.path.join(cls.RUN_STATE_DIR, simulation_id)
         config_path = os.path.join(sim_dir, "simulation_config.json")
         
         if not os.path.exists(config_path):
-            raise ValueError(f"模拟配置不存在，请先调用 /prepare 接口")
+            raise ValueError(tr("simulation.start_config_missing", resolved_locale))
         
         with open(config_path, 'r', encoding='utf-8') as f:
             config = json.load(f)
@@ -375,6 +385,7 @@ class SimulationRunner:
         
         state = SimulationRunState(
             simulation_id=simulation_id,
+            locale=resolved_locale,
             runner_status=RunnerStatus.STARTING,
             total_rounds=total_rounds,
             total_simulation_hours=total_hours,
@@ -386,7 +397,7 @@ class SimulationRunner:
         # 如果启用图谱记忆更新，创建更新器
         if enable_graph_memory_update:
             if not graph_id:
-                raise ValueError("启用图谱记忆更新时必须提供 graph_id")
+                raise ValueError(tr("simulation.graph_id_required_for_memory", resolved_locale))
             
             try:
                 ZepGraphMemoryManager.create_updater(simulation_id, graph_id)
@@ -413,9 +424,11 @@ class SimulationRunner:
         script_path = os.path.join(cls.SCRIPTS_DIR, script_name)
 
         if not os.path.exists(script_path):
-            raise ValueError(f"脚本不存在: {script_path}")
+            raise ValueError(
+                tr("simulation.script_path_missing", resolved_locale, script_path=script_path)
+            )
         if not cls._simulation_dependencies_available():
-            raise RuntimeError(SIMULATION_DEPENDENCY_ERROR)
+            raise RuntimeError(simulation_dependency_error(resolved_locale))
 
         # 创建动作队列
         action_queue = Queue()
@@ -448,6 +461,7 @@ class SimulationRunner:
             env = os.environ.copy()
             env['PYTHONUTF8'] = '1'  # Python 3.7+ 支持，让所有 open() 默认使用 UTF-8
             env['PYTHONIOENCODING'] = 'utf-8'  # 确保 stdout/stderr 使用 UTF-8
+            env['MIROFISH_LOCALE'] = resolved_locale
             
             # 设置工作目录为模拟目录（数据库等文件会生成在此）
             # 使用 start_new_session=True 创建新的进程组，确保可以通过 os.killpg 终止所有子进程
@@ -551,7 +565,12 @@ class SimulationRunner:
                             error_info = f.read()[-2000:]  # 取最后2000字符
                 except Exception:
                     pass
-                state.error = f"进程退出码: {exit_code}, 错误: {error_info}"
+                state.error = tr(
+                    "simulation.process_exit",
+                    state.locale,
+                    exit_code=exit_code,
+                    details=error_info,
+                )
                 logger.error(f"模拟失败: {simulation_id}, error={state.error}")
             
             state.twitter_running = False

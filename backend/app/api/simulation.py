@@ -9,6 +9,7 @@ from flask import request, jsonify, send_file
 
 from . import simulation_bp
 from ..config import Config
+from ..i18n import get_locale, tr
 from ..services.zep_entity_reader import ZepEntityReader
 from ..services.oasis_profile_generator import OasisProfileGenerator
 from ..services.simulation_manager import SimulationManager, SimulationStatus
@@ -46,7 +47,7 @@ def optimize_interview_prompt(prompt: str) -> str:
     return f"{INTERVIEW_PROMPT_PREFIX}{prompt}"
 
 
-def resolve_interview_timeout(raw_timeout, default_timeout: float) -> float:
+def resolve_interview_timeout(raw_timeout, default_timeout: float, locale: str | None = None) -> float:
     """Parse a positive interview timeout without silently accepting invalid values."""
     if raw_timeout in (None, ''):
         return default_timeout
@@ -54,10 +55,10 @@ def resolve_interview_timeout(raw_timeout, default_timeout: float) -> float:
     try:
         timeout = float(raw_timeout)
     except (TypeError, ValueError) as exc:
-        raise ValueError("timeout 必须是大于 0 的数字") from exc
+        raise ValueError(tr("simulation.timeout_invalid_number", locale)) from exc
 
     if timeout <= 0:
-        raise ValueError("timeout 必须大于 0")
+        raise ValueError(tr("simulation.timeout_invalid_nonpositive", locale))
 
     return timeout
 
@@ -1228,13 +1229,14 @@ def get_simulation_config(simulation_id: str):
         - generation_reasoning: LLM的配置推理说明
     """
     try:
+        locale = get_locale()
         manager = SimulationManager()
         config = manager.get_simulation_config(simulation_id)
         
         if not config:
             return jsonify({
                 "success": False,
-                "error": f"模拟配置不存在，请先调用 /prepare 接口"
+                "error": tr("simulation.config_missing_prepare", locale)
             }), 404
         
         return jsonify({
@@ -1250,6 +1252,7 @@ def get_simulation_config(simulation_id: str):
 def download_simulation_config(simulation_id: str):
     """下载模拟配置文件"""
     try:
+        locale = get_locale()
         manager = SimulationManager()
         sim_dir = manager._get_simulation_dir(simulation_id)
         config_path = os.path.join(sim_dir, "simulation_config.json")
@@ -1257,7 +1260,7 @@ def download_simulation_config(simulation_id: str):
         if not os.path.exists(config_path):
             return jsonify({
                 "success": False,
-                "error": "配置文件不存在，请先调用 /prepare 接口"
+                "error": tr("simulation.config_file_missing_prepare", locale)
             }), 404
         
         return send_file(
@@ -1282,6 +1285,7 @@ def download_simulation_script(script_name: str):
         - action_logger.py
     """
     try:
+        locale = get_locale()
         # 脚本位于 backend/scripts/ 目录
         scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../scripts'))
         
@@ -1296,7 +1300,12 @@ def download_simulation_script(script_name: str):
         if script_name not in allowed_scripts:
             return jsonify({
                 "success": False,
-                "error": f"未知脚本: {script_name}，可选: {allowed_scripts}"
+                "error": tr(
+                    "simulation.script_unknown",
+                    locale,
+                    script_name=script_name,
+                    allowed=allowed_scripts,
+                )
             }), 400
         
         script_path = os.path.join(scripts_dir, script_name)
@@ -1304,7 +1313,7 @@ def download_simulation_script(script_name: str):
         if not os.path.exists(script_path):
             return jsonify({
                 "success": False,
-                "error": f"脚本文件不存在: {script_name}"
+                "error": tr("simulation.script_missing", locale, script_name=script_name)
             }), 404
         
         return send_file(
@@ -1436,7 +1445,7 @@ def start_simulation():
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": tr("simulation.simulation_id_required", locale)
             }), 400
 
         platform = data.get('platform', 'parallel')
@@ -1451,18 +1460,18 @@ def start_simulation():
                 if max_rounds <= 0:
                     return jsonify({
                         "success": False,
-                        "error": "max_rounds 必须是正整数"
+                        "error": tr("simulation.max_rounds_positive", locale)
                     }), 400
             except (ValueError, TypeError):
                 return jsonify({
                     "success": False,
-                    "error": "max_rounds 必须是有效的整数"
+                    "error": tr("simulation.max_rounds_integer", locale)
                 }), 400
 
         if platform not in ['twitter', 'reddit', 'parallel']:
             return jsonify({
                 "success": False,
-                "error": f"无效的平台类型: {platform}，可选: twitter/reddit/parallel"
+                "error": tr("simulation.invalid_platform_type", locale, platform=platform)
             }), 400
 
         # 检查模拟是否已准备好
@@ -1472,7 +1481,7 @@ def start_simulation():
         if not state:
             return jsonify({
                 "success": False,
-                "error": f"模拟不存在: {simulation_id}"
+                "error": tr("simulation.not_found", locale, simulation_id=simulation_id)
             }), 404
 
         force_restarted = False
@@ -1499,7 +1508,7 @@ def start_simulation():
                         else:
                             return jsonify({
                                 "success": False,
-                                "error": f"模拟正在运行中，请先调用 /stop 接口停止，或使用 force=true 强制重新开始"
+                                "error": tr("simulation.running_force_required", locale)
                             }), 400
 
                 # 如果是强制模式，清理运行日志
@@ -1518,7 +1527,7 @@ def start_simulation():
                 # 准备工作未完成
                 return jsonify({
                     "success": False,
-                    "error": f"模拟未准备好，当前状态: {state.status.value}，请先调用 /prepare 接口"
+                    "error": tr("simulation.not_ready", locale, status=state.status.value)
                 }), 400
         
         # 获取图谱ID（用于图谱记忆更新）
@@ -1535,7 +1544,7 @@ def start_simulation():
             if not graph_id:
                 return jsonify({
                     "success": False,
-                    "error": "启用图谱记忆更新需要有效的 graph_id，请确保项目已构建图谱"
+                    "error": tr("simulation.graph_memory_requires_graph", locale)
                 }), 400
             
             logger.info(f"启用图谱记忆更新: simulation_id={simulation_id}, graph_id={graph_id}")
@@ -1546,7 +1555,8 @@ def start_simulation():
             platform=platform,
             max_rounds=max_rounds,
             enable_graph_memory_update=enable_graph_memory_update,
-            graph_id=graph_id
+            graph_id=graph_id,
+            locale=locale,
         )
         
         # 更新模拟状态
@@ -2104,38 +2114,39 @@ def interview_agent():
         timeout = resolve_interview_timeout(
             data.get('timeout'),
             Config.INTERVIEW_AGENT_TIMEOUT_SECONDS,
+            locale=locale,
         )
         
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": tr("simulation.simulation_id_required", locale)
             }), 400
         
         if agent_id is None:
             return jsonify({
                 "success": False,
-                "error": "请提供 agent_id"
+                "error": tr("simulation.agent_id_required", locale)
             }), 400
         
         if not prompt:
             return jsonify({
                 "success": False,
-                "error": "请提供 prompt（采访问题）"
+                "error": tr("simulation.prompt_required", locale)
             }), 400
         
         # 验证platform参数
         if platform and platform not in ("twitter", "reddit"):
             return jsonify({
                 "success": False,
-                "error": "platform 参数只能是 'twitter' 或 'reddit'"
+                "error": tr("simulation.platform_invalid", locale)
             }), 400
         
         # 检查环境状态
         if not SimulationRunner.check_env_alive(simulation_id):
             return jsonify({
                 "success": False,
-                "error": "模拟环境未运行或已关闭。请确保模拟已完成并进入等待命令模式。"
+                "error": tr("simulation.environment_not_alive", locale)
             }), 400
         
         # 优化prompt，添加前缀避免Agent调用工具
@@ -2163,7 +2174,7 @@ def interview_agent():
     except TimeoutError as e:
         return jsonify({
             "success": False,
-            "error": f"等待Interview响应超时: {str(e)}"
+            "error": tr("simulation.interview_timeout", locale, details=str(e))
         }), 504
         
     except Exception as e:
@@ -2215,6 +2226,7 @@ def interview_agents_batch():
         }
     """
     try:
+        locale = get_locale()
         data = request.get_json() or {}
 
         simulation_id = data.get('simulation_id')
@@ -2223,12 +2235,13 @@ def interview_agents_batch():
         timeout = resolve_interview_timeout(
             data.get('timeout'),
             Config.INTERVIEW_BATCH_TIMEOUT_SECONDS,
+            locale=locale,
         )
 
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": tr("simulation.simulation_id_required", locale)
             }), 400
 
         if not interviews or not isinstance(interviews, list):
@@ -2241,7 +2254,7 @@ def interview_agents_batch():
         if platform and platform not in ("twitter", "reddit"):
             return jsonify({
                 "success": False,
-                "error": "platform 参数只能是 'twitter' 或 'reddit'"
+                "error": tr("simulation.platform_invalid", locale)
             }), 400
 
         # 验证每个采访项
@@ -2268,7 +2281,7 @@ def interview_agents_batch():
         if not SimulationRunner.check_env_alive(simulation_id):
             return jsonify({
                 "success": False,
-                "error": "模拟环境未运行或已关闭。请确保模拟已完成并进入等待命令模式。"
+                "error": tr("simulation.environment_not_alive", locale)
             }), 400
 
         # 优化每个采访项的prompt，添加前缀避免Agent调用工具
@@ -2299,7 +2312,7 @@ def interview_agents_batch():
     except TimeoutError as e:
         return jsonify({
             "success": False,
-            "error": f"等待批量Interview响应超时: {str(e)}"
+            "error": tr("simulation.batch_interview_timeout", locale, details=str(e))
         }), 504
 
     except Exception as e:
@@ -2340,6 +2353,7 @@ def interview_all_agents():
         }
     """
     try:
+        locale = get_locale()
         data = request.get_json() or {}
 
         simulation_id = data.get('simulation_id')
@@ -2348,32 +2362,33 @@ def interview_all_agents():
         timeout = resolve_interview_timeout(
             data.get('timeout'),
             Config.INTERVIEW_ALL_TIMEOUT_SECONDS,
+            locale=locale,
         )
 
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": tr("simulation.simulation_id_required", locale)
             }), 400
 
         if not prompt:
             return jsonify({
                 "success": False,
-                "error": "请提供 prompt（采访问题）"
+                "error": tr("simulation.prompt_required", locale)
             }), 400
 
         # 验证platform参数
         if platform and platform not in ("twitter", "reddit"):
             return jsonify({
                 "success": False,
-                "error": "platform 参数只能是 'twitter' 或 'reddit'"
+                "error": tr("simulation.platform_invalid", locale)
             }), 400
 
         # 检查环境状态
         if not SimulationRunner.check_env_alive(simulation_id):
             return jsonify({
                 "success": False,
-                "error": "模拟环境未运行或已关闭。请确保模拟已完成并进入等待命令模式。"
+                "error": tr("simulation.environment_not_alive", locale)
             }), 400
 
         # 优化prompt，添加前缀避免Agent调用工具
@@ -2400,7 +2415,7 @@ def interview_all_agents():
     except TimeoutError as e:
         return jsonify({
             "success": False,
-            "error": f"等待全局Interview响应超时: {str(e)}"
+            "error": tr("simulation.all_interview_timeout", locale, details=str(e))
         }), 504
 
     except Exception as e:

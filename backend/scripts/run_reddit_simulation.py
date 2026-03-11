@@ -46,6 +46,12 @@ else:
     if os.path.exists(_backend_env):
         load_dotenv(_backend_env)
 
+SCRIPT_LOCALE = "en" if os.environ.get("MIROFISH_LOCALE", "").lower().startswith("en") else "zh"
+
+
+def _t(zh: str, en: str) -> str:
+    return en if SCRIPT_LOCALE == "en" else zh
+
 
 import re
 from llm_env import apply_openai_compat_env, missing_api_key_message, resolve_standard_llm_env
@@ -127,9 +133,15 @@ try:
         generate_reddit_agent_graph
     )
 except ImportError as e:
-    print(f"错误: 缺少依赖 {e}")
-    print("请先安装可选仿真依赖: `npm run setup:backend:simulation`")
-    print("或在 backend 目录执行: `uv sync --extra simulation`")
+    print(_t(f"错误: 缺少依赖 {e}", f"Error: missing dependency {e}"))
+    print(_t(
+        "请先安装可选仿真依赖: `npm run setup:backend:simulation`",
+        "Install the optional simulation dependencies first: `npm run setup:backend:simulation`",
+    ))
+    print(_t(
+        "或在 backend 目录执行: `uv sync --extra simulation`",
+        "Or run `uv sync --extra simulation` inside the backend directory",
+    ))
     sys.exit(1)
 
 
@@ -274,7 +286,11 @@ class IPCHandler:
                     print(f"  警告: 无法获取Agent {agent_id}: {e}")
             
             if not actions:
-                self.send_response(command_id, "failed", error="没有有效的Agent")
+                self.send_response(
+                    command_id,
+                    "failed",
+                    error=_t("没有有效的Agent", "No valid agents were found"),
+                )
                 return False
             
             # 执行批量Interview
@@ -376,11 +392,19 @@ class IPCHandler:
             
         elif command_type == CommandType.CLOSE_ENV:
             print("收到关闭环境命令")
-            self.send_response(command_id, "completed", result={"message": "环境即将关闭"})
+            self.send_response(
+                command_id,
+                "completed",
+                result={"message": _t("环境即将关闭", "The environment is shutting down")},
+            )
             return False
         
         else:
-            self.send_response(command_id, "failed", error=f"未知命令类型: {command_type}")
+            self.send_response(
+                command_id,
+                "failed",
+                error=_t(f"未知命令类型: {command_type}", f"Unknown command type: {command_type}"),
+            )
             return True
 
 

@@ -109,6 +109,12 @@ else:
         load_dotenv(_backend_env)
         print(f"已加载环境配置: {_backend_env}")
 
+SCRIPT_LOCALE = "en" if os.environ.get("MIROFISH_LOCALE", "").lower().startswith("en") else "zh"
+
+
+def _t(zh: str, en: str) -> str:
+    return en if SCRIPT_LOCALE == "en" else zh
+
 
 class MaxTokensWarningFilter(logging.Filter):
     """过滤掉 camel-ai 关于 max_tokens 的警告（我们故意不设置 max_tokens，让模型自行决定）"""
@@ -176,9 +182,15 @@ try:
         generate_reddit_agent_graph
     )
 except ImportError as e:
-    print(f"错误: 缺少依赖 {e}")
-    print("请先安装可选仿真依赖: `npm run setup:backend:simulation`")
-    print("或在 backend 目录执行: `uv sync --extra simulation`")
+    print(_t(f"错误: 缺少依赖 {e}", f"Error: missing dependency {e}"))
+    print(_t(
+        "请先安装可选仿真依赖: `npm run setup:backend:simulation`",
+        "Install the optional simulation dependencies first: `npm run setup:backend:simulation`",
+    ))
+    print(_t(
+        "或在 backend 目录执行: `uv sync --extra simulation`",
+        "Or run `uv sync --extra simulation` inside the backend directory",
+    ))
     sys.exit(1)
 
 
@@ -332,7 +344,10 @@ class ParallelIPCHandler:
         env, agent_graph, actual_platform = self._get_env_and_graph(platform)
         
         if not env or not agent_graph:
-            return {"platform": platform, "error": f"{platform}平台不可用"}
+            return {
+                "platform": platform,
+                "error": _t(f"{platform}平台不可用", f"{platform} platform is unavailable"),
+            }
         
         try:
             agent = agent_graph.get_agent(agent_id)
@@ -381,7 +396,11 @@ class ParallelIPCHandler:
         
         # 未指定平台：同时采访两个平台
         if not self.twitter_env and not self.reddit_env:
-            self.send_response(command_id, "failed", error="没有可用的模拟环境")
+            self.send_response(
+                command_id,
+                "failed",
+                error=_t("没有可用的模拟环境", "No simulation environment is available"),
+            )
             return False
         
         results = {
@@ -519,7 +538,11 @@ class ParallelIPCHandler:
             print(f"  批量Interview完成: {len(results)} 个Agent")
             return True
         else:
-            self.send_response(command_id, "failed", error="没有成功的采访")
+            self.send_response(
+                command_id,
+                "failed",
+                error=_t("没有成功的采访", "No interviews completed successfully"),
+            )
             return False
     
     def _get_interview_result(self, agent_id: int, platform: str) -> Dict[str, Any]:
@@ -601,11 +624,19 @@ class ParallelIPCHandler:
             
         elif command_type == CommandType.CLOSE_ENV:
             print("收到关闭环境命令")
-            self.send_response(command_id, "completed", result={"message": "环境即将关闭"})
+            self.send_response(
+                command_id,
+                "completed",
+                result={"message": _t("环境即将关闭", "The environment is shutting down")},
+            )
             return False
         
         else:
-            self.send_response(command_id, "failed", error=f"未知命令类型: {command_type}")
+            self.send_response(
+                command_id,
+                "failed",
+                error=_t(f"未知命令类型: {command_type}", f"Unknown command type: {command_type}"),
+            )
             return True
 
 
