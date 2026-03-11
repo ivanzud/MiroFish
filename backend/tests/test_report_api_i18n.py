@@ -5,6 +5,7 @@ from types import SimpleNamespace
 from types import ModuleType
 
 from flask import Flask
+from flask.wrappers import Request
 
 fake_zep_cloud = ModuleType("zep_cloud")
 fake_zep_client = ModuleType("zep_cloud.client")
@@ -329,4 +330,62 @@ def test_get_report_exception_logs_english_context(monkeypatch):
     assert response.status_code == 500
     assert response.get_json()["error"] == "report exploded"
     assert logger.errors == ["Failed to fetch the report: report exploded"]
+    assert logger.debugs
+
+
+def test_generate_report_request_parse_failure_keeps_english_error_context(monkeypatch):
+    app = create_report_test_app()
+    client = app.test_client()
+    logger = FakeLogger()
+
+    monkeypatch.setattr(report_api, "logger", logger)
+
+    original_get_json = Request.get_json
+
+    def boom(self, *args, **kwargs):
+        if self.path == "/api/report/generate":
+            raise RuntimeError("bad report json")
+        return original_get_json(self, *args, **kwargs)
+
+    monkeypatch.setattr(Request, "get_json", boom)
+
+    response = client.post(
+        "/api/report/generate",
+        data="{bad json",
+        content_type="application/json",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 500
+    assert response.get_json()["error"] == "bad report json"
+    assert logger.errors == ["Failed to start report generation: bad report json"]
+    assert logger.debugs
+
+
+def test_report_chat_request_parse_failure_keeps_english_error_context(monkeypatch):
+    app = create_report_test_app()
+    client = app.test_client()
+    logger = FakeLogger()
+
+    monkeypatch.setattr(report_api, "logger", logger)
+
+    original_get_json = Request.get_json
+
+    def boom(self, *args, **kwargs):
+        if self.path == "/api/report/chat":
+            raise RuntimeError("bad chat json")
+        return original_get_json(self, *args, **kwargs)
+
+    monkeypatch.setattr(Request, "get_json", boom)
+
+    response = client.post(
+        "/api/report/chat",
+        data="{bad json",
+        content_type="application/json",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 500
+    assert response.get_json()["error"] == "bad chat json"
+    assert logger.errors == ["Report chat failed: bad chat json"]
     assert logger.debugs

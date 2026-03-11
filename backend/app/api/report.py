@@ -117,9 +117,9 @@ def generate_report():
             }
         }
     """
+    locale = get_locale()
     try:
         data = request.get_json() or {}
-        locale = get_locale()
         
         simulation_id = data.get('simulation_id')
         if not simulation_id:
@@ -545,9 +545,9 @@ def chat_with_report_agent():
             }
         }
     """
+    locale = get_locale()
     try:
         data = request.get_json() or {}
-        locale = get_locale()
         
         simulation_id = data.get('simulation_id')
         message = data.get('message')
@@ -952,9 +952,9 @@ def search_graph_tool():
             "limit": 10
         }
     """
+    locale = get_locale()
     try:
         data = request.get_json() or {}
-        locale = get_locale()
         
         graph_id = data.get('graph_id')
         query = data.get('query')
@@ -994,9 +994,9 @@ def get_graph_statistics_tool():
             "graph_id": "mirofish_xxxx"
         }
     """
+    locale = get_locale()
     try:
         data = request.get_json() or {}
-        locale = get_locale()
         
         graph_id = data.get('graph_id')
         
