@@ -122,6 +122,8 @@ cp .env.example .env
 LLM_API_KEY=your_api_key
 LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 LLM_MODEL_NAME=qwen-plus
+# Optional: reduce this for OpenAI-compatible backends with smaller context windows
+# LLM_MAX_TOKENS=4096
 
 # Zep Cloud Configuration
 # Free monthly quota is sufficient for simple usage: https://app.getzep.com/

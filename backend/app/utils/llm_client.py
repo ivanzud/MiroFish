@@ -4,11 +4,14 @@ LLM客户端封装
 """
 
 import json
+import logging
 import re
 from typing import Optional, Dict, Any, List
-from openai import OpenAI
+from openai import OpenAI, APIError, BadRequestError
 
 from ..config import Config
+
+logger = logging.getLogger(__name__)
 
 
 class LLMClient:
@@ -23,6 +26,7 @@ class LLMClient:
         self.api_key = api_key or Config.LLM_API_KEY
         self.base_url = base_url or Config.LLM_BASE_URL
         self.model = model or Config.LLM_MODEL_NAME
+        self.default_max_tokens = Config.LLM_MAX_TOKENS
         
         if not self.api_key:
             raise ValueError("LLM_API_KEY / OPENAI_API_KEY 未配置")
@@ -31,12 +35,41 @@ class LLMClient:
             api_key=self.api_key,
             base_url=self.base_url
         )
+
+    @staticmethod
+    def _trim_messages(messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
+        """Trim old context while preserving the initial prompt and recent turns."""
+        if len(messages) <= 8:
+            return messages
+
+        head_count = 2 if len(messages) >= 2 else 1
+        tail_count = min(8, len(messages) - head_count)
+        tail_start = max(head_count, len(messages) - tail_count)
+        trimmed = messages[:head_count] + messages[tail_start:]
+
+        if len(trimmed) < len(messages):
+            logger.warning("Trimmed LLM context from %s to %s messages", len(messages), len(trimmed))
+
+        return trimmed
+
+    @staticmethod
+    def _is_context_length_error(exc: Exception) -> bool:
+        text = str(exc).lower()
+        markers = (
+            "context_length",
+            "maximum context",
+            "context window",
+            "too many tokens",
+            "maximum tokens",
+            "token limit",
+        )
+        return any(marker in text for marker in markers)
     
     def chat(
         self,
         messages: List[Dict[str, str]],
         temperature: float = 0.7,
-        max_tokens: int = 4096,
+        max_tokens: Optional[int] = None,
         response_format: Optional[Dict] = None
     ) -> str:
         """
@@ -51,6 +84,9 @@ class LLMClient:
         Returns:
             模型响应文本
         """
+        if max_tokens is None:
+            max_tokens = self.default_max_tokens
+
         kwargs = {
             "model": self.model,
             "messages": messages,
@@ -60,8 +96,24 @@ class LLMClient:
         
         if response_format:
             kwargs["response_format"] = response_format
-        
-        response = self.client.chat.completions.create(**kwargs)
+
+        try:
+            response = self.client.chat.completions.create(**kwargs)
+        except BadRequestError as exc:
+            if not self._is_context_length_error(exc):
+                raise
+
+            trimmed_messages = self._trim_messages(messages)
+            if len(trimmed_messages) == len(messages):
+                raise
+
+            logger.warning("Retrying LLM call after context-length failure")
+            kwargs["messages"] = trimmed_messages
+            response = self.client.chat.completions.create(**kwargs)
+        except APIError:
+            logger.exception("LLM API request failed")
+            raise
+
         content = response.choices[0].message.content or ""
         # 部分模型会在 content 中夹带 <think>...</think>，且标签大小写不固定
         content = re.sub(r'<think\b[^>]*>[\s\S]*?</think>', '', content, flags=re.IGNORECASE).strip()
@@ -98,7 +150,7 @@ class LLMClient:
         self,
         messages: List[Dict[str, str]],
         temperature: float = 0.3,
-        max_tokens: int = 4096
+        max_tokens: Optional[int] = None
     ) -> Dict[str, Any]:
         """
         发送聊天请求并返回JSON

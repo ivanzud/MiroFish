@@ -879,6 +879,13 @@ class ReportAgent:
     
     # 对话中的最大工具调用次数
     MAX_TOOL_CALLS_PER_CHAT = 2
+
+    @staticmethod
+    def _prune_messages_for_retry(messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
+        """Keep the initial prompt and latest turns to avoid unbounded context growth."""
+        if len(messages) <= 14:
+            return messages
+        return messages[:2] + messages[-12:]
     
     def __init__(
         self, 
@@ -1298,6 +1305,8 @@ class ReportAgent:
                     int((iteration / max_iterations) * 100),
                     f"深度检索与撰写中 ({tool_calls_count}/{self.MAX_TOOL_CALLS_PER_SECTION})"
                 )
+
+            messages = self._prune_messages_for_retry(messages)
             
             # 调用LLM
             response = self.llm.chat(
@@ -1502,6 +1511,7 @@ class ReportAgent:
         # 达到最大迭代次数，强制生成内容
         logger.warning(f"章节 {section.title} 达到最大迭代次数，强制生成")
         messages.append({"role": "user", "content": REACT_FORCE_FINAL_MSG})
+        messages = self._prune_messages_for_retry(messages)
         
         response = self.llm.chat(
             messages=messages,
