@@ -60,6 +60,10 @@ TRANSLATIONS = {
         "zh": "{group} 同时配置了不同的值；当前将优先使用 {selected}={value}",
         "en": "{group} is configured with conflicting values; {selected}={value} will take precedence",
     },
+    "llm.json_mode_retry": {
+        "zh": "LLM 后端不支持 response_format=json_object；将改为不使用 JSON 模式重试",
+        "en": "LLM backend rejected response_format=json_object; retrying without JSON mode",
+    },
     "startup.config_error_header": {
         "zh": "配置错误:",
         "en": "Configuration errors:",

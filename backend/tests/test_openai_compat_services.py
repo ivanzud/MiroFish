@@ -38,6 +38,7 @@ def _make_response(content, finish_reason="stop"):
 
 def test_oasis_profile_generator_retries_without_response_format_on_unsupported_json_mode():
     create_calls = []
+    warning_messages = []
 
     class FakeCompletions:
         def create(self, **kwargs):
@@ -48,20 +49,28 @@ def test_oasis_profile_generator_retries_without_response_format_on_unsupported_
 
     generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
     generator.model_name = "test-model"
+    generator.locale = "en"
     generator.client = SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions()))
+    original_logger = sys.modules["app.services.oasis_profile_generator"].logger
+    sys.modules["app.services.oasis_profile_generator"].logger = SimpleNamespace(warning=warning_messages.append)
 
-    result = generator._request_json_completion(
-        messages=[{"role": "user", "content": "hello"}],
-        temperature=0.5,
-    )
+    try:
+        result = generator._request_json_completion(
+            messages=[{"role": "user", "content": "hello"}],
+            temperature=0.5,
+        )
+    finally:
+        sys.modules["app.services.oasis_profile_generator"].logger = original_logger
 
     assert result["content"] == '{"bio":"Test bio","persona":"Test persona"}'
     assert "response_format" in create_calls[0]
     assert "response_format" not in create_calls[1]
+    assert warning_messages == ["LLM backend rejected response_format=json_object; retrying without JSON mode"]
 
 
 def test_simulation_config_generator_retries_without_response_format_on_unsupported_json_mode():
     create_calls = []
+    warning_messages = []
 
     class FakeCompletions:
         def create(self, **kwargs):
@@ -74,15 +83,21 @@ def test_simulation_config_generator_retries_without_response_format_on_unsuppor
     generator.model_name = "test-model"
     generator.locale = "zh"
     generator.client = SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions()))
+    original_logger = simulation_config_generator_module.logger
+    simulation_config_generator_module.logger = SimpleNamespace(warning=warning_messages.append)
 
-    result = generator._request_json_completion(
-        messages=[{"role": "user", "content": "hello"}],
-        temperature=0.6,
-    )
+    try:
+        result = generator._request_json_completion(
+            messages=[{"role": "user", "content": "hello"}],
+            temperature=0.6,
+        )
+    finally:
+        simulation_config_generator_module.logger = original_logger
 
     assert result["content"] == '{"time_config": {"total_simulation_hours": 12}}'
     assert "response_format" in create_calls[0]
     assert "response_format" not in create_calls[1]
+    assert warning_messages == ["LLM 后端不支持 response_format=json_object；将改为不使用 JSON 模式重试"]
 
 
 def test_oasis_profile_generator_missing_api_key_mentions_openai_alias(monkeypatch):

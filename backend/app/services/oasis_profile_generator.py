@@ -262,9 +262,7 @@ class OasisProfileGenerator:
             if not _supports_json_mode_error(exc):
                 raise
 
-            logger.warning(
-                "LLM backend rejected response_format=json_object; retrying without JSON mode"
-            )
+            logger.warning(tr("llm.json_mode_retry", self.locale))
             kwargs.pop("response_format", None)
             response = self.client.chat.completions.create(**kwargs)
 
