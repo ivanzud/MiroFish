@@ -3,7 +3,9 @@ Zep实体读取与过滤服务
 从Zep图谱中读取节点，筛选出符合预定义实体类型的节点
 """
 
+import re
 import time
+import unicodedata
 from typing import Dict, Any, List, Optional, Set, Callable, TypeVar
 from dataclasses import dataclass, field
 
@@ -18,6 +20,68 @@ logger = get_logger('mirofish.zep_entity_reader')
 
 # 用于泛型返回类型
 T = TypeVar('T')
+
+_NON_WORD_RE = re.compile(r"[\W_]+", re.UNICODE)
+_PERSON_PREFIXES = (
+    "美国总统",
+    "总统",
+    "president",
+    "formerpresident",
+    "currentpresident",
+    "ceo",
+    "founder",
+    "cofounder",
+    "professor",
+    "doctor",
+    "dr",
+    "mr",
+    "mrs",
+    "ms",
+    "sir",
+)
+_ORG_SUFFIXES = (
+    "有限责任公司",
+    "股份有限公司",
+    "有限公司",
+    "集团",
+    "公司",
+    "corporation",
+    "corp",
+    "inc",
+    "ltd",
+    "llc",
+    "university",
+)
+_PERSON_TYPE_HINTS = (
+    "person",
+    "student",
+    "alumni",
+    "player",
+    "leader",
+    "figure",
+    "expert",
+    "human",
+    "人物",
+    "学生",
+    "校友",
+    "个人",
+    "公众人物",
+)
+_ORG_TYPE_HINTS = (
+    "organization",
+    "company",
+    "institution",
+    "agency",
+    "university",
+    "media",
+    "group",
+    "企业",
+    "机构",
+    "组织",
+    "公司",
+    "媒体",
+    "大学",
+)
 
 
 @dataclass
@@ -212,6 +276,133 @@ class ZepEntityReader:
         except Exception as e:
             logger.warning(f"获取节点 {node_uuid} 的边失败: {str(e)}")
             return []
+
+    @staticmethod
+    def _normalize_entity_name(name: str) -> str:
+        normalized = unicodedata.normalize("NFKC", name or "").strip().lower()
+        return _NON_WORD_RE.sub("", normalized)
+
+    @staticmethod
+    def _strip_known_affixes(normalized_name: str, entity_type: str) -> str:
+        entity_type_normalized = (entity_type or "").strip().lower()
+        stripped = normalized_name
+
+        if any(hint in entity_type_normalized for hint in _PERSON_TYPE_HINTS):
+            for prefix in _PERSON_PREFIXES:
+                if stripped.startswith(prefix) and len(stripped) > len(prefix) + 1:
+                    stripped = stripped[len(prefix):]
+                    break
+
+        if any(hint in entity_type_normalized for hint in _ORG_TYPE_HINTS):
+            for suffix in _ORG_SUFFIXES:
+                if stripped.endswith(suffix) and len(stripped) > len(suffix) + 1:
+                    stripped = stripped[: -len(suffix)]
+                    break
+
+        return stripped or normalized_name
+
+    @classmethod
+    def _entity_alias_key(cls, entity: EntityNode) -> str:
+        normalized_name = cls._normalize_entity_name(entity.name)
+        if not normalized_name:
+            return ""
+        entity_type = entity.get_entity_type() or ""
+        return cls._strip_known_affixes(normalized_name, entity_type)
+
+    @classmethod
+    def _are_duplicate_entities(cls, left: EntityNode, right: EntityNode) -> bool:
+        left_type = left.get_entity_type() or ""
+        right_type = right.get_entity_type() or ""
+        if not left_type or left_type != right_type:
+            return False
+
+        left_name = cls._normalize_entity_name(left.name)
+        right_name = cls._normalize_entity_name(right.name)
+        if not left_name or not right_name:
+            return False
+
+        if left_name == right_name:
+            return True
+
+        left_key = cls._entity_alias_key(left)
+        right_key = cls._entity_alias_key(right)
+        if not left_key or left_key != right_key or len(left_key) < 2:
+            return False
+
+        shorter, longer = sorted((left_name, right_name), key=len)
+        return len(shorter) >= 2 and shorter in longer
+
+    @staticmethod
+    def _merge_entity_lists(*entity_lists: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        merged: List[Dict[str, Any]] = []
+        seen_keys: Set[tuple[str, str, str]] = set()
+
+        for entities in entity_lists:
+            for item in entities:
+                if not isinstance(item, dict):
+                    continue
+                key = (
+                    str(item.get("uuid", "")),
+                    str(item.get("name", "")),
+                    str(item.get("edge_name", item.get("labels", ""))),
+                )
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                merged.append(item)
+
+        return merged
+
+    @classmethod
+    def _merge_duplicate_entities(cls, entities: List[EntityNode]) -> List[EntityNode]:
+        merged_entities: List[EntityNode] = []
+
+        for entity in entities:
+            duplicate_index = next(
+                (idx for idx, existing in enumerate(merged_entities) if cls._are_duplicate_entities(existing, entity)),
+                None,
+            )
+            if duplicate_index is None:
+                merged_entities.append(entity)
+                continue
+
+            existing = merged_entities[duplicate_index]
+            existing_score = (
+                len(existing.related_edges),
+                len(existing.related_nodes),
+                len(existing.summary or ""),
+            )
+            candidate_score = (
+                len(entity.related_edges),
+                len(entity.related_nodes),
+                len(entity.summary or ""),
+            )
+
+            primary = existing
+            secondary = entity
+            if candidate_score > existing_score:
+                primary = entity
+                secondary = existing
+
+            summary_parts = [part for part in (primary.summary, secondary.summary) if part]
+            primary.summary = max(summary_parts, key=len) if summary_parts else ""
+
+            merged_attributes = dict(secondary.attributes or {})
+            merged_attributes.update(primary.attributes or {})
+            primary.attributes = merged_attributes
+            primary.related_edges = cls._merge_entity_lists(primary.related_edges, secondary.related_edges)
+            primary.related_nodes = cls._merge_entity_lists(primary.related_nodes, secondary.related_nodes)
+
+            if duplicate_index is not None:
+                merged_entities[duplicate_index] = primary
+
+            logger.info(
+                "Collapsing duplicate entity aliases for simulation input: %s <-> %s",
+                existing.name,
+                entity.name,
+            )
+
+        return merged_entities
     
     def filter_defined_entities(
         self, 
@@ -321,14 +512,19 @@ class ZepEntityReader:
             
             filtered_entities.append(entity)
         
-        logger.info(f"筛选完成: 总节点 {total_count}, 符合条件 {len(filtered_entities)}, "
+        deduplicated_entities = self._merge_duplicate_entities(filtered_entities)
+        deduped_count = len(filtered_entities) - len(deduplicated_entities)
+        if deduped_count:
+            logger.info(f"实体别名去重完成: 合并了 {deduped_count} 个重复实体候选")
+
+        logger.info(f"筛选完成: 总节点 {total_count}, 符合条件 {len(deduplicated_entities)}, "
                    f"实体类型: {entity_types_found}")
-        
+
         return FilteredEntities(
-            entities=filtered_entities,
+            entities=deduplicated_entities,
             entity_types=entity_types_found,
             total_count=total_count,
-            filtered_count=len(filtered_entities),
+            filtered_count=len(deduplicated_entities),
         )
     
     def get_entity_with_context(
