@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T14:11:37.319593+00:00`
+- Captured: `2026-03-11T14:17:54.547478+00:00`
 - Issues: `85` total (`open=36`, `closed=49`)
 - Pull requests: `48` total (`open=34`, `closed=14`)
 - Mirrored in `origin`: `48` of `48` PR refs
@@ -39,7 +39,7 @@
 - #123 [closed] プリセット業界知識RAGの導入（方式3: ローカルファイル注入） (no labels)
   - ## 概要 シミュレーションのエージェント生成時に、キュレーション済みの業界知識・ドメイン知識をLLMプロンプトに注入する仕組みを構築する。 ## 背景 - 現状、Topプレイヤー生成・転職先企業推定・キャリア評価はすべてLLMの内部知識のみに依存 - Web検索APIの導入はプロンプトインジェクションリスクがある - Zepグラフに業界知識を入れるとグラフ可視化が汚れる ## 方針（方式3: ローカルファイル注入） - キュレーション済みMarkdownファイルとして業界知識を保持 - 候補者の職種・業界をLLM判定した時点で、該当ファイルのみを読み込みプロンプトに注入 - Zepグラフは候補者データ専用のまま維持 ## ファイル構成案 ``` preset_knowledge/ ├── industries/ │ ├── it_software.md │ ├── consulting…
 - #117 [open] ### Feature Request: English Language Support (enhancement)
-  - local coverage [covered]: The English support sweep now covers workflow chrome plus report/interview parsing: Step 3/5 labels flow through shared i18n dictionaries, and Step 4 tool-output parsers now accept both Chinese and English markers for interview/search results and no-reply placeholders.
+  - local coverage [covered]: The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, and report/interview parsing: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs now localize through shared helpers, and Step 4 tool-output parsers accept both Chinese and English markers for interview/search results and no-reply placeholders.
   - Hi, First of all, thank you for creating and open-sourcing this amazing project. MiroFish is a very interesting and powerful multi-agent prediction engine. Currently, a large portion of the documentation, UI text, and comments appear to be primarily in Chinese. This makes it difficult for international developers to fully understand and use the project. ### Request It would be very helpful if the…
 
 ## Recently Updated Pull Requests

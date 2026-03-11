@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T14:11:37.319593+00:00",
-  "generated_at": "2026-03-11T14:11:37.319593+00:00",
+  "captured_at": "2026-03-11T14:17:54.547478+00:00",
+  "generated_at": "2026-03-11T14:17:54.547478+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -333,19 +333,23 @@
       "local_coverage": {
         "number": 117,
         "status": "covered",
-        "summary": "The English support sweep now covers workflow chrome plus report/interview parsing: Step 3/5 labels flow through shared i18n dictionaries, and Step 4 tool-output parsers now accept both Chinese and English markers for interview/search results and no-reply placeholders.",
+        "summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, and report/interview parsing: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs now localize through shared helpers, and Step 4 tool-output parsers accept both Chinese and English markers for interview/search results and no-reply placeholders.",
         "local_refs": [
+          "frontend/src/components/Step2EnvSetup.vue",
           "frontend/src/components/Step3Simulation.vue",
           "frontend/src/components/Step4Report.vue",
           "frontend/src/components/Step5Interaction.vue",
           "frontend/src/components/reportParsers.js",
+          "frontend/src/components/simulationLogMessages.js",
           "frontend/src/components/step5Profiles.js",
           "frontend/src/components/simulationTimeline.js",
           "frontend/src/i18n/locales/en.js",
-          "frontend/src/i18n/locales/zh.js"
+          "frontend/src/i18n/locales/zh.js",
+          "frontend/tests/simulationLogMessages.test.mjs"
         ],
         "validation": [
           "frontend/tests/reportParsers.test.mjs",
+          "frontend/tests/simulationLogMessages.test.mjs",
           "frontend/tests/simulationTimeline.test.mjs",
           "frontend/tests/step5Profiles.test.mjs",
           "frontend: npm test",
@@ -3108,7 +3112,7 @@
       "local_coverage": {
         "number": 119,
         "status": "partial",
-        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome and locale headers, but broader backend/runtime localization remains a follow-up instead of a blind merge."
+        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, and deterministic Step 2/3 workflow logs, but broader backend/runtime localization remains a follow-up instead of a blind merge."
       }
     },
     {

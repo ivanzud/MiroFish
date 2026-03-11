@@ -307,6 +307,10 @@ import {
 } from './simulationTimeline'
 import { mergeLiveActions } from './liveActionBuffer'
 import { shouldAutoStartSimulation } from './simulationReplay'
+import {
+  formatSimulationPidLog,
+  formatSimulationRoundLog,
+} from './simulationLogMessages'
 
 const props = defineProps({
   simulationId: String,
@@ -432,7 +436,7 @@ const doStartSimulation = async ({ force = true } = {}) => {
         addLog(`✓ ${t('step3.clearedOldLogs')}`)
       }
       addLog(`✓ ${t('step3.simulationStarted')}`)
-      addLog(`  ├─ PID: ${res.data.process_pid || '-'}`)
+      addLog(formatSimulationPidLog(res.data.process_pid, t))
       
       phase.value = 1
       runStatus.value = res.data
@@ -546,12 +550,24 @@ const fetchRunStatus = async () => {
       
       // 分别检测各平台的轮次变化并输出日志
       if (data.twitter_current_round > previousTwitterRound) {
-        addLog(`[Plaza] R${data.twitter_current_round}/${data.total_rounds} | T:${data.twitter_simulated_hours || 0}h | A:${data.twitter_actions_count}`)
+        addLog(formatSimulationRoundLog({
+          platform: 'twitter',
+          currentRound: data.twitter_current_round,
+          totalRounds: data.total_rounds,
+          simulatedHours: data.twitter_simulated_hours,
+          actionsCount: data.twitter_actions_count,
+        }, t))
         prevTwitterRound.value = data.twitter_current_round
       }
       
       if (data.reddit_current_round > previousRedditRound) {
-        addLog(`[Community] R${data.reddit_current_round}/${data.total_rounds} | T:${data.reddit_simulated_hours || 0}h | A:${data.reddit_actions_count}`)
+        addLog(formatSimulationRoundLog({
+          platform: 'reddit',
+          currentRound: data.reddit_current_round,
+          totalRounds: data.total_rounds,
+          simulatedHours: data.reddit_simulated_hours,
+          actionsCount: data.reddit_actions_count,
+        }, t))
         prevRedditRound.value = data.reddit_current_round
       }
 
