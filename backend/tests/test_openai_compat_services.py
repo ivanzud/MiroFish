@@ -153,6 +153,12 @@ def test_oasis_profile_generator_save_profiles_defaults_country_by_locale(tmp_pa
     assert payload[0]["country"] == "China"
 
 
+def test_oasis_profile_generator_default_country_tolerates_uninitialized_locale():
+    generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+
+    assert generator._default_country() == "中国"
+
+
 def test_simulation_config_generator_missing_api_key_mentions_openai_alias(monkeypatch):
     monkeypatch.setattr("app.services.simulation_config_generator.Config.LLM_API_KEY", "")
 

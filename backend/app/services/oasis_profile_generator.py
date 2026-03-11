@@ -192,7 +192,7 @@ class OasisProfileGenerator:
     ]
 
     def _default_country(self) -> str:
-        return "China" if self.locale == "en" else "中国"
+        return "China" if getattr(self, "locale", "zh") == "en" else "中国"
     
     def __init__(
         self, 
