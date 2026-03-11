@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T15:48:53.159009+00:00",
-  "generated_at": "2026-03-11T15:48:53.159009+00:00",
+  "captured_at": "2026-03-11T15:53:05.941364+00:00",
+  "generated_at": "2026-03-11T15:53:05.941364+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -13,6 +13,10 @@
     },
     "mirrored_pull_requests": {
       "mirrored": 36,
+      "not_mirrored": 0
+    },
+    "mirrored_issues": {
+      "mirrored": 38,
       "not_mirrored": 0
     }
   },
@@ -51,7 +55,10 @@
           "bash ./scripts/install_git_hooks.sh --help"
         ],
         "notes": "Mirrored into fork issue #88 on March 11, 2026. The workflow is intentionally opt-in and uses git core.hooksPath instead of requiring Husky."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 88,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/88"
     },
     {
       "number": 145,
@@ -80,7 +87,10 @@
           "triage diff review"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 2,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/2"
     },
     {
       "number": 142,
@@ -107,7 +117,10 @@
         "validation": [
           "triage only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 3,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/3"
     },
     {
       "number": 64,
@@ -159,7 +172,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 4,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/4"
     },
     {
       "number": 140,
@@ -184,7 +200,10 @@
         "validation": [
           "triage only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 5,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/5"
     },
     {
       "number": 135,
@@ -219,7 +238,10 @@
           "backend/tests/test_graph_builder.py::test_set_ontology_accepts_string_attribute_definitions"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 6,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/6"
     },
     {
       "number": 133,
@@ -256,7 +278,10 @@
           "backend/tests/test_app_routes.py::test_root_and_health_endpoints_expose_backend_status"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 7,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/7"
     },
     {
       "number": 117,
@@ -299,7 +324,10 @@
           "frontend: npm run build"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 8,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/8"
     },
     {
       "number": 110,
@@ -341,7 +369,10 @@
           "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_english_message"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 9,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/9"
     },
     {
       "number": 106,
@@ -382,7 +413,10 @@
         "validation": [
           "tracking only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 10,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/10"
     },
     {
       "number": 42,
@@ -426,7 +460,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 11,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/11"
     },
     {
       "number": 84,
@@ -469,7 +506,10 @@
         "validation": [
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 12,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/12"
     },
     {
       "number": 107,
@@ -500,7 +540,10 @@
           "docker compose config"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 13,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/13"
     },
     {
       "number": 99,
@@ -535,7 +578,10 @@
         "validation": [
           "workflow review only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 14,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/14"
     },
     {
       "number": 93,
@@ -572,7 +618,10 @@
           "frontend/tests/baseUrl.test.mjs",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 15,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/15"
     },
     {
       "number": 92,
@@ -599,7 +648,10 @@
         "validation": [
           "workflow review only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 16,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/16"
     },
     {
       "number": 56,
@@ -647,7 +699,10 @@
         "validation": [
           "triage only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 17,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/17"
     },
     {
       "number": 68,
@@ -693,7 +748,10 @@
           "backend/tests/test_simulation_api_i18n.py",
           "backend/tests/test_i18n.py"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 18,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/18"
     },
     {
       "number": 75,
@@ -739,7 +797,10 @@
           "scripts/test_backend_lite.sh"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 19,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/19"
     },
     {
       "number": 76,
@@ -775,7 +836,10 @@
         "validation": [
           "tracking only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 20,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/20"
     },
     {
       "number": 9,
@@ -827,7 +891,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 21,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/21"
     },
     {
       "number": 69,
@@ -864,7 +931,10 @@
         "validation": [
           "documentation review"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 22,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/22"
     },
     {
       "number": 37,
@@ -899,7 +969,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 23,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/23"
     },
     {
       "number": 60,
@@ -952,7 +1025,10 @@
           "scripts/test_backend_lite.sh"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 24,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/24"
     },
     {
       "number": 61,
@@ -992,7 +1068,10 @@
           "frontend/tests/baseUrl.test.mjs",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 25,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/25"
     },
     {
       "number": 62,
@@ -1032,7 +1111,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 26,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/26"
     },
     {
       "number": 58,
@@ -1082,7 +1164,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 27,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/27"
     },
     {
       "number": 46,
@@ -1122,7 +1207,10 @@
         "validation": [
           "backend: uv run pytest -q"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 28,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/28"
     },
     {
       "number": 55,
@@ -1156,7 +1244,10 @@
         "validation": [
           "tracking only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 29,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/29"
     },
     {
       "number": 54,
@@ -1181,7 +1272,10 @@
         "validation": [
           "triage only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 30,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/30"
     },
     {
       "number": 52,
@@ -1210,7 +1304,10 @@
           "backend/tests/test_report_agent.py",
           "backend/tests/test_llm_client.py"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 31,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/31"
     },
     {
       "number": 24,
@@ -1251,7 +1348,10 @@
         "validation": [
           "backend/tests/test_report_agent.py::test_generate_report_survives_empty_llm_section_responses"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 32,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/32"
     },
     {
       "number": 45,
@@ -1287,7 +1387,10 @@
           "frontend/tests/step5Profiles.test.mjs",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 33,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/33"
     },
     {
       "number": 43,
@@ -1323,7 +1426,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 34,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/34"
     },
     {
       "number": 19,
@@ -1360,7 +1466,10 @@
         "validation": [
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 35,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/35"
     },
     {
       "number": 21,
@@ -1387,7 +1496,10 @@
         "validation": [
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 36,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/36"
     },
     {
       "number": 17,
@@ -1413,7 +1525,10 @@
         "validation": [
           "tracking only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 37,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/37"
     },
     {
       "number": 14,
@@ -1448,7 +1563,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 38,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/38"
     }
   ],
   "pull_requests": [
@@ -2783,5 +2901,6 @@
       }
     }
   ],
-  "fork_remote": "origin"
+  "fork_remote": "origin",
+  "mirror_issues_repo": "ivanzud/MiroFish"
 }

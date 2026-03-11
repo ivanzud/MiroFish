@@ -18,6 +18,29 @@
 
       <p class="panel-copy">{{ t('apiConfig.description') }}</p>
 
+      <div class="diagnostics">
+        <div class="diagnostics-header">
+          <span class="diagnostics-title">{{ t('apiConfig.diagnostics.title') }}</span>
+          <button class="diagnostics-refresh" type="button" @click="loadBackendDiagnostics(true)">
+            {{ t('apiConfig.diagnostics.refresh') }}
+          </button>
+        </div>
+        <p class="diagnostics-copy">{{ t('apiConfig.diagnostics.description') }}</p>
+        <p v-if="backendLoading" class="diagnostics-state">{{ t('apiConfig.diagnostics.loading') }}</p>
+        <p v-else-if="backendError" class="diagnostics-state diagnostics-state--error">{{ backendError }}</p>
+        <div v-else-if="backendDiagnostic" class="diagnostics-card">
+          <span class="diagnostics-badge" :class="`diagnostics-badge--${backendDiagnostic.tone}`">
+            {{ backendDiagnostic.headline }}
+          </span>
+          <div class="diagnostics-grid">
+            <div v-for="row in backendDiagnostic.rows" :key="row.label" class="diagnostics-row">
+              <span class="diagnostics-label">{{ row.label }}</span>
+              <span class="diagnostics-value">{{ row.value }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <label class="input-label" for="api-base-url-input">{{ t('apiConfig.inputLabel') }}</label>
       <input
         id="api-base-url-input"
@@ -44,8 +67,10 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { formatApiError } from '../api/errors'
+import { getBackendConfigStatus } from '../api/graph'
 import {
   clearStoredBaseURL,
   getStoredBaseURL,
@@ -53,6 +78,7 @@ import {
   resolveBaseURL,
   setStoredBaseURL,
 } from '../api/baseUrl'
+import { buildBackendDiagnosticModel } from './apiConfigDiagnostics'
 
 const props = defineProps({
   compact: {
@@ -66,6 +92,10 @@ const expanded = ref(false)
 const message = ref('')
 const overrideBaseURL = ref(getStoredBaseURL())
 const draftBaseURL = ref(overrideBaseURL.value)
+const backendLoading = ref(false)
+const backendError = ref('')
+const backendDiagnostic = ref(null)
+const backendLoaded = ref(false)
 
 const activeBaseURL = computed(() => {
   return resolveBaseURL({
@@ -73,6 +103,36 @@ const activeBaseURL = computed(() => {
     envBaseURL: import.meta.env.VITE_API_BASE_URL,
     location: typeof window !== 'undefined' ? window.location : undefined,
   })
+})
+
+const loadBackendDiagnostics = async (forceRefresh = false) => {
+  if (backendLoading.value || (backendLoaded.value && !forceRefresh)) {
+    return
+  }
+
+  backendLoading.value = true
+  backendError.value = ''
+
+  try {
+    const response = await getBackendConfigStatus()
+    backendDiagnostic.value = buildBackendDiagnosticModel(response.data, t)
+    backendLoaded.value = true
+  } catch (err) {
+    backendError.value = formatApiError({
+      err,
+      t,
+      resolveBaseURL,
+      locationOrigin: typeof window !== 'undefined' ? window.location.origin : '',
+    })
+  } finally {
+    backendLoading.value = false
+  }
+}
+
+watch(expanded, (isExpanded) => {
+  if (isExpanded) {
+    loadBackendDiagnostics()
+  }
 })
 
 const save = () => {
@@ -159,9 +219,88 @@ const reset = () => {
 .panel-copy,
 .current-endpoint,
 .message,
-.input-label {
+.input-label,
+.diagnostics-copy,
+.diagnostics-state,
+.diagnostics-label,
+.diagnostics-value {
   font-size: 12px;
   line-height: 1.5;
+}
+
+.diagnostics {
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid #000;
+  background: #fafafa;
+}
+
+.diagnostics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.diagnostics-title {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.diagnostics-refresh {
+  padding: 4px 8px;
+  border: 1px solid #000;
+  background: #fff;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.diagnostics-copy,
+.diagnostics-state {
+  margin-top: 8px;
+}
+
+.diagnostics-state--error {
+  color: #a40000;
+}
+
+.diagnostics-card {
+  margin-top: 8px;
+}
+
+.diagnostics-badge {
+  display: inline-flex;
+  padding: 4px 8px;
+  border: 1px solid #000;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.diagnostics-badge--ready {
+  background: #e6ffed;
+}
+
+.diagnostics-badge--warning {
+  background: #fff4d6;
+}
+
+.diagnostics-grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.diagnostics-row {
+  display: grid;
+  gap: 2px;
+}
+
+.diagnostics-label {
+  color: #666;
+}
+
+.diagnostics-value {
+  word-break: break-word;
 }
 
 .input-label {
