@@ -255,6 +255,8 @@ OPENAI_MODEL=qwen3.5-plus
 
 If `http://localhost:5001` returns `404`, that usually does not mean the backend failed to boot. The backend root is API-only; use `http://localhost:5001/health` for a health check instead.
 
+If Step 5 deep interaction frequently times out for single-agent chat, batch surveys, or all-agent interviews, increase both the frontend request timeout `VITE_API_TIMEOUT` (milliseconds) and the backend Interview wait windows `INTERVIEW_AGENT_TIMEOUT_SECONDS`, `INTERVIEW_BATCH_TIMEOUT_SECONDS`, and `INTERVIEW_ALL_TIMEOUT_SECONDS` (seconds).
+
 #### 2. Install Dependencies
 
 ```bash

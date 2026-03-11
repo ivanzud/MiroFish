@@ -415,6 +415,7 @@ import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { chatWithReport, getReport, getAgentLog } from '../api/report'
 import { interviewAgents, getSimulationProfilesRealtime } from '../api/simulation'
+import { deriveInterviewTimeoutSeconds, resolveTimeoutMs } from '../api/timeout'
 import {
   buildInterviewRequest,
   extractInterviewResponseContent,
@@ -452,6 +453,7 @@ const selectedAgents = ref(new Set())
 const surveyQuestion = ref('')
 const surveyResults = ref([])
 const isSurveying = ref(false)
+const configuredApiTimeoutMs = resolveTimeoutMs(import.meta.env.VITE_API_TIMEOUT)
 
 // Report Data
 const reportOutline = ref(null)
@@ -459,6 +461,11 @@ const generatedSections = ref({})
 const collapsedSections = ref(new Set())
 const currentSectionIndex = ref(null)
 const profiles = ref([])
+
+const interviewTimeoutSeconds = (count = 1) => deriveInterviewTimeoutSeconds({
+  requestTimeoutMs: configuredApiTimeoutMs,
+  interviewsCount: count,
+})
 
 // Helper Methods
 const isSectionCompleted = (sectionIndex) => {
@@ -736,7 +743,8 @@ const sendToAgent = async (message) => {
   
   const res = await interviewAgents({
     simulation_id: props.simulationId,
-    interviews: [buildInterviewRequest(selectedAgent.value, prompt)]
+    interviews: [buildInterviewRequest(selectedAgent.value, prompt)],
+    timeout: interviewTimeoutSeconds(1),
   })
   
   if (res.success && res.data) {
@@ -800,7 +808,8 @@ const submitSurvey = async () => {
     
     const res = await interviewAgents({
       simulation_id: props.simulationId,
-      interviews: interviews
+      interviews: interviews,
+      timeout: interviewTimeoutSeconds(interviews.length),
     })
     
     if (res.success && res.data) {

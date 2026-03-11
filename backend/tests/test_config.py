@@ -45,6 +45,7 @@ def test_validate_comprehensive_detects_invalid_url_and_numeric_values(monkeypat
     monkeypatch.setenv("ZEP_API_KEY", "zep-key")
     monkeypatch.setenv("OPENAI_API_BASE_URL", "ftp://example.test")
     monkeypatch.setenv("OASIS_DEFAULT_MAX_ROUNDS", "not-a-number")
+    monkeypatch.setenv("INTERVIEW_BATCH_TIMEOUT_SECONDS", "0")
     monkeypatch.setenv("REPORT_AGENT_TEMPERATURE", "9")
 
     config_module = load_config_module()
@@ -53,6 +54,7 @@ def test_validate_comprehensive_detects_invalid_url_and_numeric_values(monkeypat
     assert result.is_valid is False
     assert any("OPENAI_API_BASE_URL" in error for error in result.errors)
     assert "OASIS_DEFAULT_MAX_ROUNDS 必须是合法数字，当前值: not-a-number" in result.errors
+    assert "INTERVIEW_BATCH_TIMEOUT_SECONDS 必须 >= 1，当前值: 0" in result.errors
     assert "REPORT_AGENT_TEMPERATURE 必须 <= 2，当前值: 9" in result.errors
 
 
@@ -68,6 +70,7 @@ def test_validate_comprehensive_reports_debug_warning_and_safe_summary(monkeypat
     assert any("DEBUG" in warning for warning in result.warnings)
     assert summary["llm"]["configured"] is True
     assert summary["zep"]["configured"] is True
+    assert summary["simulation"]["interview_timeouts"]["single_seconds"] == 120.0
     assert "api_key" not in str(summary).lower()
     assert config_module.validate_on_startup() is True
 

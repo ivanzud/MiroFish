@@ -255,6 +255,8 @@ OPENAI_MODEL=qwen3.5-plus
 
 如果遇到 `5001` 根路径返回 `404`，那通常不是后端启动失败，而是因为后端只暴露 API 路由；请改用 `http://localhost:5001/health` 检查健康状态。
 
+如果 Step 5 深度互动里对单个角色提问、批量问卷或全局采访经常超时，可以同时调大前端请求超时 `VITE_API_TIMEOUT`（毫秒）以及后端 Interview 等待时间 `INTERVIEW_AGENT_TIMEOUT_SECONDS`、`INTERVIEW_BATCH_TIMEOUT_SECONDS`、`INTERVIEW_ALL_TIMEOUT_SECONDS`（秒）。
+
 #### 2. 安装依赖
 
 ```bash

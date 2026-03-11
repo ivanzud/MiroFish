@@ -46,6 +46,22 @@ def optimize_interview_prompt(prompt: str) -> str:
     return f"{INTERVIEW_PROMPT_PREFIX}{prompt}"
 
 
+def resolve_interview_timeout(raw_timeout, default_timeout: float) -> float:
+    """Parse a positive interview timeout without silently accepting invalid values."""
+    if raw_timeout in (None, ''):
+        return default_timeout
+
+    try:
+        timeout = float(raw_timeout)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("timeout 必须是大于 0 的数字") from exc
+
+    if timeout <= 0:
+        raise ValueError("timeout 必须大于 0")
+
+    return timeout
+
+
 # ============== 实体读取接口 ==============
 
 @simulation_bp.route('/entities/<graph_id>', methods=['GET'])
@@ -2041,7 +2057,7 @@ def interview_agent():
             "prompt": "你对这件事有什么看法？",  // 必填，采访问题
             "platform": "twitter",             // 可选，指定平台（twitter/reddit）
                                                // 不指定时：双平台模拟同时采访两个平台
-            "timeout": 60                      // 可选，超时时间（秒），默认60
+            "timeout": 120                     // 可选，超时时间（秒），默认读取 INTERVIEW_AGENT_TIMEOUT_SECONDS
         }
 
     返回（不指定platform，双平台模式）：
@@ -2085,7 +2101,10 @@ def interview_agent():
         agent_id = data.get('agent_id')
         prompt = data.get('prompt')
         platform = data.get('platform')  # 可选：twitter/reddit/None
-        timeout = data.get('timeout', 60)
+        timeout = resolve_interview_timeout(
+            data.get('timeout'),
+            Config.INTERVIEW_AGENT_TIMEOUT_SECONDS,
+        )
         
         if not simulation_id:
             return jsonify({
@@ -2174,7 +2193,7 @@ def interview_agents_batch():
             ],
             "platform": "reddit",              // 可选，默认平台（被每项的platform覆盖）
                                                // 不指定时：双平台模拟每个Agent同时采访两个平台
-            "timeout": 120                     // 可选，超时时间（秒），默认120
+            "timeout": 240                     // 可选，超时时间（秒），默认读取 INTERVIEW_BATCH_TIMEOUT_SECONDS
         }
 
     返回：
@@ -2201,7 +2220,10 @@ def interview_agents_batch():
         simulation_id = data.get('simulation_id')
         interviews = data.get('interviews')
         platform = data.get('platform')  # 可选：twitter/reddit/None
-        timeout = data.get('timeout', 120)
+        timeout = resolve_interview_timeout(
+            data.get('timeout'),
+            Config.INTERVIEW_BATCH_TIMEOUT_SECONDS,
+        )
 
         if not simulation_id:
             return jsonify({
@@ -2297,7 +2319,7 @@ def interview_all_agents():
             "prompt": "你对这件事整体有什么看法？",  // 必填，采访问题（所有Agent使用相同问题）
             "platform": "reddit",                   // 可选，指定平台（twitter/reddit）
                                                     // 不指定时：双平台模拟每个Agent同时采访两个平台
-            "timeout": 180                          // 可选，超时时间（秒），默认180
+            "timeout": 300                          // 可选，超时时间（秒），默认读取 INTERVIEW_ALL_TIMEOUT_SECONDS
         }
 
     返回：
@@ -2323,7 +2345,10 @@ def interview_all_agents():
         simulation_id = data.get('simulation_id')
         prompt = data.get('prompt')
         platform = data.get('platform')  # 可选：twitter/reddit/None
-        timeout = data.get('timeout', 180)
+        timeout = resolve_interview_timeout(
+            data.get('timeout'),
+            Config.INTERVIEW_ALL_TIMEOUT_SECONDS,
+        )
 
         if not simulation_id:
             return jsonify({

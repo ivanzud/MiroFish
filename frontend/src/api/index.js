@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { resolveBaseURL as resolveApiBaseURL } from './baseUrl'
+import { resolveTimeoutMs } from './timeout'
 
 const createApiError = (message, extras = {}) => {
   const error = new Error(message)
@@ -27,15 +28,12 @@ const getApiLocale = () => {
   }
 }
 
-const resolveTimeout = () => {
-  const envTimeout = Number.parseInt(import.meta.env.VITE_API_TIMEOUT, 10)
-  return Number.isFinite(envTimeout) && envTimeout > 0 ? envTimeout : 300000
-}
+export const getConfiguredApiTimeoutMs = () => resolveTimeoutMs(import.meta.env.VITE_API_TIMEOUT)
 
 // 创建axios实例
 const service = axios.create({
   baseURL: resolveBaseURL(),
-  timeout: resolveTimeout(), // 可配置超时时间，默认5分钟（本地大模型可能需要更长时间）
+  timeout: getConfiguredApiTimeoutMs(), // 可配置超时时间，默认5分钟（本地大模型可能需要更长时间）
   headers: {
     'Content-Type': 'application/json'
   }

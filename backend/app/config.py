@@ -127,6 +127,9 @@ class Config:
     # OASIS模拟配置
     OASIS_DEFAULT_MAX_ROUNDS = _int_env('OASIS_DEFAULT_MAX_ROUNDS', 10)
     OASIS_SIMULATION_DATA_DIR = os.path.join(os.path.dirname(__file__), '../uploads/simulations')
+    INTERVIEW_AGENT_TIMEOUT_SECONDS = _float_env('INTERVIEW_AGENT_TIMEOUT_SECONDS', 120.0)
+    INTERVIEW_BATCH_TIMEOUT_SECONDS = _float_env('INTERVIEW_BATCH_TIMEOUT_SECONDS', 240.0)
+    INTERVIEW_ALL_TIMEOUT_SECONDS = _float_env('INTERVIEW_ALL_TIMEOUT_SECONDS', 300.0)
     
     # OASIS平台可用动作配置
     OASIS_TWITTER_ACTIONS = [
@@ -166,6 +169,9 @@ class Config:
         )
         cls._validate_numeric_env(result, "LLM_MAX_TOKENS", minimum=1, locale=locale)
         cls._validate_numeric_env(result, "OASIS_DEFAULT_MAX_ROUNDS", minimum=1, locale=locale)
+        cls._validate_numeric_env(result, "INTERVIEW_AGENT_TIMEOUT_SECONDS", minimum=1, parser=float, locale=locale)
+        cls._validate_numeric_env(result, "INTERVIEW_BATCH_TIMEOUT_SECONDS", minimum=1, parser=float, locale=locale)
+        cls._validate_numeric_env(result, "INTERVIEW_ALL_TIMEOUT_SECONDS", minimum=1, parser=float, locale=locale)
         cls._validate_numeric_env(result, "REPORT_AGENT_MAX_TOOL_CALLS", minimum=1, locale=locale)
         cls._validate_numeric_env(result, "REPORT_AGENT_MAX_REFLECTION_ROUNDS", minimum=0, locale=locale)
         cls._validate_numeric_env(
@@ -214,6 +220,11 @@ class Config:
             'simulation': {
                 'default_max_rounds': cls.OASIS_DEFAULT_MAX_ROUNDS,
                 'data_dir': cls.OASIS_SIMULATION_DATA_DIR,
+                'interview_timeouts': {
+                    'single_seconds': cls.INTERVIEW_AGENT_TIMEOUT_SECONDS,
+                    'batch_seconds': cls.INTERVIEW_BATCH_TIMEOUT_SECONDS,
+                    'all_seconds': cls.INTERVIEW_ALL_TIMEOUT_SECONDS,
+                },
             },
             'report_agent': {
                 'max_tool_calls': cls.REPORT_AGENT_MAX_TOOL_CALLS,
