@@ -1183,7 +1183,7 @@ class ZepToolsService:
         """
         获取节点相关的所有边
         
-        通过获取图谱所有边，然后过滤出与指定节点相关的边
+        通过获取图谱所有节点和边，过滤并折叠与指定节点及其明显别名相关的边
         
         Args:
             graph_id: 图谱ID
@@ -1201,14 +1201,41 @@ class ZepToolsService:
         )
         
         try:
-            # 获取图谱所有边，然后过滤
+            all_nodes = self.get_all_nodes(graph_id)
             all_edges = self.get_all_edges(graph_id)
-            
-            result = []
-            for edge in all_edges:
-                # 检查边是否与指定节点相关（作为源或目标）
-                if edge.source_node_uuid == node_uuid or edge.target_node_uuid == node_uuid:
-                    result.append(edge)
+
+            requested_node = next((node for node in all_nodes if node.uuid == node_uuid), None)
+            if requested_node is None:
+                result = [
+                    edge
+                    for edge in all_edges
+                    if edge.source_node_uuid == node_uuid or edge.target_node_uuid == node_uuid
+                ]
+            else:
+                deduplicated_nodes, uuid_remap = self._deduplicate_nodes(
+                    all_nodes,
+                    "node edge lookup",
+                )
+                node_map = {node.uuid: node for node in deduplicated_nodes}
+                canonical_uuid = uuid_remap.get(node_uuid, node_uuid)
+                alias_uuids = {
+                    raw_uuid
+                    for raw_uuid, remapped_uuid in uuid_remap.items()
+                    if remapped_uuid == canonical_uuid
+                }
+                alias_uuids.add(node_uuid)
+                alias_uuids.add(canonical_uuid)
+
+                result = self._deduplicate_edge_infos(
+                    [
+                        edge
+                        for edge in all_edges
+                        if edge.source_node_uuid in alias_uuids
+                        or edge.target_node_uuid in alias_uuids
+                    ],
+                    uuid_remap,
+                    node_map,
+                )
             
             self._log(
                 "info",
