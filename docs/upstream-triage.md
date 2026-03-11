@@ -4,7 +4,7 @@ Last refreshed: `2026-03-11`
 
 ## Current focus
 
-- Keep a reusable local snapshot of `666ghj/MiroFish` open issues and pull requests.
+- Keep reusable local snapshots of `666ghj/MiroFish` open and full issue/PR state.
 - Land small, low-risk upstream fixes before considering larger feature branches.
 - Make backend compatibility with OpenAI-compatible providers explicit in code and docs.
 
@@ -18,6 +18,8 @@ Last refreshed: `2026-03-11`
 - `#124` Robust JSON payload extraction: safe parsing hardening plus regression tests.
 - `#127` Handle `None` response content: safe guard against provider edge cases.
 - `#129` Safe subset landed locally: configurable `LLM_MAX_TOKENS`, automatic retry after context-length failures, and report-agent message pruning to reduce overflow crashes.
+- `#130` Add `CONTRIBUTING.md`: safe docs-only cherry-pick.
+- `#132` Add README architecture overview: safe docs-only cherry-pick.
 - OpenAI-compatible backend aliases now work in the standalone simulation runners too, so `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` can be used directly outside the Flask app path.
 
 ## Deferred for later review
@@ -26,10 +28,17 @@ Last refreshed: `2026-03-11`
 - `#105` Security and error-handling sweep: high-value, but touches multiple API surfaces and config defaults, so it needs a dedicated pass instead of bundling into a low-risk cherry-pick cycle.
 ## Validation status
 
+- `python3 -m unittest tests/test_sync_upstream_github.py` passes for the GitHub sync script pagination/state summary logic.
 - `cd frontend && npm run build` passes after landing `#129` subset and the OpenAI-alias compatibility updates.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_llm_client.py -q` passes with targeted regression coverage for context-length retry and default token configuration.
 - `cd backend && uv run pytest -q` is currently blocked in this environment because dependency resolution reaches `tiktoken`, which attempts a source build and fails without a Rust compiler.
 - Follow-up is tracked in local beads issue `mirofish-ba6` to establish a lighter backend validation path.
+
+## Snapshot artifacts
+
+- `docs/upstream-open-state.json` and `docs/upstream-open-summary.md` remain the fast open-work triage view.
+- `docs/upstream-all-state.json` and `docs/upstream-all-summary.md` now capture the full upstream issue/PR state for historical triage and mirroring decisions.
+- `scripts/sync_upstream_github.py` now supports paginated `--state all` refreshes and uses `GITHUB_TOKEN` / `GH_TOKEN` when available to avoid GitHub API rate-limit failures.
 
 ## Practical mirror strategy for the fork
 
