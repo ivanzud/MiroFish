@@ -449,7 +449,7 @@ def test_get_entity_summary_resolves_alias_query_to_canonical_node():
             locale="en",
         ),
     ]
-    service.get_node_edges = lambda graph_id, node_uuid: [
+    service.get_all_edges = lambda graph_id: [
         type(
             "Edge",
             (),
@@ -457,7 +457,7 @@ def test_get_entity_summary_resolves_alias_query_to_canonical_node():
                 "uuid": "edge-1",
                 "name": "MENTIONS",
                 "fact": "特朗普 criticized the proposal.",
-                "source_node_uuid": node_uuid,
+                "source_node_uuid": "node-long",
                 "target_node_uuid": "node-wh",
                 "source_node_name": None,
                 "target_node_name": "白宫",
@@ -475,6 +475,72 @@ def test_get_entity_summary_resolves_alias_query_to_canonical_node():
     assert result["entity_info"]["name"] == "特朗普"
     assert result["entity_info"]["summary"] == "Former president and recurring political actor."
     assert result["entity_info"]["attributes"] == {"country": "US"}
+    assert result["total_relations"] == 1
+    assert result["related_edges"][0]["source_node_uuid"] == "node-short"
+    assert result["related_edges"][0]["source_node_name"] == "特朗普"
+
+
+def test_get_entity_summary_includes_edges_attached_only_to_alias_uuid():
+    service = _make_service()
+    service._locale = lambda: "en"
+    service.search_graph = lambda **kwargs: SearchResult(
+        facts=["特朗普 criticized the proposal."],
+        edges=[],
+        nodes=[],
+        query=str(kwargs.get("query", "")),
+        total_count=1,
+        locale="en",
+    )
+    service.get_all_nodes = lambda graph_id: [
+        NodeInfo(
+            uuid="node-short",
+            name="特朗普",
+            labels=["Entity", "PublicFigure"],
+            summary="Former president and recurring political actor.",
+            attributes={"country": "US"},
+            locale="en",
+        ),
+        NodeInfo(
+            uuid="node-long",
+            name="美国总统特朗普",
+            labels=["Entity", "PublicFigure"],
+            summary="",
+            attributes={},
+            locale="en",
+        ),
+        NodeInfo(
+            uuid="node-wh",
+            name="白宫",
+            labels=["Entity", "Organization"],
+            summary="Executive residence and workplace.",
+            attributes={},
+            locale="en",
+        ),
+    ]
+    service.get_all_edges = lambda graph_id: [
+        type(
+            "Edge",
+            (),
+            {
+                "uuid": "edge-1",
+                "name": "MENTIONS",
+                "fact": "特朗普 criticized the proposal.",
+                "source_node_uuid": "node-long",
+                "target_node_uuid": "node-wh",
+                "source_node_name": "美国总统特朗普",
+                "target_node_name": "白宫",
+                "created_at": None,
+                "valid_at": None,
+                "invalid_at": None,
+                "expired_at": None,
+                "locale": "en",
+            },
+        )(),
+    ]
+
+    result = service.get_entity_summary("graph-1", "特朗普")
+
+    assert result["entity_info"]["name"] == "特朗普"
     assert result["total_relations"] == 1
     assert result["related_edges"][0]["source_node_uuid"] == "node-short"
     assert result["related_edges"][0]["source_node_name"] == "特朗普"

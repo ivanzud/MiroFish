@@ -1246,9 +1246,20 @@ class ZepToolsService:
         
         related_edges = []
         if entity_node:
-            # 传入graph_id参数
+            alias_uuids = {
+                raw_uuid
+                for raw_uuid, canonical_uuid in uuid_remap.items()
+                if canonical_uuid == entity_node.uuid
+            }
+            alias_uuids.add(entity_node.uuid)
+
             related_edges = self._deduplicate_edge_infos(
-                self.get_node_edges(graph_id, entity_node.uuid),
+                [
+                    edge
+                    for edge in self.get_all_edges(graph_id)
+                    if edge.source_node_uuid in alias_uuids
+                    or edge.target_node_uuid in alias_uuids
+                ],
                 uuid_remap,
                 {node.uuid: node for node in all_nodes},
             )
