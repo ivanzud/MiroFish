@@ -65,8 +65,24 @@
           </div>
         </div>
 
+        <!-- Failed State -->
+        <div v-else-if="isFailed" class="failed-placeholder">
+          <div class="failed-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="13"></line>
+              <circle cx="12" cy="16" r="1"></circle>
+            </svg>
+          </div>
+          <h2 class="failed-title">Report generation failed</h2>
+          <p class="failed-text">{{ failureMessage }}</p>
+          <button class="retry-report-btn" :disabled="isRetrying || !simulationId" @click="retryReportGeneration">
+            <span>{{ isRetrying ? 'Retrying...' : 'Retry report generation' }}</span>
+          </button>
+        </div>
+
         <!-- Waiting State -->
-        <div v-if="!reportOutline" class="waiting-placeholder">
+        <div v-else class="waiting-placeholder">
           <div class="waiting-animation">
             <div class="waiting-ring"></div>
             <div class="waiting-ring"></div>
@@ -86,7 +102,7 @@
         </div>
 
         <!-- Workflow Overview (flat, status-based palette) -->
-        <div class="workflow-overview" v-if="agentLogs.length > 0 || reportOutline">
+        <div class="workflow-overview" v-if="agentLogs.length > 0 || reportOutline || isFailed">
           <div class="workflow-metrics">
             <div class="metric">
               <span class="metric-label">Sections</span>
@@ -103,6 +119,16 @@
             <div class="metric metric-right">
               <span class="metric-pill" :class="`pill--${statusClass}`">{{ statusText }}</span>
             </div>
+          </div>
+
+          <div v-if="isFailed" class="failure-banner">
+            <div class="failure-banner-copy">
+              <span class="failure-banner-title">Generation stopped</span>
+              <span class="failure-banner-text">{{ failureMessage }}</span>
+            </div>
+            <button class="failure-banner-btn" :disabled="isRetrying || !simulationId" @click="retryReportGeneration">
+              {{ isRetrying ? 'Retrying...' : 'Retry' }}
+            </button>
           </div>
 
           <div class="workflow-steps" v-if="workflowSteps.length > 0">
@@ -366,7 +392,7 @@
           </TransitionGroup>
 
           <!-- Empty State -->
-          <div v-if="agentLogs.length === 0 && !isComplete" class="workflow-empty">
+          <div v-if="agentLogs.length === 0 && !isComplete && !isFailed" class="workflow-empty">
             <div class="empty-pulse"></div>
             <span>Waiting for agent activity...</span>
           </div>
@@ -392,7 +418,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, h, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAgentLog, getConsoleLog } from '../api/report'
+import { generateReport, getAgentLog, getConsoleLog, getReport } from '../api/report'
 
 const router = useRouter()
 
@@ -411,6 +437,58 @@ const goToInteraction = () => {
   }
 }
 
+const syncReportState = async () => {
+  if (!props.reportId) return
+
+  try {
+    const res = await getReport(props.reportId)
+    if (!res.success || !res.data) return
+
+    reportStatus.value = res.data.status || null
+    reportError.value = res.data.error || ''
+
+    if (reportStatus.value === 'completed') {
+      isComplete.value = true
+      emit('update-status', 'completed')
+      stopPolling()
+      return
+    }
+
+    if (reportStatus.value === 'failed') {
+      currentSectionIndex.value = null
+      emit('update-status', 'error')
+      stopPolling()
+    }
+  } catch (err) {
+    console.warn('Failed to fetch report state:', err)
+  }
+}
+
+const retryReportGeneration = async () => {
+  if (!props.simulationId || isRetrying.value) return
+
+  isRetrying.value = true
+  addLog(`重新生成报告: ${props.simulationId}`)
+
+  try {
+    const res = await generateReport({
+      simulation_id: props.simulationId,
+      force_regenerate: true
+    })
+
+    if (res.success && res.data?.report_id) {
+      router.push({ name: 'Report', params: { reportId: res.data.report_id } })
+      return
+    }
+
+    addLog(`重新生成报告失败: ${res.error || '未知错误'}`)
+  } catch (err) {
+    addLog(`重新生成报告异常: ${err.message}`)
+  } finally {
+    isRetrying.value = false
+  }
+}
+
 // State
 const agentLogs = ref([])
 const consoleLogs = ref([])
@@ -423,6 +501,9 @@ const expandedContent = ref(new Set())
 const expandedLogs = ref(new Set())
 const collapsedSections = ref(new Set())
 const isComplete = ref(false)
+const reportStatus = ref(null)
+const reportError = ref('')
+const isRetrying = ref(false)
 const startTime = ref(null)
 const leftPanel = ref(null)
 const rightPanel = ref(null)
@@ -1702,15 +1783,23 @@ const QuickSearchDisplay = {
 
 // Computed
 const statusClass = computed(() => {
+  if (isFailed.value) return 'failed'
   if (isComplete.value) return 'completed'
   if (agentLogs.value.length > 0) return 'processing'
   return 'pending'
 })
 
 const statusText = computed(() => {
+  if (isFailed.value) return 'Failed'
   if (isComplete.value) return 'Completed'
   if (agentLogs.value.length > 0) return 'Generating...'
   return 'Waiting'
+})
+
+const isFailed = computed(() => reportStatus.value === 'failed')
+
+const failureMessage = computed(() => {
+  return reportError.value || 'The backend stopped before the report finished. Retry with the same simulation to generate a fresh report.'
 })
 
 const totalSections = computed(() => {
@@ -2015,6 +2104,7 @@ const getLogLevelClass = (log) => {
 // Polling
 let agentLogTimer = null
 let consoleLogTimer = null
+let reportStateTimer = null
 
 const fetchAgentLog = async () => {
   if (!props.reportId) return
@@ -2150,16 +2240,22 @@ const fetchConsoleLog = async () => {
 }
 
 const startPolling = () => {
-  if (agentLogTimer || consoleLogTimer) return
+  if (agentLogTimer || consoleLogTimer || reportStateTimer) return
   
+  syncReportState()
   fetchAgentLog()
   fetchConsoleLog()
   
+  reportStateTimer = setInterval(syncReportState, 3000)
   agentLogTimer = setInterval(fetchAgentLog, 2000)
   consoleLogTimer = setInterval(fetchConsoleLog, 1500)
 }
 
 const stopPolling = () => {
+  if (reportStateTimer) {
+    clearInterval(reportStateTimer)
+    reportStateTimer = null
+  }
   if (agentLogTimer) {
     clearInterval(agentLogTimer)
     agentLogTimer = null
@@ -2195,6 +2291,9 @@ watch(() => props.reportId, (newId) => {
     expandedLogs.value = new Set()
     collapsedSections.value = new Set()
     isComplete.value = false
+    reportStatus.value = null
+    reportError.value = ''
+    isRetrying.value = false
     startTime.value = null
     
     startPolling()
@@ -2660,6 +2759,77 @@ watch(() => props.reportId, (newId) => {
   font-size: 14px;
 }
 
+.failed-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px;
+  text-align: center;
+  color: #7F1D1D;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FEF2F2 100%);
+}
+
+.failed-icon {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+
+.failed-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.failed-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #991B1B;
+}
+
+.failed-text {
+  max-width: 520px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #7F1D1D;
+}
+
+.retry-report-btn,
+.failure-banner-btn {
+  border: 0;
+  border-radius: 999px;
+  background: #111827;
+  color: #FFFFFF;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.retry-report-btn {
+  padding: 12px 18px;
+  font-size: 14px;
+}
+
+.retry-report-btn:hover,
+.failure-banner-btn:hover {
+  transform: translateY(-1px);
+}
+
+.retry-report-btn:disabled,
+.failure-banner-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* Right Panel */
 .right-panel {
   flex: 1;
@@ -2775,6 +2945,50 @@ watch(() => props.reportId, (newId) => {
   background: transparent;
   border-style: dashed;
   color: #6B7280;
+}
+
+.metric-pill.pill--failed {
+  background: #FEF2F2;
+  border-color: #FECACA;
+  color: #991B1B;
+}
+
+.failure-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid #FECACA;
+  border-radius: 12px;
+  background: #FEF2F2;
+}
+
+.failure-banner-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.failure-banner-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #991B1B;
+}
+
+.failure-banner-text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #7F1D1D;
+  word-break: break-word;
+}
+
+.failure-banner-btn {
+  margin-left: auto;
+  padding: 8px 14px;
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
 .workflow-steps {
