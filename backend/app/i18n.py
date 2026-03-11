@@ -272,9 +272,37 @@ TRANSLATIONS = {
         "zh": "开始添加 {total_chunks} 个文本块...",
         "en": "Starting to add {total_chunks} text chunks...",
     },
+    "graph.build_batch_sending": {
+        "zh": "发送第 {batch_num}/{total_batches} 批数据 ({chunk_count} 块)...",
+        "en": "Sending batch {batch_num}/{total_batches} ({chunk_count} chunk(s))...",
+    },
+    "graph.build_batch_retry": {
+        "zh": "批次 {batch_num} 发送失败，{wait_time:.0f}秒后重试 ({attempt}/{total})...",
+        "en": "Batch {batch_num} failed to send, retrying in {wait_time:.0f}s ({attempt}/{total})...",
+    },
     "graph.build_waiting_for_zep": {
         "zh": "等待Zep处理数据...",
         "en": "Waiting for Zep to process the data...",
+    },
+    "graph.build_wait_not_required": {
+        "zh": "无需等待（没有 episode）",
+        "en": "No waiting required (no episodes)",
+    },
+    "graph.build_wait_started": {
+        "zh": "开始等待 {total_episodes} 个文本块处理...",
+        "en": "Waiting for {total_episodes} text chunk(s) to finish processing...",
+    },
+    "graph.build_wait_partial_timeout": {
+        "zh": "部分文本块超时，已完成 {completed_count}/{total_episodes}",
+        "en": "Some text chunks timed out, completed {completed_count}/{total_episodes}",
+    },
+    "graph.build_wait_progress": {
+        "zh": "Zep处理中... {completed_count}/{total_episodes} 完成, {pending_count} 待处理 ({elapsed}秒)",
+        "en": "Zep processing... {completed_count}/{total_episodes} complete, {pending_count} pending ({elapsed}s)",
+    },
+    "graph.build_wait_completed": {
+        "zh": "处理完成: {completed_count}/{total_episodes}",
+        "en": "Processing completed: {completed_count}/{total_episodes}",
     },
     "graph.build_fetching_graph_data": {
         "zh": "获取图谱数据...",

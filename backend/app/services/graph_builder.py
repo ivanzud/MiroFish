@@ -700,7 +700,13 @@ class GraphBuilderService:
             if progress_callback:
                 progress = (i + len(batch_chunks)) / total_chunks
                 progress_callback(
-                    f"发送第 {batch_num}/{total_batches} 批数据 ({len(batch_chunks)} 块)...",
+                    tr(
+                        "graph.build_batch_sending",
+                        self.locale,
+                        batch_num=batch_num,
+                        total_batches=total_batches,
+                        chunk_count=len(batch_chunks),
+                    ),
                     progress
                 )
             
@@ -721,7 +727,14 @@ class GraphBuilderService:
                 send_batch,
                 progress_callback=progress_callback,
                 progress_message=lambda attempt, total, wait_time: (
-                    f"批次 {batch_num} 发送失败，{wait_time:.0f}秒后重试 ({attempt}/{total})..."
+                    tr(
+                        "graph.build_batch_retry",
+                        self.locale,
+                        batch_num=batch_num,
+                        wait_time=wait_time,
+                        attempt=attempt,
+                        total=total,
+                    )
                 ),
                 progress_value=(i + len(batch_chunks)) / total_chunks,
             )
@@ -747,7 +760,7 @@ class GraphBuilderService:
         """等待所有 episode 处理完成（通过查询每个 episode 的 processed 状态）"""
         if not episode_uuids:
             if progress_callback:
-                progress_callback("无需等待（没有 episode）", 1.0)
+                progress_callback(tr("graph.build_wait_not_required", self.locale), 1.0)
             return
         
         start_time = time.time()
@@ -756,13 +769,21 @@ class GraphBuilderService:
         total_episodes = len(episode_uuids)
         
         if progress_callback:
-            progress_callback(f"开始等待 {total_episodes} 个文本块处理...", 0)
+            progress_callback(
+                tr("graph.build_wait_started", self.locale, total_episodes=total_episodes),
+                0,
+            )
         
         while pending_episodes:
             if time.time() - start_time > timeout:
                 if progress_callback:
                     progress_callback(
-                        f"部分文本块超时，已完成 {completed_count}/{total_episodes}",
+                        tr(
+                            "graph.build_wait_partial_timeout",
+                            self.locale,
+                            completed_count=completed_count,
+                            total_episodes=total_episodes,
+                        ),
                         completed_count / total_episodes
                     )
                 break
@@ -784,7 +805,14 @@ class GraphBuilderService:
             elapsed = int(time.time() - start_time)
             if progress_callback:
                 progress_callback(
-                    f"Zep处理中... {completed_count}/{total_episodes} 完成, {len(pending_episodes)} 待处理 ({elapsed}秒)",
+                    tr(
+                        "graph.build_wait_progress",
+                        self.locale,
+                        completed_count=completed_count,
+                        total_episodes=total_episodes,
+                        pending_count=len(pending_episodes),
+                        elapsed=elapsed,
+                    ),
                     completed_count / total_episodes if total_episodes > 0 else 0
                 )
             
@@ -792,7 +820,15 @@ class GraphBuilderService:
                 time.sleep(3)  # 每3秒检查一次
         
         if progress_callback:
-            progress_callback(f"处理完成: {completed_count}/{total_episodes}", 1.0)
+            progress_callback(
+                tr(
+                    "graph.build_wait_completed",
+                    self.locale,
+                    completed_count=completed_count,
+                    total_episodes=total_episodes,
+                ),
+                1.0,
+            )
     
     def _get_graph_info(self, graph_id: str) -> GraphInfo:
         """获取图谱信息"""

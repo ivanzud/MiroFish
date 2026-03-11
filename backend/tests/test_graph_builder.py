@@ -1,4 +1,5 @@
 import importlib
+import itertools
 import sys
 from types import ModuleType, SimpleNamespace
 
@@ -200,6 +201,69 @@ def test_add_text_batches_retries_failed_batch_once(graph_builder_module, monkey
     assert len(add_batch_calls) == 2
     assert sleep_calls == [2.0, 1]
     assert any("重试" in message for message, _ in progress_updates)
+
+
+def test_add_text_batches_uses_english_progress_messages(graph_builder_module, monkeypatch):
+    service = build_service(graph_builder_module)
+    service.locale = "en"
+    progress_updates = []
+    sleep_calls = []
+
+    service.client.graph.add_batch = lambda **kwargs: [SimpleNamespace(uuid_="episode-1")]
+    monkeypatch.setattr(graph_builder_module.time, "sleep", sleep_calls.append)
+
+    episode_ids = service.add_text_batches(
+        "graph-1",
+        ["chunk-a", "chunk-b"],
+        batch_size=2,
+        progress_callback=lambda message, progress: progress_updates.append((message, progress)),
+    )
+
+    assert episode_ids == ["episode-1"]
+    assert sleep_calls == [1]
+    assert progress_updates == [("Sending batch 1/1 (2 chunk(s))...", 1.0)]
+
+
+def test_wait_for_episodes_uses_english_progress_messages(graph_builder_module, monkeypatch):
+    service = build_service(graph_builder_module)
+    service.locale = "en"
+    progress_updates = []
+    episode_state = {"episode-1": False}
+    time_values = itertools.repeat(100.0)
+
+    def fake_get(*, uuid_):
+        processed = episode_state[uuid_]
+        episode_state[uuid_] = True
+        return SimpleNamespace(processed=processed)
+
+    service.client.graph.episode = SimpleNamespace(get=fake_get)
+    monkeypatch.setattr(graph_builder_module.time, "sleep", lambda seconds: None)
+    monkeypatch.setattr(graph_builder_module.time, "time", lambda: next(time_values))
+
+    service._wait_for_episodes(
+        ["episode-1"],
+        progress_callback=lambda message, progress: progress_updates.append((message, progress)),
+    )
+
+    assert progress_updates == [
+        ("Waiting for 1 text chunk(s) to finish processing...", 0),
+        ("Zep processing... 0/1 complete, 1 pending (0s)", 0.0),
+        ("Zep processing... 1/1 complete, 0 pending (0s)", 1.0),
+        ("Processing completed: 1/1", 1.0),
+    ]
+
+
+def test_wait_for_episodes_without_entries_uses_english_progress_message(graph_builder_module):
+    service = build_service(graph_builder_module)
+    service.locale = "en"
+    progress_updates = []
+
+    service._wait_for_episodes(
+        [],
+        progress_callback=lambda message, progress: progress_updates.append((message, progress)),
+    )
+
+    assert progress_updates == [("No waiting required (no episodes)", 1.0)]
 
 
 def test_set_ontology_accepts_string_attribute_definitions(graph_builder_module):

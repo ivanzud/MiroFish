@@ -126,6 +126,33 @@ def _translate_graph_task_message(locale: str, message: str | None) -> str | Non
     if add_chunks_match:
         return tr("graph.build_add_batches_start", locale, total_chunks=add_chunks_match.group("count"))
 
+    batch_sending_match = re.match(
+        r"^发送第 (?P<batch_num>\d+)/(?P<total_batches>\d+) 批数据 \((?P<chunk_count>\d+) 块\)\.\.\.$",
+        message,
+    )
+    if batch_sending_match:
+        return tr(
+            "graph.build_batch_sending",
+            locale,
+            batch_num=batch_sending_match.group("batch_num"),
+            total_batches=batch_sending_match.group("total_batches"),
+            chunk_count=batch_sending_match.group("chunk_count"),
+        )
+
+    batch_retry_match = re.match(
+        r"^批次 (?P<batch_num>\d+) 发送失败，(?P<wait_time>\d+(?:\.\d+)?)秒后重试 \((?P<attempt>\d+)/(?P<total>\d+)\)\.\.\.$",
+        message,
+    )
+    if batch_retry_match:
+        return tr(
+            "graph.build_batch_retry",
+            locale,
+            batch_num=batch_retry_match.group("batch_num"),
+            wait_time=float(batch_retry_match.group("wait_time")),
+            attempt=batch_retry_match.group("attempt"),
+            total=batch_retry_match.group("total"),
+        )
+
     graph_created_match = re.match(r"^图谱已创建: (?P<graph_id>.+)$", message)
     if graph_created_match:
         return tr("graph.build_graph_created", locale, graph_id=graph_created_match.group("graph_id"))
@@ -133,6 +160,46 @@ def _translate_graph_task_message(locale: str, message: str | None) -> str | Non
     chunks_split_match = re.match(r"^文本已分割为 (?P<count>\d+) 个块$", message)
     if chunks_split_match:
         return tr("graph.build_chunks_split", locale, total_chunks=chunks_split_match.group("count"))
+
+    wait_none_match = re.match(r"^无需等待（没有 episode）$", message)
+    if wait_none_match:
+        return tr("graph.build_wait_not_required", locale)
+
+    wait_started_match = re.match(r"^开始等待 (?P<count>\d+) 个文本块处理\.\.\.$", message)
+    if wait_started_match:
+        return tr("graph.build_wait_started", locale, total_episodes=wait_started_match.group("count"))
+
+    wait_timeout_match = re.match(r"^部分文本块超时，已完成 (?P<completed>\d+)/(?P<total>\d+)$", message)
+    if wait_timeout_match:
+        return tr(
+            "graph.build_wait_partial_timeout",
+            locale,
+            completed_count=wait_timeout_match.group("completed"),
+            total_episodes=wait_timeout_match.group("total"),
+        )
+
+    wait_progress_match = re.match(
+        r"^Zep处理中\.\.\. (?P<completed>\d+)/(?P<total>\d+) 完成, (?P<pending>\d+) 待处理 \((?P<elapsed>\d+)秒\)$",
+        message,
+    )
+    if wait_progress_match:
+        return tr(
+            "graph.build_wait_progress",
+            locale,
+            completed_count=wait_progress_match.group("completed"),
+            total_episodes=wait_progress_match.group("total"),
+            pending_count=wait_progress_match.group("pending"),
+            elapsed=wait_progress_match.group("elapsed"),
+        )
+
+    wait_completed_match = re.match(r"^处理完成: (?P<completed>\d+)/(?P<total>\d+)$", message)
+    if wait_completed_match:
+        return tr(
+            "graph.build_wait_completed",
+            locale,
+            completed_count=wait_completed_match.group("completed"),
+            total_episodes=wait_completed_match.group("total"),
+        )
 
     failed_match = re.match(r"^构建失败: (?P<details>.+)$", message)
     if failed_match:

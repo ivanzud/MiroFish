@@ -601,4 +601,32 @@ def test_graph_task_payload_translates_worker_progress_messages_in_english(monke
         graph_module._translate_graph_task_message("en", "文本已分割为 2 个块")
         == "Text split into 2 chunk(s)"
     )
+    assert (
+        graph_module._translate_graph_task_message("en", "发送第 1/3 批数据 (2 块)...")
+        == "Sending batch 1/3 (2 chunk(s))..."
+    )
+    assert (
+        graph_module._translate_graph_task_message("en", "批次 2 发送失败，4秒后重试 (1/3)...")
+        == "Batch 2 failed to send, retrying in 4s (1/3)..."
+    )
+    assert (
+        graph_module._translate_graph_task_message("en", "开始等待 5 个文本块处理...")
+        == "Waiting for 5 text chunk(s) to finish processing..."
+    )
+    assert (
+        graph_module._translate_graph_task_message("en", "部分文本块超时，已完成 3/5")
+        == "Some text chunks timed out, completed 3/5"
+    )
+    assert (
+        graph_module._translate_graph_task_message("en", "Zep处理中... 3/5 完成, 2 待处理 (9秒)")
+        == "Zep processing... 3/5 complete, 2 pending (9s)"
+    )
+    assert (
+        graph_module._translate_graph_task_message("en", "处理完成: 5/5")
+        == "Processing completed: 5/5"
+    )
+    assert (
+        graph_module._translate_graph_task_message("en", "无需等待（没有 episode）")
+        == "No waiting required (no episodes)"
+    )
     assert graph_module._translate_graph_task_message("en", "获取图谱信息...") == "Fetching graph info..."
