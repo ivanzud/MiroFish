@@ -8,6 +8,9 @@ const PLATFORM_LABELS = {
   twitter: 'Twitter',
 }
 
+export const getPlatformLabel = (platform, t) =>
+  t ? t(`step5.platforms.${platform}`) : (PLATFORM_LABELS[platform] || platform)
+
 const normalizeAgentId = (value, fallbackIndex) => {
   const parsed = Number.parseInt(value, 10)
   return Number.isInteger(parsed) ? parsed : fallbackIndex
@@ -91,9 +94,9 @@ export const extractInterviewResponseContent = (payload, profile) => {
   return null
 }
 
-export const formatAgentRole = (profile, fallbackRole) => {
+export const formatAgentRole = (profile, fallbackRole, t) => {
   const role = profile?.profession || fallbackRole
-  const platformLabel = profile?.platformLabel
+  const platformLabel = profile?.platform ? getPlatformLabel(profile.platform, t) : profile?.platformLabel
 
   return platformLabel ? `${platformLabel} · ${role}` : role
 }
@@ -123,10 +126,10 @@ export const summarizeInterviewEnvStatus = (envStatus, t) => {
 
   const availablePlatforms = []
   if (envStatus.reddit_available) {
-    availablePlatforms.push('Reddit')
+    availablePlatforms.push(getPlatformLabel('reddit', t))
   }
   if (envStatus.twitter_available) {
-    availablePlatforms.push('Twitter')
+    availablePlatforms.push(getPlatformLabel('twitter', t))
   }
 
   if (!envStatus.env_alive) {
@@ -153,7 +156,7 @@ export const getInterviewGuardMessage = (envStatus, profiles, t) => {
     }
 
     if (!envStatus[`${platform}_available`]) {
-      unavailablePlatforms.add(PLATFORM_LABELS[platform] || platform)
+      unavailablePlatforms.add(getPlatformLabel(platform, t))
     }
   }
 

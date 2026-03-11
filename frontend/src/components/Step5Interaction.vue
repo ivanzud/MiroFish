@@ -439,7 +439,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['add-log', 'update-status'])
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 // State
 const activeTab = ref('chat')
@@ -564,7 +564,7 @@ const selectAgent = (agent) => {
   addLog(t('step5.logs.selectedChatTarget', { name: agent.username }))
 }
 
-const describeAgentRole = (agent) => formatAgentRole(agent, t('step5.unknownProfession'))
+const describeAgentRole = (agent) => formatAgentRole(agent, t('step5.unknownProfession'), t)
 const getInterviewStatusMessage = () => summarizeInterviewEnvStatus(interviewEnvStatus.value, t)
 
 const refreshInterviewEnvStatus = async () => {
@@ -593,7 +593,7 @@ const ensureInterviewReady = async (profilesToCheck = []) => {
 const formatTime = (timestamp) => {
   if (!timestamp) return ''
   try {
-    return new Date(timestamp).toLocaleTimeString('en-US', { 
+    return new Date(timestamp).toLocaleTimeString(locale.value === 'zh' ? 'zh-CN' : 'en-US', {
       hour12: false, 
       hour: '2-digit', 
       minute: '2-digit'

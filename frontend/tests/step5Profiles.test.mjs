@@ -6,6 +6,7 @@ import {
   extractInterviewResponseContent,
   formatInterviewFailureMessage,
   formatAgentRole,
+  getPlatformLabel,
   getInterviewGuardMessage,
   mergeInteractionProfiles,
   summarizeInterviewEnvStatus,
@@ -72,11 +73,16 @@ test('extractInterviewResponseContent prefers the selected platform result', () 
 test('formatAgentRole includes platform label for mixed-platform lists', () => {
   assert.equal(
     formatAgentRole(
-      { profession: 'Analyst', platformLabel: 'Reddit' },
-      'Unknown'
+      { profession: 'Analyst', platform: 'reddit' },
+      'Unknown',
+      t
     ),
-    'Reddit · Analyst'
+    'step5.platforms.reddit:{} · Analyst'
   )
+})
+
+test('getPlatformLabel uses locale translator when available', () => {
+  assert.equal(getPlatformLabel('twitter', t), 'step5.platforms.twitter:{}')
 })
 
 test('summarizeInterviewEnvStatus reports ready platforms', () => {
@@ -89,7 +95,7 @@ test('summarizeInterviewEnvStatus reports ready platforms', () => {
       },
       t
     ),
-    'step5.interviewEnvReadyBanner:{"platforms":"Reddit"}'
+    'step5.interviewEnvReadyBanner:{"platforms":"step5.platforms.reddit:{}"}'
   )
 })
 
@@ -117,7 +123,7 @@ test('getInterviewGuardMessage blocks closed environments and unavailable platfo
       [{ platform: 'twitter' }],
       t
     ),
-    'step5.interviewPlatformUnavailable:{"platforms":"Twitter"}'
+    'step5.interviewPlatformUnavailable:{"platforms":"step5.platforms.twitter:{}"}'
   )
 })
 

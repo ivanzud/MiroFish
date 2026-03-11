@@ -3,6 +3,26 @@
   "captured_at": "2026-03-11T11:55:00+00:00",
   "issues": [
     {
+      "number": 117,
+      "status": "covered",
+      "summary": "The remaining Step 3 timeline labels, Step 5 platform/status labels, and locale-aware interaction timestamps now flow through the shared i18n dictionaries, so the English mode no longer falls back to hardcoded workflow strings in those surfaces.",
+      "local_refs": [
+        "frontend/src/components/Step3Simulation.vue",
+        "frontend/src/components/Step5Interaction.vue",
+        "frontend/src/components/step5Profiles.js",
+        "frontend/src/components/simulationTimeline.js",
+        "frontend/src/i18n/locales/en.js",
+        "frontend/src/i18n/locales/zh.js"
+      ],
+      "validation": [
+        "frontend/tests/simulationTimeline.test.mjs",
+        "frontend/tests/step5Profiles.test.mjs",
+        "frontend: npm test",
+        "frontend: npm run build"
+      ],
+      "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+    },
+    {
       "number": 110,
       "status": "covered",
       "summary": "The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.",
