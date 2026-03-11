@@ -85,6 +85,7 @@ import Step1GraphBuild from '../components/Step1GraphBuild.vue'
 import Step2EnvSetup from '../components/Step2EnvSetup.vue'
 import ApiEndpointControl from '../components/ApiEndpointControl.vue'
 import LanguageSelector from '../components/LanguageSelector.vue'
+import { summarizeGraphData } from '../components/graphPanelData.js'
 import { generateOntology, getProject, buildGraph, getTaskStatus, getGraphData } from '../api/graph'
 import { getPendingUpload, clearPendingUpload } from '../store/pendingUpload'
 import { formatMainViewGraphRefreshLog, formatMainViewStepLog } from './mainViewLogMessages'
@@ -316,8 +317,11 @@ const fetchGraphData = async () => {
       const gRes = await getGraphData(projRes.data.graph_id)
       if (gRes.success) {
         graphData.value = gRes.data
-        const nodeCount = gRes.data.node_count || gRes.data.nodes?.length || 0
-        const edgeCount = gRes.data.edge_count || gRes.data.edges?.length || 0
+        const { nodeCount, edgeCount } = summarizeGraphData({
+          graphData: gRes.data,
+          unnamedNodeLabel: t('common.unnamed'),
+          unknownNodeLabel: t('graphPanel.unknown'),
+        })
         addLog(formatMainViewGraphRefreshLog(nodeCount, edgeCount, t))
       }
     }

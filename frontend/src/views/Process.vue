@@ -27,9 +27,9 @@
           </div>
           <div class="header-right">
             <template v-if="graphData">
-              <span class="stat-item">{{ graphData.node_count || graphData.nodes?.length || 0 }} {{ t('process.nodes') }}</span>
+              <span class="stat-item">{{ displayedNodeCount }} {{ t('process.nodes') }}</span>
               <span class="stat-divider">|</span>
-              <span class="stat-item">{{ graphData.edge_count || graphData.edges?.length || 0 }} {{ t('process.relations') }}</span>
+              <span class="stat-item">{{ displayedEdgeCount }} {{ t('process.relations') }}</span>
               <span class="stat-divider">|</span>
             </template>
             <div class="action-buttons">
@@ -345,11 +345,11 @@
                 <div class="detail-label">{{ t('process.buildResult') }}</div>
                 <div class="build-result">
                   <div class="result-item">
-                    <span class="result-value">{{ graphData.node_count }}</span>
+                    <span class="result-value">{{ displayedNodeCount }}</span>
                     <span class="result-label">{{ t('process.entityNodes') }}</span>
                   </div>
                   <div class="result-item">
-                    <span class="result-value">{{ graphData.edge_count }}</span>
+                    <span class="result-value">{{ displayedEdgeCount }}</span>
                     <span class="result-label">{{ t('process.relationEdges') }}</span>
                   </div>
                   <div class="result-item">
@@ -423,6 +423,7 @@ import { formatApiError } from '../api/errors'
 import { resolveBaseURL } from '../api/index.js'
 import { getPendingUpload, clearPendingUpload } from '../store/pendingUpload'
 import { getDisplayedAliasNames } from '../components/graphAliasDetails.js'
+import { summarizeGraphData } from '../components/graphPanelData.js'
 import { mapProcessGraphData } from './processGraphData.js'
 import * as d3 from 'd3'
 
@@ -448,6 +449,15 @@ const selectedNodeAliasNames = computed(() =>
     ? getDisplayedAliasNames(selectedItem.value.data)
     : [],
 )
+const normalizedGraphSummary = computed(() =>
+  summarizeGraphData({
+    graphData: graphData.value,
+    unnamedNodeLabel: t('process.unnamedNode'),
+    unknownNodeLabel: t('process.unknownNode'),
+  }),
+)
+const displayedNodeCount = computed(() => normalizedGraphSummary.value.nodeCount)
+const displayedEdgeCount = computed(() => normalizedGraphSummary.value.edgeCount)
 const isFullScreen = ref(false)
 
 // DOM引用
@@ -472,22 +482,7 @@ const statusText = computed(() => {
   return t('process.initializingStatus')
 })
 
-const entityTypes = computed(() => {
-  if (!graphData.value?.nodes) return []
-  
-  const typeMap = {}
-  const colors = ['#FF6B35', '#004E89', '#7B2D8E', '#1A936F', '#C5283D', '#E9724C']
-  
-  graphData.value.nodes.forEach(node => {
-    const type = node.labels?.find(l => l !== 'Entity') || 'Entity'
-    if (!typeMap[type]) {
-      typeMap[type] = { name: type, count: 0, color: colors[Object.keys(typeMap).length % colors.length] }
-    }
-    typeMap[type].count++
-  })
-  
-  return Object.values(typeMap)
-})
+const entityTypes = computed(() => normalizedGraphSummary.value.entityTypes)
 
 // 方法
 const goHome = () => {

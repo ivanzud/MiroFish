@@ -41,3 +41,13 @@ export const normalizeGraphPanelData = ({
     entityTypes: Object.values(typeMap),
   }
 }
+
+export const summarizeGraphData = (options = {}) => {
+  const normalized = normalizeGraphPanelData(options)
+
+  return {
+    nodeCount: normalized.nodes.length,
+    edgeCount: normalized.edges.length,
+    entityTypes: normalized.entityTypes,
+  }
+}

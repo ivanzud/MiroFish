@@ -191,6 +191,7 @@ import { computed, ref, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { createSimulation } from '../api/simulation'
+import { summarizeGraphData } from './graphPanelData.js'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -250,10 +251,13 @@ const selectOntologyItem = (item, type) => {
 }
 
 const graphStats = computed(() => {
-  const nodes = props.graphData?.node_count || props.graphData?.nodes?.length || 0
-  const edges = props.graphData?.edge_count || props.graphData?.edges?.length || 0
+  const summary = summarizeGraphData({
+    graphData: props.graphData,
+    unnamedNodeLabel: t('common.unnamed'),
+    unknownNodeLabel: t('common.unknown'),
+  })
   const types = props.projectData?.ontology?.entity_types?.length || 0
-  return { nodes, edges, types }
+  return { nodes: summary.nodeCount, edges: summary.edgeCount, types }
 })
 
 const formatDate = (dateStr) => {
