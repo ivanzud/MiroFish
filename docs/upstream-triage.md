@@ -9,6 +9,14 @@ Last refreshed: `2026-03-11`
 - Keep fork visibility current by annotating upstream snapshots with mirror status and pushing missing clean PR refs into `origin` when they are still review-relevant.
 - Land small, low-risk upstream fixes before considering larger feature branches.
 - Keep OpenAI-compatible backend support verified in both code paths and docs while reviewing the remaining open PR queue.
+- Keep the remaining clean PR queue pruned by recording when a candidate is already superseded locally or no longer safe after later backend/runtime changes.
+
+## Reviewed This Pass
+
+- `#82` is not safe to cherry-pick on top of the current tree. That PR re-adds `unstructured==0.18.18` to the default backend requirements, but this branch intentionally split the optional simulation/runtime stack away from the core backend install so OpenAI-compatible graph/report usage does not pull `camel-oasis` / `unstructured` by default.
+- `#100` is already superseded locally by the shared frontend API base-url resolver. The current client uses runtime-origin resolution plus the documented `3000 -> 5001` same-host fallback, so the older production-relative-only patch no longer adds unique value.
+- `#102` is already subsumed locally by the landed ARM64 Docker workflow update. The current workflow already builds `linux/amd64,linux/arm64` images and also carries the newer Buildx/cache changes from the later workflow sweep.
+- `#87` is already superseded locally by the landed GitHub Actions upgrade sweep (`#116`), so there is no remaining safe delta to cherry-pick from that older workflow-only PR.
 
 ## Landed on this branch
 
@@ -145,6 +153,7 @@ Last refreshed: `2026-03-11`
 - The latest open-only snapshot refreshed again on March 11, 2026 at `2026-03-11T10:28:52.646163+00:00`, and the latest full-state snapshot refreshed again at `2026-03-11T10:29:20.184446+00:00`; fork mirror visibility remains current for all `33` open PR refs and `34` of `47` total PR refs in the historical full snapshot.
 - The latest open-only snapshot refreshed again on March 11, 2026 at `2026-03-11T10:33:31.994836+00:00`, and the latest full-state snapshot refreshed again at `2026-03-11T10:33:49.623074+00:00`; the local machine-readable intake remains current at `36` open issues / `33` open PRs and `83` total issues / `47` total PRs.
 - The latest open-only snapshot refreshed again on March 11, 2026 at `2026-03-11T10:41:22.684718+00:00`, and the latest full-state snapshot refreshed again at `2026-03-11T10:44:08.799553+00:00`; the local machine-readable intake remains current at `36` open issues / `33` open PRs and `83` total issues / `47` total PRs.
+- The latest open-only snapshot refreshed again on March 11, 2026 at `2026-03-11T10:47:42.888405+00:00`, and the latest full-state snapshot refreshed again at `2026-03-11T10:47:58.339463+00:00`; the local machine-readable intake still shows `36` open issues / `33` open PRs and `83` total issues / `47` total PRs, so this pass shifted from intake refresh to pruning the remaining clean-but-stale PR queue.
 - Those JSON snapshots now also retain compact body/comment previews, which made issue `#64` immediately more actionable by exposing the server-deployment and model/Zep configuration clues from the latest discussion without another live GitHub round-trip.
 - `scripts/sync_upstream_github.py` now supports paginated `--state all` refreshes, hydrates PR detail records so machine-readable snapshots include labels plus `mergeable_state`, preserves upstream head/base repo identity and head SHA for deterministic mirroring, annotates optional fork mirror status via `--fork-remote`, and uses `GITHUB_TOKEN` / `GH_TOKEN` when available; when those env vars are absent but the GitHub CLI is authenticated, it falls back to `gh api`, retries transient CLI/API failures, and then degrades to direct HTTP fetches so upstream intake is less brittle under rate-limit or transport hiccup conditions.
 - When direct refresh is blocked by GitHub rate limiting, the sync script now treats a recent matching local snapshot as a valid cached intake source instead of failing hard, which keeps beads/evolve passes moving while preserving machine-readable upstream state on disk.
