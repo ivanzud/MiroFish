@@ -2,6 +2,8 @@ import unittest
 import io
 import json
 import tempfile
+import threading
+import time
 from contextlib import nullcontext
 from pathlib import Path
 from unittest.mock import patch
@@ -1145,6 +1147,49 @@ class SyncUpstreamGithubTests(unittest.TestCase):
             with sync_upstream_github.repo_lock(output_path, "666ghj/MiroFish"):
                 with self.assertRaisesRegex(RuntimeError, "already refreshing 666ghj/MiroFish"):
                     with sync_upstream_github.repo_lock(output_path, "666ghj/MiroFish"):
+                        pass
+
+    def test_repo_lock_waits_for_overlapping_run_when_timeout_allows(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir) / "state.json"
+            release_lock = threading.Event()
+            acquired_lock = threading.Event()
+
+            def hold_lock() -> None:
+                with sync_upstream_github.repo_lock(output_path, "666ghj/MiroFish"):
+                    acquired_lock.set()
+                    release_lock.wait(timeout=1)
+
+            worker = threading.Thread(target=hold_lock)
+            worker.start()
+            self.assertTrue(acquired_lock.wait(timeout=1))
+
+            started = time.monotonic()
+            try:
+                release_lock.set()
+                with sync_upstream_github.repo_lock(
+                    output_path,
+                    "666ghj/MiroFish",
+                    wait_timeout=0.5,
+                    poll_interval=0.01,
+                ):
+                    pass
+            finally:
+                worker.join(timeout=1)
+
+            self.assertGreaterEqual(time.monotonic() - started, 0.0)
+
+    def test_repo_lock_wait_timeout_mentions_lock_wait_flag(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir) / "state.json"
+            with sync_upstream_github.repo_lock(output_path, "666ghj/MiroFish"):
+                with self.assertRaisesRegex(RuntimeError, "--lock-wait-seconds"):
+                    with sync_upstream_github.repo_lock(
+                        output_path,
+                        "666ghj/MiroFish",
+                        wait_timeout=0.02,
+                        poll_interval=0.01,
+                    ):
                         pass
 
     def test_main_raises_on_rate_limit_when_cache_is_stale(self):

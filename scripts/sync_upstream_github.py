@@ -921,19 +921,25 @@ def lock_path_for(output_path: Path, repo: str) -> Path:
 
 
 @contextlib.contextmanager
-def repo_lock(output_path: Path, repo: str):
+def repo_lock(output_path: Path, repo: str, wait_timeout: float = 0.0, poll_interval: float = 0.1):
     lock_path = lock_path_for(output_path, repo)
     lock_path.parent.mkdir(parents=True, exist_ok=True)
     with open(lock_path, "w", encoding="utf-8") as lock_file:
-        try:
-            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except OSError as exc:
-            if exc.errno in (errno.EACCES, errno.EAGAIN):
-                raise RuntimeError(
-                    f"Another sync_upstream_github.py run is already refreshing {repo}. "
-                    "Wait for it to finish and rerun sequentially."
-                ) from exc
-            raise
+        deadline = time.monotonic() + max(0.0, wait_timeout)
+        while True:
+            try:
+                fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except OSError as exc:
+                if exc.errno not in (errno.EACCES, errno.EAGAIN):
+                    raise
+                if time.monotonic() >= deadline:
+                    raise RuntimeError(
+                        f"Another sync_upstream_github.py run is already refreshing {repo}. "
+                        f"Wait for it to finish and rerun sequentially, or increase --lock-wait-seconds "
+                        f"(current={wait_timeout:g})."
+                    ) from exc
+                time.sleep(max(0.01, poll_interval))
         lock_file.write(str(os.getpid()))
         lock_file.flush()
         try:
@@ -1005,6 +1011,15 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--lock-wait-seconds",
+        type=float,
+        default=0.0,
+        help=(
+            "How long to wait for another sync_upstream_github.py run holding the repo lock "
+            "before failing. Defaults to 0 for fail-fast behavior."
+        ),
+    )
+    parser.add_argument(
         "--coverage-map",
         default="docs/upstream-coverage.json",
         help=(
@@ -1049,7 +1064,7 @@ def main() -> int:
         cached_payload["_cache_path"] = str(output_path)
     owner, name = args.repo.split("/", 1)
 
-    with repo_lock(output_path, args.repo):
+    with repo_lock(output_path, args.repo, wait_timeout=args.lock_wait_seconds):
         try:
             issue_items = github_api_paginated(
                 f"/repos/{owner}/{name}/issues",
