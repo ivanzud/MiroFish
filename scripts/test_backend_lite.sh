@@ -27,5 +27,6 @@ fi
   "${ROOT_DIR}/backend/tests/test_report_agent.py" \
   "${ROOT_DIR}/backend/tests/test_simulation_api_i18n.py" \
   "${ROOT_DIR}/backend/tests/test_simulation_runner_actions.py" \
+  "${ROOT_DIR}/backend/tests/test_print_config_status.py" \
   "${ROOT_DIR}/backend/tests/test_openai_compat_services.py" \
   -q

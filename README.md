@@ -257,6 +257,7 @@ OPENAI_MODEL=qwen3.5-plus
 验证是否已按 OpenAI-compatible 方式接入：
 
 - 先访问 `http://localhost:5001/health`，确认后端进程已启动。
+- 或直接运行 `npm run check:backend-config`，无需启动服务也能打印同样的非敏感 config-status JSON。
 - 再访问 `http://localhost:5001/api/graph/config/status`。返回 JSON 中 `llm.backend_mode` 应为 `openai_compatible`。
 - `summary.llm.sources` 会显示当前实际生效的是 `LLM_*` 还是 `OPENAI_*` 环境变量，以及具体命中了 `OPENAI_BASE_URL` 还是 `OPENAI_API_BASE_URL`，因此可以直接确认 Codex / OpenAI / DashScope Coding Plan 这类兼容网关是否已被正确识别，不需要额外设置 `LLM_PROVIDER`。
 

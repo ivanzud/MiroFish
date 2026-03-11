@@ -257,6 +257,7 @@ OPENAI_MODEL=qwen3.5-plus
 Verify the OpenAI-compatible path explicitly:
 
 - Visit `http://localhost:5001/health` to confirm the backend is up.
+- Or run `npm run check:backend-config` to print the same non-sensitive config-status payload without starting the server.
 - Then open `http://localhost:5001/api/graph/config/status`. The JSON payload should report `llm.backend_mode = openai_compatible`.
 - `summary.llm.sources` tells you whether MiroFish resolved `LLM_*` or `OPENAI_*` variables and whether the active base URL came from `OPENAI_BASE_URL` or `OPENAI_API_BASE_URL`, which is the quickest way to confirm a Codex/OpenAI-compatible gateway is wired correctly without adding `LLM_PROVIDER`.
 
