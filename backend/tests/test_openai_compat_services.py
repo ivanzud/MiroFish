@@ -13,6 +13,7 @@ sys.modules.setdefault("zep_cloud.client", fake_zep_client)
 
 from app.services.oasis_profile_generator import OasisAgentProfile, OasisProfileGenerator
 from app.services.graph_builder import GraphBuilderService
+from app.services import simulation_config_generator as simulation_config_generator_module
 from app.services.simulation_config_generator import SimulationConfigGenerator
 from app.services.zep_entity_reader import ZepEntityReader
 from app.services.zep_graph_memory_updater import AgentActivity, ZepGraphMemoryUpdater
@@ -205,6 +206,90 @@ def test_simulation_config_generator_english_prompts_switch_user_facing_language
     assert "poster_type must match one of the available entity types exactly" in event_system
     assert "Generate social-media activity configurations for each entity below." in agent_prompt
     assert "social-media behavior analyst" in agent_system
+
+
+def test_simulation_config_generator_logs_english_time_config_adjustments(monkeypatch):
+    messages = []
+    fake_logger = SimpleNamespace(warning=messages.append)
+    monkeypatch.setattr(simulation_config_generator_module, "logger", fake_logger)
+
+    generator = SimulationConfigGenerator.__new__(SimulationConfigGenerator)
+    generator.locale = "en"
+
+    parsed = generator._parse_time_config(
+        {
+            "agents_per_hour_min": 10,
+            "agents_per_hour_max": 11,
+        },
+        num_entities=4,
+    )
+
+    assert parsed.agents_per_hour_min == 1
+    assert parsed.agents_per_hour_max == 2
+    assert messages == [
+        "agents_per_hour_min (10) exceeded the total agent count (4); adjusted automatically",
+        "agents_per_hour_max (11) exceeded the total agent count (4); adjusted automatically",
+    ]
+
+
+def test_simulation_config_generator_logs_english_min_ge_max_adjustment(monkeypatch):
+    messages = []
+    fake_logger = SimpleNamespace(warning=messages.append)
+    monkeypatch.setattr(simulation_config_generator_module, "logger", fake_logger)
+
+    generator = SimulationConfigGenerator.__new__(SimulationConfigGenerator)
+    generator.locale = "en"
+
+    parsed = generator._parse_time_config(
+        {
+            "agents_per_hour_min": 4,
+            "agents_per_hour_max": 4,
+        },
+        num_entities=10,
+    )
+
+    assert parsed.agents_per_hour_min == 2
+    assert parsed.agents_per_hour_max == 4
+    assert messages == [
+        "agents_per_hour_min was >= max; adjusted to 2",
+    ]
+
+
+def test_simulation_config_generator_logs_english_initial_post_assignment(monkeypatch):
+    info_messages = []
+    warning_messages = []
+    fake_logger = SimpleNamespace(
+        info=info_messages.append,
+        warning=warning_messages.append,
+    )
+    monkeypatch.setattr(simulation_config_generator_module, "logger", fake_logger)
+
+    generator = SimulationConfigGenerator.__new__(SimulationConfigGenerator)
+    generator.locale = "en"
+
+    event_config = generator._parse_event_config(
+        {
+            "initial_posts": [
+                {"content": "Official update", "poster_type": "Official"},
+                {"content": "Unexpected voice", "poster_type": "Alien"},
+            ]
+        }
+    )
+    agent_configs = [
+        SimpleNamespace(agent_id=7, entity_type="University", influence_weight=3.0),
+        SimpleNamespace(agent_id=4, entity_type="Student", influence_weight=1.0),
+    ]
+
+    updated = generator._assign_initial_post_agents(event_config, agent_configs)
+
+    assert [post["poster_agent_id"] for post in updated.initial_posts] == [7, 7]
+    assert warning_messages == [
+        "No matching agent found for poster_type 'alien'; using the highest-influence agent"
+    ]
+    assert info_messages == [
+        "Initial post assignment: poster_type='official' -> agent_id=7",
+        "Initial post assignment: poster_type='alien' -> agent_id=7",
+    ]
 
 
 def test_zep_services_missing_key_support_english_request_locale(monkeypatch):

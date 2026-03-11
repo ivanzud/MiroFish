@@ -759,20 +759,35 @@ Field notes:
         # 获取原始值
         agents_per_hour_min = result.get("agents_per_hour_min", max(1, num_entities // 15))
         agents_per_hour_max = result.get("agents_per_hour_max", max(5, num_entities // 5))
-        
+
         # 验证并修正：确保不超过总agent数
         if agents_per_hour_min > num_entities:
-            logger.warning(f"agents_per_hour_min ({agents_per_hour_min}) 超过总Agent数 ({num_entities})，已修正")
+            logger.warning(
+                self._tr(
+                    f"agents_per_hour_min ({agents_per_hour_min}) exceeded the total agent count ({num_entities}); adjusted automatically",
+                    f"agents_per_hour_min ({agents_per_hour_min}) 超过总Agent数 ({num_entities})，已修正",
+                )
+            )
             agents_per_hour_min = max(1, num_entities // 10)
-        
+
         if agents_per_hour_max > num_entities:
-            logger.warning(f"agents_per_hour_max ({agents_per_hour_max}) 超过总Agent数 ({num_entities})，已修正")
+            logger.warning(
+                self._tr(
+                    f"agents_per_hour_max ({agents_per_hour_max}) exceeded the total agent count ({num_entities}); adjusted automatically",
+                    f"agents_per_hour_max ({agents_per_hour_max}) 超过总Agent数 ({num_entities})，已修正",
+                )
+            )
             agents_per_hour_max = max(agents_per_hour_min + 1, num_entities // 2)
-        
+
         # 确保 min < max
         if agents_per_hour_min >= agents_per_hour_max:
             agents_per_hour_min = max(1, agents_per_hour_max // 2)
-            logger.warning(f"agents_per_hour_min >= max，已修正为 {agents_per_hour_min}")
+            logger.warning(
+                self._tr(
+                    f"agents_per_hour_min was >= max; adjusted to {agents_per_hour_min}",
+                    f"agents_per_hour_min >= max，已修正为 {agents_per_hour_min}",
+                )
+            )
         
         return TimeSimulationConfig(
             total_simulation_hours=result.get("total_simulation_hours", 72),
@@ -988,7 +1003,12 @@ Return JSON only (no markdown):
             
             # 3. 如果仍未找到，使用影响力最高的 agent
             if matched_agent_id is None:
-                logger.warning(f"未找到类型 '{poster_type}' 的匹配 Agent，使用影响力最高的 Agent")
+                logger.warning(
+                    self._tr(
+                        f"No matching agent found for poster_type '{poster_type}'; using the highest-influence agent",
+                        f"未找到类型 '{poster_type}' 的匹配 Agent，使用影响力最高的 Agent",
+                    )
+                )
                 if agent_configs:
                     # 按影响力排序，选择影响力最高的
                     sorted_agents = sorted(agent_configs, key=lambda a: a.influence_weight, reverse=True)
@@ -1001,8 +1021,13 @@ Return JSON only (no markdown):
                 "poster_type": post.get("poster_type", "Unknown"),
                 "poster_agent_id": matched_agent_id
             })
-            
-            logger.info(f"初始帖子分配: poster_type='{poster_type}' -> agent_id={matched_agent_id}")
+
+            logger.info(
+                self._tr(
+                    f"Initial post assignment: poster_type='{poster_type}' -> agent_id={matched_agent_id}",
+                    f"初始帖子分配: poster_type='{poster_type}' -> agent_id={matched_agent_id}",
+                )
+            )
         
         event_config.initial_posts = updated_posts
         return event_config
