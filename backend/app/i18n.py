@@ -144,6 +144,46 @@ TRANSLATIONS = {
         "zh": "图谱已删除: {graph_id}",
         "en": "Graph deleted: {graph_id}",
     },
+    "graph.build_started": {
+        "zh": "图谱构建任务已启动，请通过 /task/{task_id} 查询进度",
+        "en": "The graph build task has started. Query /task/{task_id} for progress.",
+    },
+    "graph.build_service_initializing": {
+        "zh": "初始化图谱构建服务...",
+        "en": "Initializing the graph build service...",
+    },
+    "graph.build_chunking": {
+        "zh": "文本分块中...",
+        "en": "Splitting text into chunks...",
+    },
+    "graph.build_creating_graph": {
+        "zh": "创建Zep图谱...",
+        "en": "Creating the Zep graph...",
+    },
+    "graph.build_setting_ontology": {
+        "zh": "设置本体定义...",
+        "en": "Setting the ontology...",
+    },
+    "graph.build_add_batches_start": {
+        "zh": "开始添加 {total_chunks} 个文本块...",
+        "en": "Starting to add {total_chunks} text chunks...",
+    },
+    "graph.build_waiting_for_zep": {
+        "zh": "等待Zep处理数据...",
+        "en": "Waiting for Zep to process the data...",
+    },
+    "graph.build_fetching_graph_data": {
+        "zh": "获取图谱数据...",
+        "en": "Fetching graph data...",
+    },
+    "graph.build_completed": {
+        "zh": "图谱构建完成",
+        "en": "Graph build completed",
+    },
+    "graph.build_failed": {
+        "zh": "构建失败: {details}",
+        "en": "Build failed: {details}",
+    },
     "report.simulation_id_required": {
         "zh": "请提供 simulation_id",
         "en": "Please provide simulation_id",

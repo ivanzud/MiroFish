@@ -386,3 +386,122 @@ json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
     assert persisted_project.status == graph_module.ProjectStatus.FAILED
     assert "ZEP_API_KEY" in persisted_project.error
     assert "Traceback" not in persisted_project.error
+
+
+def test_build_graph_response_and_task_messages_are_localized_in_english(monkeypatch, tmp_path):
+    client, graph_module = create_graph_build_test_client(monkeypatch, tmp_path)
+
+    graph_module.TaskManager()._tasks.clear()
+
+    class ImmediateThread:
+        def __init__(self, target=None, args=(), kwargs=None, daemon=None):
+            self._target = target
+            self._args = args
+            self._kwargs = kwargs or {}
+            self.daemon = daemon
+
+        def start(self):
+            self._target(*self._args, **self._kwargs)
+
+    monkeypatch.setattr(graph_module.threading, "Thread", ImmediateThread)
+    monkeypatch.setattr(graph_module.TextProcessor, "split_text", lambda text, chunk_size, overlap: ["chunk-1", "chunk-2"])
+    monkeypatch.setattr(graph_module.GraphBuilderService, "create_graph", lambda self, name: "graph_en_123")
+    monkeypatch.setattr(graph_module.GraphBuilderService, "set_ontology", lambda self, graph_id, ontology: None)
+    monkeypatch.setattr(
+        graph_module.GraphBuilderService,
+        "add_text_batches",
+        lambda self, graph_id, chunks, batch_size, progress_callback: ["episode-1", "episode-2"],
+    )
+    monkeypatch.setattr(
+        graph_module.GraphBuilderService,
+        "_wait_for_episodes",
+        lambda self, episode_uuids, progress_callback: None,
+    )
+    monkeypatch.setattr(
+        graph_module.GraphBuilderService,
+        "get_graph_data",
+        lambda self, graph_id: {"node_count": 3, "edge_count": 2},
+    )
+
+    project = graph_module.ProjectManager.create_project("English graph build")
+    project.status = graph_module.ProjectStatus.ONTOLOGY_GENERATED
+    project.ontology = {
+        "entity_types": [{"name": "Person", "attributes": []}],
+        "edge_types": [],
+    }
+    graph_module.ProjectManager.save_project(project)
+    graph_module.ProjectManager.save_extracted_text(project.project_id, "test text")
+
+    response = client.post(
+        "/api/graph/build",
+        headers={"X-Locale": "en"},
+        json={"project_id": project.project_id, "graph_name": "English graph"},
+    )
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["data"]["message"] == (
+        f"The graph build task has started. Query /task/{payload['data']['task_id']} for progress."
+    )
+
+    task_response = client.get(
+        f"/api/graph/task/{payload['data']['task_id']}",
+        headers={"X-Locale": "en"},
+    )
+    task_payload = task_response.get_json()
+
+    assert task_response.status_code == 200
+    assert task_payload["data"]["status"] == "completed"
+    assert task_payload["data"]["message"] == "Graph build completed"
+
+
+def test_failed_graph_task_message_is_localized_in_english(monkeypatch, tmp_path):
+    client, graph_module = create_graph_build_test_client(monkeypatch, tmp_path)
+
+    graph_module.TaskManager()._tasks.clear()
+
+    class ImmediateThread:
+        def __init__(self, target=None, args=(), kwargs=None, daemon=None):
+            self._target = target
+            self._args = args
+            self._kwargs = kwargs or {}
+            self.daemon = daemon
+
+        def start(self):
+            self._target(*self._args, **self._kwargs)
+
+    monkeypatch.setattr(graph_module.threading, "Thread", ImmediateThread)
+    monkeypatch.setattr(graph_module.TextProcessor, "split_text", lambda text, chunk_size, overlap: ["chunk-1"])
+    monkeypatch.setattr(
+        graph_module.GraphBuilderService,
+        "create_graph",
+        lambda self, name: (_ for _ in ()).throw(RuntimeError("invalid graph payload")),
+    )
+
+    project = graph_module.ProjectManager.create_project("English auth failure test")
+    project.status = graph_module.ProjectStatus.ONTOLOGY_GENERATED
+    project.ontology = {
+        "entity_types": [{"name": "Person", "attributes": []}],
+        "edge_types": [],
+    }
+    graph_module.ProjectManager.save_project(project)
+    graph_module.ProjectManager.save_extracted_text(project.project_id, "test text")
+
+    response = client.post(
+        "/api/graph/build",
+        headers={"X-Locale": "en"},
+        json={"project_id": project.project_id, "graph_name": "English failure graph"},
+    )
+    payload = response.get_json()
+
+    task_response = client.get(
+        f"/api/graph/task/{payload['data']['task_id']}",
+        headers={"X-Locale": "en"},
+    )
+    task_payload = task_response.get_json()
+
+    assert task_response.status_code == 200
+    assert task_payload["data"]["status"] == "failed"
+    assert task_payload["data"]["message"] == "Build failed: invalid graph payload"
+    assert task_payload["data"]["error"] == "invalid graph payload"

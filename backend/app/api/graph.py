@@ -4,6 +4,7 @@
 """
 
 import os
+import re
 import traceback
 import threading
 from flask import request, jsonify
@@ -22,6 +23,16 @@ from ..models.project import ProjectManager, ProjectStatus
 
 # 获取日志器
 logger = get_logger('mirofish.api')
+
+GRAPH_TASK_MESSAGE_MAP = {
+    "初始化图谱构建服务...": "graph.build_service_initializing",
+    "文本分块中...": "graph.build_chunking",
+    "创建Zep图谱...": "graph.build_creating_graph",
+    "设置本体定义...": "graph.build_setting_ontology",
+    "等待Zep处理数据...": "graph.build_waiting_for_zep",
+    "获取图谱数据...": "graph.build_fetching_graph_data",
+    "图谱构建完成": "graph.build_completed",
+}
 
 
 def allowed_file(filename: str) -> bool:
@@ -72,6 +83,34 @@ def _backend_config_error_response(locale: str):
             "summary": Config.get_config_summary(),
         }
     }), 503
+
+
+def _translate_graph_task_message(locale: str, message: str | None) -> str | None:
+    if locale != "en" or not message:
+        return message
+
+    message_key = GRAPH_TASK_MESSAGE_MAP.get(message)
+    if message_key:
+        return tr(message_key, locale)
+
+    add_chunks_match = re.match(r"^开始添加 (?P<count>\d+) 个文本块\.\.\.$", message)
+    if add_chunks_match:
+        return tr("graph.build_add_batches_start", locale, total_chunks=add_chunks_match.group("count"))
+
+    failed_match = re.match(r"^构建失败: (?P<details>.+)$", message)
+    if failed_match:
+        return tr("graph.build_failed", locale, details=failed_match.group("details"))
+
+    return message
+
+
+def _translate_graph_task_payload(locale: str, payload: dict | None) -> dict | None:
+    if not payload:
+        return payload
+
+    translated = dict(payload)
+    translated["message"] = _translate_graph_task_message(locale, payload.get("message"))
+    return translated
 
 
 # ============== 项目管理接口 ==============
@@ -483,7 +522,7 @@ def build_graph():
                 task_manager.update_task(
                     task_id, 
                     status=TaskStatus.PROCESSING,
-                    message="初始化图谱构建服务..."
+                    message=tr("graph.build_service_initializing", locale)
                 )
                 
                 # 创建图谱构建服务
@@ -492,7 +531,7 @@ def build_graph():
                 # 分块
                 task_manager.update_task(
                     task_id,
-                    message="文本分块中...",
+                    message=tr("graph.build_chunking", locale),
                     progress=5
                 )
                 chunks = TextProcessor.split_text(
@@ -505,7 +544,7 @@ def build_graph():
                 # 创建图谱
                 task_manager.update_task(
                     task_id,
-                    message="创建Zep图谱...",
+                    message=tr("graph.build_creating_graph", locale),
                     progress=10
                 )
                 graph_id = builder.create_graph(name=graph_name)
@@ -517,7 +556,7 @@ def build_graph():
                 # 设置本体
                 task_manager.update_task(
                     task_id,
-                    message="设置本体定义...",
+                    message=tr("graph.build_setting_ontology", locale),
                     progress=15
                 )
                 builder.set_ontology(graph_id, ontology)
@@ -533,7 +572,7 @@ def build_graph():
                 
                 task_manager.update_task(
                     task_id,
-                    message=f"开始添加 {total_chunks} 个文本块...",
+                    message=tr("graph.build_add_batches_start", locale, total_chunks=total_chunks),
                     progress=15
                 )
                 
@@ -547,7 +586,7 @@ def build_graph():
                 # 等待Zep处理完成（查询每个episode的processed状态）
                 task_manager.update_task(
                     task_id,
-                    message="等待Zep处理数据...",
+                    message=tr("graph.build_waiting_for_zep", locale),
                     progress=55
                 )
                 
@@ -564,7 +603,7 @@ def build_graph():
                 # 获取图谱数据
                 task_manager.update_task(
                     task_id,
-                    message="获取图谱数据...",
+                    message=tr("graph.build_fetching_graph_data", locale),
                     progress=95
                 )
                 graph_data = builder.get_graph_data(graph_id)
@@ -581,7 +620,7 @@ def build_graph():
                 task_manager.update_task(
                     task_id,
                     status=TaskStatus.COMPLETED,
-                    message="图谱构建完成",
+                    message=tr("graph.build_completed", locale),
                     progress=100,
                     result={
                         "project_id": project_id,
@@ -605,7 +644,7 @@ def build_graph():
                 task_manager.update_task(
                     task_id,
                     status=TaskStatus.FAILED,
-                    message=f"构建失败: {user_error}",
+                    message=tr("graph.build_failed", locale, details=user_error),
                     error=user_error
                 )
         
@@ -618,7 +657,7 @@ def build_graph():
             "data": {
                 "project_id": project_id,
                 "task_id": task_id,
-                "message": "图谱构建任务已启动，请通过 /task/{task_id} 查询进度"
+                "message": tr("graph.build_started", locale, task_id=task_id)
             }
         })
         
@@ -643,7 +682,7 @@ def get_task(task_id: str):
     
     return jsonify({
         "success": True,
-        "data": task.to_dict()
+        "data": _translate_graph_task_payload(get_locale(), task.to_dict())
     })
 
 
@@ -656,7 +695,7 @@ def list_tasks():
     
     return jsonify({
         "success": True,
-        "data": [t.to_dict() for t in tasks],
+        "data": [_translate_graph_task_payload(get_locale(), t) for t in tasks],
         "count": len(tasks)
     })
 
