@@ -36,6 +36,7 @@ class SearchResult:
     nodes: List[Dict[str, Any]]
     query: str
     total_count: int
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -48,10 +49,19 @@ class SearchResult:
     
     def to_text(self) -> str:
         """转换为文本格式，供LLM理解"""
-        text_parts = [f"搜索查询: {self.query}", f"找到 {self.total_count} 条相关信息"]
-        
+        text_parts = [
+            f"{_localized_text(self.locale, '搜索查询', 'Search query')}: {self.query}",
+            (
+                f"{_localized_text(self.locale, '找到', 'Found')} "
+                f"{self.total_count} "
+                f"{_localized_text(self.locale, '条相关信息', 'relevant items')}"
+            ),
+        ]
+
         if self.facts:
-            text_parts.append("\n### 相关事实:")
+            text_parts.append(
+                f"\n### {_localized_text(self.locale, '相关事实', 'Relevant facts')}:"
+            )
             for i, fact in enumerate(self.facts, 1):
                 text_parts.append(f"{i}. {fact}")
         
@@ -66,6 +76,7 @@ class NodeInfo:
     labels: List[str]
     summary: str
     attributes: Dict[str, Any]
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -78,8 +89,15 @@ class NodeInfo:
     
     def to_text(self) -> str:
         """转换为文本格式"""
-        entity_type = next((l for l in self.labels if l not in ["Entity", "Node"]), "未知类型")
-        return f"实体: {self.name} (类型: {entity_type})\n摘要: {self.summary}"
+        entity_type = next(
+            (l for l in self.labels if l not in ["Entity", "Node"]),
+            _localized_text(self.locale, "未知类型", "Unknown type"),
+        )
+        return (
+            f"{_localized_text(self.locale, '实体', 'Entity')}: {self.name} "
+            f"({_localized_text(self.locale, '类型', 'Type')}: {entity_type})\n"
+            f"{_localized_text(self.locale, '摘要', 'Summary')}: {self.summary}"
+        )
 
 
 @dataclass
@@ -97,6 +115,7 @@ class EdgeInfo:
     valid_at: Optional[str] = None
     invalid_at: Optional[str] = None
     expired_at: Optional[str] = None
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -117,14 +136,23 @@ class EdgeInfo:
         """转换为文本格式"""
         source = self.source_node_name or self.source_node_uuid[:8]
         target = self.target_node_name or self.target_node_uuid[:8]
-        base_text = f"关系: {source} --[{self.name}]--> {target}\n事实: {self.fact}"
-        
+        base_text = (
+            f"{_localized_text(self.locale, '关系', 'Relationship')}: "
+            f"{source} --[{self.name}]--> {target}\n"
+            f"{_localized_text(self.locale, '事实', 'Fact')}: {self.fact}"
+        )
+
         if include_temporal:
-            valid_at = self.valid_at or "未知"
-            invalid_at = self.invalid_at or "至今"
-            base_text += f"\n时效: {valid_at} - {invalid_at}"
+            valid_at = self.valid_at or _localized_text(self.locale, "未知", "Unknown")
+            invalid_at = self.invalid_at or _localized_text(self.locale, "至今", "present")
+            base_text += (
+                f"\n{_localized_text(self.locale, '时效', 'Validity')}: "
+                f"{valid_at} - {invalid_at}"
+            )
             if self.expired_at:
-                base_text += f" (已过期: {self.expired_at})"
+                base_text += (
+                    f" ({_localized_text(self.locale, '已过期', 'expired')}: {self.expired_at})"
+                )
         
         return base_text
     
@@ -158,6 +186,7 @@ class InsightForgeResult:
     total_facts: int = 0
     total_entities: int = 0
     total_relationships: int = 0
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -175,40 +204,72 @@ class InsightForgeResult:
     def to_text(self) -> str:
         """转换为详细的文本格式，供LLM理解"""
         text_parts = [
-            f"## 未来预测深度分析",
-            f"分析问题: {self.query}",
-            f"预测场景: {self.simulation_requirement}",
-            f"\n### 预测数据统计",
-            f"- 相关预测事实: {self.total_facts}条",
-            f"- 涉及实体: {self.total_entities}个",
-            f"- 关系链: {self.total_relationships}条"
+            f"## {_localized_text(self.locale, '未来预测深度分析', 'Future prediction deep analysis')}",
+            f"{_localized_text(self.locale, '分析问题', 'Analysis question')}: {self.query}",
+            f"{_localized_text(self.locale, '预测场景', 'Prediction scenario')}: {self.simulation_requirement}",
+            f"\n### {_localized_text(self.locale, '预测数据统计', 'Prediction data summary')}",
+            (
+                f"- {_localized_text(self.locale, '相关预测事实', 'Relevant predictive facts')}: "
+                f"{self.total_facts}{_localized_text(self.locale, '条', '')}"
+            ),
+            (
+                f"- {_localized_text(self.locale, '涉及实体', 'Entities involved')}: "
+                f"{self.total_entities}{_localized_text(self.locale, '个', '')}"
+            ),
+            (
+                f"- {_localized_text(self.locale, '关系链', 'Relationship chains')}: "
+                f"{self.total_relationships}{_localized_text(self.locale, '条', '')}"
+            ),
         ]
         
         # 子问题
         if self.sub_queries:
-            text_parts.append(f"\n### 分析的子问题")
+            text_parts.append(
+                f"\n### {_localized_text(self.locale, '分析的子问题', 'Analysis sub-questions')}"
+            )
             for i, sq in enumerate(self.sub_queries, 1):
                 text_parts.append(f"{i}. {sq}")
         
         # 语义搜索结果
         if self.semantic_facts:
-            text_parts.append(f"\n### 【关键事实】(请在报告中引用这些原文)")
+            text_parts.append(
+                "\n### "
+                + _localized_text(
+                    self.locale,
+                    "【关键事实】(请在报告中引用这些原文)",
+                    "[Key facts] (quote these original statements in the report)",
+                )
+            )
             for i, fact in enumerate(self.semantic_facts, 1):
                 text_parts.append(f"{i}. \"{fact}\"")
         
         # 实体洞察
         if self.entity_insights:
-            text_parts.append(f"\n### 【核心实体】")
+            text_parts.append(
+                f"\n### {_localized_text(self.locale, '【核心实体】', '[Core entities]')}"
+            )
             for entity in self.entity_insights:
-                text_parts.append(f"- **{entity.get('name', '未知')}** ({entity.get('type', '实体')})")
+                text_parts.append(
+                    "- **"
+                    f"{entity.get('name', _localized_text(self.locale, '未知', 'Unknown'))}"
+                    f"** ({entity.get('type', _localized_text(self.locale, '实体', 'Entity'))})"
+                )
                 if entity.get('summary'):
-                    text_parts.append(f"  摘要: \"{entity.get('summary')}\"")
+                    text_parts.append(
+                        f"  {_localized_text(self.locale, '摘要', 'Summary')}: "
+                        f"\"{entity.get('summary')}\""
+                    )
                 if entity.get('related_facts'):
-                    text_parts.append(f"  相关事实: {len(entity.get('related_facts', []))}条")
+                    text_parts.append(
+                        f"  {_localized_text(self.locale, '相关事实', 'Related facts')}: "
+                        f"{len(entity.get('related_facts', []))}{_localized_text(self.locale, '条', '')}"
+                    )
         
         # 关系链
         if self.relationship_chains:
-            text_parts.append(f"\n### 【关系链】")
+            text_parts.append(
+                f"\n### {_localized_text(self.locale, '【关系链】', '[Relationship chains]')}"
+            )
             for chain in self.relationship_chains:
                 text_parts.append(f"- {chain}")
         
@@ -237,6 +298,7 @@ class PanoramaResult:
     total_edges: int = 0
     active_count: int = 0
     historical_count: int = 0
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -254,32 +316,57 @@ class PanoramaResult:
     def to_text(self) -> str:
         """转换为文本格式（完整版本，不截断）"""
         text_parts = [
-            f"## 广度搜索结果（未来全景视图）",
-            f"查询: {self.query}",
-            f"\n### 统计信息",
-            f"- 总节点数: {self.total_nodes}",
-            f"- 总边数: {self.total_edges}",
-            f"- 当前有效事实: {self.active_count}条",
-            f"- 历史/过期事实: {self.historical_count}条"
+            f"## {_localized_text(self.locale, '广度搜索结果（未来全景视图）', 'Panorama search results (future overview)')}",
+            f"{_localized_text(self.locale, '查询', 'Query')}: {self.query}",
+            f"\n### {_localized_text(self.locale, '统计信息', 'Statistics')}",
+            f"- {_localized_text(self.locale, '总节点数', 'Total nodes')}: {self.total_nodes}",
+            f"- {_localized_text(self.locale, '总边数', 'Total edges')}: {self.total_edges}",
+            (
+                f"- {_localized_text(self.locale, '当前有效事实', 'Current active facts')}: "
+                f"{self.active_count}{_localized_text(self.locale, '条', '')}"
+            ),
+            (
+                f"- {_localized_text(self.locale, '历史/过期事实', 'Historical/expired facts')}: "
+                f"{self.historical_count}{_localized_text(self.locale, '条', '')}"
+            ),
         ]
         
         # 当前有效的事实（完整输出，不截断）
         if self.active_facts:
-            text_parts.append(f"\n### 【当前有效事实】(模拟结果原文)")
+            text_parts.append(
+                "\n### "
+                + _localized_text(
+                    self.locale,
+                    "【当前有效事实】(模拟结果原文)",
+                    "[Current active facts] (original simulation output)",
+                )
+            )
             for i, fact in enumerate(self.active_facts, 1):
                 text_parts.append(f"{i}. \"{fact}\"")
         
         # 历史/过期事实（完整输出，不截断）
         if self.historical_facts:
-            text_parts.append(f"\n### 【历史/过期事实】(演变过程记录)")
+            text_parts.append(
+                "\n### "
+                + _localized_text(
+                    self.locale,
+                    "【历史/过期事实】(演变过程记录)",
+                    "[Historical/expired facts] (change timeline record)",
+                )
+            )
             for i, fact in enumerate(self.historical_facts, 1):
                 text_parts.append(f"{i}. \"{fact}\"")
         
         # 关键实体（完整输出，不截断）
         if self.all_nodes:
-            text_parts.append(f"\n### 【涉及实体】")
+            text_parts.append(
+                f"\n### {_localized_text(self.locale, '【涉及实体】', '[Entities involved]')}"
+            )
             for node in self.all_nodes:
-                entity_type = next((l for l in node.labels if l not in ["Entity", "Node"]), "实体")
+                entity_type = next(
+                    (l for l in node.labels if l not in ["Entity", "Node"]),
+                    _localized_text(self.locale, "实体", "Entity"),
+                )
                 text_parts.append(f"- **{node.name}** ({entity_type})")
         
         return "\n".join(text_parts)
@@ -558,7 +645,8 @@ class ZepToolsService:
                 edges=edges,
                 nodes=nodes,
                 query=query,
-                total_count=len(facts)
+                total_count=len(facts),
+                locale=self._locale(),
             )
             
         except Exception as e:
@@ -667,7 +755,8 @@ class ZepToolsService:
             edges=edges_result,
             nodes=nodes_result,
             query=query,
-            total_count=len(facts)
+            total_count=len(facts),
+            locale=self._locale(),
         )
     
     def get_all_nodes(self, graph_id: str) -> List[NodeInfo]:
@@ -692,7 +781,8 @@ class ZepToolsService:
                 name=node.name or "",
                 labels=node.labels or [],
                 summary=node.summary or "",
-                attributes=node.attributes or {}
+                attributes=node.attributes or {},
+                locale=self._locale(),
             ))
 
         logger.info(f"获取到 {len(result)} 个节点")
@@ -721,7 +811,8 @@ class ZepToolsService:
                 name=edge.name or "",
                 fact=edge.fact or "",
                 source_node_uuid=edge.source_node_uuid or "",
-                target_node_uuid=edge.target_node_uuid or ""
+                target_node_uuid=edge.target_node_uuid or "",
+                locale=self._locale(),
             )
 
             # 添加时间信息
@@ -762,7 +853,8 @@ class ZepToolsService:
                 name=node.name or "",
                 labels=node.labels or [],
                 summary=node.summary or "",
-                attributes=node.attributes or {}
+                attributes=node.attributes or {},
+                locale=self._locale(),
             )
         except Exception as e:
             logger.error(f"获取节点详情失败: {str(e)}")
@@ -998,7 +1090,8 @@ class ZepToolsService:
         result = InsightForgeResult(
             query=query,
             simulation_requirement=simulation_requirement,
-            sub_queries=[]
+            sub_queries=[],
+            locale=self._locale(),
         )
         
         # Step 1: 使用LLM生成子问题
@@ -1193,7 +1286,7 @@ class ZepToolsService:
         """
         logger.info(f"PanoramaSearch 广度搜索: {query[:50]}...")
         
-        result = PanoramaResult(query=query)
+        result = PanoramaResult(query=query, locale=self._locale())
         
         # 获取所有节点
         all_nodes = self.get_all_nodes(graph_id)
