@@ -86,16 +86,21 @@ class NodeInfo:
     labels: List[str]
     summary: str
     attributes: Dict[str, Any]
+    alias_names: List[str] = field(default_factory=list)
     locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        result = {
             "uuid": self.uuid,
             "name": self.name,
             "labels": self.labels,
             "summary": self.summary,
             "attributes": self.attributes
         }
+        normalized_aliases = list(dict.fromkeys([*(self.alias_names or []), self.name]))
+        if len(normalized_aliases) > 1:
+            result["alias_names"] = normalized_aliases
+        return result
     
     def to_text(self) -> str:
         """转换为文本格式"""
@@ -878,6 +883,18 @@ class ZepToolsService:
                 labels=node.labels or [],
                 summary=node.summary or "",
                 attributes=node.attributes or {},
+                alias_names=list(
+                    dict.fromkeys(
+                        [
+                            *(
+                                value
+                                for value in ((node.attributes or {}).get("alias_names", []) or [])
+                                if value
+                            ),
+                            node.name or "",
+                        ]
+                    )
+                ),
                 locale=self._locale(),
             ))
         return raw_nodes
@@ -953,6 +970,16 @@ class ZepToolsService:
                     **(secondary.attributes or {}),
                     **(primary.attributes or {}),
                 },
+                alias_names=list(
+                    dict.fromkeys(
+                        [
+                            *(primary.alias_names or []),
+                            *(secondary.alias_names or []),
+                            primary.name,
+                            secondary.name,
+                        ]
+                    )
+                ),
                 locale=primary.locale or secondary.locale,
             )
             merged_nodes[duplicate_index] = merged_node
@@ -977,12 +1004,16 @@ class ZepToolsService:
 
     @staticmethod
     def _search_node_info_to_dict(node: NodeInfo) -> Dict[str, Any]:
-        return {
+        result = {
             "uuid": node.uuid,
             "name": node.name,
             "labels": list(node.labels or []),
             "summary": node.summary,
         }
+        normalized_aliases = list(dict.fromkeys([*(node.alias_names or []), node.name]))
+        if len(normalized_aliases) > 1:
+            result["alias_names"] = normalized_aliases
+        return result
 
     @staticmethod
     def _search_node_dict_to_info(node: Dict[str, Any], locale: str) -> NodeInfo:
@@ -992,6 +1023,14 @@ class ZepToolsService:
             labels=list(node.get("labels", []) or []),
             summary=str(node.get("summary", "") or ""),
             attributes=dict(node.get("attributes", {}) or {}),
+            alias_names=list(
+                dict.fromkeys(
+                    [
+                        *(str(alias) for alias in (node.get("alias_names", []) or []) if alias),
+                        str(node.get("name", "") or ""),
+                    ]
+                )
+            ),
             locale=locale,
         )
 

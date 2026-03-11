@@ -77,6 +77,7 @@ def test_get_entities_by_type_collapses_obvious_alias_duplicates():
     assert [node.name for node in result] == ["特朗普", "拜登"]
     assert result[0].summary == "Former president and recurring political actor."
     assert result[0].attributes == {"country": "US"}
+    assert result[0].alias_names == ["特朗普", "美国总统特朗普"]
 
 
 def test_panorama_search_reports_deduplicated_entity_count():
@@ -280,6 +281,7 @@ def test_search_graph_collapses_duplicate_aliases_and_remaps_edges():
         "特朗普 criticized the proposal.",
         "[特朗普]: Former president and recurring political actor.",
     ]
+    assert result.nodes[0]["alias_names"] == ["特朗普", "美国总统特朗普"]
     assert len(result.edges) == 1
     assert result.edges[0]["source_node_uuid"] == "node-short"
 
@@ -475,6 +477,7 @@ def test_get_entity_summary_resolves_alias_query_to_canonical_node():
     assert result["entity_info"]["name"] == "特朗普"
     assert result["entity_info"]["summary"] == "Former president and recurring political actor."
     assert result["entity_info"]["attributes"] == {"country": "US"}
+    assert result["entity_info"]["alias_names"] == ["特朗普", "美国总统特朗普"]
     assert result["total_relations"] == 1
     assert result["related_edges"][0]["source_node_uuid"] == "node-short"
     assert result["related_edges"][0]["source_node_name"] == "特朗普"
@@ -673,6 +676,7 @@ def test_get_all_nodes_collapses_obvious_alias_duplicates(monkeypatch):
     assert result[0].uuid == "node-short"
     assert result[0].summary == "Former president and recurring political actor."
     assert result[0].attributes == {"country": "US"}
+    assert result[0].alias_names == ["特朗普", "美国总统特朗普"]
 
 
 def test_get_node_detail_canonicalizes_alias_uuid_when_graph_id_is_provided(monkeypatch):
@@ -746,6 +750,7 @@ def test_get_node_detail_canonicalizes_alias_uuid_when_graph_id_is_provided(monk
     assert result.name == "特朗普"
     assert result.summary == "Former president and recurring political actor."
     assert result.attributes == {"country": "US"}
+    assert result.alias_names == ["特朗普", "美国总统特朗普"]
 
 
 def test_get_all_edges_collapses_alias_linked_duplicates(monkeypatch):
