@@ -28,7 +28,10 @@ RUN_STATUS_DETAIL_RECENT_ACTIONS_LIMIT = 200
 
 # Interview prompt 优化前缀
 # 添加此前缀可以避免Agent调用工具，直接用文本回复
-INTERVIEW_PROMPT_PREFIX = "结合你的人设、所有的过往记忆与行动，不调用任何工具直接用文本回复我："
+INTERVIEW_PROMPT_PREFIXES = {
+    "zh": "结合你的人设、所有的过往记忆与行动，不调用任何工具直接用文本回复我：",
+    "en": "Based on your persona, all prior memories, and past actions, reply to me directly in plain text without calling any tools: ",
+}
 
 SIMULATION_STAGE_NAMES_EN = {
     "reading": "Reading graph entities",
@@ -152,7 +155,7 @@ def _handle_simulation_api_exception(error: Exception, locale: str, context: str
     return handle_api_exception(logger, error, _simulation_error_context(locale, context))
 
 
-def optimize_interview_prompt(prompt: str) -> str:
+def optimize_interview_prompt(prompt: str, locale: str | None = None) -> str:
     """
     优化Interview提问，添加前缀避免Agent调用工具
     
@@ -164,10 +167,12 @@ def optimize_interview_prompt(prompt: str) -> str:
     """
     if not prompt:
         return prompt
+    resolved_locale = get_locale(locale)
+    prefix = INTERVIEW_PROMPT_PREFIXES.get(resolved_locale, INTERVIEW_PROMPT_PREFIXES["zh"])
     # 避免重复添加前缀
-    if prompt.startswith(INTERVIEW_PROMPT_PREFIX):
+    if any(prompt.startswith(candidate) for candidate in INTERVIEW_PROMPT_PREFIXES.values()):
         return prompt
-    return f"{INTERVIEW_PROMPT_PREFIX}{prompt}"
+    return f"{prefix}{prompt}"
 
 
 def resolve_interview_timeout(raw_timeout, default_timeout: float, locale: str | None = None) -> float:
@@ -2253,6 +2258,7 @@ def interview_agent():
     """
     try:
         data = request.get_json() or {}
+        locale = get_locale()
         
         simulation_id = data.get('simulation_id')
         agent_id = data.get('agent_id')
@@ -2297,7 +2303,7 @@ def interview_agent():
             }), 400
         
         # 优化prompt，添加前缀避免Agent调用工具
-        optimized_prompt = optimize_interview_prompt(prompt)
+        optimized_prompt = optimize_interview_prompt(prompt, locale)
         
         result = SimulationRunner.interview_agent(
             simulation_id=simulation_id,
@@ -2435,7 +2441,10 @@ def interview_agents_batch():
         optimized_interviews = []
         for interview in interviews:
             optimized_interview = interview.copy()
-            optimized_interview['prompt'] = optimize_interview_prompt(interview.get('prompt', ''))
+            optimized_interview['prompt'] = optimize_interview_prompt(
+                interview.get('prompt', ''),
+                locale,
+            )
             optimized_interviews.append(optimized_interview)
 
         result = SimulationRunner.interview_agents_batch(
@@ -2539,7 +2548,7 @@ def interview_all_agents():
             }), 400
 
         # 优化prompt，添加前缀避免Agent调用工具
-        optimized_prompt = optimize_interview_prompt(prompt)
+        optimized_prompt = optimize_interview_prompt(prompt, locale)
 
         result = SimulationRunner.interview_all_agents(
             simulation_id=simulation_id,

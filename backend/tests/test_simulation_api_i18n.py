@@ -261,6 +261,102 @@ def test_close_env_passes_locale_and_returns_localized_message(monkeypatch):
     assert payload["message"] == "The environment is already closed"
 
 
+def test_interview_endpoint_uses_english_prompt_prefix(monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    captured = {}
+
+    monkeypatch.setattr(simulation_api.SimulationRunner, "check_env_alive", lambda simulation_id: True)
+
+    def fake_interview_agent(simulation_id, agent_id, prompt, platform, timeout):
+        captured.update(
+            simulation_id=simulation_id,
+            agent_id=agent_id,
+            prompt=prompt,
+            platform=platform,
+            timeout=timeout,
+        )
+        return {"success": True, "response": "ok"}
+
+    monkeypatch.setattr(simulation_api.SimulationRunner, "interview_agent", fake_interview_agent)
+
+    response = client.post(
+        "/api/simulation/interview",
+        json={"simulation_id": "sim_123", "agent_id": 7, "prompt": "What changed?", "platform": "twitter"},
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    assert captured["prompt"].startswith(simulation_api.INTERVIEW_PROMPT_PREFIXES["en"])
+    assert captured["prompt"].endswith("What changed?")
+
+
+def test_batch_interview_endpoint_uses_english_prompt_prefix(monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    captured = {}
+
+    monkeypatch.setattr(simulation_api.Config, "INTERVIEW_BATCH_TIMEOUT_SECONDS", 300)
+    monkeypatch.setattr(simulation_api.SimulationRunner, "check_env_alive", lambda simulation_id: True)
+
+    def fake_interview_agents_batch(simulation_id, interviews, platform, timeout):
+        captured.update(
+            simulation_id=simulation_id,
+            interviews=interviews,
+            platform=platform,
+            timeout=timeout,
+        )
+        return {"success": True, "results": {}}
+
+    monkeypatch.setattr(simulation_api.SimulationRunner, "interview_agents_batch", fake_interview_agents_batch)
+
+    response = client.post(
+        "/api/simulation/interview/batch",
+        json={
+            "simulation_id": "sim_123",
+            "interviews": [{"agent_id": 1, "prompt": "How are people reacting?"}],
+        },
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    assert captured["interviews"][0]["prompt"].startswith(simulation_api.INTERVIEW_PROMPT_PREFIXES["en"])
+    assert captured["interviews"][0]["prompt"].endswith("How are people reacting?")
+
+
+def test_interview_all_endpoint_uses_english_prompt_prefix(monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    captured = {}
+
+    monkeypatch.setattr(simulation_api.Config, "INTERVIEW_ALL_TIMEOUT_SECONDS", 300)
+    monkeypatch.setattr(simulation_api.SimulationRunner, "check_env_alive", lambda simulation_id: True)
+
+    def fake_interview_all_agents(simulation_id, prompt, platform, timeout):
+        captured.update(
+            simulation_id=simulation_id,
+            prompt=prompt,
+            platform=platform,
+            timeout=timeout,
+        )
+        return {"success": True, "results": {}}
+
+    monkeypatch.setattr(simulation_api.SimulationRunner, "interview_all_agents", fake_interview_all_agents)
+
+    response = client.post(
+        "/api/simulation/interview/all",
+        json={"simulation_id": "sim_123", "prompt": "Summarize the mood."},
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    assert captured["prompt"].startswith(simulation_api.INTERVIEW_PROMPT_PREFIXES["en"])
+    assert captured["prompt"].endswith("Summarize the mood.")
+
+
 def test_run_status_exception_logs_english_context(monkeypatch):
     app = create_simulation_test_app()
     client = app.test_client()
