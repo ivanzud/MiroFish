@@ -72,6 +72,10 @@ TRANSLATIONS = {
         "zh": "无法处理的文件格式: {suffix}",
         "en": "Unhandled file format: {suffix}",
     },
+    "file.pdf_dependency_missing": {
+        "zh": "缺少 PDF 解析依赖 PyMuPDF，请先执行 `pip install PyMuPDF`",
+        "en": "Missing PDF parsing dependency PyMuPDF. Install it with `pip install PyMuPDF` first.",
+    },
     "task.completed": {
         "zh": "任务完成",
         "en": "Task completed",
@@ -296,6 +300,10 @@ TRANSLATIONS = {
         "zh": "timeout 必须大于 0",
         "en": "timeout must be greater than 0",
     },
+    "simulation.ipc_timeout": {
+        "zh": "等待命令响应超时 ({timeout}秒)",
+        "en": "Timed out while waiting for the command response ({timeout}s)",
+    },
     "simulation.simulation_id_required": {
         "zh": "请提供 simulation_id",
         "en": "Please provide simulation_id",
@@ -396,6 +404,10 @@ TRANSLATIONS = {
         "zh": "没有找到符合条件的实体",
         "en": "No matching entities were found",
     },
+    "simulation.no_matching_entities_build_graph": {
+        "zh": "没有找到符合条件的实体，请检查图谱是否正确构建",
+        "en": "No matching entities were found. Check that the graph was built correctly.",
+    },
     "simulation.interviews_required": {
         "zh": "请提供 interviews（采访列表）",
         "en": "Please provide interviews",
@@ -436,6 +448,10 @@ TRANSLATIONS = {
         "zh": "模拟正在运行中，请先调用 /stop 接口停止，或使用 force=true 强制重新开始",
         "en": "The simulation is already running. Stop it via /stop first, or use force=true to restart it.",
     },
+    "simulation.not_running_status": {
+        "zh": "模拟未在运行: {simulation_id}, status={status}",
+        "en": "The simulation is not running: {simulation_id}, status={status}",
+    },
     "simulation.not_ready": {
         "zh": "模拟未准备好，当前状态: {status}，请先调用 /prepare 接口",
         "en": "The simulation is not ready yet. Current status: {status}. Call /prepare first.",
@@ -447,6 +463,10 @@ TRANSLATIONS = {
     "simulation.config_missing_prepare": {
         "zh": "模拟配置不存在，请先调用 /prepare 接口",
         "en": "The simulation config does not exist yet. Call /prepare first.",
+    },
+    "simulation.config_no_agents": {
+        "zh": "模拟配置中没有Agent: {simulation_id}",
+        "en": "The simulation config has no agents: {simulation_id}",
     },
     "simulation.config_file_missing_prepare": {
         "zh": "配置文件不存在，请先调用 /prepare 接口",

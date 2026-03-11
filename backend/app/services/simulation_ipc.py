@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
+from ..i18n import get_locale, tr
 from ..utils.logger import get_logger
 
 logger = get_logger('mirofish.simulation_ipc')
@@ -184,7 +185,7 @@ class SimulationIPCClient:
         except OSError:
             pass
         
-        raise TimeoutError(f"等待命令响应超时 ({timeout}秒)")
+        raise TimeoutError(tr("simulation.ipc_timeout", get_locale(), timeout=timeout))
     
     def send_interview(
         self,

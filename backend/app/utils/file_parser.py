@@ -104,7 +104,7 @@ class FileParser:
         try:
             import fitz  # PyMuPDF
         except ImportError:
-            raise ImportError("需要安装PyMuPDF: pip install PyMuPDF")
+            raise ImportError(tr("file.pdf_dependency_missing"))
         
         text_parts = []
         with fitz.open(file_path) as doc:
