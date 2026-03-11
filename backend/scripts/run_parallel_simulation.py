@@ -76,7 +76,12 @@ import warnings
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
 
-from llm_env import apply_openai_compat_env, resolve_standard_llm_env
+from llm_env import (
+    apply_openai_compat_env,
+    missing_api_key_message,
+    resolve_standard_llm_env,
+    resolve_standard_model_name,
+)
 
 
 # 全局变量：用于信号处理
@@ -1008,7 +1013,7 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
         # 使用加速配置
         llm_api_key = boost_api_key
         llm_base_url = boost_base_url
-        llm_model = boost_model or os.environ.get("LLM_MODEL_NAME", "")
+        llm_model = boost_model or resolve_standard_model_name()
         config_label = "[加速LLM]"
     else:
         # 使用通用配置
@@ -1023,7 +1028,7 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
     apply_openai_compat_env(llm_api_key, llm_base_url)
 
     if not os.environ.get("OPENAI_API_KEY"):
-        raise ValueError("缺少 API Key 配置，请在项目根目录 .env 文件中设置 LLM_API_KEY 或 OPENAI_API_KEY")
+        raise ValueError(missing_api_key_message())
 
     print(f"{config_label} model={llm_model}, base_url={llm_base_url[:40] if llm_base_url else '默认'}...")
     

@@ -2,13 +2,15 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T08:28:02.847689+00:00`
-- Issues: `33` total (`open=33`, `closed=0`)
+- Captured: `2026-03-11T08:42:14.667257+00:00`
+- Issues: `34` total (`open=34`, `closed=0`)
 - Pull requests: `33` total (`open=33`, `closed=0`)
 - Mirrored in `origin`: `33` of `33` PR refs
 
 ## Recently Updated Issues
 
+- #134 [open] 别再交“学费”了，一步到位才是最省钱的 (no labels)
+  - 你以为用复杂的脚本搭个 VPS 就能掌控一切？现实是，面对公网晚高峰 20% 的丢包率和无差别的 TCP 阻断，你所有的伪装协议都不堪一击。一旦 IP 被墙，寻找新机器、重置环境的成本远超买一个现成服务。 WgetCloud 是“折腾党”的最终归宿。我们通过全线 BGP 中转 + 双向 IEPL 专线，从物理层面上抹平了网络波动与封锁风险。把专业底层的运维交出去，别让修梯子占用了你写代码、做产品和思考商业模式的核心精力。 点击下方链接注册新用户即可享受全员无门槛8折优惠券： ### [WgetCloud官网链接：wgetcloud.org](https://invite.wgetcloud.ltd/auth/register?code=jll8) 以下为晚高峰测速： ![image](https://github.com/cadencando/SSSSRV2RayTrojanClash/…
 - #133 [open] 本地部署，启动已经显示成功了，访问却失败 (question)
   - 前后端启动都显示成功了，0.0.0.0:5001无法访问，提示404。前端0.0.0.0:3000虽然可以访问，但是一到这个界面就会报错 <img width="2550" height="1233" alt="Image" src="https://github.com/user-attachments/assets/032cf0ac-78ae-406d-831d-da5b9a28d5a0" />，看了项目也没有报错日志，请问这是什么问题呢
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @Axing93! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这是一个常见的前后端连接配置问题。 **后端 5001 返回 404 是正常的** — [根路径 `/` 未定义端点](https://github.com/666ghj/MiroFish/issues/68)，实际 API 通过具体…
@@ -34,9 +36,6 @@
 - #99 [open] Docker镜像没有arm版本 (enhancement)
   - arm架构机器使用docker-compose部署提示： `no matching manifest for linux/arm64/v8 in the manifest list entries ` 可以调整一下工作流的脚本，支持一下么？
   - latest comment by `dosubot[bot]`: <!-- Answer --> 好消息！当前的工作流 [`.github/workflows/docker-image.yml`](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d680682c741a44eeebe/.github/workflows/docker-image.yml) 已经配置了 QEMU 和 Buildx（支持多架构构建的必要组件），只需要在构建步骤中添加 `platforms…
-- #93 [open] `frontend/src/api/index.js`中的`baseURL`不应该硬编码 (enhancement)
-  - https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d680682c741a44eeebe/frontend/src/api/index.js#L5 如#59 #57 所发现的一样，在上传文件时前端会尝试跳转硬编码的`localhost:5001`，这就意味着我只能在部署mirofish的本机上使用，并且在Docker部署时也不能映射其他的端口，对服务器环境很不友好。我代码水平不够，不知道应该怎么修，所以希望作者可以修一下，谢谢！
-  - latest comment by `hxx221`: VITE_API_BASE_URL 你修改这个配置就可以了吧，那个5001是容错的，没有VITE_API_BASE_URL配置才会启用这个吧
 
 ## Recently Updated Pull Requests
 

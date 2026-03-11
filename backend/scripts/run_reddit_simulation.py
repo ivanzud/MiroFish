@@ -48,7 +48,7 @@ else:
 
 
 import re
-from llm_env import apply_openai_compat_env, resolve_standard_llm_env
+from llm_env import apply_openai_compat_env, missing_api_key_message, resolve_standard_llm_env
 
 
 class UnicodeFormatter(logging.Formatter):
@@ -452,7 +452,7 @@ class RedditSimulationRunner:
         apply_openai_compat_env(llm_api_key, llm_base_url)
         
         if not os.environ.get("OPENAI_API_KEY"):
-            raise ValueError("缺少 API Key 配置，请在项目根目录 .env 文件中设置 LLM_API_KEY 或 OPENAI_API_KEY")
+            raise ValueError(missing_api_key_message())
 
         print(f"LLM配置: model={llm_model}, base_url={llm_base_url[:40] if llm_base_url else '默认'}...")
         

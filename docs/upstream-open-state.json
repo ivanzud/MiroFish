@@ -1,10 +1,10 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T08:28:02.846547+00:00",
+  "captured_at": "2026-03-11T08:42:14.665817+00:00",
   "counts": {
     "issues": {
-      "open": 33
+      "open": 34
     },
     "pull_requests": {
       "open": 33
@@ -15,6 +15,20 @@
     }
   },
   "issues": [
+    {
+      "number": 134,
+      "title": "别再交“学费”了，一步到位才是最省钱的",
+      "url": "https://github.com/666ghj/MiroFish/issues/134",
+      "state": "open",
+      "created_at": "2026-03-11T08:27:29Z",
+      "updated_at": "2026-03-11T08:27:29Z",
+      "closed_at": null,
+      "labels": [],
+      "author": "LeslieJess",
+      "body_excerpt": "你以为用复杂的脚本搭个 VPS 就能掌控一切？现实是，面对公网晚高峰 20% 的丢包率和无差别的 TCP 阻断，你所有的伪装协议都不堪一击。一旦 IP 被墙，寻找新机器、重置环境的成本远超买一个现成服务。 WgetCloud 是“折腾党”的最终归宿。我们通过全线 BGP 中转 + 双向 IEPL 专线，从物理层面上抹平了网络波动与封锁风险。把专业底层的运维交出去，别让修梯子占用了你写代码、做产品和思考商业模式的核心精力。 点击下方链接注册新用户即可享受全员无门槛8折优惠券： ### [WgetCloud官网链接：wgetcloud.org](https://invite.wgetcloud.ltd/auth/register?code=jll8) 以下为晚高峰测速： ![image](https://github.com/cadencando/SSSSRV2RayTrojanClash/…",
+      "comment_count": 0,
+      "recent_comments": []
+    },
     {
       "number": 133,
       "title": "本地部署，启动已经显示成功了，访问却失败",

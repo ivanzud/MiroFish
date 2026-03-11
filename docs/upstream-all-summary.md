@@ -2,13 +2,15 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T08:28:38.885527+00:00`
-- Issues: `80` total (`open=33`, `closed=47`)
+- Captured: `2026-03-11T08:42:51.467283+00:00`
+- Issues: `81` total (`open=34`, `closed=47`)
 - Pull requests: `47` total (`open=33`, `closed=14`)
 - Mirrored in `origin`: `34` of `47` PR refs
 
 ## Recently Updated Issues
 
+- #134 [open] 别再交“学费”了，一步到位才是最省钱的 (no labels)
+  - 你以为用复杂的脚本搭个 VPS 就能掌控一切？现实是，面对公网晚高峰 20% 的丢包率和无差别的 TCP 阻断，你所有的伪装协议都不堪一击。一旦 IP 被墙，寻找新机器、重置环境的成本远超买一个现成服务。 WgetCloud 是“折腾党”的最终归宿。我们通过全线 BGP 中转 + 双向 IEPL 专线，从物理层面上抹平了网络波动与封锁风险。把专业底层的运维交出去，别让修梯子占用了你写代码、做产品和思考商业模式的核心精力。 点击下方链接注册新用户即可享受全员无门槛8折优惠券： ### [WgetCloud官网链接：wgetcloud.org](https://invite.wgetcloud.ltd/auth/register?code=jll8) 以下为晚高峰测速： ![image](https://github.com/cadencando/SSSSRV2RayTrojanClash/…
 - #133 [open] 本地部署，启动已经显示成功了，访问却失败 (question)
   - 前后端启动都显示成功了，0.0.0.0:5001无法访问，提示404。前端0.0.0.0:3000虽然可以访问，但是一到这个界面就会报错 <img width="2550" height="1233" alt="Image" src="https://github.com/user-attachments/assets/032cf0ac-78ae-406d-831d-da5b9a28d5a0" />，看了项目也没有报错日志，请问这是什么问题呢
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @Axing93! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这是一个常见的前后端连接配置问题。 **后端 5001 返回 404 是正常的** — [根路径 `/` 未定义端点](https://github.com/666ghj/MiroFish/issues/68)，实际 API 通过具体…
@@ -34,9 +36,6 @@
 - #42 [open] 项目在3/5开始模拟时会消耗大量内存 (no labels)
   - 作为可能会用到的信息，我上传了大约有260000字符的《白夜行》前十二章。推测原因是simulation.py的接口会把所有动作读全量并返回，这些动作会随着模拟变大而线性膨胀，从而导致巨量内存消耗。 <img width="988" height="666" alt="Image" src="https://github.com/user-attachments/assets/3fce3699-5e8d-4a8c-a33f-5290b236a2f0" />
   - latest comment by `666ghj`: 我后续会进行算法层面的优化
-- #84 [open] 报告生成失败，请问有没有办法重新生成？ (question)
-  - <img width="2538" height="1213" alt="Image" src="https://github.com/user-attachments/assets/e3d01822-aa09-45b7-9210-2ce8e23bca8f" /> 好像是Zep超出调用限额导致报告生成失败，但是即使我充值了Zep，似乎也没有办法重新生成报告，难道只能重新走一轮？
-  - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @luchenwei9266! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 目前 MiroFish **不支持通过界面重试报告生成**，这是一个[已知问题](https://github.com/666ghj/MiroFish/issues/30)。系统虽然有 `force_regenerate`…
 
 ## Recently Updated Pull Requests
 

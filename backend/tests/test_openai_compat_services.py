@@ -71,3 +71,25 @@ def test_simulation_config_generator_retries_without_response_format_on_unsuppor
     assert result["content"] == '{"time_config": {"total_simulation_hours": 12}}'
     assert "response_format" in create_calls[0]
     assert "response_format" not in create_calls[1]
+
+
+def test_oasis_profile_generator_missing_api_key_mentions_openai_alias(monkeypatch):
+    monkeypatch.setattr("app.services.oasis_profile_generator.Config.LLM_API_KEY", "")
+
+    try:
+        OasisProfileGenerator()
+    except ValueError as exc:
+        assert str(exc) == "LLM_API_KEY / OPENAI_API_KEY 未配置"
+    else:
+        raise AssertionError("expected ValueError when no API key is configured")
+
+
+def test_simulation_config_generator_missing_api_key_mentions_openai_alias(monkeypatch):
+    monkeypatch.setattr("app.services.simulation_config_generator.Config.LLM_API_KEY", "")
+
+    try:
+        SimulationConfigGenerator()
+    except ValueError as exc:
+        assert str(exc) == "LLM_API_KEY / OPENAI_API_KEY 未配置"
+    else:
+        raise AssertionError("expected ValueError when no API key is configured")
