@@ -57,6 +57,7 @@ def build_service(graph_builder_module):
     service = graph_builder_module.GraphBuilderService.__new__(graph_builder_module.GraphBuilderService)
     service.client = SimpleNamespace(graph=SimpleNamespace())
     service.logger = SimpleNamespace(warning=lambda *args, **kwargs: None)
+    service.locale = "zh"
     return service
 
 
@@ -170,3 +171,22 @@ def test_set_ontology_accepts_string_attribute_definitions(graph_builder_module)
     assert len(source_targets) == 1
     assert source_targets[0].source == "Person"
     assert source_targets[0].target == "Person"
+
+
+def test_format_user_facing_error_maps_zep_auth_failures(graph_builder_module):
+    service = build_service(graph_builder_module)
+
+    class FakeUnauthorizedError(Exception):
+        status_code = 401
+
+    error = FakeUnauthorizedError("401 unauthorized")
+
+    assert "ZEP_API_KEY" in service.format_user_facing_error(error)
+
+
+def test_format_user_facing_error_keeps_generic_message(graph_builder_module):
+    service = build_service(graph_builder_module)
+
+    error = RuntimeError("invalid graph payload")
+
+    assert service.format_user_facing_error(error) == "invalid graph payload"

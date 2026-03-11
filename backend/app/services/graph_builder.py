@@ -44,10 +44,11 @@ class GraphBuilderService:
     负责调用Zep API构建知识图谱
     """
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, locale: Optional[str] = None):
         self.api_key = api_key or Config.ZEP_API_KEY
+        self.locale = locale or get_locale()
         if not self.api_key:
-            raise ValueError(tr("config.key_missing", get_locale(), name="ZEP_API_KEY"))
+            raise ValueError(tr("config.key_missing", self.locale, name="ZEP_API_KEY"))
         
         self.client = Zep(api_key=self.api_key)
         self.task_manager = TaskManager()
@@ -112,6 +113,23 @@ class GraphBuilderService:
                 if progress_callback and progress_message:
                     progress_callback(progress_message(attempt + 1, max_attempts, wait_time), progress_value)
                 time.sleep(wait_time)
+
+    def format_user_facing_error(self, error: Exception) -> str:
+        """Collapse noisy provider exceptions into actionable graph-build messages."""
+        status_code = getattr(error, "status_code", None)
+        error_text = str(error).strip()
+        lowered = error_text.lower()
+
+        if status_code == 401 or ("401" in lowered and "unauthorized" in lowered):
+            return tr("graph.zep_auth_failed", self.locale)
+
+        if status_code == 403 or "forbidden" in lowered:
+            return tr("graph.zep_permission_denied", self.locale)
+
+        if "invalid api key" in lowered or "authentication" in lowered:
+            return tr("graph.zep_auth_failed", self.locale)
+
+        return error_text or error.__class__.__name__
     
     def build_graph_async(
         self,
@@ -244,8 +262,9 @@ class GraphBuilderService:
             
         except Exception as e:
             import traceback
-            error_msg = f"{str(e)}\n{traceback.format_exc()}"
-            self.task_manager.fail_task(task_id, error_msg)
+            self.logger.error("Graph build worker failed: %s", e)
+            self.logger.debug(traceback.format_exc())
+            self.task_manager.fail_task(task_id, self.format_user_facing_error(e))
     
     def create_graph(self, name: str, max_retries: Optional[int] = None) -> str:
         """创建Zep图谱（公开方法）"""

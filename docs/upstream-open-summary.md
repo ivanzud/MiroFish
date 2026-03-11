@@ -2,13 +2,17 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T11:06:24.089784+00:00`
-- Issues: `34` total (`open=34`, `closed=0`)
+- Captured: `2026-03-11T11:21:38.789135+00:00`
+- Issues: `36` total (`open=36`, `closed=0`)
 - Pull requests: `33` total (`open=33`, `closed=0`)
 - Mirrored in `origin`: `33` of `33` PR refs
 
 ## Recently Updated Issues
 
+- #140 [open] 让我想到了刘慈欣的一个小说，要是把真实世界放进去，得多大的算力啊 (no labels)
+- #139 [open] Graph build task failed  ：（ (no labels)
+  - Graph build task failed: Traceback (most recent call last): File "/app/backend/.venv/lib/python3.11/site-packages/zep_cloud/graph/raw_client.py", line 713, in create _response_json = _response.json() ^^^^^^^^^^^^^^^^ File "/app/backend/.venv/lib/python3.11/site-packages/httpx/_models.py", line 832, in json return jsonlib.loads(self.content, **kwargs) ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ File "/u…
+  - latest comment by `dosubot[bot]`: <!-- Answer --> The `401 unauthorized` error indicates a Zep Cloud API authentication issue. Here are the most likely causes and solutions: **1. Version Bug** — If you're using MiroFish v0.1.0, there's a [known authentication bug](https://…
 - #135 [open] 报错，Zep图谱构建失败 (no labels)
   - Graph build task failed: Traceback (most recent call last): File "/app/backend/app/api/graph.py", line 418, in build_task builder.set_ontology(graph_id, ontology) File "/app/backend/app/services/graph_builder.py", line 230, in set_ontology attr_name = safe_attr_name(attr_def["name"]) # 使用安全名称 ~~~~~~~~^^^^^^^^ TypeError: string indices must be integers, not 'str'
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @rheeh! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这个错误是因为 `attr_def` 应该是字典格式 `{"name": "attr_name", ...}`，但实际收到的是字符串。 **根本原因**：LLM 生成的 ontology 中，`attributes` 字段可能返回了简单的…
@@ -32,11 +36,6 @@
 - #84 [open] 报告生成失败，请问有没有办法重新生成？ (question)
   - <img width="2538" height="1213" alt="Image" src="https://github.com/user-attachments/assets/e3d01822-aa09-45b7-9210-2ce8e23bca8f" /> 好像是Zep超出调用限额导致报告生成失败，但是即使我充值了Zep，似乎也没有办法重新生成报告，难道只能重新走一轮？
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @luchenwei9266! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 目前 MiroFish **不支持通过界面重试报告生成**，这是一个[已知问题](https://github.com/666ghj/MiroFish/issues/30)。系统虽然有 `force_regenerate`…
-- #107 [open] 镜像问题 (no labels)
-  - ✘ Image ghcr.io/666ghj/mirofish:latest Error Get "https://ghcr.io/v2/": EOF 7.9s Error response from daemon: Get "https://ghcr.io/v2/": EOF
-- #99 [open] Docker镜像没有arm版本 (enhancement)
-  - arm架构机器使用docker-compose部署提示： `no matching manifest for linux/arm64/v8 in the manifest list entries ` 可以调整一下工作流的脚本，支持一下么？
-  - latest comment by `dosubot[bot]`: <!-- Answer --> 好消息！当前的工作流 [`.github/workflows/docker-image.yml`](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d680682c741a44eeebe/.github/workflows/docker-image.yml) 已经配置了 QEMU 和 Buildx（支持多架构构建的必要组件），只需要在构建步骤中添加 `platforms…
 
 ## Recently Updated Pull Requests
 

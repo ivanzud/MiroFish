@@ -128,6 +128,14 @@ TRANSLATIONS = {
         "zh": "ZEP_API_KEY未配置",
         "en": "ZEP_API_KEY is not configured",
     },
+    "graph.zep_auth_failed": {
+        "zh": "Zep 认证失败，请检查 ZEP_API_KEY 是否有效并确认其对应当前的 Zep Cloud 项目。",
+        "en": "Zep authentication failed. Check that ZEP_API_KEY is valid and belongs to the current Zep Cloud project.",
+    },
+    "graph.zep_permission_denied": {
+        "zh": "Zep 权限不足，请确认当前 API Key 拥有访问目标图谱的权限。",
+        "en": "Zep permission denied. Confirm that the current API key can access the target graph.",
+    },
     "simulation.entity_not_found": {
         "zh": "实体不存在: {entity_uuid}",
         "en": "Entity not found: {entity_uuid}",
