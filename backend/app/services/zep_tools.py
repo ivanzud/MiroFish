@@ -1220,18 +1220,38 @@ class ZepToolsService:
             limit=20
         )
         
-        # 尝试在所有节点中找到该实体
-        all_nodes = self.get_all_nodes(graph_id)
-        entity_node = None
-        for node in all_nodes:
-            if node.name.lower() == entity_name.lower():
-                entity_node = node
-                break
+        # 对节点执行同样的别名折叠，确保实体摘要与搜索/全景输出保持一致。
+        all_nodes, uuid_remap = self._deduplicate_nodes(
+            self.get_all_nodes(graph_id),
+            "entity summary",
+        )
+        entity_node = next(
+            (
+                node
+                for node in all_nodes
+                if node.name.lower() == entity_name.lower()
+                or ZepEntityReader._normalize_entity_name(node.name)
+                == ZepEntityReader._normalize_entity_name(entity_name)
+                or ZepEntityReader._entity_alias_key(self._node_to_entity(node))
+                == ZepEntityReader._strip_known_affixes(
+                    ZepEntityReader._normalize_entity_name(entity_name),
+                    next(
+                        (label for label in node.labels if label not in ["Entity", "Node"]),
+                        "",
+                    ),
+                )
+            ),
+            None,
+        )
         
         related_edges = []
         if entity_node:
             # 传入graph_id参数
-            related_edges = self.get_node_edges(graph_id, entity_node.uuid)
+            related_edges = self._deduplicate_edge_infos(
+                self.get_node_edges(graph_id, entity_node.uuid),
+                uuid_remap,
+                {node.uuid: node for node in all_nodes},
+            )
         
         return {
             "entity_name": entity_name,
@@ -1253,8 +1273,16 @@ class ZepToolsService:
         """
         logger.info(f"获取图谱 {graph_id} 的统计信息...")
         
-        nodes = self.get_all_nodes(graph_id)
-        edges = self.get_all_edges(graph_id)
+        nodes, uuid_remap = self._deduplicate_nodes(
+            self.get_all_nodes(graph_id),
+            "graph statistics",
+        )
+        node_map = {node.uuid: node for node in nodes}
+        edges = self._deduplicate_edge_infos(
+            self.get_all_edges(graph_id),
+            uuid_remap,
+            node_map,
+        )
         
         # 统计实体类型分布
         entity_types = {}

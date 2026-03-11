@@ -340,3 +340,141 @@ def test_local_search_collapses_duplicate_aliases_and_remaps_edges():
     ]
     assert len(result.edges) == 1
     assert result.edges[0]["source_node_uuid"] == "node-short"
+
+
+def test_get_graph_statistics_collapses_duplicate_alias_counts():
+    service = _make_service()
+    service.get_all_nodes = lambda graph_id: [
+        NodeInfo(
+            uuid="node-short",
+            name="特朗普",
+            labels=["Entity", "PublicFigure"],
+            summary="",
+            attributes={},
+            locale="en",
+        ),
+        NodeInfo(
+            uuid="node-long",
+            name="美国总统特朗普",
+            labels=["Entity", "PublicFigure"],
+            summary="Former president and recurring political actor.",
+            attributes={"country": "US"},
+            locale="en",
+        ),
+        NodeInfo(
+            uuid="node-wh",
+            name="白宫",
+            labels=["Entity", "Organization"],
+            summary="Executive residence and workplace.",
+            attributes={},
+            locale="en",
+        ),
+    ]
+    service.get_all_edges = lambda graph_id: [
+        type(
+            "Edge",
+            (),
+            {
+                "uuid": "edge-1",
+                "name": "MENTIONS",
+                "fact": "特朗普 criticized the proposal.",
+                "source_node_uuid": "node-short",
+                "target_node_uuid": "node-wh",
+                "source_node_name": None,
+                "target_node_name": None,
+                "created_at": None,
+                "valid_at": None,
+                "invalid_at": None,
+                "expired_at": None,
+                "locale": "en",
+            },
+        )(),
+        type(
+            "Edge",
+            (),
+            {
+                "uuid": "edge-2",
+                "name": "MENTIONS",
+                "fact": "特朗普 criticized the proposal.",
+                "source_node_uuid": "node-long",
+                "target_node_uuid": "node-wh",
+                "source_node_name": None,
+                "target_node_name": None,
+                "created_at": None,
+                "valid_at": None,
+                "invalid_at": None,
+                "expired_at": None,
+                "locale": "en",
+            },
+        )(),
+    ]
+
+    result = service.get_graph_statistics("graph-1")
+
+    assert result["total_nodes"] == 2
+    assert result["total_edges"] == 1
+    assert result["entity_types"] == {"PublicFigure": 1, "Organization": 1}
+    assert result["relation_types"] == {"MENTIONS": 1}
+
+
+def test_get_entity_summary_resolves_alias_query_to_canonical_node():
+    service = _make_service()
+    service._locale = lambda: "en"
+    service.search_graph = lambda **kwargs: SearchResult(
+        facts=[
+            "特朗普 criticized the proposal.",
+            "[特朗普]: Former president and recurring political actor.",
+        ],
+        edges=[],
+        nodes=[],
+        query=str(kwargs.get("query", "")),
+        total_count=2,
+        locale="en",
+    )
+    service.get_all_nodes = lambda graph_id: [
+        NodeInfo(
+            uuid="node-short",
+            name="特朗普",
+            labels=["Entity", "PublicFigure"],
+            summary="",
+            attributes={},
+            locale="en",
+        ),
+        NodeInfo(
+            uuid="node-long",
+            name="美国总统特朗普",
+            labels=["Entity", "PublicFigure"],
+            summary="Former president and recurring political actor.",
+            attributes={"country": "US"},
+            locale="en",
+        ),
+    ]
+    service.get_node_edges = lambda graph_id, node_uuid: [
+        type(
+            "Edge",
+            (),
+            {
+                "uuid": "edge-1",
+                "name": "MENTIONS",
+                "fact": "特朗普 criticized the proposal.",
+                "source_node_uuid": node_uuid,
+                "target_node_uuid": "node-wh",
+                "source_node_name": None,
+                "target_node_name": "白宫",
+                "created_at": None,
+                "valid_at": None,
+                "invalid_at": None,
+                "expired_at": None,
+                "locale": "en",
+            },
+        )(),
+    ]
+
+    result = service.get_entity_summary("graph-1", "美国总统特朗普")
+
+    assert result["entity_info"]["name"] == "特朗普"
+    assert result["entity_info"]["summary"] == "Former president and recurring political actor."
+    assert result["entity_info"]["attributes"] == {"country": "US"}
+    assert result["total_relations"] == 1
+    assert result["related_edges"][0]["source_node_uuid"] == "node-short"
+    assert result["related_edges"][0]["source_node_name"] == "特朗普"
