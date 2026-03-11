@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T14:49:32.216338+00:00",
-  "generated_at": "2026-03-11T14:49:32.216338+00:00",
+  "captured_at": "2026-03-11T14:54:32.036691+00:00",
+  "generated_at": "2026-03-11T14:54:32.036691+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -25,7 +25,7 @@
       "url": "https://github.com/666ghj/MiroFish/issues/145",
       "state": "open",
       "created_at": "2026-03-11T14:43:11Z",
-      "updated_at": "2026-03-11T14:43:11Z",
+      "updated_at": "2026-03-11T14:53:58Z",
       "closed_at": null,
       "labels": [],
       "author": "Stayfoool",
@@ -3228,7 +3228,18 @@
       "local_coverage": {
         "number": 119,
         "status": "partial",
-        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, and deterministic Step 2/3 workflow logs, but broader backend/runtime localization remains a follow-up instead of a blind merge."
+        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, and the remaining MainView graph-build/project-load workflow logs, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
+        "local_refs": [
+          "frontend/src/views/MainView.vue",
+          "frontend/src/views/mainViewLogMessages.js",
+          "frontend/src/i18n/locales/en.js",
+          "frontend/src/i18n/locales/zh.js",
+          "frontend/tests/mainViewLogMessages.test.mjs"
+        ],
+        "validation": [
+          "frontend: npm test",
+          "frontend: npm run build"
+        ]
       }
     },
     {
