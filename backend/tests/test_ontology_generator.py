@@ -15,6 +15,7 @@ def load_ontology_generator():
 
     services_module = sys.modules.setdefault("app.services", types.ModuleType("app.services"))
     services_module.__path__ = [str(services_root)]
+    app_module.services = services_module
 
     spec = importlib.util.spec_from_file_location("app.services.ontology_generator", module_path)
     module = importlib.util.module_from_spec(spec)
@@ -119,3 +120,24 @@ def test_generate_requests_english_analysis_summary_when_locale_is_en():
     assert result["analysis_summary"] == "English summary"
     assert llm.messages is not None
     assert "Brief analysis summary of the text content (English)" in llm.messages[0]["content"]
+    assert "social-media public-opinion simulation" in llm.messages[0]["content"]
+    assert "## Simulation Requirement" in llm.messages[1]["content"]
+    assert "## Source Documents" in llm.messages[1]["content"]
+    assert "Keep all descriptions and `analysis_summary` in English" in llm.messages[1]["content"]
+
+
+def test_build_user_message_uses_english_sections_and_truncation_notice():
+    generator = OntologyGenerator(llm_client=object(), locale="en")
+    generator.MAX_TEXT_LENGTH_FOR_LLM = 10
+
+    message = generator._build_user_message(
+        document_texts=["abcdefghijklmno"],
+        simulation_requirement="Predict market reaction",
+        additional_context="Focus on launch-week discussion.",
+    )
+
+    assert "## Simulation Requirement" in message
+    assert "## Source Documents" in message
+    assert "## Additional Context" in message
+    assert "original text length: 15 characters" in message
+    assert "Keep all descriptions and `analysis_summary` in English" in message
