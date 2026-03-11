@@ -239,6 +239,7 @@
 import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import * as d3 from 'd3'
+import { normalizeGraphPanelData } from './graphPanelData.js'
 
 const props = defineProps({
   graphData: Object,
@@ -284,21 +285,13 @@ const toggleSelfLoop = (id) => {
 }
 
 // 计算实体类型用于图例
-const entityTypes = computed(() => {
-  if (!props.graphData?.nodes) return []
-  const typeMap = {}
-  // 美观的颜色调色板
-  const colors = ['#FF6B35', '#004E89', '#7B2D8E', '#1A936F', '#C5283D', '#E9724C', '#3498db', '#9b59b6', '#27ae60', '#f39c12']
-  
-  props.graphData.nodes.forEach(node => {
-    const type = node.labels?.find(l => l !== 'Entity') || 'Entity'
-    if (!typeMap[type]) {
-      typeMap[type] = { name: type, count: 0, color: colors[Object.keys(typeMap).length % colors.length] }
-    }
-    typeMap[type].count++
-  })
-  return Object.values(typeMap)
-})
+const normalizedGraphData = computed(() => normalizeGraphPanelData({
+  graphData: props.graphData,
+  unnamedNodeLabel: 'Unnamed',
+  unknownNodeLabel: t('graphPanel.unknown'),
+}))
+
+const entityTypes = computed(() => normalizedGraphData.value.entityTypes)
 
 // 格式化时间
 const formatDateTime = (dateStr) => {
@@ -346,20 +339,20 @@ const renderGraph = () => {
     
   svg.selectAll('*').remove()
   
-  const nodesData = props.graphData.nodes || []
-  const edgesData = props.graphData.edges || []
+  const nodesData = normalizedGraphData.value.nodes || []
+  const edgesData = normalizedGraphData.value.edges || []
   
   if (nodesData.length === 0) return
 
   // Prep data
   const nodeMap = {}
-  nodesData.forEach(n => nodeMap[n.uuid] = n)
+  nodesData.forEach(n => nodeMap[n.id] = n.rawData)
   
   const nodes = nodesData.map(n => ({
-    id: n.uuid,
+    id: n.id,
     name: n.name || 'Unnamed',
-    type: n.labels?.find(l => l !== 'Entity') || 'Entity',
-    rawData: n
+    type: n.type || 'Entity',
+    rawData: n.rawData
   }))
   
   const nodeIds = new Set(nodes.map(n => n.id))
@@ -368,22 +361,22 @@ const renderGraph = () => {
   const edgePairCount = {}
   const selfLoopEdges = {} // 按节点分组的自环边
   const tempEdges = edgesData
-    .filter(e => nodeIds.has(e.source_node_uuid) && nodeIds.has(e.target_node_uuid))
+    .filter(e => nodeIds.has(e.source) && nodeIds.has(e.target))
   
   // 统计每对节点之间的边数量，收集自环边
   tempEdges.forEach(e => {
-    if (e.source_node_uuid === e.target_node_uuid) {
+    if (e.source === e.target) {
       // 自环 - 收集到数组中
-      if (!selfLoopEdges[e.source_node_uuid]) {
-        selfLoopEdges[e.source_node_uuid] = []
+      if (!selfLoopEdges[e.source]) {
+        selfLoopEdges[e.source] = []
       }
-      selfLoopEdges[e.source_node_uuid].push({
-        ...e,
-        source_name: nodeMap[e.source_node_uuid]?.name,
-        target_name: nodeMap[e.target_node_uuid]?.name
+      selfLoopEdges[e.source].push({
+        ...e.rawData,
+        source_name: e.rawData.source_name || nodeMap[e.source]?.name,
+        target_name: e.rawData.target_name || nodeMap[e.target]?.name
       })
     } else {
-      const pairKey = [e.source_node_uuid, e.target_node_uuid].sort().join('_')
+      const pairKey = [e.source, e.target].sort().join('_')
       edgePairCount[pairKey] = (edgePairCount[pairKey] || 0) + 1
     }
   })
@@ -395,21 +388,21 @@ const renderGraph = () => {
   const edges = []
   
   tempEdges.forEach(e => {
-    const isSelfLoop = e.source_node_uuid === e.target_node_uuid
+    const isSelfLoop = e.source === e.target
     
     if (isSelfLoop) {
       // 自环边 - 每个节点只添加一条合并的自环
-      if (processedSelfLoopNodes.has(e.source_node_uuid)) {
+      if (processedSelfLoopNodes.has(e.source)) {
         return // 已处理过，跳过
       }
-      processedSelfLoopNodes.add(e.source_node_uuid)
+      processedSelfLoopNodes.add(e.source)
       
-      const allSelfLoops = selfLoopEdges[e.source_node_uuid]
-      const nodeName = nodeMap[e.source_node_uuid]?.name || 'Unknown'
+      const allSelfLoops = selfLoopEdges[e.source]
+      const nodeName = nodeMap[e.source]?.name || t('graphPanel.unknown')
       
       edges.push({
-        source: e.source_node_uuid,
-        target: e.target_node_uuid,
+        source: e.source,
+        target: e.target,
         type: 'SELF_LOOP',
         name: `Self Relations (${allSelfLoops.length})`,
         curvature: 0,
@@ -425,13 +418,13 @@ const renderGraph = () => {
       return
     }
     
-    const pairKey = [e.source_node_uuid, e.target_node_uuid].sort().join('_')
+    const pairKey = [e.source, e.target].sort().join('_')
     const totalCount = edgePairCount[pairKey]
     const currentIndex = edgePairIndex[pairKey] || 0
     edgePairIndex[pairKey] = currentIndex + 1
     
     // 判断边的方向是否与标准化方向一致（源UUID < 目标UUID）
-    const isReversed = e.source_node_uuid > e.target_node_uuid
+    const isReversed = e.source > e.target
     
     // 计算曲率：多条边时分散开，单条边为直线
     let curvature = 0
@@ -449,18 +442,18 @@ const renderGraph = () => {
     }
     
     edges.push({
-      source: e.source_node_uuid,
-      target: e.target_node_uuid,
-      type: e.fact_type || e.name || 'RELATED',
-      name: e.name || e.fact_type || 'RELATED',
+      source: e.source,
+      target: e.target,
+      type: e.type || e.rawData?.fact_type || e.rawData?.name || 'RELATED',
+      name: e.rawData?.name || e.type || e.rawData?.fact_type || 'RELATED',
       curvature,
       isSelfLoop: false,
       pairIndex: currentIndex,
       pairTotal: totalCount,
       rawData: {
-        ...e,
-        source_name: nodeMap[e.source_node_uuid]?.name,
-        target_name: nodeMap[e.target_node_uuid]?.name
+        ...e.rawData,
+        source_name: e.rawData?.source_name || nodeMap[e.source]?.name,
+        target_name: e.rawData?.target_name || nodeMap[e.target]?.name
       }
     })
   })
