@@ -1,7 +1,7 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T07:35:03.087324+00:00",
+  "captured_at": "2026-03-11T07:43:06.465744+00:00",
   "counts": {
     "issues": {
       "open": 32
@@ -395,6 +395,11 @@
       "head": "fix/security-improvements",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:L"
+      ],
       "author": "hobostay"
     },
     {
@@ -409,6 +414,11 @@
       "head": "docs/add-sys-architecture-part",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:L"
+      ],
       "author": "Noblegasesgoo"
     },
     {
@@ -423,6 +433,11 @@
       "head": "feat/zep-retry-mechanism",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:L"
+      ],
       "author": "EuanTop"
     },
     {
@@ -437,6 +452,11 @@
       "head": "docs/add-pr-guide",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:M"
+      ],
       "author": "M-Tlinqinming"
     },
     {
@@ -451,6 +471,11 @@
       "head": "fix/fix-priority-issues-mNNjT",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "LLM API",
+        "size:M"
+      ],
       "author": "ai-x-builder"
     },
     {
@@ -465,6 +490,11 @@
       "head": "feature/custom-exceptions-and-config-validation",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XXL"
+      ],
       "author": "ZaviQ7"
     },
     {
@@ -479,6 +509,11 @@
       "head": "fix/issue-121",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:S"
+      ],
       "author": "SergioChan"
     },
     {
@@ -493,6 +528,11 @@
       "head": "fix/issue-64",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "LLM API",
+        "size:M"
+      ],
       "author": "SergioChan"
     },
     {
@@ -507,6 +547,11 @@
       "head": "fix/lm-studio-json-object-compat",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "LLM API",
+        "size:XS"
+      ],
       "author": "ImL1s"
     },
     {
@@ -521,6 +566,11 @@
       "head": "language-option",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XXL"
+      ],
       "author": "Pratiyankkumar"
     },
     {
@@ -535,6 +585,12 @@
       "head": "fix/ragflow-pattern-compliance",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "enhancement",
+        "size:XXL"
+      ],
       "author": "pratyush618"
     },
     {
@@ -549,6 +605,10 @@
       "head": "chore/upgrade-actions",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:XS"
+      ],
       "author": "ailuntz"
     },
     {
@@ -563,6 +623,10 @@
       "head": "fix/pyproject-license",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:XS"
+      ],
       "author": "ailuntz"
     },
     {
@@ -577,6 +641,10 @@
       "head": "fix/api-baseurl-default",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:S"
+      ],
       "author": "ailuntz"
     },
     {
@@ -591,6 +659,11 @@
       "head": "add-ja-doc",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:L"
+      ],
       "author": "eltociear"
     },
     {
@@ -605,6 +678,11 @@
       "head": "main",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:L"
+      ],
       "author": "waitle"
     },
     {
@@ -619,6 +697,10 @@
       "head": "main",
       "base": "main",
       "draft": false,
+      "mergeable_state": "dirty",
+      "labels": [
+        "size:S"
+      ],
       "author": "MoeclubM"
     },
     {
@@ -633,6 +715,11 @@
       "head": "feat/windows-installer",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XL"
+      ],
       "author": "JasonOA888"
     },
     {
@@ -647,6 +734,11 @@
       "head": "fix/remove-hardcoded-api-url",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:M"
+      ],
       "author": "nil957"
     },
     {
@@ -661,6 +753,11 @@
       "head": "fix/upgrade-actions-and-arm-support",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XS"
+      ],
       "author": "nil957"
     },
     {
@@ -675,6 +772,11 @@
       "head": "fix/docker-multiplatform",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XS"
+      ],
       "author": "JasonOA888"
     },
     {
@@ -689,6 +791,11 @@
       "head": "feat/json-utils-helper",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:M"
+      ],
       "author": "JasonOA888"
     },
     {
@@ -703,6 +810,11 @@
       "head": "fix/frontend-baseurl",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:S"
+      ],
       "author": "JasonOA888"
     },
     {
@@ -717,6 +829,10 @@
       "head": "upgrade-github-actions-node24-general",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:S"
+      ],
       "author": "salmanmkc"
     },
     {
@@ -731,6 +847,10 @@
       "head": "upgrade-github-actions-node24",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:XS"
+      ],
       "author": "salmanmkc"
     },
     {
@@ -745,6 +865,10 @@
       "head": "fix-cve-2025-64712-unstructured",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:XS"
+      ],
       "author": "orbisai0security"
     },
     {
@@ -759,6 +883,11 @@
       "head": "fix/issue-58-configurable-timeout",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "LLM API",
+        "size:XS"
+      ],
       "author": "JasonOA888"
     },
     {
@@ -773,6 +902,10 @@
       "head": "fix/bare-excepts",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:XS"
+      ],
       "author": "haosenwang1018"
     },
     {
@@ -787,6 +920,11 @@
       "head": "fix-ontology-validation",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "LLM API",
+        "size:S"
+      ],
       "author": "calvinguo721"
     },
     {
@@ -801,6 +939,11 @@
       "head": "main",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XXL"
+      ],
       "author": "Jonah-Wu23"
     },
     {
@@ -815,6 +958,8 @@
       "head": "feat/anthropic-sdk",
       "base": "main",
       "draft": false,
+      "mergeable_state": "dirty",
+      "labels": [],
       "author": "SmartisanNaive"
     },
     {
@@ -829,6 +974,8 @@
       "head": "feat/local",
       "base": "main",
       "draft": false,
+      "mergeable_state": "dirty",
+      "labels": [],
       "author": "Momoyeyu"
     },
     {
@@ -843,6 +990,8 @@
       "head": "fix/frontend-simulation-error-handling",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [],
       "author": "tt-a1i"
     }
   ]

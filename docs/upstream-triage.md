@@ -45,6 +45,8 @@ Last refreshed: `2026-03-11`
 
 - `#105` Remaining risky subset: default `DEBUG=False`, non-static `SECRET_KEY` generation, and stricter CORS defaults/configuration are still deferred because they can change local/dev or deployed behavior and need a compatibility review before landing.
 - `#119` Remaining scope is still deferred: most step-level workflow components and backend-generated error text remain Chinese-first, so broader localization should be handled as a follow-up instead of continuing to splice a large, drifting upstream PR into this branch.
+- `#108` Windows installer packaging is now mirrored into the fork for visibility, but it remains a large Windows-specific feature addition (`installer/build.ps1`, Inno Setup flow, release packaging) and is not a safe blind cherry-pick for this branch.
+- `#118` RAGflow backend support is now mirrored into the fork for visibility, but it is a large dual-backend feature branch touching graph APIs, config, and simulation services, so it needs a dedicated design/review pass instead of a low-risk merge.
 - `#82` Dependency-only CVE patch cannot be landed as a real fix yet: a coordinated `uv lock --upgrade-package unstructured==0.18.18` attempt fails because `camel-oasis==0.2.5` transitively pins `unstructured==0.13.7`. The upstream PR also only edits `backend/requirements.txt`, so it would leave this repo's dependency state inconsistent even if cherry-picked.
 - `#87` and `#86` GitHub Actions-only PRs are superseded locally by the current Docker workflow: their diffs would either partially duplicate already-landed upgrades or regress this branch by removing the ARM64/cache changes that came from `#103`.
 - `#100` Relative frontend API base URL fallback is superseded locally by the current API client, which already falls back to the runtime origin and respects `VITE_API_BASE_URL`.
@@ -63,19 +65,19 @@ Last refreshed: `2026-03-11`
 - `./.tmp-test-venv/bin/pytest backend/tests/test_error_handler.py backend/tests/test_llm_client.py backend/tests/test_graph_builder.py backend/tests/test_ontology_generator.py -q` passes after landing the safe subset of `#105`.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes with targeted regression coverage for context-length handling and transient Zep retry behavior.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_ontology_generator.py backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes after landing the ontology validation hardening and exception-scope cleanup.
-- `python3 -m unittest tests/test_sync_upstream_github.py` and refreshed snapshots now show `32` open upstream issues, `34` open upstream PRs, and `13` closed upstream PRs in the full-history capture.
-- `python3 scripts/sync_upstream_github.py --state open ...` and `--state all ...` refreshed the local snapshots again on March 11, 2026; the full-history capture now shows `32` open upstream issues, `33` open upstream PRs, and `14` closed upstream PRs.
+- `python3 -m unittest tests/test_sync_upstream_github.py` passes after teaching the sync script to hydrate per-PR details, so the local JSON/markdown snapshots now include real `mergeable_state` metadata instead of `unknown` placeholders.
+- `python3 scripts/sync_upstream_github.py --state open ...` and `--state all ...` refreshed the local snapshots again on March 11, 2026; the full-history capture currently shows `32` open upstream issues, `33` open upstream PRs, and `14` closed upstream PRs.
 - `cd backend && uv run pytest -q` is currently blocked in this environment because dependency resolution reaches `tiktoken`, which attempts a source build and fails without a Rust compiler.
 
 ## Snapshot artifacts
 
 - `docs/upstream-open-state.json` and `docs/upstream-open-summary.md` remain the fast open-work triage view.
 - `docs/upstream-all-state.json` and `docs/upstream-all-summary.md` now capture the full upstream issue/PR state for historical triage and mirroring decisions.
-- `scripts/sync_upstream_github.py` now supports paginated `--state all` refreshes and uses `GITHUB_TOKEN` / `GH_TOKEN` when available; when those env vars are absent but the GitHub CLI is authenticated, it falls back to `gh api` so upstream intake still works under anonymous API rate limits.
+- `scripts/sync_upstream_github.py` now supports paginated `--state all` refreshes, hydrates PR detail records so machine-readable snapshots include labels plus `mergeable_state`, and uses `GITHUB_TOKEN` / `GH_TOKEN` when available; when those env vars are absent but the GitHub CLI is authenticated, it falls back to `gh api` so upstream intake still works under anonymous API rate limits.
 
 ## Practical mirror strategy for the fork
 
 - Mirror the highest-signal upstream PR branches to the fork when they are under active review.
-- Fork visibility now includes `origin/mirror/upstream-pr-126`, `origin/mirror/upstream-pr-130`, `origin/mirror/upstream-pr-131`, and `origin/mirror/upstream-pr-132` in addition to the previously mirrored review branches.
+- Fork visibility now includes `origin/mirror/upstream-pr-105`, `origin/mirror/upstream-pr-108`, `origin/mirror/upstream-pr-118`, `origin/mirror/upstream-pr-126`, `origin/mirror/upstream-pr-130`, `origin/mirror/upstream-pr-131`, and `origin/mirror/upstream-pr-132` in addition to the previously mirrored review branches.
 - Keep detailed execution tracking in local beads issues to avoid spamming the fork with every upstream item.
 - Use `scripts/sync_upstream_github.py` to refresh a machine-readable snapshot and a concise markdown summary before each new evolve pass.

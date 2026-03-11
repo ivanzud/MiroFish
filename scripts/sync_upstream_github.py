@@ -75,8 +75,11 @@ def fetch_json(url: str) -> object:
 
 
 def github_api(path: str, params: dict[str, object]) -> object:
-    query = urllib.parse.urlencode(params)
-    return fetch_json(f"https://api.github.com{path}?{query}")
+    url = f"https://api.github.com{path}"
+    if params:
+        query = urllib.parse.urlencode(params)
+        url = f"{url}?{query}"
+    return fetch_json(url)
 
 
 def github_api_paginated(path: str, params: dict[str, object], limit: int) -> list[dict[str, Any]]:
@@ -98,6 +101,19 @@ def github_api_paginated(path: str, params: dict[str, object], limit: int) -> li
         page += 1
 
     return items[:limit]
+
+
+def hydrate_pull_requests(owner: str, name: str, pull_requests: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    hydrated: list[dict[str, Any]] = []
+    for pull_request in pull_requests:
+        number = pull_request.get("number")
+        if number is None:
+            raise ValueError("Pull request payload missing number")
+        details = github_api(f"/repos/{owner}/{name}/pulls/{number}", {})
+        if not isinstance(details, dict):
+            raise ValueError(f"Expected pull request details dict for #{number}, got {type(details)!r}")
+        hydrated.append(details)
+    return hydrated
 
 
 def compact_issue(issue: dict[str, object]) -> dict[str, object]:
@@ -127,6 +143,8 @@ def compact_pr(pr: dict[str, object]) -> dict[str, object]:
         "head": pr.get("head", {}).get("ref"),
         "base": pr.get("base", {}).get("ref"),
         "draft": pr.get("draft", False),
+        "mergeable_state": pr.get("mergeable_state"),
+        "labels": [label["name"] for label in pr.get("labels", [])],
         "author": pr.get("user", {}).get("login"),
     }
 
@@ -162,7 +180,11 @@ def write_summary(path: Path, repo: str, state: str, issues: list[dict[str, obje
     lines.extend(["", "## Recently Updated Pull Requests", ""])
     for pr in prs[:10]:
         suffix = " merged" if pr.get("merged_at") else ""
-        lines.append(f"- #{pr['number']} [{pr['state']}{suffix}] {pr['title']} (`{pr['head']}` -> `{pr['base']}`)")
+        mergeable_state = pr.get("mergeable_state") or "unknown"
+        lines.append(
+            f"- #{pr['number']} [{pr['state']}{suffix}, mergeable={mergeable_state}] "
+            f"{pr['title']} (`{pr['head']}` -> `{pr['base']}`)"
+        )
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -190,7 +212,8 @@ def main() -> int:
     )
 
     issues = [compact_issue(item) for item in issue_items if "pull_request" not in item]
-    prs = [compact_pr(item) for item in pr_items]
+    pr_details = hydrate_pull_requests(owner, name, pr_items)
+    prs = [compact_pr(item) for item in pr_details]
     payload = {
         "repo": args.repo,
         "state": args.state,

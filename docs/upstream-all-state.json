@@ -1,7 +1,7 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T07:35:03.966111+00:00",
+  "captured_at": "2026-03-11T07:43:18.086720+00:00",
   "counts": {
     "issues": {
       "closed": 47,
@@ -928,6 +928,11 @@
       "head": "fix/llm-client-none-content",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "LLM API",
+        "size:XS"
+      ],
       "author": "sjhddh"
     },
     {
@@ -942,6 +947,10 @@
       "head": "main",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:XXL"
+      ],
       "author": "28764116"
     },
     {
@@ -956,6 +965,11 @@
       "head": "fix/security-improvements",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:L"
+      ],
       "author": "hobostay"
     },
     {
@@ -970,6 +984,11 @@
       "head": "docs/add-sys-architecture-part",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:L"
+      ],
       "author": "Noblegasesgoo"
     },
     {
@@ -984,6 +1003,11 @@
       "head": "feat/zep-retry-mechanism",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:L"
+      ],
       "author": "EuanTop"
     },
     {
@@ -998,6 +1022,11 @@
       "head": "docs/add-pr-guide",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:M"
+      ],
       "author": "M-Tlinqinming"
     },
     {
@@ -1012,6 +1041,11 @@
       "head": "fix/fix-priority-issues-mNNjT",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "LLM API",
+        "size:M"
+      ],
       "author": "ai-x-builder"
     },
     {
@@ -1026,6 +1060,11 @@
       "head": "feature/custom-exceptions-and-config-validation",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XXL"
+      ],
       "author": "ZaviQ7"
     },
     {
@@ -1040,6 +1079,11 @@
       "head": "fix/issue-121",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:S"
+      ],
       "author": "SergioChan"
     },
     {
@@ -1054,6 +1098,11 @@
       "head": "fix/issue-64",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "LLM API",
+        "size:M"
+      ],
       "author": "SergioChan"
     },
     {
@@ -1068,6 +1117,11 @@
       "head": "fix/lm-studio-json-object-compat",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "LLM API",
+        "size:XS"
+      ],
       "author": "ImL1s"
     },
     {
@@ -1082,6 +1136,11 @@
       "head": "language-option",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XXL"
+      ],
       "author": "Pratiyankkumar"
     },
     {
@@ -1096,6 +1155,11 @@
       "head": "main",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XL"
+      ],
       "author": "zzfe-501"
     },
     {
@@ -1110,6 +1174,12 @@
       "head": "fix/ragflow-pattern-compliance",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "enhancement",
+        "size:XXL"
+      ],
       "author": "pratyush618"
     },
     {
@@ -1124,6 +1194,10 @@
       "head": "chore/upgrade-actions",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:XS"
+      ],
       "author": "ailuntz"
     },
     {
@@ -1138,6 +1212,10 @@
       "head": "fix/pyproject-license",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:XS"
+      ],
       "author": "ailuntz"
     },
     {
@@ -1152,6 +1230,10 @@
       "head": "fix/api-baseurl-default",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:S"
+      ],
       "author": "ailuntz"
     },
     {
@@ -1166,6 +1248,11 @@
       "head": "add-ja-doc",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:L"
+      ],
       "author": "eltociear"
     },
     {
@@ -1180,6 +1267,11 @@
       "head": "main",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:L"
+      ],
       "author": "waitle"
     },
     {
@@ -1194,6 +1286,10 @@
       "head": "main",
       "base": "main",
       "draft": false,
+      "mergeable_state": "dirty",
+      "labels": [
+        "size:S"
+      ],
       "author": "MoeclubM"
     },
     {
@@ -1208,6 +1304,11 @@
       "head": "feat/windows-installer",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XL"
+      ],
       "author": "JasonOA888"
     },
     {
@@ -1222,6 +1323,11 @@
       "head": "fix/remove-hardcoded-api-url",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:M"
+      ],
       "author": "nil957"
     },
     {
@@ -1236,6 +1342,11 @@
       "head": "fix/upgrade-actions-and-arm-support",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XS"
+      ],
       "author": "nil957"
     },
     {
@@ -1250,6 +1361,10 @@
       "head": "main",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:XS"
+      ],
       "author": "leon-x-labs"
     },
     {
@@ -1264,6 +1379,11 @@
       "head": "fix/docker-multiplatform",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XS"
+      ],
       "author": "JasonOA888"
     },
     {
@@ -1278,6 +1398,11 @@
       "head": "feat/json-utils-helper",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:M"
+      ],
       "author": "JasonOA888"
     },
     {
@@ -1292,6 +1417,11 @@
       "head": "fix/frontend-baseurl",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:S"
+      ],
       "author": "JasonOA888"
     },
     {
@@ -1306,6 +1436,11 @@
       "head": "feature/local-graphrag",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "Memory Layer",
+        "size:XXL"
+      ],
       "author": "Jerry050512"
     },
     {
@@ -1320,6 +1455,10 @@
       "head": "upgrade-github-actions-node24-general",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:S"
+      ],
       "author": "salmanmkc"
     },
     {
@@ -1334,6 +1473,10 @@
       "head": "upgrade-github-actions-node24",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:XS"
+      ],
       "author": "salmanmkc"
     },
     {
@@ -1348,6 +1491,10 @@
       "head": "fix-cve-2025-64712-unstructured",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:XS"
+      ],
       "author": "orbisai0security"
     },
     {
@@ -1362,6 +1509,11 @@
       "head": "fix/issue-58-configurable-timeout",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "LLM API",
+        "size:XS"
+      ],
       "author": "JasonOA888"
     },
     {
@@ -1376,6 +1528,8 @@
       "head": "feat/local-resume-history-smoke",
       "base": "main",
       "draft": false,
+      "mergeable_state": "dirty",
+      "labels": [],
       "author": "martin0359"
     },
     {
@@ -1390,6 +1544,10 @@
       "head": "fix/bare-excepts",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:XS"
+      ],
       "author": "haosenwang1018"
     },
     {
@@ -1404,6 +1562,11 @@
       "head": "fix-ontology-validation",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "LLM API",
+        "size:S"
+      ],
       "author": "calvinguo721"
     },
     {
@@ -1418,6 +1581,11 @@
       "head": "main",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XXL"
+      ],
       "author": "Jonah-Wu23"
     },
     {
@@ -1432,6 +1600,8 @@
       "head": "main",
       "base": "main",
       "draft": false,
+      "mergeable_state": "dirty",
+      "labels": [],
       "author": "zouyonghe"
     },
     {
@@ -1446,6 +1616,8 @@
       "head": "feat/anthropic-sdk",
       "base": "main",
       "draft": false,
+      "mergeable_state": "dirty",
+      "labels": [],
       "author": "SmartisanNaive"
     },
     {
@@ -1460,6 +1632,8 @@
       "head": "main",
       "base": "main",
       "draft": false,
+      "mergeable_state": "dirty",
+      "labels": [],
       "author": "Deroino"
     },
     {
@@ -1474,6 +1648,8 @@
       "head": "main",
       "base": "main",
       "draft": false,
+      "mergeable_state": "dirty",
+      "labels": [],
       "author": "moonhalf-nostar"
     },
     {
@@ -1488,6 +1664,8 @@
       "head": "feat/local",
       "base": "main",
       "draft": false,
+      "mergeable_state": "dirty",
+      "labels": [],
       "author": "Momoyeyu"
     },
     {
@@ -1502,6 +1680,8 @@
       "head": "feat/projects-history",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [],
       "author": "jwc19890114"
     },
     {
@@ -1516,6 +1696,8 @@
       "head": "fix/frontend-simulation-error-handling",
       "base": "main",
       "draft": false,
+      "mergeable_state": "clean",
+      "labels": [],
       "author": "tt-a1i"
     },
     {
@@ -1530,6 +1712,8 @@
       "head": "cursor/backend-terminal-color-change-14fd",
       "base": "main",
       "draft": false,
+      "mergeable_state": "unknown",
+      "labels": [],
       "author": "666ghj"
     },
     {
@@ -1544,6 +1728,8 @@
       "head": "cursor/codebase-bug-resolution-07f6",
       "base": "main",
       "draft": true,
+      "mergeable_state": "clean",
+      "labels": [],
       "author": "666ghj"
     },
     {
@@ -1558,6 +1744,8 @@
       "head": "bugfix",
       "base": "main",
       "draft": false,
+      "mergeable_state": "dirty",
+      "labels": [],
       "author": "huanchong-99"
     },
     {
@@ -1572,6 +1760,8 @@
       "head": "encoding-display-fix",
       "base": "main",
       "draft": false,
+      "mergeable_state": "dirty",
+      "labels": [],
       "author": "huanchong-99"
     }
   ]

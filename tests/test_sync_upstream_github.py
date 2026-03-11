@@ -61,6 +61,31 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(mocked.call_args_list[0].args[1]["page"], 1)
         self.assertEqual(mocked.call_args_list[1].args[1]["page"], 2)
 
+    def test_hydrate_pull_requests_fetches_detail_payloads(self):
+        with patch.object(
+            sync_upstream_github,
+            "github_api",
+            side_effect=[
+                {"number": 101, "mergeable_state": "clean"},
+                {"number": 102, "mergeable_state": "dirty"},
+            ],
+        ) as mocked:
+            payload = sync_upstream_github.hydrate_pull_requests(
+                "test-owner",
+                "test-repo",
+                [{"number": 101}, {"number": 102}],
+            )
+
+        self.assertEqual(
+            payload,
+            [
+                {"number": 101, "mergeable_state": "clean"},
+                {"number": 102, "mergeable_state": "dirty"},
+            ],
+        )
+        self.assertEqual(mocked.call_args_list[0].args, ("/repos/test-owner/test-repo/pulls/101", {}))
+        self.assertEqual(mocked.call_args_list[1].args, ("/repos/test-owner/test-repo/pulls/102", {}))
+
     def test_compact_records_include_state_fields(self):
         issue = sync_upstream_github.compact_issue(
             {
@@ -88,6 +113,8 @@ class SyncUpstreamGithubTests(unittest.TestCase):
                 "head": {"ref": "feature"},
                 "base": {"ref": "main"},
                 "draft": False,
+                "mergeable_state": "clean",
+                "labels": [{"name": "enhancement"}],
                 "user": {"login": "bob"},
             }
         )
@@ -96,6 +123,8 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(issue["closed_at"], "2026-01-03T00:00:00Z")
         self.assertEqual(pr["state"], "closed")
         self.assertEqual(pr["merged_at"], "2026-01-03T00:00:01Z")
+        self.assertEqual(pr["mergeable_state"], "clean")
+        self.assertEqual(pr["labels"], ["enhancement"])
 
 
 if __name__ == "__main__":
