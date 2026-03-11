@@ -9,6 +9,7 @@ import {
   getPlatformLabel,
   getInterviewGuardMessage,
   mergeInteractionProfiles,
+  summarizeInterviewTimeoutBudget,
   summarizeInterviewEnvStatus,
 } from '../src/components/step5Profiles.js'
 
@@ -154,5 +155,17 @@ test('formatInterviewFailureMessage normalizes timeout and env-closed backend er
   assert.equal(
     formatInterviewFailureMessage('Waiting for Interview response timed out: 300s', t),
     'step5.interviewTimeoutError:{"message":"Waiting for Interview response timed out: 300s"}'
+  )
+})
+
+test('summarizeInterviewTimeoutBudget explains single and batch budgets', () => {
+  assert.equal(
+    summarizeInterviewTimeoutBudget({ requestTimeoutMs: 300000, selectedCount: 0, t }),
+    'step5.interviewTimeoutHintNoSelection:{"singleSeconds":90,"requestSeconds":300}'
+  )
+
+  assert.equal(
+    summarizeInterviewTimeoutBudget({ requestTimeoutMs: 300000, selectedCount: 4, t }),
+    'step5.interviewTimeoutHintWithSelection:{"singleSeconds":90,"selectedCount":4,"batchSeconds":150,"requestSeconds":300}'
   )
 })

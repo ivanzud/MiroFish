@@ -1,3 +1,5 @@
+import { deriveInterviewTimeoutSeconds, resolveTimeoutMs } from '../api/timeout.js'
+
 const PLATFORM_ORDER = {
   reddit: 0,
   twitter: 1,
@@ -184,4 +186,33 @@ export const formatInterviewFailureMessage = (message, t) => {
   }
 
   return normalized
+}
+
+export const summarizeInterviewTimeoutBudget = ({
+  requestTimeoutMs,
+  selectedCount = 0,
+  t,
+}) => {
+  const requestSeconds = Math.floor(resolveTimeoutMs(requestTimeoutMs) / 1000)
+  const singleSeconds = deriveInterviewTimeoutSeconds({
+    requestTimeoutMs,
+    interviewsCount: 1,
+  })
+
+  if (!Number.isFinite(selectedCount) || selectedCount <= 0) {
+    return t('step5.interviewTimeoutHintNoSelection', {
+      singleSeconds,
+      requestSeconds,
+    })
+  }
+
+  return t('step5.interviewTimeoutHintWithSelection', {
+    singleSeconds,
+    selectedCount: Math.floor(selectedCount),
+    batchSeconds: deriveInterviewTimeoutSeconds({
+      requestTimeoutMs,
+      interviewsCount: selectedCount,
+    }),
+    requestSeconds,
+  })
 }

@@ -96,6 +96,9 @@
         >
           {{ getInterviewStatusMessage() }}
         </div>
+        <div class="interview-timeout-hint">
+          {{ getInterviewTimeoutHint() }}
+        </div>
           <div class="action-bar-tabs">
             <button 
               class="tab-pill"
@@ -430,6 +433,7 @@ import {
   formatAgentRole,
   getInterviewGuardMessage,
   mergeInteractionProfiles,
+  summarizeInterviewTimeoutBudget,
   summarizeInterviewEnvStatus,
 } from './step5Profiles'
 
@@ -566,6 +570,12 @@ const selectAgent = (agent) => {
 
 const describeAgentRole = (agent) => formatAgentRole(agent, t('step5.unknownProfession'), t)
 const getInterviewStatusMessage = () => summarizeInterviewEnvStatus(interviewEnvStatus.value, t)
+const getInterviewTimeoutHint = () =>
+  summarizeInterviewTimeoutBudget({
+    requestTimeoutMs: configuredApiTimeoutMs,
+    selectedCount: activeTab.value === 'survey' ? selectedAgents.value.size : 0,
+    t,
+  })
 
 const refreshInterviewEnvStatus = async () => {
   if (!props.simulationId) {
@@ -1411,6 +1421,14 @@ watch(() => props.simulationId, (newId) => {
   background: #FEF3C7;
   border-color: #FCD34D;
   color: #92400E;
+}
+
+.interview-timeout-hint {
+  flex-basis: 100%;
+  margin-top: -8px;
+  color: #6B7280;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .tab-pill {

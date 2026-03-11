@@ -646,6 +646,8 @@ export default {
     interviewEnvNoPlatformBanner: '模拟环境正在运行，但当前没有可用的采访平台。',
     interviewEnvClosedError: '模拟采访环境已经停止。请返回 Step 3 重新打开模拟环境，并等待其进入等待命令状态后再重试。',
     interviewPlatformUnavailable: '当前模拟环境无法采访这些平台：{platforms}。请先在 Step 3 重新开启对应平台。',
+    interviewTimeoutHintNoSelection: '当前超时预算：单个个体对话 {singleSeconds} 秒。批量问卷会随所选对象数量递增，并保持在前端请求上限 {requestSeconds} 秒以内。',
+    interviewTimeoutHintWithSelection: '当前超时预算：单个个体对话 {singleSeconds} 秒；当前 {selectedCount} 个对象的问卷批次为 {batchSeconds} 秒，且不会超过前端请求预算 {requestSeconds} 秒。',
     interviewTimeoutError: '采访请求在模拟环境返回结果前超时。请增大 Step 5 的超时设置或减少单次采访对象数量后重试。原始错误：{message}',
     platforms: {
       reddit: 'Reddit',

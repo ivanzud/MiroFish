@@ -115,6 +115,23 @@
       ]
     },
     {
+      "number": 62,
+      "status": "partial",
+      "summary": "The Step 5 timeout complaint now has an explicit local mitigation: interviews derive adaptive timeout budgets from the frontend request window, the UI shows the effective single-agent and current survey-batch budget, and the docs/env template expose timeout knobs for slower local models. The broader issue's other feature requests remain separate follow-up work.",
+      "local_refs": [
+        "frontend/src/api/timeout.js",
+        "frontend/src/components/Step5Interaction.vue",
+        "frontend/src/components/step5Profiles.js",
+        ".env.example",
+        "README.md",
+        "README-EN.md"
+      ],
+      "validation": [
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
       "number": 64,
       "status": "covered",
       "summary": "Upload and graph-build failures now surface structured per-file parser/config validation errors instead of collapsing common deployment or document-ingest problems into a generic 500.",

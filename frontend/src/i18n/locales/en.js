@@ -646,6 +646,8 @@ export default {
     interviewEnvNoPlatformBanner: 'The simulation environment is running, but no interview platform is currently available.',
     interviewEnvClosedError: 'The simulation interview environment is no longer running. Return to Step 3, reopen the simulation, and wait for the environment to enter command mode before retrying.',
     interviewPlatformUnavailable: 'The current simulation environment cannot interview these platforms: {platforms}. Reopen the matching platform in Step 3 first.',
+    interviewTimeoutHintNoSelection: 'Timeout budget: single-agent chat {singleSeconds}s. Survey batches scale with the number of selected agents and stay under the frontend request cap of {requestSeconds}s.',
+    interviewTimeoutHintWithSelection: 'Timeout budget: single-agent chat {singleSeconds}s. Current {selectedCount}-agent survey batch: {batchSeconds}s, capped by the frontend request budget of {requestSeconds}s.',
     interviewTimeoutError: 'The interview timed out before the simulated environment replied. Increase the Step 5 timeout settings or reduce the interview batch size, then retry. Original error: {message}',
     platforms: {
       reddit: 'Reddit',

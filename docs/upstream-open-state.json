@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T13:22:00.435896+00:00",
-  "generated_at": "2026-03-11T13:22:00.435896+00:00",
+  "captured_at": "2026-03-11T13:29:19.856643+00:00",
+  "generated_at": "2026-03-11T13:29:19.856643+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -672,13 +672,16 @@
       "local_coverage": {
         "number": 9,
         "status": "partial",
-        "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, but true mid-run checkpoint/resume is still deferred.",
+        "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, and the history modal now exposes a replay-only Step 3 route that loads an existing timeline without accidentally auto-starting a fresh run. True mid-run checkpoint/resume is still deferred.",
         "local_refs": [
+          "frontend/src/components/HistoryDatabase.vue",
           "frontend/src/views/SimulationRunView.vue",
-          "frontend/src/components/Step3Simulation.vue"
+          "frontend/src/components/Step3Simulation.vue",
+          "frontend/src/components/historyPlayback.js",
+          "frontend/src/components/simulationReplay.js"
         ],
         "validation": [
-          "frontend/tests/simulationTimeline.test.mjs",
+          "frontend: npm test",
           "frontend: npm run build"
         ]
       }
@@ -868,7 +871,24 @@
           "url": "https://github.com/666ghj/MiroFish/issues/62#issuecomment-3809793307",
           "body_excerpt": "> 1，我也是ollama本地部署，用的是qwen3 A3B那个模型，图谱用的zep，下一步也考虑本地，如果有整合本地包就更好了~~ 2，使用了三天了，跑了4个项目，都不大，zep一共用了200多，小规模实验用还好。 3,4个小项目的共性问题是形成结果后报告助手沟通没问题，但是单人采访不行，报错504. 4，建议自定义轮数可以一开始就填入，给一个一键运行到底的按钮，这样提交完现实种子，选好轮数，点一下就可以静候佳音了，现在中间还要确定两次。 5，up加油！！ 第三个采访，i…"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 62,
+        "status": "partial",
+        "summary": "The Step 5 timeout complaint now has an explicit local mitigation: interviews derive adaptive timeout budgets from the frontend request window, the UI shows the effective single-agent and current survey-batch budget, and the docs/env template expose timeout knobs for slower local models. The broader issue's other feature requests remain separate follow-up work.",
+        "local_refs": [
+          "frontend/src/api/timeout.js",
+          "frontend/src/components/Step5Interaction.vue",
+          "frontend/src/components/step5Profiles.js",
+          ".env.example",
+          "README.md",
+          "README-EN.md"
+        ],
+        "validation": [
+          "frontend: npm test",
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 58,
