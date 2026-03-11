@@ -1,8 +1,30 @@
 from __future__ import annotations
 
+import sys
 from types import SimpleNamespace
+from types import ModuleType
 
 from flask import Flask
+
+fake_zep_cloud = ModuleType("zep_cloud")
+fake_zep_client = ModuleType("zep_cloud.client")
+fake_zep_ontology = ModuleType("zep_cloud.external_clients.ontology")
+fake_zep_cloud.client = fake_zep_client
+fake_zep_cloud.__getattr__ = lambda name: object
+
+
+class FakeZep:
+    def __init__(self, *args, **kwargs):
+        pass
+
+
+fake_zep_client.Zep = FakeZep
+fake_zep_ontology.EntityModel = object
+fake_zep_ontology.EntityText = object
+fake_zep_ontology.EdgeModel = object
+sys.modules.setdefault("zep_cloud", fake_zep_cloud)
+sys.modules.setdefault("zep_cloud.client", fake_zep_client)
+sys.modules.setdefault("zep_cloud.external_clients.ontology", fake_zep_ontology)
 
 from app.api import report_bp
 from app.services.report_agent import ReportStatus
@@ -65,6 +87,56 @@ def test_generate_status_completed_message_is_localized(monkeypatch):
     assert response.status_code == 200
     assert payload["data"]["message"] == "The report has already been generated"
     assert payload["data"]["already_completed"] is True
+
+
+def test_generate_status_translates_task_progress_message(monkeypatch):
+    app = create_report_test_app()
+    client = app.test_client()
+
+    monkeypatch.setattr(
+        "app.api.report.TaskManager.get_task",
+        lambda self, task_id: SimpleNamespace(
+            to_dict=lambda: {
+                "task_id": task_id,
+                "status": "processing",
+                "progress": 30,
+                "message": "[planning] 正在生成报告大纲...",
+            }
+        ),
+    )
+
+    response = client.post(
+        "/api/report/generate/status",
+        json={"task_id": "task_123"},
+        headers={"X-Locale": "en"},
+    )
+
+    payload = response.get_json()["data"]
+    assert response.status_code == 200
+    assert payload["message"] == "[Planning] Generating the report outline..."
+
+
+def test_report_progress_message_is_localized(monkeypatch):
+    app = create_report_test_app()
+    client = app.test_client()
+
+    monkeypatch.setattr(
+        "app.api.report.ReportManager.get_progress",
+        lambda report_id: {
+            "status": "generating",
+            "progress": 45,
+            "message": "正在生成章节: Key Findings (1/3)",
+        },
+    )
+
+    response = client.get(
+        "/api/report/report_123/progress",
+        headers={"X-Locale": "en"},
+    )
+
+    payload = response.get_json()["data"]
+    assert response.status_code == 200
+    assert payload["message"] == "Generating section: Key Findings (1/3)"
 
 
 def test_missing_report_errors_are_localized(monkeypatch):

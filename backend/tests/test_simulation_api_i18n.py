@@ -120,6 +120,58 @@ def test_prepare_status_not_started_is_localized(tmp_path, monkeypatch):
     assert payload["message"] == "Preparation has not started yet. Call /api/simulation/prepare first."
 
 
+def test_prepare_status_translates_task_progress_payload(monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    class FakeTask:
+        def to_dict(self):
+            return {
+                "task_id": "task_123",
+                "status": "processing",
+                "progress": 35,
+                "message": "[1/4] 读取图谱实体: 正在连接Zep图谱...",
+                "progress_detail": {
+                    "current_stage": "reading",
+                    "current_stage_name": "读取图谱实体",
+                    "item_description": "正在连接Zep图谱...",
+                },
+            }
+
+    monkeypatch.setattr(
+        "app.models.task.TaskManager.get_task",
+        lambda self, task_id: FakeTask(),
+    )
+
+    response = client.post(
+        "/api/simulation/prepare/status",
+        json={"task_id": "task_123"},
+        headers={"X-Locale": "en"},
+    )
+
+    payload = response.get_json()["data"]
+    assert response.status_code == 200
+    assert payload["message"] == "[1/4] Reading graph entities: Connecting to the Zep graph..."
+    assert payload["progress_detail"]["current_stage_name"] == "Reading graph entities"
+    assert payload["progress_detail"]["item_description"] == "Connecting to the Zep graph..."
+
+
+def test_prepare_requires_existing_simulation_in_english(monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    monkeypatch.setattr(simulation_api.SimulationManager, "get_simulation", lambda self, simulation_id: None)
+
+    response = client.post(
+        "/api/simulation/prepare",
+        json={"simulation_id": "sim_missing"},
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 404
+    assert response.get_json()["error"] == "Simulation not found: sim_missing"
+
+
 def test_batch_interview_validation_is_localized(monkeypatch):
     app = create_simulation_test_app()
     client = app.test_client()

@@ -4,6 +4,7 @@ Step2: Zep实体读取与过滤、OASIS模拟准备与运行（全程自动化�
 """
 
 import os
+import re
 import traceback
 from flask import request, jsonify, send_file
 
@@ -27,6 +28,84 @@ RUN_STATUS_DETAIL_MAX_LIMIT = 1000
 # Interview prompt 优化前缀
 # 添加此前缀可以避免Agent调用工具，直接用文本回复
 INTERVIEW_PROMPT_PREFIX = "结合你的人设、所有的过往记忆与行动，不调用任何工具直接用文本回复我："
+
+SIMULATION_STAGE_NAMES_EN = {
+    "reading": "Reading graph entities",
+    "generating_profiles": "Generating agent profiles",
+    "generating_config": "Generating simulation config",
+    "copying_scripts": "Preparing simulation scripts",
+}
+
+SIMULATION_STAGE_LABELS_EN = {
+    **SIMULATION_STAGE_NAMES_EN,
+    "读取图谱实体": "Reading graph entities",
+    "生成Agent人设": "Generating agent profiles",
+    "生成模拟配置": "Generating simulation config",
+    "准备模拟脚本": "Preparing simulation scripts",
+}
+
+SIMULATION_PROGRESS_MESSAGE_MAP = {
+    "开始准备模拟环境...": "Preparing the simulation environment...",
+    "正在连接Zep图谱...": "Connecting to the Zep graph...",
+    "正在读取节点数据...": "Reading node data...",
+    "开始生成...": "Starting generation...",
+    "保存Profile文件...": "Saving profile files...",
+    "正在分析模拟需求...": "Analyzing the simulation requirement...",
+    "正在调用LLM生成配置...": "Calling the LLM to generate the config...",
+    "正在保存配置文件...": "Saving the config file...",
+    "配置生成完成": "Configuration generation completed",
+}
+
+
+def _translate_simulation_progress_message(locale: str, message: str | None) -> str | None:
+    if locale != "en" or not message:
+        return message
+
+    translated = SIMULATION_PROGRESS_MESSAGE_MAP.get(message, message)
+
+    completed_entities = re.match(r"^完成，共 (?P<count>\d+) 个实体$", translated)
+    if completed_entities:
+        return f"Completed with {completed_entities.group('count')} entities"
+
+    completed_profiles = re.match(r"^完成，共 (?P<count>\d+) 个Profile$", translated)
+    if completed_profiles:
+        return f"Completed with {completed_profiles.group('count')} profiles"
+
+    numbered_status = re.match(
+        r"^\[(?P<index>\d+)/(?P<total>\d+)\] (?P<stage>.+?): (?P<body>.+)$",
+        translated,
+    )
+    if numbered_status:
+        stage_name = numbered_status.group("stage")
+        stage_name = SIMULATION_STAGE_LABELS_EN.get(stage_name, stage_name)
+        body = _translate_simulation_progress_message(locale, numbered_status.group("body")) or ""
+        return f"[{numbered_status.group('index')}/{numbered_status.group('total')}] {stage_name}: {body}"
+
+    return translated
+
+
+def _translate_prepare_task_payload(locale: str, payload: dict | None) -> dict | None:
+    if locale != "en" or not payload:
+        return payload
+
+    translated_payload = dict(payload)
+    translated_payload["message"] = _translate_simulation_progress_message(locale, payload.get("message"))
+
+    progress_detail = payload.get("progress_detail")
+    if isinstance(progress_detail, dict):
+        translated_detail = dict(progress_detail)
+        stage = translated_detail.get("current_stage")
+        translated_detail["current_stage_name"] = SIMULATION_STAGE_LABELS_EN.get(
+            stage,
+            translated_detail.get("current_stage_name"),
+        )
+        translated_detail["item_description"] = _translate_simulation_progress_message(
+            locale,
+            translated_detail.get("item_description"),
+        )
+        translated_payload["progress_detail"] = translated_detail
+
+    return translated_payload
 
 
 def optimize_interview_prompt(prompt: str) -> str:
@@ -431,7 +510,7 @@ def prepare_simulation():
         if not state:
             return jsonify({
                 "success": False,
-                "error": f"模拟不存在: {simulation_id}"
+                "error": tr("simulation.not_found", locale, simulation_id=simulation_id)
             }), 404
         
         # 检查是否强制重新生成
@@ -747,7 +826,7 @@ def get_prepare_status():
         
         return jsonify({
             "success": True,
-            "data": task_dict
+            "data": _translate_prepare_task_payload(locale, task_dict)
         })
         
     except Exception as e:
@@ -762,13 +841,14 @@ def get_prepare_status():
 def get_simulation(simulation_id: str):
     """获取模拟状态"""
     try:
+        locale = get_locale()
         manager = SimulationManager()
         state = manager.get_simulation(simulation_id)
         
         if not state:
             return jsonify({
                 "success": False,
-                "error": f"模拟不存在: {simulation_id}"
+                "error": tr("simulation.not_found", locale, simulation_id=simulation_id)
             }), 404
         
         result = state.to_dict()
@@ -1044,6 +1124,7 @@ def get_simulation_profiles_realtime(simulation_id: str):
     from datetime import datetime
     
     try:
+        locale = get_locale()
         platform = request.args.get('platform', 'reddit')
         
         # 获取模拟目录
@@ -1052,7 +1133,7 @@ def get_simulation_profiles_realtime(simulation_id: str):
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
-                "error": f"模拟不存在: {simulation_id}"
+                "error": tr("simulation.not_found", locale, simulation_id=simulation_id)
             }), 404
         
         # 确定文件路径
@@ -1144,13 +1225,14 @@ def get_simulation_config_realtime(simulation_id: str):
     from datetime import datetime
     
     try:
+        locale = get_locale()
         # 获取模拟目录
         sim_dir = os.path.join(Config.OASIS_SIMULATION_DATA_DIR, simulation_id)
         
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
-                "error": f"模拟不存在: {simulation_id}"
+                "error": tr("simulation.not_found", locale, simulation_id=simulation_id)
             }), 404
         
         # 配置文件路径

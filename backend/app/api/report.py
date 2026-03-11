@@ -4,6 +4,7 @@ Report API路由
 """
 
 import os
+import re
 import threading
 from flask import request, jsonify, send_file
 
@@ -18,6 +19,67 @@ from ..utils.error_handler import handle_api_exception
 from ..utils.logger import get_logger
 
 logger = get_logger('mirofish.api.report')
+
+REPORT_STAGE_LABELS = {
+    "pending": "Pending",
+    "planning": "Planning",
+    "generating": "Generating",
+    "completed": "Completed",
+}
+
+REPORT_PROGRESS_MESSAGE_MAP = {
+    "初始化Report Agent...": "Initializing Report Agent...",
+    "初始化报告...": "Initializing report...",
+    "开始规划报告大纲...": "Starting report outline planning...",
+    "正在分析模拟需求...": "Analyzing the simulation requirement...",
+    "正在生成报告大纲...": "Generating the report outline...",
+    "正在解析大纲结构...": "Parsing the outline structure...",
+    "大纲规划完成": "Outline planning completed",
+    "正在组装完整报告...": "Assembling the full report...",
+    "报告生成完成": "Report generation completed",
+}
+
+
+def _translate_report_message(locale: str, message: str | None) -> str | None:
+    if locale != "en" or not message:
+        return message
+
+    translated = REPORT_PROGRESS_MESSAGE_MAP.get(message, message)
+
+    stage_match = re.match(r"^\[(?P<stage>[a-z_]+)\]\s+(?P<body>.+)$", translated)
+    if stage_match:
+        stage = stage_match.group("stage")
+        body = _translate_report_message(locale, stage_match.group("body")) or ""
+        return f"[{REPORT_STAGE_LABELS.get(stage, stage)}] {body}"
+
+    outline_match = re.match(r"^大纲规划完成，共(?P<count>\d+)个章节$", translated)
+    if outline_match:
+        return f"Outline planning completed with {outline_match.group('count')} sections"
+
+    generating_match = re.match(
+        r"^正在生成章节: (?P<title>.+) \((?P<index>\d+)/(?P<total>\d+)\)$",
+        translated,
+    )
+    if generating_match:
+        return (
+            f"Generating section: {generating_match.group('title')} "
+            f"({generating_match.group('index')}/{generating_match.group('total')})"
+        )
+
+    completed_match = re.match(r"^章节 (?P<title>.+) 已完成$", translated)
+    if completed_match:
+        return f"Section completed: {completed_match.group('title')}"
+
+    return translated
+
+
+def _translate_report_progress_payload(locale: str, payload: dict | None) -> dict | None:
+    if locale != "en" or not payload:
+        return payload
+
+    translated_payload = dict(payload)
+    translated_payload["message"] = _translate_report_message(locale, payload.get("message"))
+    return translated_payload
 
 
 # ============== 报告生成接口 ==============
@@ -67,7 +129,7 @@ def generate_report():
         if not state:
             return jsonify({
                 "success": False,
-                "error": f"模拟不存在: {simulation_id}"
+                "error": tr("simulation.not_found", locale, simulation_id=simulation_id)
             }), 404
         
         # 检查是否已有报告
@@ -129,7 +191,7 @@ def generate_report():
                     task_id,
                     status=TaskStatus.PROCESSING,
                     progress=0,
-                    message="初始化Report Agent..."
+                    message=_translate_report_message(locale, "初始化Report Agent...")
                 )
                 
                 # 创建Report Agent
@@ -145,7 +207,7 @@ def generate_report():
                     task_manager.update_task(
                         task_id,
                         progress=progress,
-                        message=f"[{stage}] {message}"
+                        message=_translate_report_message(locale, f"[{stage}] {message}")
                     )
                 
                 # 生成报告（传入预先生成的 report_id）
@@ -258,7 +320,7 @@ def get_generate_status():
         
         return jsonify({
             "success": True,
-            "data": task.to_dict()
+            "data": _translate_report_progress_payload(locale, task.to_dict())
         })
         
     except Exception as e:
@@ -569,7 +631,7 @@ def get_report_progress(report_id: str):
         
         return jsonify({
             "success": True,
-            "data": progress
+            "data": _translate_report_progress_payload(locale, progress)
         })
         
     except Exception as e:
