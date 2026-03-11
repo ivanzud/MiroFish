@@ -120,6 +120,25 @@ class FakeZepTools:
         }
 
 
+class CapturingLogger:
+    def __init__(self):
+        self.debugs = []
+
+    def debug(self, message, *args):
+        if args:
+            message = message % args
+        self.debugs.append(message)
+
+    def info(self, message, *args):
+        pass
+
+    def warning(self, message, *args):
+        pass
+
+    def error(self, message, *args):
+        pass
+
+
 def test_plan_outline_sends_readability_constraints_in_prompt():
     llm = FakeLLM()
     agent = ReportAgent(
@@ -333,6 +352,43 @@ def test_generate_section_localizes_english_react_loop_messages(monkeypatch):
     assert insufficient_tools_prompt.startswith("Notice: you have only used 1 tool calls; at least 3 are required.")
     assert "Please call another tool to gather more simulation evidence before outputting Final Answer." in insufficient_tools_prompt
     assert "Tip: you have not used these tools yet:" in insufficient_tools_prompt
+
+
+def test_generate_section_localizes_english_llm_preview_debug_logs(monkeypatch):
+    llm = SequenceSectionLLM([
+        '<tool_call>{"name":"quick_search","parameters":{"query":"audience","limit":1}}</tool_call>',
+        '<tool_call>{"name":"panorama_search","parameters":{"query":"audience","include_expired":true}}</tool_call>',
+        '<tool_call>{"name":"insight_forge","parameters":{"query":"audience"}}</tool_call>',
+        "Final Answer: Final English section body",
+    ])
+    logger = CapturingLogger()
+    monkeypatch.setattr("app.services.report_agent.logger", logger)
+
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+    outline = ReportOutline(
+        title="Forecast Report",
+        summary="Audience forecast",
+        sections=[ReportSection(title="Audience Outlook")],
+    )
+    monkeypatch.setattr(agent, "_execute_tool", lambda *args, **kwargs: "tool evidence")
+
+    content = agent._generate_section_react(
+        outline.sections[0],
+        outline,
+        [],
+        section_index=1,
+    )
+
+    assert content == "Final English section body"
+    assert logger.debugs
+    assert logger.debugs[0].startswith("LLM response preview: <tool_call>")
 
 
 def test_generate_section_localizes_english_empty_response_retry_and_fallback():
