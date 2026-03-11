@@ -22,6 +22,10 @@ sync_upstream_github = load_module()
 
 
 class SyncUpstreamGithubTests(unittest.TestCase):
+    def setUp(self):
+        sync_upstream_github.GH_CLI_USABLE = None
+        sync_upstream_github.GH_CLI_DISABLED_REASON = None
+
     def test_load_local_issue_coverage_reads_machine_readable_map(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             coverage_path = Path(tmpdir) / "coverage.json"
@@ -268,6 +272,29 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         )
         mocked.assert_called_once()
         self.assertIn("per_page=3", mocked.call_args.args[0])
+
+    def test_fetch_json_disables_gh_cli_after_rate_limit(self):
+        with patch.object(sync_upstream_github, "has_github_token", return_value=False), patch.object(
+            sync_upstream_github,
+            "can_use_gh_cli",
+            side_effect=lambda: not sync_upstream_github.GH_CLI_DISABLED_REASON,
+        ), patch.object(
+            sync_upstream_github,
+            "fetch_json_via_gh",
+            side_effect=RuntimeError("gh api failed: rate limit exceeded"),
+        ) as gh_fetch, patch.object(
+            sync_upstream_github,
+            "_fetch_json_via_http",
+            side_effect=[{"source": "http-1"}, {"source": "http-2"}],
+        ) as http_fetch:
+            first = sync_upstream_github.fetch_json("https://api.github.com/repos/test/repo/issues")
+            second = sync_upstream_github.fetch_json("https://api.github.com/repos/test/repo/pulls")
+
+        self.assertEqual(first["source"], "http-1")
+        self.assertEqual(second["source"], "http-2")
+        self.assertEqual(gh_fetch.call_count, 1)
+        self.assertEqual(http_fetch.call_count, 2)
+        self.assertEqual(sync_upstream_github.GH_CLI_DISABLED_REASON, "GitHub CLI rate limited")
 
     def test_list_mirrored_pull_request_numbers_reads_remote_and_local_refs(self):
         with patch.object(

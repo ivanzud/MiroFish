@@ -30,6 +30,8 @@ DEFAULT_API_TIMEOUT = int(os.environ.get("MIROFISH_GITHUB_SYNC_TIMEOUT", "30"))
 REQUEST_TIMEOUT = DEFAULT_API_TIMEOUT
 DEFAULT_STALE_CACHE_HOURS = int(os.environ.get("MIROFISH_GITHUB_SYNC_STALE_HOURS", "24"))
 DEFAULT_MAX_WORKERS = int(os.environ.get("MIROFISH_GITHUB_SYNC_MAX_WORKERS", "8"))
+GH_CLI_USABLE: bool | None = None
+GH_CLI_DISABLED_REASON: str | None = None
 
 
 def has_github_token() -> bool:
@@ -37,7 +39,15 @@ def has_github_token() -> bool:
 
 
 def can_use_gh_cli() -> bool:
+    global GH_CLI_USABLE
+
+    if GH_CLI_DISABLED_REASON:
+        return False
+    if GH_CLI_USABLE is not None:
+        return GH_CLI_USABLE
+
     if shutil.which("gh") is None:
+        GH_CLI_USABLE = False
         return False
 
     try:
@@ -48,9 +58,17 @@ def can_use_gh_cli() -> bool:
             text=True,
         )
     except OSError:
+        GH_CLI_USABLE = False
         return False
 
-    return result.returncode == 0
+    GH_CLI_USABLE = result.returncode == 0
+    return GH_CLI_USABLE
+
+
+def disable_gh_cli(reason: str) -> None:
+    global GH_CLI_DISABLED_REASON, GH_CLI_USABLE
+    GH_CLI_DISABLED_REASON = reason
+    GH_CLI_USABLE = False
 
 
 def _is_retryable_gh_error(message: str) -> bool:
@@ -131,6 +149,8 @@ def fetch_json(url: str) -> object:
         try:
             return fetch_json_via_gh(url)
         except RuntimeError as exc:
+            if "rate limit" in str(exc).lower():
+                disable_gh_cli("GitHub CLI rate limited")
             print(
                 f"warning: {exc}; falling back to direct GitHub HTTP request",
                 file=sys.stderr,

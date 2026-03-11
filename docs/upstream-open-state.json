@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T12:55:06.334579+00:00",
-  "generated_at": "2026-03-11T12:55:06.334579+00:00",
+  "captured_at": "2026-03-11T12:59:56.940808+00:00",
+  "generated_at": "2026-03-11T12:59:56.940808+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -2423,5 +2423,6 @@
       }
     }
   ],
-  "fork_remote": "origin"
+  "fork_remote": "origin",
+  "_cache_path": "docs/upstream-open-state.json"
 }
