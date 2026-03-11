@@ -183,6 +183,7 @@ def test_config_summary_reports_openai_compatible_alias_sources(monkeypatch):
         "api_key_env": "OPENAI_API_KEY",
         "base_url_env": "OPENAI_API_BASE_URL",
         "model_env": "OPENAI_MODEL",
+        "base_url_conflict": None,
         "uses_project_aliases": False,
         "uses_openai_aliases": True,
     }
@@ -206,6 +207,35 @@ def test_config_summary_reports_openai_base_url_source(monkeypatch):
         "api_key_env": "OPENAI_API_KEY",
         "base_url_env": "OPENAI_BASE_URL",
         "model_env": "OPENAI_MODEL",
+        "base_url_conflict": None,
         "uses_project_aliases": False,
         "uses_openai_aliases": True,
+    }
+
+
+def test_config_warns_when_openai_base_url_aliases_conflict(monkeypatch):
+    monkeypatch.delenv("LLM_BASE_URL", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "codex-key")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+    monkeypatch.setenv("OPENAI_API_BASE_URL", "https://codex-gateway.example.test/v1")
+    monkeypatch.setenv("OPENAI_MODEL", "gpt-4.1-mini")
+    monkeypatch.setenv("ZEP_API_KEY", "zep-key")
+
+    config_module = load_config_module()
+    result = config_module.Config.validate_comprehensive(locale="en")
+    summary = config_module.Config.get_config_summary()
+
+    assert result.is_valid is True
+    assert "OPENAI_BASE_URL / OPENAI_API_BASE_URL" in result.warnings[0]
+    assert "OPENAI_BASE_URL=https://api.openai.com/v1 will take precedence" in result.warnings[0]
+    assert summary["llm"]["base_url"] == "https://api.openai.com/v1"
+    assert summary["llm"]["sources"]["base_url_env"] == "OPENAI_BASE_URL"
+    assert summary["llm"]["sources"]["base_url_conflict"] == {
+        "has_conflict": True,
+        "selected_env": "OPENAI_BASE_URL",
+        "selected_value": "https://api.openai.com/v1",
+        "configured_envs": [
+            {"name": "OPENAI_BASE_URL", "value": "https://api.openai.com/v1"},
+            {"name": "OPENAI_API_BASE_URL", "value": "https://codex-gateway.example.test/v1"},
+        ],
     }

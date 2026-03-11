@@ -237,7 +237,7 @@ LLM_MODEL_NAME=qwen-plus
 ZEP_API_KEY=your_zep_api_key
 ```
 
-The backend now accepts both the project-specific `LLM_*` variables and the standard `OPENAI_*` aliases, so you can point MiroFish directly at OpenAI, Codex-compatible gateways, LM Studio, Ollama, or other OpenAI-compatible backends without extra code changes or a separate `LLM_PROVIDER` flag.
+The backend now accepts both the project-specific `LLM_*` variables and the standard `OPENAI_*` aliases, so you can point MiroFish directly at OpenAI, Codex-compatible gateways, LM Studio, Ollama, or other OpenAI-compatible backends without extra code changes or a separate `LLM_PROVIDER` flag. If multiple base-URL aliases are set, MiroFish resolves them in `LLM_BASE_URL` > `OPENAI_BASE_URL` > `OPENAI_API_BASE_URL` order; when those values disagree, `/api/graph/config/status` and `backend/scripts/print_config_status.py` now warn explicitly about which value won.
 
 Common compatible backend examples:
 

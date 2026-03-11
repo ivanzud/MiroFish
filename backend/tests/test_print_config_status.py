@@ -137,6 +137,7 @@ def test_print_config_status_script_accepts_openai_aliases_end_to_end():
             "api_key_env": "OPENAI_API_KEY",
             "base_url_env": "OPENAI_API_BASE_URL",
             "model_env": "OPENAI_MODEL",
+            "base_url_conflict": None,
             "uses_project_aliases": False,
             "uses_openai_aliases": True,
         },

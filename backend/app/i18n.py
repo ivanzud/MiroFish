@@ -56,6 +56,10 @@ TRANSLATIONS = {
         "zh": "LLM_MODEL_NAME={model}",
         "en": "LLM_MODEL_NAME={model}",
     },
+    "config.alias_conflict": {
+        "zh": "{group} 同时配置了不同的值；当前将优先使用 {selected}={value}",
+        "en": "{group} is configured with conflicting values; {selected}={value} will take precedence",
+    },
     "startup.config_error_header": {
         "zh": "配置错误:",
         "en": "Configuration errors:",

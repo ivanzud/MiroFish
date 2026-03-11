@@ -32,6 +32,9 @@
           <span class="diagnostics-badge" :class="`diagnostics-badge--${backendDiagnostic.tone}`">
             {{ backendDiagnostic.headline }}
           </span>
+          <p v-if="backendDiagnostic.note" class="diagnostics-state diagnostics-state--warning">
+            {{ backendDiagnostic.note }}
+          </p>
           <div class="diagnostics-grid">
             <div v-for="row in backendDiagnostic.rows" :key="row.label" class="diagnostics-row">
               <span class="diagnostics-label">{{ row.label }}</span>
@@ -262,6 +265,10 @@ const reset = () => {
 
 .diagnostics-state--error {
   color: #a40000;
+}
+
+.diagnostics-state--warning {
+  color: #7a4b00;
 }
 
 .diagnostics-card {

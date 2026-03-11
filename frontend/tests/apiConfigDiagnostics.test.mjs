@@ -3,11 +3,12 @@ import assert from 'node:assert/strict'
 
 import { buildBackendDiagnosticModel } from '../src/components/apiConfigDiagnostics.js'
 
-const t = (key) => {
+const t = (key, params = {}) => {
   const messages = {
     'common.none': 'None',
     'apiConfig.diagnostics.configured': 'Backend config detected',
     'apiConfig.diagnostics.configuredOpenAI': 'Direct OPENAI/Codex-compatible path detected',
+    'apiConfig.diagnostics.baseUrlConflictTitle': 'Conflicting backend base URLs detected',
     'apiConfig.diagnostics.incomplete': 'Backend config needs attention',
     'apiConfig.diagnostics.modeLabel': 'Backend mode',
     'apiConfig.diagnostics.sourceLabel': 'Resolved config source',
@@ -19,9 +20,14 @@ const t = (key) => {
     'apiConfig.diagnostics.sourceMixedAliases': 'Mixed OPENAI_* and LLM_* aliases',
     'apiConfig.diagnostics.sourceProjectAliases': 'Project LLM_* aliases',
     'apiConfig.diagnostics.sourceUnknown': 'Not resolved',
+    'apiConfig.diagnostics.baseUrlConflictNote': '{configuredEnvNames} are set to different values. MiroFish is currently using {selectedEnv}={selectedValue}.',
   }
 
-  return messages[key]
+  let message = messages[key]
+  for (const [paramKey, value] of Object.entries(params)) {
+    message = message.replace(`{${paramKey}}`, String(value))
+  }
+  return message
 }
 
 test('buildBackendDiagnosticModel highlights direct OPENAI alias resolution', () => {
@@ -36,6 +42,7 @@ test('buildBackendDiagnosticModel highlights direct OPENAI alias resolution', ()
           api_key_env: 'OPENAI_API_KEY',
           base_url_env: 'OPENAI_API_BASE_URL',
           model_env: 'OPENAI_MODEL',
+          base_url_conflict: null,
           uses_openai_aliases: true,
           uses_project_aliases: false,
         },
@@ -48,6 +55,7 @@ test('buildBackendDiagnosticModel highlights direct OPENAI alias resolution', ()
 
   assert.equal(diagnostic.tone, 'ready')
   assert.equal(diagnostic.headline, 'Direct OPENAI/Codex-compatible path detected')
+  assert.equal(diagnostic.note, '')
   assert.deepEqual(diagnostic.rows, [
     { label: 'Backend mode', value: 'OpenAI-compatible' },
     { label: 'Resolved config source', value: 'Direct OPENAI_* aliases' },
@@ -96,6 +104,7 @@ test('buildBackendDiagnosticModel flags mixed alias resolution explicitly', () =
           api_key_env: 'OPENAI_API_KEY',
           base_url_env: 'LLM_BASE_URL',
           model_env: 'OPENAI_MODEL',
+          base_url_conflict: null,
           uses_openai_aliases: true,
           uses_project_aliases: true,
         },
@@ -111,5 +120,45 @@ test('buildBackendDiagnosticModel flags mixed alias resolution explicitly', () =
   assert.equal(
     diagnostic.rows[2].value,
     'OPENAI_API_KEY / LLM_BASE_URL / OPENAI_MODEL',
+  )
+  assert.equal(diagnostic.note, '')
+})
+
+test('buildBackendDiagnosticModel flags conflicting base URL aliases', () => {
+  const diagnostic = buildBackendDiagnosticModel({
+    summary: {
+      llm: {
+        configured: true,
+        backend_mode: 'openai_compatible',
+        base_url: 'https://api.openai.com/v1',
+        model: 'gpt-4.1-mini',
+        sources: {
+          api_key_env: 'OPENAI_API_KEY',
+          base_url_env: 'OPENAI_BASE_URL',
+          model_env: 'OPENAI_MODEL',
+          base_url_conflict: {
+            has_conflict: true,
+            selected_env: 'OPENAI_BASE_URL',
+            selected_value: 'https://api.openai.com/v1',
+            configured_envs: [
+              { name: 'OPENAI_BASE_URL', value: 'https://api.openai.com/v1' },
+              { name: 'OPENAI_API_BASE_URL', value: 'https://codex-gateway.example.test/v1' },
+            ],
+          },
+          uses_openai_aliases: true,
+          uses_project_aliases: false,
+        },
+      },
+    },
+    validation: {
+      is_valid: true,
+    },
+  }, t)
+
+  assert.equal(diagnostic.tone, 'warning')
+  assert.equal(diagnostic.headline, 'Conflicting backend base URLs detected')
+  assert.equal(
+    diagnostic.note,
+    'OPENAI_BASE_URL / OPENAI_API_BASE_URL are set to different values. MiroFish is currently using OPENAI_BASE_URL=https://api.openai.com/v1.',
   )
 })

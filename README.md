@@ -237,7 +237,7 @@ LLM_MODEL_NAME=qwen-plus
 ZEP_API_KEY=your_zep_api_key
 ```
 
-说明：后端现在同时识别项目内的 `LLM_*` 配置和标准 `OPENAI_*` 配置，因此可直接接入 OpenAI、Codex 兼容网关、LM Studio、Ollama 等 OpenAI-compatible 服务，不需要额外的 `LLM_PROVIDER` 开关。
+说明：后端现在同时识别项目内的 `LLM_*` 配置和标准 `OPENAI_*` 配置，因此可直接接入 OpenAI、Codex 兼容网关、LM Studio、Ollama 等 OpenAI-compatible 服务，不需要额外的 `LLM_PROVIDER` 开关。若同时设置了多个基础地址变量，则按 `LLM_BASE_URL` > `OPENAI_BASE_URL` > `OPENAI_API_BASE_URL` 的优先级生效；当这些值互相冲突时，`/api/graph/config/status` 与 `backend/scripts/print_config_status.py` 会给出明确告警。
 
 常见兼容后端示例：
 

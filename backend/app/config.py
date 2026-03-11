@@ -45,6 +45,16 @@ def _configured_env_name(*names):
     return None
 
 
+def _configured_env_entries(*names):
+    """Return configured environment variable name/value pairs in priority order."""
+    entries = []
+    for name in names:
+        value = os.environ.get(name)
+        if value not in (None, ''):
+            entries.append((name, value))
+    return entries
+
+
 def _int_env(name, default):
     """Parse integer environment variables without crashing module import."""
     raw_value = os.environ.get(name)
@@ -201,6 +211,7 @@ class Config:
     REPORT_AGENT_MAX_TOOL_CALLS = _int_env('REPORT_AGENT_MAX_TOOL_CALLS', 5)
     REPORT_AGENT_MAX_REFLECTION_ROUNDS = _int_env('REPORT_AGENT_MAX_REFLECTION_ROUNDS', 2)
     REPORT_AGENT_TEMPERATURE = _float_env('REPORT_AGENT_TEMPERATURE', 0.5)
+    LLM_BASE_URL_ENV_NAMES = ('LLM_BASE_URL', 'OPENAI_BASE_URL', 'OPENAI_API_BASE_URL')
 
     @classmethod
     def validate(cls, locale='zh'):
@@ -223,6 +234,17 @@ class Config:
             cls.LLM_BASE_URL,
             locale=locale,
         )
+        base_url_conflict = cls._get_alias_conflict(*cls.LLM_BASE_URL_ENV_NAMES)
+        if base_url_conflict:
+            result.add_warning(
+                tr(
+                    "config.alias_conflict",
+                    locale,
+                    group=" / ".join(cls.LLM_BASE_URL_ENV_NAMES),
+                    selected=base_url_conflict["selected_env"],
+                    value=base_url_conflict["selected_value"],
+                )
+            )
         cls._validate_numeric_env(result, "LLM_MAX_TOKENS", minimum=1, locale=locale)
         cls._validate_numeric_env(result, "OASIS_DEFAULT_MAX_ROUNDS", minimum=1, locale=locale)
         cls._validate_numeric_env(result, "INTERVIEW_AGENT_TIMEOUT_SECONDS", minimum=1, parser=float, locale=locale)
@@ -269,12 +291,9 @@ class Config:
     def get_config_summary(cls):
         """Return a non-sensitive config snapshot for diagnostics."""
         llm_api_key_source = _configured_env_name('LLM_API_KEY', 'OPENAI_API_KEY')
-        llm_base_url_source = _configured_env_name(
-            'LLM_BASE_URL',
-            'OPENAI_BASE_URL',
-            'OPENAI_API_BASE_URL',
-        )
+        llm_base_url_source = _configured_env_name(*cls.LLM_BASE_URL_ENV_NAMES)
         llm_model_source = _configured_env_name('LLM_MODEL_NAME', 'OPENAI_MODEL')
+        base_url_conflict = cls._get_alias_conflict(*cls.LLM_BASE_URL_ENV_NAMES)
 
         return {
             'cors': {
@@ -292,6 +311,7 @@ class Config:
                     'api_key_env': llm_api_key_source,
                     'base_url_env': llm_base_url_source,
                     'model_env': llm_model_source,
+                    'base_url_conflict': base_url_conflict,
                     'uses_project_aliases': any(
                         source and source.startswith('LLM_')
                         for source in (llm_api_key_source, llm_base_url_source, llm_model_source)
@@ -362,6 +382,28 @@ class Config:
             result.add_error(tr("config.numeric_min", locale, name=name, minimum=minimum, value=raw_value))
         if maximum is not None and value > maximum:
             result.add_error(tr("config.numeric_max", locale, name=name, maximum=maximum, value=raw_value))
+
+    @classmethod
+    def _get_alias_conflict(cls, *names):
+        entries = _configured_env_entries(*names)
+        if len(entries) < 2:
+            return None
+
+        distinct_values = {value for _, value in entries}
+        if len(distinct_values) <= 1:
+            return None
+
+        selected_env = entries[0][0]
+        selected_value = entries[0][1]
+        return {
+            'has_conflict': True,
+            'selected_env': selected_env,
+            'selected_value': selected_value,
+            'configured_envs': [
+                {'name': name, 'value': value}
+                for name, value in entries
+            ],
+        }
 
 
 def validate_on_startup():

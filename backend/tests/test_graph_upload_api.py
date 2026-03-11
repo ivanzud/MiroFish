@@ -375,6 +375,7 @@ def test_get_backend_config_status_reports_openai_compatible_alias_sources(monke
                     "api_key_env": "OPENAI_API_KEY",
                     "base_url_env": "OPENAI_API_BASE_URL",
                     "model_env": "OPENAI_MODEL",
+                    "base_url_conflict": None,
                     "uses_project_aliases": False,
                     "uses_openai_aliases": True,
                 },
@@ -394,6 +395,7 @@ def test_get_backend_config_status_reports_openai_compatible_alias_sources(monke
         "api_key_env": "OPENAI_API_KEY",
         "base_url_env": "OPENAI_API_BASE_URL",
         "model_env": "OPENAI_MODEL",
+        "base_url_conflict": None,
         "uses_project_aliases": False,
         "uses_openai_aliases": True,
     }
@@ -420,6 +422,7 @@ def test_get_backend_config_status_reports_openai_base_url_source(monkeypatch, t
                     "api_key_env": "OPENAI_API_KEY",
                     "base_url_env": "OPENAI_BASE_URL",
                     "model_env": "OPENAI_MODEL",
+                    "base_url_conflict": None,
                     "uses_project_aliases": False,
                     "uses_openai_aliases": True,
                 },
@@ -437,6 +440,7 @@ def test_get_backend_config_status_reports_openai_base_url_source(monkeypatch, t
         "api_key_env": "OPENAI_API_KEY",
         "base_url_env": "OPENAI_BASE_URL",
         "model_env": "OPENAI_MODEL",
+        "base_url_conflict": None,
         "uses_project_aliases": False,
         "uses_openai_aliases": True,
     }

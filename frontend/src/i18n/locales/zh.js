@@ -33,6 +33,8 @@ export default {
       refresh: '刷新',
       configured: '已检测到后端配置',
       configuredOpenAI: '已检测到直接 OPENAI / Codex-compatible 接入',
+      baseUrlConflictTitle: '检测到后端基础地址冲突',
+      baseUrlConflictNote: '{configuredEnvNames} 设置了不同的值，当前将使用 {selectedEnv}={selectedValue}。',
       incomplete: '后端配置仍需处理',
       modeLabel: '后端模式',
       sourceLabel: '解析到的配置来源',

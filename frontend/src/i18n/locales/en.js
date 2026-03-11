@@ -33,6 +33,8 @@ export default {
       refresh: 'Refresh',
       configured: 'Backend config detected',
       configuredOpenAI: 'Direct OPENAI/Codex-compatible path detected',
+      baseUrlConflictTitle: 'Conflicting backend base URLs detected',
+      baseUrlConflictNote: '{configuredEnvNames} are set to different values. MiroFish is currently using {selectedEnv}={selectedValue}.',
       incomplete: 'Backend config needs attention',
       modeLabel: 'Backend mode',
       sourceLabel: 'Resolved config source',

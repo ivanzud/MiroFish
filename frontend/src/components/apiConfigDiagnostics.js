@@ -6,7 +6,9 @@ export const buildBackendDiagnosticModel = (payload, t) => {
   const sources = llm.sources || {}
   const usesOpenAIAliases = Boolean(sources.uses_openai_aliases)
   const usesProjectAliases = Boolean(sources.uses_project_aliases)
-  const isConfigured = llm.configured && validation.is_valid !== false
+  const baseUrlConflict = sources.base_url_conflict || null
+  const hasBaseUrlConflict = Boolean(baseUrlConflict?.has_conflict)
+  const isConfigured = llm.configured && validation.is_valid !== false && !hasBaseUrlConflict
 
   let resolvedSource = t('apiConfig.diagnostics.sourceUnknown')
   if (usesOpenAIAliases && usesProjectAliases) {
@@ -25,11 +27,22 @@ export const buildBackendDiagnosticModel = (payload, t) => {
 
   return {
     tone: isConfigured ? 'ready' : 'warning',
-    headline: isConfigured
+    headline: hasBaseUrlConflict
+      ? t('apiConfig.diagnostics.baseUrlConflictTitle')
+      : isConfigured
       ? (usesOpenAIAliases
         ? t('apiConfig.diagnostics.configuredOpenAI')
         : t('apiConfig.diagnostics.configured'))
       : t('apiConfig.diagnostics.incomplete'),
+    note: hasBaseUrlConflict
+      ? t('apiConfig.diagnostics.baseUrlConflictNote', {
+        selectedEnv: baseUrlConflict.selected_env || none,
+        selectedValue: baseUrlConflict.selected_value || none,
+        configuredEnvNames: (baseUrlConflict.configured_envs || [])
+          .map((entry) => entry.name)
+          .join(' / ') || none,
+      })
+      : '',
     rows: [
       {
         label: t('apiConfig.diagnostics.modeLabel'),
