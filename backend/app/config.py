@@ -38,7 +38,12 @@ class Config:
     
     # LLM配置（统一使用OpenAI格式）
     LLM_API_KEY = _env('LLM_API_KEY', 'OPENAI_API_KEY')
-    LLM_BASE_URL = _env('LLM_BASE_URL', 'OPENAI_BASE_URL', default='https://api.openai.com/v1')
+    LLM_BASE_URL = _env(
+        'LLM_BASE_URL',
+        'OPENAI_BASE_URL',
+        'OPENAI_API_BASE_URL',
+        default='https://api.openai.com/v1',
+    )
     LLM_MODEL_NAME = _env('LLM_MODEL_NAME', 'OPENAI_MODEL', default='gpt-4o-mini')
     LLM_MAX_TOKENS = int(os.environ.get('LLM_MAX_TOKENS', '4096'))
     

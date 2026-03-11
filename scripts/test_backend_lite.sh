@@ -15,6 +15,7 @@ fi
   "python-dotenv>=1.0.0"
 
 "${VENV_DIR}/bin/pytest" \
+  "${ROOT_DIR}/backend/tests/test_config.py" \
   "${ROOT_DIR}/backend/tests/test_llm_client.py" \
   "${ROOT_DIR}/backend/tests/test_graph_builder.py" \
   -q
