@@ -35,6 +35,7 @@ Last refreshed: `2026-03-11`
 - `#119` Safe subset landed locally: the frontend now has a persisted `中文` / `English` language toggle for the home shell, main workflow header, and history modal, while API calls include `X-Locale` for future backend localization without forcing the larger upstream backend/UI refactor onto this branch.
 - Follow-up localization work now also covers the graph-build process view and the Step 3 simulation monitor, so English mode is no longer limited to the shell/history surfaces while broader Step 4/5 and backend-message localization remains open.
 - Follow-up localization work now also covers the Step 4 report-generation shell and report view chrome, including retry/error/status copy and the report-page header controls, so English mode stays coherent through report generation while deeper Step 4/5 content localization remains open.
+- Follow-up localization work now also covers the shared graph panel and the Step 5 deep-interaction workspace chrome: Report Agent chat, agent-selection/survey controls, survey results, graph detail labels, and graph status hints all switch with the persisted `中文` / `English` locale instead of staying Chinese-first.
 - OpenAI-compatible backend aliases now work in the standalone simulation runners too, so `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` can be used directly outside the Flask app path.
 - Objective 7 verification status: backend config, standalone runners, and both READMEs now explicitly support direct OpenAI / Codex-compatible / OpenAI-compatible backends without requiring a project-specific raw-key-only setup.
 - Backend config now also accepts `OPENAI_API_BASE_URL`, matching the environment variable exported by the standalone simulation runners and some OpenAI-compatible tooling, with regression coverage in the lightweight backend test path.
@@ -49,6 +50,7 @@ Last refreshed: `2026-03-11`
 
 - `#105` Remaining risky subset: default `DEBUG=False`, non-static `SECRET_KEY` generation, and stricter CORS defaults/configuration are still deferred because they can change local/dev or deployed behavior and need a compatibility review before landing.
 - `#119` Remaining scope is still deferred: most step-level workflow components and backend-generated error text remain Chinese-first, so broader localization should be handled as a follow-up instead of continuing to splice a large, drifting upstream PR into this branch.
+- After the latest Step 5 / graph-panel localization pass, the main remaining localization gaps are backend-generated content, agent/profile payload text, and other runtime data that arrives in Chinese from the backend or models rather than from frontend chrome.
 - `#108` Windows installer packaging is now mirrored into the fork for visibility, but it remains a large Windows-specific feature addition (`installer/build.ps1`, Inno Setup flow, release packaging) and is not a safe blind cherry-pick for this branch.
 - `#118` RAGflow backend support is now mirrored into the fork for visibility, but it is a large dual-backend feature branch touching graph APIs, config, and simulation services, so it needs a dedicated design/review pass instead of a low-risk merge.
 - `#82` Dependency-only CVE patch cannot be landed as a real fix yet: a coordinated `uv lock --upgrade-package unstructured==0.18.18` attempt fails because `camel-oasis==0.2.5` transitively pins `unstructured==0.13.7`. The upstream PR also only edits `backend/requirements.txt`, so it would leave this repo's dependency state inconsistent even if cherry-picked.
@@ -74,6 +76,7 @@ Last refreshed: `2026-03-11`
 - `python3 scripts/sync_upstream_github.py --state open|all --fork-remote origin ...` now annotates each PR record with `fork_mirrored` / `fork_mirror_ref`; after mirroring the missing clean non-`main` branches, the refreshed snapshots show `28/33` open PRs and `29/47` total PRs mirrored into the fork.
 - `cd frontend && npm test` passes with new coverage for the frontend API base URL resolver, including the default `3000 -> 5001` dual-port deployment fallback.
 - `cd frontend && npm run build` passes after restoring dual-port frontend/backend compatibility for the default local and Docker topology.
+- `cd frontend && npm test -- --runInBand` and `cd frontend && npm run build` both pass after localizing the shared graph panel and Step 5 deep-interaction chrome.
 - `cd backend && uv run pytest -q` is currently blocked in this environment because dependency resolution reaches `tiktoken`, which attempts a source build and fails without a Rust compiler.
 
 ## Snapshot artifacts
