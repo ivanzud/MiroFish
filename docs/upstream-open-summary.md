@@ -2,8 +2,8 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T12:25:49.392710+00:00`
-- Issues: `36` total (`open=36`, `closed=0`)
+- Captured: `2026-03-11T12:36:40.006107+00:00`
+- Issues: `35` total (`open=35`, `closed=0`)
 - Pull requests: `33` total (`open=33`, `closed=0`)
 - Mirrored in `origin`: `33` of `33` PR refs
 - Local issue coverage map: `docs/upstream-coverage.json`
@@ -11,10 +11,6 @@
 ## Recently Updated Issues
 
 - #140 [open] 让我想到了刘慈欣的一个小说，要是把真实世界放进去，得多大的算力啊 (no labels)
-- #139 [open] Graph build task failed  ：（ (no labels)
-  - local coverage [covered]: Graph-build task failures now classify Zep 401/unauthorized responses into a concise ZEP_API_KEY guidance message and strip embedded traceback noise before returning task payload errors.
-  - Graph build task failed: Traceback (most recent call last): File "/app/backend/.venv/lib/python3.11/site-packages/zep_cloud/graph/raw_client.py", line 713, in create _response_json = _response.json() ^^^^^^^^^^^^^^^^ File "/app/backend/.venv/lib/python3.11/site-packages/httpx/_models.py", line 832, in json return jsonlib.loads(self.content, **kwargs) ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ File "/u…
-  - latest comment by `dosubot[bot]`: <!-- Answer --> The `401 unauthorized` error indicates a Zep Cloud API authentication issue. Here are the most likely causes and solutions: **1. Version Bug** — If you're using MiroFish v0.1.0, there's a [known authentication bug](https://…
 - #135 [open] 报错，Zep图谱构建失败 (no labels)
   - local coverage [covered]: Graph ontology ingestion now accepts string-valued attribute definitions for entity and edge schemas, so malformed LLM ontology output no longer crashes graph builds with `TypeError: string indices must be integers`.
   - Graph build task failed: Traceback (most recent call last): File "/app/backend/app/api/graph.py", line 418, in build_task builder.set_ontology(graph_id, ontology) File "/app/backend/app/services/graph_builder.py", line 230, in set_ontology attr_name = safe_attr_name(attr_def["name"]) # 使用安全名称 ~~~~~~~~^^^^^^^^ TypeError: string indices must be integers, not 'str'
@@ -45,6 +41,8 @@
   - local coverage [covered]: Failed report generation can now be retried directly from Step 4 with persisted status polling, backend error text, and a `force_regenerate` retry path.
   - <img width="2538" height="1213" alt="Image" src="https://github.com/user-attachments/assets/e3d01822-aa09-45b7-9210-2ce8e23bca8f" /> 好像是Zep超出调用限额导致报告生成失败，但是即使我充值了Zep，似乎也没有办法重新生成报告，难道只能重新走一轮？
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @luchenwei9266! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 目前 MiroFish **不支持通过界面重试报告生成**，这是一个[已知问题](https://github.com/666ghj/MiroFish/issues/30)。系统虽然有 `force_regenerate`…
+- #107 [open] 镜像问题 (no labels)
+  - ✘ Image ghcr.io/666ghj/mirofish:latest Error Get "https://ghcr.io/v2/": EOF 7.9s Error response from daemon: Get "https://ghcr.io/v2/": EOF
 
 ## Recently Updated Pull Requests
 

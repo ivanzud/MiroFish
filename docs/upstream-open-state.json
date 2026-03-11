@@ -1,12 +1,12 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T12:25:49.392710+00:00",
-  "generated_at": "2026-03-11T12:25:49.392710+00:00",
+  "captured_at": "2026-03-11T12:36:40.006107+00:00",
+  "generated_at": "2026-03-11T12:36:40.006107+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
-      "open": 36
+      "open": 35
     },
     "pull_requests": {
       "open": 33
@@ -30,43 +30,6 @@
       "body_excerpt": "",
       "comment_count": 0,
       "recent_comments": []
-    },
-    {
-      "number": 139,
-      "title": "Graph build task failed  ：（",
-      "url": "https://github.com/666ghj/MiroFish/issues/139",
-      "state": "open",
-      "created_at": "2026-03-11T11:11:20Z",
-      "updated_at": "2026-03-11T11:13:35Z",
-      "closed_at": null,
-      "labels": [],
-      "author": "darfy22",
-      "body_excerpt": "Graph build task failed: Traceback (most recent call last): File \"/app/backend/.venv/lib/python3.11/site-packages/zep_cloud/graph/raw_client.py\", line 713, in create _response_json = _response.json() ^^^^^^^^^^^^^^^^ File \"/app/backend/.venv/lib/python3.11/site-packages/httpx/_models.py\", line 832, in json return jsonlib.loads(self.content, **kwargs) ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ File \"/u…",
-      "comment_count": 1,
-      "recent_comments": [
-        {
-          "author": "dosubot[bot]",
-          "created_at": "2026-03-11T11:13:35Z",
-          "updated_at": "2026-03-11T11:13:35Z",
-          "url": "https://github.com/666ghj/MiroFish/issues/139#issuecomment-4038479566",
-          "body_excerpt": "<!-- Answer --> The `401 unauthorized` error indicates a Zep Cloud API authentication issue. Here are the most likely causes and solutions: **1. Version Bug** — If you're using MiroFish v0.1.0, there's a [known authentication bug](https://…"
-        }
-      ],
-      "local_coverage": {
-        "number": 139,
-        "status": "covered",
-        "summary": "Graph-build task failures now classify Zep 401/unauthorized responses into a concise ZEP_API_KEY guidance message and strip embedded traceback noise before returning task payload errors.",
-        "local_refs": [
-          "backend/app/services/graph_builder.py",
-          "backend/tests/test_graph_builder.py",
-          "backend/tests/test_graph_upload_api.py"
-        ],
-        "validation": [
-          "backend/tests/test_graph_builder.py::test_format_user_facing_error_maps_embedded_traceback_auth_failures",
-          "backend/tests/test_graph_upload_api.py::test_build_graph_task_persists_sanitized_zep_auth_error"
-        ],
-        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
-      }
     },
     {
       "number": 135,
@@ -811,7 +774,25 @@
           "url": "https://github.com/666ghj/MiroFish/issues/61#issuecomment-3809795302",
           "body_excerpt": "可以详细描述一下吗，不是很懂"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 61,
+        "status": "covered",
+        "summary": "The frontend now exposes a persisted runtime backend API override panel on the home screen and Step 1 / Step 2 workbench, so users can repoint the UI to another backend without rebuilding.",
+        "local_refs": [
+          "frontend/src/api/baseUrl.js",
+          "frontend/src/api/index.js",
+          "frontend/src/components/ApiEndpointControl.vue",
+          "frontend/src/views/Home.vue",
+          "frontend/src/views/MainView.vue",
+          "README.md",
+          "README-EN.md"
+        ],
+        "validation": [
+          "frontend/tests/baseUrl.test.mjs",
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 62,

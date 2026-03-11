@@ -1,13 +1,13 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T12:25:38.802599+00:00",
-  "generated_at": "2026-03-11T12:25:38.802599+00:00",
+  "captured_at": "2026-03-11T12:36:56.473379+00:00",
+  "generated_at": "2026-03-11T12:36:56.473379+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
-      "open": 36,
-      "closed": 48
+      "closed": 49,
+      "open": 35
     },
     "pull_requests": {
       "closed": 14,
@@ -20,31 +20,17 @@
   },
   "issues": [
     {
-      "number": 140,
-      "title": "让我想到了刘慈欣的一个小说，要是把真实世界放进去，得多大的算力啊",
-      "url": "https://github.com/666ghj/MiroFish/issues/140",
-      "state": "open",
-      "created_at": "2026-03-11T11:20:00Z",
-      "updated_at": "2026-03-11T11:20:00Z",
-      "closed_at": null,
-      "labels": [],
-      "author": "p20061",
-      "body_excerpt": "",
-      "comment_count": 0,
-      "recent_comments": []
-    },
-    {
       "number": 139,
       "title": "Graph build task failed  ：（",
       "url": "https://github.com/666ghj/MiroFish/issues/139",
-      "state": "open",
+      "state": "closed",
       "created_at": "2026-03-11T11:11:20Z",
-      "updated_at": "2026-03-11T11:13:35Z",
-      "closed_at": null,
+      "updated_at": "2026-03-11T12:29:18Z",
+      "closed_at": "2026-03-11T12:29:18Z",
       "labels": [],
       "author": "darfy22",
       "body_excerpt": "Graph build task failed: Traceback (most recent call last): File \"/app/backend/.venv/lib/python3.11/site-packages/zep_cloud/graph/raw_client.py\", line 713, in create _response_json = _response.json() ^^^^^^^^^^^^^^^^ File \"/app/backend/.venv/lib/python3.11/site-packages/httpx/_models.py\", line 832, in json return jsonlib.loads(self.content, **kwargs) ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ File \"/u…",
-      "comment_count": 1,
+      "comment_count": 2,
       "recent_comments": [
         {
           "author": "dosubot[bot]",
@@ -52,6 +38,13 @@
           "updated_at": "2026-03-11T11:13:35Z",
           "url": "https://github.com/666ghj/MiroFish/issues/139#issuecomment-4038479566",
           "body_excerpt": "<!-- Answer --> The `401 unauthorized` error indicates a Zep Cloud API authentication issue. Here are the most likely causes and solutions: **1. Version Bug** — If you're using MiroFish v0.1.0, there's a [known authentication bug](https://…"
+        },
+        {
+          "author": "darfy22",
+          "created_at": "2026-03-11T12:29:18Z",
+          "updated_at": "2026-03-11T12:29:18Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/139#issuecomment-4038887563",
+          "body_excerpt": "done"
         }
       ],
       "local_coverage": {
@@ -69,6 +62,20 @@
         ],
         "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
       }
+    },
+    {
+      "number": 140,
+      "title": "让我想到了刘慈欣的一个小说，要是把真实世界放进去，得多大的算力啊",
+      "url": "https://github.com/666ghj/MiroFish/issues/140",
+      "state": "open",
+      "created_at": "2026-03-11T11:20:00Z",
+      "updated_at": "2026-03-11T11:20:00Z",
+      "closed_at": null,
+      "labels": [],
+      "author": "p20061",
+      "body_excerpt": "",
+      "comment_count": 0,
+      "recent_comments": []
     },
     {
       "number": 138,
@@ -1327,7 +1334,25 @@
           "url": "https://github.com/666ghj/MiroFish/issues/61#issuecomment-3809795302",
           "body_excerpt": "可以详细描述一下吗，不是很懂"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 61,
+        "status": "covered",
+        "summary": "The frontend now exposes a persisted runtime backend API override panel on the home screen and Step 1 / Step 2 workbench, so users can repoint the UI to another backend without rebuilding.",
+        "local_refs": [
+          "frontend/src/api/baseUrl.js",
+          "frontend/src/api/index.js",
+          "frontend/src/components/ApiEndpointControl.vue",
+          "frontend/src/views/Home.vue",
+          "frontend/src/views/MainView.vue",
+          "README.md",
+          "README-EN.md"
+        ],
+        "validation": [
+          "frontend/tests/baseUrl.test.mjs",
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 62,

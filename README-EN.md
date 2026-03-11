@@ -341,6 +341,7 @@ docker compose up -d
 Reads `.env` from root directory by default, maps ports `3000 (frontend) / 5001 (backend)`
 
 If you deploy frontend and backend on different hosts or ports, set `VITE_API_BASE_URL` for the frontend explicitly.
+You can also open the `Backend API` panel in the home screen or the Step 1 / Step 2 workbench header and persist a runtime backend URL in the browser without rebuilding the frontend.
 
 For backend-side cross-origin control, you can also set `CORS_ALLOWED_ORIGINS` (comma-separated) plus optional `CORS_ALLOW_METHODS` / `CORS_ALLOW_HEADERS`. The default remains permissive (`*`) for backward compatibility, so these variables are only needed when you want to restrict which frontend origins may call `/api/*`.
 

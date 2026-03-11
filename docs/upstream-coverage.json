@@ -1,6 +1,6 @@
 {
   "repo": "666ghj/MiroFish",
-  "captured_at": "2026-03-11T12:15:00+00:00",
+  "captured_at": "2026-03-11T12:40:00+00:00",
   "issues": [
     {
       "number": 14,
@@ -78,6 +78,24 @@
       ],
       "validation": [
         "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 61,
+      "status": "covered",
+      "summary": "The frontend now exposes a persisted runtime backend API override panel on the home screen and Step 1 / Step 2 workbench, so users can repoint the UI to another backend without rebuilding.",
+      "local_refs": [
+        "frontend/src/api/baseUrl.js",
+        "frontend/src/api/index.js",
+        "frontend/src/components/ApiEndpointControl.vue",
+        "frontend/src/views/Home.vue",
+        "frontend/src/views/MainView.vue",
+        "README.md",
+        "README-EN.md"
+      ],
+      "validation": [
+        "frontend/tests/baseUrl.test.mjs",
         "frontend: npm run build"
       ]
     },

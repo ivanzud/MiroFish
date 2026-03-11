@@ -21,6 +21,7 @@
       </div>
 
       <div class="header-right">
+        <ApiEndpointControl compact />
         <LanguageSelector light />
         <div class="workflow-step">
           <span class="step-num">Step {{ currentStep }}/5</span>
@@ -82,6 +83,7 @@ import { useRoute, useRouter } from 'vue-router'
 import GraphPanel from '../components/GraphPanel.vue'
 import Step1GraphBuild from '../components/Step1GraphBuild.vue'
 import Step2EnvSetup from '../components/Step2EnvSetup.vue'
+import ApiEndpointControl from '../components/ApiEndpointControl.vue'
 import LanguageSelector from '../components/LanguageSelector.vue'
 import { generateOntology, getProject, buildGraph, getTaskStatus, getGraphData } from '../api/graph'
 import { getPendingUpload, clearPendingUpload } from '../store/pendingUpload'

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { resolveBaseURL as resolveApiBaseURL } from './baseUrl'
+import { getStoredBaseURL, resolveBaseURL as resolveApiBaseURL } from './baseUrl'
 import { resolveTimeoutMs } from './timeout'
 
 const createApiError = (message, extras = {}) => {
@@ -10,6 +10,7 @@ const createApiError = (message, extras = {}) => {
 
 export const resolveBaseURL = () => {
   return resolveApiBaseURL({
+    runtimeBaseURL: getStoredBaseURL(),
     envBaseURL: import.meta.env.VITE_API_BASE_URL,
     location: typeof window !== 'undefined' ? window.location : undefined
   })
@@ -42,6 +43,7 @@ const service = axios.create({
 // 请求拦截器
 service.interceptors.request.use(
   config => {
+    config.baseURL = resolveBaseURL()
     const locale = getApiLocale()
     if (locale) {
       config.headers['X-Locale'] = locale

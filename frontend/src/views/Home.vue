@@ -5,6 +5,7 @@
       <div class="nav-brand">MIROFISH</div>
       <div class="nav-links">
         <LanguageSelector />
+        <ApiEndpointControl compact />
         <a href="https://github.com/666ghj/MiroFish" target="_blank" class="github-link">
           {{ t('nav.visitGithub') }} <span class="arrow">↗</span>
         </a>
@@ -212,6 +213,7 @@ import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import HistoryDatabase from '../components/HistoryDatabase.vue'
+import ApiEndpointControl from '../components/ApiEndpointControl.vue'
 import LanguageSelector from '../components/LanguageSelector.vue'
 
 const router = useRouter()
