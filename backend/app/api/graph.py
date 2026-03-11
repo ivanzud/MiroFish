@@ -26,11 +26,14 @@ logger = get_logger('mirofish.api')
 
 GRAPH_TASK_MESSAGE_MAP = {
     "初始化图谱构建服务...": "graph.build_service_initializing",
+    "开始构建图谱...": "graph.build_started_worker",
     "文本分块中...": "graph.build_chunking",
     "创建Zep图谱...": "graph.build_creating_graph",
     "设置本体定义...": "graph.build_setting_ontology",
+    "本体已设置": "graph.build_ontology_set",
     "等待Zep处理数据...": "graph.build_waiting_for_zep",
     "获取图谱数据...": "graph.build_fetching_graph_data",
+    "获取图谱信息...": "graph.build_fetching_graph_info",
     "图谱构建完成": "graph.build_completed",
 }
 
@@ -103,6 +106,14 @@ def _translate_graph_task_message(locale: str, message: str | None) -> str | Non
     add_chunks_match = re.match(r"^开始添加 (?P<count>\d+) 个文本块\.\.\.$", message)
     if add_chunks_match:
         return tr("graph.build_add_batches_start", locale, total_chunks=add_chunks_match.group("count"))
+
+    graph_created_match = re.match(r"^图谱已创建: (?P<graph_id>.+)$", message)
+    if graph_created_match:
+        return tr("graph.build_graph_created", locale, graph_id=graph_created_match.group("graph_id"))
+
+    chunks_split_match = re.match(r"^文本已分割为 (?P<count>\d+) 个块$", message)
+    if chunks_split_match:
+        return tr("graph.build_chunks_split", locale, total_chunks=chunks_split_match.group("count"))
 
     failed_match = re.match(r"^构建失败: (?P<details>.+)$", message)
     if failed_match:

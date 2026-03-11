@@ -240,6 +240,26 @@ TRANSLATIONS = {
         "zh": "获取图谱数据...",
         "en": "Fetching graph data...",
     },
+    "graph.build_started_worker": {
+        "zh": "开始构建图谱...",
+        "en": "Starting graph build...",
+    },
+    "graph.build_graph_created": {
+        "zh": "图谱已创建: {graph_id}",
+        "en": "Graph created: {graph_id}",
+    },
+    "graph.build_ontology_set": {
+        "zh": "本体已设置",
+        "en": "Ontology configured",
+    },
+    "graph.build_chunks_split": {
+        "zh": "文本已分割为 {total_chunks} 个块",
+        "en": "Text split into {total_chunks} chunk(s)",
+    },
+    "graph.build_fetching_graph_info": {
+        "zh": "获取图谱信息...",
+        "en": "Fetching graph info...",
+    },
     "graph.build_completed": {
         "zh": "图谱构建完成",
         "en": "Graph build completed",

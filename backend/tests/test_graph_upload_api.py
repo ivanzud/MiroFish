@@ -586,3 +586,16 @@ def test_failed_graph_task_message_is_localized_in_english(monkeypatch, tmp_path
     assert task_payload["data"]["status"] == "failed"
     assert task_payload["data"]["message"] == "Build failed: invalid graph payload"
     assert task_payload["data"]["error"] == "invalid graph payload"
+
+
+def test_graph_task_payload_translates_worker_progress_messages_in_english(monkeypatch, tmp_path):
+    _, graph_module = create_graph_build_test_client(monkeypatch, tmp_path)
+
+    assert graph_module._translate_graph_task_message("en", "开始构建图谱...") == "Starting graph build..."
+    assert graph_module._translate_graph_task_message("en", "图谱已创建: graph_en_123") == "Graph created: graph_en_123"
+    assert graph_module._translate_graph_task_message("en", "本体已设置") == "Ontology configured"
+    assert (
+        graph_module._translate_graph_task_message("en", "文本已分割为 2 个块")
+        == "Text split into 2 chunk(s)"
+    )
+    assert graph_module._translate_graph_task_message("en", "获取图谱信息...") == "Fetching graph info..."
