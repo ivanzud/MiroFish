@@ -44,12 +44,14 @@ def test_resolve_standard_model_name_accepts_openai_model(monkeypatch):
 
 def test_apply_openai_compat_env_sets_expected_aliases(monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
     monkeypatch.delenv("OPENAI_API_BASE_URL", raising=False)
 
     llm_env = load_llm_env_module()
     llm_env.apply_openai_compat_env("test-key", "https://gateway.example.test/v1")
 
     assert llm_env.os.environ["OPENAI_API_KEY"] == "test-key"
+    assert llm_env.os.environ["OPENAI_BASE_URL"] == "https://gateway.example.test/v1"
     assert llm_env.os.environ["OPENAI_API_BASE_URL"] == "https://gateway.example.test/v1"
 
 

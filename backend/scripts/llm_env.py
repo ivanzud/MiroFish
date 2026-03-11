@@ -32,6 +32,7 @@ def apply_openai_compat_env(api_key: str, base_url: str) -> None:
     if api_key:
         os.environ["OPENAI_API_KEY"] = api_key
     if base_url:
+        os.environ["OPENAI_BASE_URL"] = base_url
         os.environ["OPENAI_API_BASE_URL"] = base_url
 
 
