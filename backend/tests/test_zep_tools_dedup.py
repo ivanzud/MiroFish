@@ -100,7 +100,44 @@ def test_panorama_search_reports_deduplicated_entity_count():
             locale="en",
         ),
     ]
-    service.get_all_edges = lambda graph_id, include_temporal=True: []
+    service.get_all_edges = lambda graph_id, include_temporal=True: [
+        type(
+            "Edge",
+            (),
+            {
+                "uuid": "edge-1",
+                "name": "MENTIONS",
+                "fact": "特朗普 criticized the proposal.",
+                "source_node_uuid": "node-short",
+                "target_node_uuid": "node-wh",
+                "source_node_name": None,
+                "target_node_name": None,
+                "created_at": None,
+                "valid_at": None,
+                "invalid_at": None,
+                "expired_at": None,
+                "locale": "en",
+            },
+        )(),
+        type(
+            "Edge",
+            (),
+            {
+                "uuid": "edge-2",
+                "name": "MENTIONS",
+                "fact": "特朗普 criticized the proposal.",
+                "source_node_uuid": "node-long",
+                "target_node_uuid": "node-wh",
+                "source_node_name": None,
+                "target_node_name": None,
+                "created_at": None,
+                "valid_at": None,
+                "invalid_at": None,
+                "expired_at": None,
+                "locale": "en",
+            },
+        )(),
+    ]
     service._locale = lambda: "en"
 
     with app.test_request_context(headers={"X-Locale": "en"}):
@@ -108,6 +145,11 @@ def test_panorama_search_reports_deduplicated_entity_count():
 
     assert result.total_nodes == 1
     assert [node.name for node in result.all_nodes] == ["特朗普"]
+    assert result.total_edges == 1
+    assert len(result.active_facts) == 1
+    assert result.active_facts == ["特朗普 criticized the proposal."]
+    assert result.all_edges[0].source_node_uuid == "node-short"
+    assert result.all_edges[0].source_node_name == "特朗普"
     assert result.to_text().count("**特朗普**") == 1
 
 

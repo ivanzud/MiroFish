@@ -1017,6 +1017,50 @@ class ZepToolsService:
         )
         return deduplicated_node_dicts, deduplicated_edges, node_facts
 
+    @classmethod
+    def _deduplicate_edge_infos(
+        cls,
+        edges: List[EdgeInfo],
+        uuid_remap: Dict[str, str],
+        node_map: Dict[str, NodeInfo],
+    ) -> List[EdgeInfo]:
+        deduplicated_edges: List[EdgeInfo] = []
+        seen_edges = set()
+
+        for edge in edges:
+            source_uuid = uuid_remap.get(edge.source_node_uuid, edge.source_node_uuid)
+            target_uuid = uuid_remap.get(edge.target_node_uuid, edge.target_node_uuid)
+            remapped = EdgeInfo(
+                uuid=edge.uuid,
+                name=edge.name,
+                fact=edge.fact,
+                source_node_uuid=source_uuid,
+                target_node_uuid=target_uuid,
+                source_node_name=node_map.get(source_uuid, NodeInfo('', '', [], '', {})).name or edge.source_node_name,
+                target_node_name=node_map.get(target_uuid, NodeInfo('', '', [], '', {})).name or edge.target_node_name,
+                created_at=edge.created_at,
+                valid_at=edge.valid_at,
+                invalid_at=edge.invalid_at,
+                expired_at=edge.expired_at,
+                locale=edge.locale,
+            )
+
+            edge_key = (
+                remapped.source_node_uuid,
+                remapped.target_node_uuid,
+                remapped.name,
+                remapped.fact,
+                remapped.valid_at,
+                remapped.invalid_at,
+                remapped.expired_at,
+            )
+            if edge_key in seen_edges:
+                continue
+            seen_edges.add(edge_key)
+            deduplicated_edges.append(remapped)
+
+        return deduplicated_edges
+
     def get_all_edges(self, graph_id: str, include_temporal: bool = True) -> List[EdgeInfo]:
         """
         获取图谱的所有边（分页获取，包含时间信息）
@@ -1538,13 +1582,17 @@ class ZepToolsService:
         
         # 获取所有节点
         raw_nodes = self.get_all_nodes(graph_id)
-        node_map = {n.uuid: n for n in raw_nodes}
-        all_nodes, _ = self._deduplicate_nodes(raw_nodes, "panorama output")
+        all_nodes, node_uuid_remap = self._deduplicate_nodes(raw_nodes, "panorama output")
+        node_map = {n.uuid: n for n in all_nodes}
         result.all_nodes = all_nodes
         result.total_nodes = len(all_nodes)
         
         # 获取所有边（包含时间信息）
-        all_edges = self.get_all_edges(graph_id, include_temporal=True)
+        all_edges = self._deduplicate_edge_infos(
+            self.get_all_edges(graph_id, include_temporal=True),
+            node_uuid_remap,
+            node_map,
+        )
         result.all_edges = all_edges
         result.total_edges = len(all_edges)
         
@@ -1557,8 +1605,8 @@ class ZepToolsService:
                 continue
             
             # 为事实添加实体名称
-            source_name = node_map.get(edge.source_node_uuid, NodeInfo('', '', [], '', {})).name or edge.source_node_uuid[:8]
-            target_name = node_map.get(edge.target_node_uuid, NodeInfo('', '', [], '', {})).name or edge.target_node_uuid[:8]
+            source_name = edge.source_node_name or edge.source_node_uuid[:8]
+            target_name = edge.target_node_name or edge.target_node_uuid[:8]
             
             # 判断是否过期/失效
             is_historical = edge.is_expired or edge.is_invalid
@@ -1591,6 +1639,9 @@ class ZepToolsService:
         active_facts.sort(key=relevance_score, reverse=True)
         historical_facts.sort(key=relevance_score, reverse=True)
         
+        active_facts = self._unique_search_facts(active_facts)
+        historical_facts = self._unique_search_facts(historical_facts)
+
         result.active_facts = active_facts[:limit]
         result.historical_facts = historical_facts[:limit] if include_expired else []
         result.active_count = len(active_facts)
