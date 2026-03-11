@@ -2,15 +2,18 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T18:28:24.341498+00:00`
-- Issues: `90` total (`open=40`, `closed=50`)
+- Captured: `2026-03-11T18:42:57.041276+00:00`
+- Issues: `91` total (`open=41`, `closed=50`)
 - Pull requests: `53` total (`open=39`, `closed=14`)
 - Mirrored in `origin`: `53` of `53` PR refs
-- Mirrored in `ivanzud/MiroFish`: `90` of `90` issues
+- Mirrored in `ivanzud/MiroFish`: `91` of `91` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
+- #153 [open, mirror=#92] npm run setup:all安装时一直报 pillow` (v10.3.0) 的错 (question)
+  - local coverage [covered]: The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all.
+  - Resolved 188 packages in 5.27s Built mirofish-backend @ file:///D:/MiroFish/backend x Failed to build `pillow==10.3.0` |-> The build backend returned an error `-> Call to `backend.build_wheel` failed (exit code: 1) [stderr] Traceback (most recent call last): File "<string>", line 14, in <module> requires = get_requires_for_build({}) File "C:\Users\Administrator\AppData\Local\uv\cache\builds-v0\.t…
 - #150 [open, mirror=#91] Bug: Hardcoded 'reddit' platform default causes silent data loss for Twitter-only simulations (no labels)
   - local coverage [covered]: Simulation data retrieval now resolves the active platform from `SimulationState` instead of silently defaulting to Reddit when Twitter/X is the only enabled platform, and `SimulationManager.get_profiles()` now reads Twitter profile CSV files correctly as well. That prevents empty profile/post responses in Twitter-only simulations even when older callers still pass the historical `reddit` default.
   - ## Summary When a simulation is created with Twitter-only configuration (`enable_reddit=false`), all data retrieval APIs silently return empty results because they default to looking up Reddit data. No error is raised — the user sees an empty UI with no indication of what went wrong. ## Root Cause The platform parameter defaults to `'reddit'` in 11+ locations across the codebase. When a Twitter-o…
@@ -26,7 +29,7 @@
   - local coverage [covered]: The repo now ships an opt-in, repo-native git hook workflow: `.githooks/pre-commit` runs the shared fast validation bundle, `.githooks/pre-push` runs the full validation bundle, and `npm run hooks:install` enables them without introducing a mandatory Husky/Node-only hook dependency.
   - Background The current project lacks automated validation before code commits, which may lead to the following issues: 1. Committing non-compliant code (e.g., syntax errors, messy formatting); 2. Inconsistent commit messages, which is not conducive to subsequent maintenance and version tracking; 3. Inefficiency in team collaboration due to the need for manual reminders of specifications. Solution…
 - #145 [open, mirror=#2] 知识图谱中存在重复实体节点 (no labels)
-  - local coverage [partial]: Repo-native partial mitigations are now landed locally for both simulation inputs and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, and `frontend/src/views/processGraphData.js` now collapses the same conservative alias pairs while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer show as separate nodes in the main visualization. Full graph-level deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.
+  - local coverage [partial]: Repo-native partial mitigations are now landed locally across simulation inputs, backend analysis/report surfaces, and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `backend/app/services/zep_tools.py` now collapses the same conservative alias pairs when building typed entity lists, Panorama output, and InsightForge entity/relationship summaries, and `frontend/src/views/processGraphData.js` collapses those aliases while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear as separate entities in the main downstream workflows. Full graph-level deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.
   - ## 问题描述 在使用 MiroFish 构建知识图谱时，Zep 会将同一现实实体识别为多个不同节点。 例如输入包含"特朗普"相关内容的文本后，图谱中会同时出现"特朗普"和 "美国总统特朗普"两个独立节点，它们各自有独立的边和关系。 这会导致： - 图谱中同一实体的信息被分散到多个节点上 - 后续的模拟推演基于不完整的实体关系进行，影响准确性 - 图谱可视化时出现冗余节点，影响可读性 ## 复现步骤 1. 准备一段包含同一人物/组织不同称呼的背景文本 2. 通过前端正常流程构建知识图谱 3. 查看生成的图谱，可以看到同一实体被拆分为多个节点 ## 截图 <img width="675" height="399" alt="Image" src="https://github.com/user-attachments/assets/593f4188-e766-46b3-9b88-25486…
 - #142 [open, mirror=#3] 这个方向最后商业化落地应用的点是什么呢 (question)
   - local coverage [no_action]: Upstream issue #142 asks about long-term commercialization direction rather than reporting a reproducible bug or scoped feature request, so there is no local implementation task attached to it.
@@ -40,9 +43,6 @@
   - latest comment by `dosubot[bot]`: <!-- Answer --> The `401 unauthorized` error indicates a Zep Cloud API authentication issue. Here are the most likely causes and solutions: **1. Version Bug** — If you're using MiroFish v0.1.0, there's a [known authentication bug](https://…
 - #140 [open, mirror=#5] 让我想到了刘慈欣的一个小说，要是把真实世界放进去，得多大的算力啊 (no labels)
   - local coverage [no_action]: Upstream issue #140 is general project commentary rather than an actionable defect report or scoped feature request, so it does not require local implementation work.
-- #138 [closed, mirror=#40] 生成的报告让人看不懂 (question)
-  - 生成的报告感觉有点太偏题了，看不懂😭 ，比如我写了一个游戏的设计方案，预测这个游戏的受众群体将会是什么，给我的报告题目是《未来受众群体生态的静默与解体：一项基于模拟的预测报告》
-  - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @huamingjie0815! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 感谢反馈！这个问题我找到原因了 😊 **根本原因**：报告标题生成的 [Prompt 模板](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d6…
 
 ## Recently Updated Pull Requests
 

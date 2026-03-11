@@ -17,6 +17,7 @@ from zep_cloud.client import Zep
 
 from ..config import Config
 from ..i18n import get_locale, tr
+from .zep_entity_reader import EntityNode, ZepEntityReader
 from ..utils.logger import get_logger
 from ..utils.llm_client import LLMClient
 from ..utils.zep_paging import fetch_all_nodes, fetch_all_edges
@@ -833,6 +834,99 @@ class ZepToolsService:
         logger.info(f"获取到 {len(result)} 个节点")
         return result
 
+    @staticmethod
+    def _node_to_entity(node: NodeInfo) -> EntityNode:
+        return EntityNode(
+            uuid=node.uuid,
+            name=node.name,
+            labels=list(node.labels or []),
+            summary=node.summary or "",
+            attributes=dict(node.attributes or {}),
+        )
+
+    @staticmethod
+    def _node_score(node: NodeInfo) -> int:
+        return (
+            len(node.summary or "")
+            + len(node.labels or [])
+            + len(node.attributes or {}) * 10
+        )
+
+    @classmethod
+    def _pick_primary_node(cls, left: NodeInfo, right: NodeInfo) -> NodeInfo:
+        left_name = ZepEntityReader._normalize_entity_name(left.name)
+        right_name = ZepEntityReader._normalize_entity_name(right.name)
+
+        if left_name and right_name and len(left_name) != len(right_name):
+            return left if len(left_name) < len(right_name) else right
+
+        return left if cls._node_score(left) >= cls._node_score(right) else right
+
+    @classmethod
+    def _deduplicate_nodes(
+        cls, nodes: List[NodeInfo], log_context: str
+    ) -> tuple[List[NodeInfo], Dict[str, str]]:
+        merged_nodes: List[NodeInfo] = []
+        uuid_remap: Dict[str, str] = {}
+
+        for node in nodes:
+            duplicate_index = next(
+                (
+                    idx
+                    for idx, existing in enumerate(merged_nodes)
+                    if ZepEntityReader._are_duplicate_entities(
+                        cls._node_to_entity(existing),
+                        cls._node_to_entity(node),
+                    )
+                ),
+                None,
+            )
+
+            if duplicate_index is None:
+                merged_nodes.append(node)
+                if node.uuid:
+                    uuid_remap[node.uuid] = node.uuid
+                continue
+
+            existing = merged_nodes[duplicate_index]
+            primary = cls._pick_primary_node(existing, node)
+            secondary = node if primary is existing else existing
+
+            merged_node = NodeInfo(
+                uuid=primary.uuid,
+                name=primary.name,
+                labels=list(dict.fromkeys([*(primary.labels or []), *(secondary.labels or [])])),
+                summary=max(
+                    [part for part in (primary.summary, secondary.summary) if part],
+                    key=len,
+                    default="",
+                ),
+                attributes={
+                    **(secondary.attributes or {}),
+                    **(primary.attributes or {}),
+                },
+                locale=primary.locale or secondary.locale,
+            )
+            merged_nodes[duplicate_index] = merged_node
+
+            if existing.uuid:
+                uuid_remap[existing.uuid] = merged_node.uuid
+            if node.uuid:
+                uuid_remap[node.uuid] = merged_node.uuid
+
+            logger.info(
+                "Collapsing duplicate entity aliases for %s: %s <-> %s",
+                log_context,
+                existing.name,
+                node.name,
+            )
+
+        for node in merged_nodes:
+            if node.uuid:
+                uuid_remap.setdefault(node.uuid, node.uuid)
+
+        return merged_nodes, uuid_remap
+
     def get_all_edges(self, graph_id: str, include_temporal: bool = True) -> List[EdgeInfo]:
         """
         获取图谱的所有边（分页获取，包含时间信息）
@@ -961,9 +1055,10 @@ class ZepToolsService:
             # 检查labels是否包含指定类型
             if entity_type in node.labels:
                 filtered.append(node)
-        
-        logger.info(f"找到 {len(filtered)} 个 {entity_type} 类型的实体")
-        return filtered
+
+        deduplicated, _ = self._deduplicate_nodes(filtered, "typed entity list")
+        logger.info(f"找到 {len(deduplicated)} 个 {entity_type} 类型的实体")
+        return deduplicated
     
     def get_entity_summary(
         self, 
@@ -1077,9 +1172,12 @@ class ZepToolsService:
         
         # 获取图谱统计
         stats = self.get_graph_statistics(graph_id)
-        
+
         # 获取所有实体节点
-        all_nodes = self.get_all_nodes(graph_id)
+        all_nodes, _ = self._deduplicate_nodes(
+            self.get_all_nodes(graph_id),
+            "simulation context",
+        )
         
         # 筛选有实际类型的实体（非纯Entity节点）
         entities = []
@@ -1196,9 +1294,7 @@ class ZepToolsService:
                     entity_uuids.add(target_uuid)
         
         # 获取所有相关实体的详情（不限制数量，完整输出）
-        entity_insights = []
-        node_map = {}  # 用于后续关系链构建
-        
+        raw_nodes = []
         for uuid in list(entity_uuids):  # 处理所有实体，不截断
             if not uuid:
                 continue
@@ -1206,26 +1302,37 @@ class ZepToolsService:
                 # 单独获取每个相关节点的信息
                 node = self.get_node_detail(uuid)
                 if node:
-                    node_map[uuid] = node
-                    entity_type = next((l for l in node.labels if l not in ["Entity", "Node"]), "实体")
-                    
-                    # 获取该实体相关的所有事实（不截断）
-                    related_facts = [
-                        f for f in all_facts 
-                        if node.name.lower() in f.lower()
-                    ]
-                    
-                    entity_insights.append({
-                        "uuid": node.uuid,
-                        "name": node.name,
-                        "type": entity_type,
-                        "summary": node.summary,
-                        "related_facts": related_facts  # 完整输出，不截断
-                    })
+                    raw_nodes.append(node)
             except Exception as e:
                 logger.debug(f"获取节点 {uuid} 失败: {e}")
                 continue
-        
+
+        deduplicated_nodes, node_uuid_remap = self._deduplicate_nodes(
+            raw_nodes,
+            "insight forge output",
+        )
+        node_map = {node.uuid: node for node in deduplicated_nodes}
+        related_facts_by_uuid: Dict[str, List[str]] = {node.uuid: [] for node in deduplicated_nodes}
+
+        for raw_node in raw_nodes:
+            canonical_uuid = node_uuid_remap.get(raw_node.uuid, raw_node.uuid)
+            seen_related = set(related_facts_by_uuid.setdefault(canonical_uuid, []))
+            for fact in all_facts:
+                if raw_node.name and raw_node.name.lower() in fact.lower() and fact not in seen_related:
+                    related_facts_by_uuid[canonical_uuid].append(fact)
+                    seen_related.add(fact)
+
+        entity_insights = []
+        for node in deduplicated_nodes:
+            entity_type = next((l for l in node.labels if l not in ["Entity", "Node"]), "实体")
+            entity_insights.append({
+                "uuid": node.uuid,
+                "name": node.name,
+                "type": entity_type,
+                "summary": node.summary,
+                "related_facts": related_facts_by_uuid.get(node.uuid, []),
+            })
+
         result.entity_insights = entity_insights
         result.total_entities = len(entity_insights)
         
@@ -1233,8 +1340,14 @@ class ZepToolsService:
         relationship_chains = []
         for edge_data in all_edges:  # 处理所有边，不截断
             if isinstance(edge_data, dict):
-                source_uuid = edge_data.get('source_node_uuid', '')
-                target_uuid = edge_data.get('target_node_uuid', '')
+                source_uuid = node_uuid_remap.get(
+                    edge_data.get('source_node_uuid', ''),
+                    edge_data.get('source_node_uuid', ''),
+                )
+                target_uuid = node_uuid_remap.get(
+                    edge_data.get('target_node_uuid', ''),
+                    edge_data.get('target_node_uuid', ''),
+                )
                 relation_name = edge_data.get('name', '')
                 
                 source_name = node_map.get(source_uuid, NodeInfo('', '', [], '', {})).name or source_uuid[:8]
@@ -1334,8 +1447,9 @@ class ZepToolsService:
         result = PanoramaResult(query=query, locale=self._locale())
         
         # 获取所有节点
-        all_nodes = self.get_all_nodes(graph_id)
-        node_map = {n.uuid: n for n in all_nodes}
+        raw_nodes = self.get_all_nodes(graph_id)
+        node_map = {n.uuid: n for n in raw_nodes}
+        all_nodes, _ = self._deduplicate_nodes(raw_nodes, "panorama output")
         result.all_nodes = all_nodes
         result.total_nodes = len(all_nodes)
         

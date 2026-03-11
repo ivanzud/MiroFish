@@ -1,6 +1,6 @@
 {
   "repo": "666ghj/MiroFish",
-  "captured_at": "2026-03-11T16:53:01.002573+00:00",
+  "captured_at": "2026-03-11T18:44:00Z",
   "issues": [
     {
       "number": 150,
@@ -19,6 +19,22 @@
         "python3 -m compileall backend/app/services/simulation_manager.py backend/app/api/simulation.py"
       ],
       "notes": "Mirrored into fork issue #91 on March 11, 2026. The fix keeps legacy callers working by falling back to the sole enabled platform instead of assuming Reddit."
+    },
+    {
+      "number": 153,
+      "status": "covered",
+      "summary": "The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all.",
+      "local_refs": [
+        "package.json",
+        "README.md",
+        "README-EN.md",
+        "scripts/setup_backend_simulation.py"
+      ],
+      "validation": [
+        "cd backend && uv sync --frozen --python 3.13 --python-platform windows --dry-run --output-format json",
+        "triage diff review"
+      ],
+      "notes": "Mirrored into fork issue #92 on March 11, 2026. If the reporter still sees `pillow==10.3.0` during `setup:all`, they are likely on an older checkout or running the optional simulation install path instead of the default core backend install."
     },
     {
       "number": 148,
@@ -563,24 +579,25 @@
     {
       "number": 145,
       "status": "partial",
-      "summary": "Repo-native partial mitigations are now landed locally for both simulation inputs and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, and `frontend/src/views/processGraphData.js` now collapses the same conservative alias pairs while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer show as separate nodes in the main visualization. Full graph-level deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
+      "summary": "Repo-native partial mitigations are now landed locally across simulation inputs, backend analysis/report surfaces, and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `backend/app/services/zep_tools.py` now collapses the same conservative alias pairs when building typed entity lists, Panorama output, and InsightForge entity/relationship summaries, and `frontend/src/views/processGraphData.js` collapses those aliases while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear as separate entities in the main downstream workflows. Full graph-level deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
       "local_refs": [
         ".beads/issues.jsonl",
         "docs/upstream-triage.md",
         "origin/mirror/upstream-pr-141",
         "backend/app/services/zep_entity_reader.py",
         "backend/tests/test_zep_entity_reader.py",
+        "backend/app/services/zep_tools.py",
+        "backend/tests/test_zep_tools_dedup.py",
         "frontend/src/views/processGraphData.js",
         "frontend/tests/processGraphData.test.mjs"
       ],
       "validation": [
-        "cd backend && uv run pytest -q tests/test_zep_entity_reader.py tests/test_openai_compat_services.py",
-        "npm --prefix frontend test -- processGraphData.test.mjs --runInBand",
-        "npm --prefix frontend run build",
+        "cd backend && uv run pytest -q tests/test_zep_entity_reader.py tests/test_zep_tools_dedup.py tests/test_zep_tools_i18n.py",
+        "python3 -m compileall backend/app/services/zep_tools.py",
         "bash ./scripts/test_backend_lite.sh",
         "triage diff review"
       ],
-      "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
+      "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish. 2026-03-11: Added a third repo-native partial mitigation in backend report/search tooling so conservative alias pairs are collapsed before Step 4/analysis surfaces render entity summaries and relationship chains."
     },
     {
       "number": 146,
