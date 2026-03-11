@@ -1,6 +1,12 @@
 import axios from 'axios'
 import { resolveBaseURL as resolveApiBaseURL } from './baseUrl'
 
+const createApiError = (message, extras = {}) => {
+  const error = new Error(message)
+  Object.assign(error, extras)
+  return error
+}
+
 export const resolveBaseURL = () => {
   return resolveApiBaseURL({
     envBaseURL: import.meta.env.VITE_API_BASE_URL,
@@ -58,7 +64,13 @@ service.interceptors.response.use(
     // 如果返回的状态码不是success，则抛出错误
     if (!res.success && res.success !== undefined) {
       console.error('API Error:', res.error || res.message || 'Unknown error')
-      return Promise.reject(new Error(res.error || res.message || 'Error'))
+      return Promise.reject(createApiError(res.error || res.message || 'Error', {
+        code: 'API_ERROR',
+        response: {
+          ...response,
+          data: res
+        }
+      }))
     }
     
     return res

@@ -411,7 +411,8 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { generateOntology, getProject, buildGraph, getTaskStatus, getGraphData } from '../api/graph'
+import { generateOntology, getProject, buildGraph, getTaskStatus, getGraphData, getBackendConfigStatus } from '../api/graph'
+import { formatApiError } from '../api/errors'
 import { resolveBaseURL } from '../api/index.js'
 import { getPendingUpload, clearPendingUpload } from '../store/pendingUpload'
 import * as d3 from 'd3'
@@ -563,22 +564,8 @@ const initProject = async () => {
   }
 }
 
-const formatProjectInitError = (err) => {
-  if (!err) return t('process.unknownError')
-
-  if (err.code === 'ECONNABORTED' || String(err.message || '').includes('timeout')) {
-    return t('process.requestTimeout')
-  }
-
-  if (err.message === 'Network Error') {
-    const apiBase = resolveBaseURL() || window.location.origin
-    return t('process.backendUnavailable', { apiBase })
-  }
-
-  const backendMessage = err.response?.data?.error || err.response?.data?.message
-  if (backendMessage) return backendMessage
-
-  return err.message || '未知错误'
+const ensureBackendConfigReady = async () => {
+  await getBackendConfigStatus()
 }
 
 // 处理新建项目 - 调用 ontology/generate API
@@ -595,6 +582,7 @@ const handleNewProject = async () => {
     loading.value = true
     currentPhase.value = 0 // 本体生成阶段
     ontologyProgress.value = { message: t('process.uploadingAnalyzing') }
+    await ensureBackendConfigReady()
     
     // 构建 FormData
     const formDataObj = new FormData()
@@ -629,7 +617,14 @@ const handleNewProject = async () => {
     }
   } catch (err) {
     console.error('Handle new project error:', err)
-    error.value = t('process.initFailed', { message: formatProjectInitError(err) })
+    error.value = t('process.initFailed', {
+      message: formatApiError({
+        err,
+        t,
+        resolveBaseURL,
+        locationOrigin: window.location.origin
+      })
+    })
   } finally {
     loading.value = false
   }
@@ -694,6 +689,7 @@ const updatePhaseByStatus = (status) => {
 const startBuildGraph = async () => {
   try {
     currentPhase.value = 1
+    await ensureBackendConfigReady()
     // 设置初始进度
     buildProgress.value = {
       progress: 0,
@@ -719,7 +715,12 @@ const startBuildGraph = async () => {
     }
   } catch (err) {
     console.error('Build graph error:', err)
-    error.value = `${t('process.startGraphBuildFailed')}: ${err.message || t('process.unknownError')}`
+    error.value = `${t('process.startGraphBuildFailed')}: ${formatApiError({
+      err,
+      t,
+      resolveBaseURL,
+      locationOrigin: window.location.origin
+    })}`
     buildProgress.value = null
   }
 }

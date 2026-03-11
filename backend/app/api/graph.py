@@ -117,6 +117,31 @@ def reset_project(project_id: str):
     })
 
 
+@graph_bp.route('/config/status', methods=['GET'])
+def get_backend_config_status():
+    """Return non-sensitive backend configuration status for frontend diagnostics."""
+    validation = Config.validate_comprehensive()
+    summary = Config.get_config_summary()
+
+    if validation.is_valid:
+        return jsonify({
+            "success": True,
+            "data": {
+                "validation": validation.to_dict(),
+                "summary": summary,
+            }
+        })
+
+    return jsonify({
+        "success": False,
+        "error": "后端配置不完整: " + "; ".join(validation.errors),
+        "data": {
+            "validation": validation.to_dict(),
+            "summary": summary,
+        }
+    }), 503
+
+
 # ============== 接口1：上传文件并生成本体 ==============
 
 @graph_bp.route('/ontology/generate', methods=['POST'])
