@@ -143,12 +143,16 @@ class ZepEntityReader:
     3. 获取每个实体的相关边和关联节点信息
     """
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, locale: Optional[str] = None):
         self.api_key = api_key or Config.ZEP_API_KEY
+        self.locale = locale or get_locale()
         if not self.api_key:
-            raise ValueError(tr("config.key_missing", get_locale(), name="ZEP_API_KEY"))
-        
+            raise ValueError(tr("config.key_missing", self._get_locale(), name="ZEP_API_KEY"))
+
         self.client = Zep(api_key=self.api_key)
+
+    def _get_locale(self) -> str:
+        return getattr(self, "locale", None) or get_locale()
     
     def _call_with_retry(
         self, 
@@ -179,13 +183,27 @@ class ZepEntityReader:
                 last_exception = e
                 if attempt < max_retries - 1:
                     logger.warning(
-                        f"Zep {operation_name} 第 {attempt + 1} 次尝试失败: {str(e)[:100]}, "
-                        f"{delay:.1f}秒后重试..."
+                        tr(
+                            "zep.reader_retry_failed_attempt",
+                            self._get_locale(),
+                            operation_name=operation_name,
+                            attempt=attempt + 1,
+                            error=str(e)[:100],
+                            delay=delay,
+                        )
                     )
                     time.sleep(delay)
                     delay *= 2  # 指数退避
                 else:
-                    logger.error(f"Zep {operation_name} 在 {max_retries} 次尝试后仍失败: {str(e)}")
+                    logger.error(
+                        tr(
+                            "zep.reader_retry_failed_final",
+                            self._get_locale(),
+                            operation_name=operation_name,
+                            max_retries=max_retries,
+                            error=str(e),
+                        )
+                    )
         
         raise last_exception
     
@@ -199,7 +217,7 @@ class ZepEntityReader:
         Returns:
             节点列表
         """
-        logger.info(f"获取图谱 {graph_id} 的所有节点...")
+        logger.info(tr("zep.reader_get_all_nodes_start", self._get_locale(), graph_id=graph_id))
 
         nodes = fetch_all_nodes(self.client, graph_id)
 
@@ -213,7 +231,7 @@ class ZepEntityReader:
                 "attributes": node.attributes or {},
             })
 
-        logger.info(f"共获取 {len(nodes_data)} 个节点")
+        logger.info(tr("zep.reader_get_all_nodes_done", self._get_locale(), count=len(nodes_data)))
         return nodes_data
 
     def get_all_edges(self, graph_id: str) -> List[Dict[str, Any]]:
@@ -226,7 +244,7 @@ class ZepEntityReader:
         Returns:
             边列表
         """
-        logger.info(f"获取图谱 {graph_id} 的所有边...")
+        logger.info(tr("zep.reader_get_all_edges_start", self._get_locale(), graph_id=graph_id))
 
         edges = fetch_all_edges(self.client, graph_id)
 
@@ -241,7 +259,7 @@ class ZepEntityReader:
                 "attributes": edge.attributes or {},
             })
 
-        logger.info(f"共获取 {len(edges_data)} 条边")
+        logger.info(tr("zep.reader_get_all_edges_done", self._get_locale(), count=len(edges_data)))
         return edges_data
     
     def get_node_edges(self, node_uuid: str) -> List[Dict[str, Any]]:
@@ -258,7 +276,11 @@ class ZepEntityReader:
             # 使用重试机制调用Zep API
             edges = self._call_with_retry(
                 func=lambda: self.client.graph.node.get_entity_edges(node_uuid=node_uuid),
-                operation_name=f"获取节点边(node={node_uuid[:8]}...)"
+                operation_name=tr(
+                    "zep.reader_get_node_edges_operation",
+                    self._get_locale(),
+                    node_uuid=f"{node_uuid[:8]}...",
+                ),
             )
             
             edges_data = []
@@ -274,7 +296,14 @@ class ZepEntityReader:
             
             return edges_data
         except Exception as e:
-            logger.warning(f"获取节点 {node_uuid} 的边失败: {str(e)}")
+            logger.warning(
+                tr(
+                    "zep.reader_get_node_edges_failed",
+                    self._get_locale(),
+                    node_uuid=node_uuid,
+                    error=str(e),
+                )
+            )
             return []
 
     @staticmethod
@@ -425,7 +454,7 @@ class ZepEntityReader:
         Returns:
             FilteredEntities: 过滤后的实体集合
         """
-        logger.info(f"开始筛选图谱 {graph_id} 的实体...")
+        logger.info(tr("zep.reader_filter_start", self._get_locale(), graph_id=graph_id))
         
         # 获取所有节点
         all_nodes = self.get_all_nodes(graph_id)
@@ -515,10 +544,17 @@ class ZepEntityReader:
         deduplicated_entities = self._merge_duplicate_entities(filtered_entities)
         deduped_count = len(filtered_entities) - len(deduplicated_entities)
         if deduped_count:
-            logger.info(f"实体别名去重完成: 合并了 {deduped_count} 个重复实体候选")
+            logger.info(tr("zep.reader_filter_deduped", self._get_locale(), count=deduped_count))
 
-        logger.info(f"筛选完成: 总节点 {total_count}, 符合条件 {len(deduplicated_entities)}, "
-                   f"实体类型: {entity_types_found}")
+        logger.info(
+            tr(
+                "zep.reader_filter_done",
+                self._get_locale(),
+                total_count=total_count,
+                filtered_count=len(deduplicated_entities),
+                entity_types=entity_types_found,
+            )
+        )
 
         return FilteredEntities(
             entities=deduplicated_entities,
@@ -546,7 +582,11 @@ class ZepEntityReader:
             # 使用重试机制获取节点
             node = self._call_with_retry(
                 func=lambda: self.client.graph.node.get(uuid_=entity_uuid),
-                operation_name=f"获取节点详情(uuid={entity_uuid[:8]}...)"
+                operation_name=tr(
+                    "zep.reader_get_node_detail_operation",
+                    self._get_locale(),
+                    entity_uuid=f"{entity_uuid[:8]}...",
+                ),
             )
             
             if not node:

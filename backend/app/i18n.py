@@ -236,6 +236,54 @@ TRANSLATIONS = {
         "zh": "Zep 权限不足，请确认当前 API Key 拥有访问目标图谱的权限。",
         "en": "Zep permission denied. Confirm that the current API key can access the target graph.",
     },
+    "zep.reader_retry_failed_attempt": {
+        "zh": "Zep {operation_name} 第 {attempt} 次尝试失败: {error}, {delay:.1f}秒后重试...",
+        "en": "Zep {operation_name} failed on attempt {attempt}: {error}, retrying in {delay:.1f}s...",
+    },
+    "zep.reader_retry_failed_final": {
+        "zh": "Zep {operation_name} 在 {max_retries} 次尝试后仍失败: {error}",
+        "en": "Zep {operation_name} still failed after {max_retries} retries: {error}",
+    },
+    "zep.reader_get_all_nodes_start": {
+        "zh": "获取图谱 {graph_id} 的所有节点...",
+        "en": "Fetching all nodes for graph {graph_id}...",
+    },
+    "zep.reader_get_all_nodes_done": {
+        "zh": "共获取 {count} 个节点",
+        "en": "Fetched {count} node(s) in total",
+    },
+    "zep.reader_get_all_edges_start": {
+        "zh": "获取图谱 {graph_id} 的所有边...",
+        "en": "Fetching all edges for graph {graph_id}...",
+    },
+    "zep.reader_get_all_edges_done": {
+        "zh": "共获取 {count} 条边",
+        "en": "Fetched {count} edge(s) in total",
+    },
+    "zep.reader_get_node_edges_failed": {
+        "zh": "获取节点 {node_uuid} 的边失败: {error}",
+        "en": "Failed to fetch edges for node {node_uuid}: {error}",
+    },
+    "zep.reader_get_node_edges_operation": {
+        "zh": "获取节点边(node={node_uuid})",
+        "en": "fetch node edges (node={node_uuid})",
+    },
+    "zep.reader_get_node_detail_operation": {
+        "zh": "获取节点详情(uuid={entity_uuid})",
+        "en": "fetch node details (uuid={entity_uuid})",
+    },
+    "zep.reader_filter_start": {
+        "zh": "开始筛选图谱 {graph_id} 的实体...",
+        "en": "Starting entity filtering for graph {graph_id}...",
+    },
+    "zep.reader_filter_deduped": {
+        "zh": "实体别名去重完成: 合并了 {count} 个重复实体候选",
+        "en": "Duplicate entity alias collapse completed: merged {count} duplicate candidate(s)",
+    },
+    "zep.reader_filter_done": {
+        "zh": "筛选完成: 总节点 {total_count}, 符合条件 {filtered_count}, 实体类型: {entity_types}",
+        "en": "Entity filtering completed: total nodes {total_count}, matched {filtered_count}, entity types: {entity_types}",
+    },
     "simulation.entity_not_found": {
         "zh": "实体不存在: {entity_uuid}",
         "en": "Entity not found: {entity_uuid}",

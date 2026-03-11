@@ -19,6 +19,20 @@ def _build_reader():
     return reader
 
 
+class _FakeLogger:
+    def __init__(self):
+        self.messages = []
+
+    def info(self, message, *args):
+        self.messages.append(("info", message % args if args else message))
+
+    def warning(self, message, *args):
+        self.messages.append(("warning", message % args if args else message))
+
+    def error(self, message, *args):
+        self.messages.append(("error", message % args if args else message))
+
+
 def test_filter_defined_entities_collapses_title_prefixed_duplicate_people(monkeypatch):
     reader = _build_reader()
     nodes = [
@@ -89,3 +103,93 @@ def test_filter_defined_entities_keeps_distinct_people_separate(monkeypatch):
 
     assert result.filtered_count == 2
     assert [entity.name for entity in result.entities] == ["特朗普", "拜登"]
+
+
+def test_filter_defined_entities_localizes_english_diagnostics(monkeypatch):
+    reader = _build_reader()
+    reader.locale = "en"
+    fake_logger = _FakeLogger()
+    nodes = [
+        {
+            "uuid": "node-short",
+            "name": "特朗普",
+            "labels": ["Entity", "Person"],
+            "summary": "Short summary",
+            "attributes": {},
+        },
+        {
+            "uuid": "node-long",
+            "name": "美国总统特朗普",
+            "labels": ["Entity", "Person"],
+            "summary": "Longer summary",
+            "attributes": {},
+        },
+    ]
+    monkeypatch.setattr("app.services.zep_entity_reader.logger", fake_logger)
+    monkeypatch.setattr(reader, "get_all_nodes", lambda graph_id: nodes)
+    monkeypatch.setattr(reader, "get_all_edges", lambda graph_id: [])
+
+    result = reader.filter_defined_entities("graph-1", enrich_with_edges=False)
+
+    assert result.filtered_count == 1
+    messages = [message for _, message in fake_logger.messages]
+    assert messages[0] == "Starting entity filtering for graph graph-1..."
+    assert "Duplicate entity alias collapse completed: merged 1 duplicate candidate(s)" in messages
+    assert "Entity filtering completed: total nodes 2, matched 1, entity types: {'Person'}" in messages
+    assert all("筛选完成" not in message for message in messages)
+
+
+def test_call_with_retry_localizes_english_retry_logs(monkeypatch):
+    reader = _build_reader()
+    reader.locale = "en"
+    fake_logger = _FakeLogger()
+    monkeypatch.setattr("app.services.zep_entity_reader.logger", fake_logger)
+    sleep_calls = []
+    monkeypatch.setattr("app.services.zep_entity_reader.time.sleep", sleep_calls.append)
+
+    attempts = {"count": 0}
+
+    def flaky():
+        attempts["count"] += 1
+        if attempts["count"] < 3:
+            raise RuntimeError("gateway unavailable")
+        return "ok"
+
+    result = reader._call_with_retry(flaky, "fetch node edges (node=abc12345...)", max_retries=3, initial_delay=0.5)
+
+    assert result == "ok"
+    assert sleep_calls == [0.5, 1.0]
+    messages = fake_logger.messages
+    assert messages == [
+        (
+            "warning",
+            "Zep fetch node edges (node=abc12345...) failed on attempt 1: gateway unavailable, retrying in 0.5s...",
+        ),
+        (
+            "warning",
+            "Zep fetch node edges (node=abc12345...) failed on attempt 2: gateway unavailable, retrying in 1.0s...",
+        ),
+    ]
+
+
+def test_get_node_edges_localizes_english_failure_message(monkeypatch):
+    reader = _build_reader()
+    reader.locale = "en"
+    fake_logger = _FakeLogger()
+    reader.client = SimpleNamespace(
+        graph=SimpleNamespace(
+            node=SimpleNamespace(
+                get_entity_edges=lambda node_uuid: (_ for _ in ()).throw(RuntimeError("forbidden"))
+            )
+        )
+    )
+    monkeypatch.setattr("app.services.zep_entity_reader.logger", fake_logger)
+    monkeypatch.setattr("app.services.zep_entity_reader.time.sleep", lambda *_: None)
+
+    result = reader.get_node_edges("node-12345678")
+
+    assert result == []
+    assert fake_logger.messages[-1] == (
+        "warning",
+        "Failed to fetch edges for node node-12345678: forbidden",
+    )
