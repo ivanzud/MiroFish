@@ -22,10 +22,13 @@ Last refreshed: `2026-03-11`
 - `#131` Safe subset landed locally: Zep graph creation, ontology setup, and batch uploads now retry only transient failures (429/timeout/5xx-style cases) with bounded backoff, plus targeted regression tests.
 - `#130` Add `CONTRIBUTING.md`: safe docs-only cherry-pick.
 - `#132` Add README architecture overview: safe docs-only cherry-pick.
+- `#112` Add Korean README: safe docs-only cherry-pick; normalized cross-links with the other language READMEs while landing it locally.
+- `#113` Add Japanese README: safe docs-only cherry-pick; normalized cross-links with the other language READMEs while landing it locally.
 - `#73` Sanitize malformed ontology entity/edge items before fallback injection: prevents `_validate_and_process()` crashes on mixed-quality LLM JSON output.
 - `#74` Replace bare `except:` clauses with `except Exception:` in JSON repair and simulation history formatting paths.
 - OpenAI-compatible backend aliases now work in the standalone simulation runners too, so `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` can be used directly outside the Flask app path.
 - Objective 7 verification status: backend config, standalone runners, and both READMEs now explicitly support direct OpenAI / Codex-compatible / OpenAI-compatible backends without requiring a project-specific raw-key-only setup.
+- `#114` Fix API base URL fallback is already superseded locally by the current frontend API client, which now falls back to the runtime origin and also supports `VITE_API_TIMEOUT`.
 
 ## Deferred for later review
 
