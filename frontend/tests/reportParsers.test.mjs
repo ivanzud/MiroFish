@@ -94,6 +94,58 @@ The audience reacts fast, then waits for clarification.`)
   assert.equal(parsed.summary, 'The audience reacts fast, then waits for clarification.')
 })
 
+test('parseInterview accepts alternate English section labels and question prefixes', () => {
+  const parsed = parseInterview(`**Topic:** Platform reaction outlook
+**Agents Interviewed:** 1 / 2
+
+### Selection Rationale
+- Select Analyst_7: Covers cross-platform reaction patterns.
+
+### Interview Transcript
+#### Interview #1:
+Analyst Desk
+**Analyst_7** (Policy Analyst)
+_Profile: Tracks how narratives move between communities._
+
+**Questions:**
+Question 1: What is the first visible shift?
+Question 2: What follows after clarification?
+
+**Answer:**
+【Twitter Response】
+Question 1: Engagement spikes around the accusation.
+
+Question 2: Attention softens once official details arrive.
+
+【Reddit Response】
+[No Reply]
+
+**Quotes:**
+> "Engagement spikes around the accusation."
+
+### Key Takeaways
+The reaction peaks early, then moderates after clarification.`)
+
+  assert.equal(parsed.topic, 'Platform reaction outlook')
+  assert.equal(parsed.agentCount, '1 / 2')
+  assert.equal(parsed.interviews[0].bio, 'Tracks how narratives move between communities.')
+  assert.equal(parsed.interviews[0].selectionReason, 'Covers cross-platform reaction patterns.')
+  assert.deepEqual(parsed.interviews[0].questions, [
+    'What is the first visible shift?',
+    'What follows after clarification?',
+  ])
+  assert.equal(
+    getInterviewAnswerForQuestion(parsed.interviews[0], 0, 'twitter'),
+    'Engagement spikes around the accusation.'
+  )
+  assert.equal(
+    getInterviewAnswerForQuestion(parsed.interviews[0], 1, 'twitter'),
+    'Attention softens once official details arrive.'
+  )
+  assert.equal(isMissingPlatformReply(parsed.interviews[0].redditAnswer), true)
+  assert.equal(parsed.summary, 'The reaction peaks early, then moderates after clarification.')
+})
+
 test('parseQuickSearch supports both Chinese and English formats', () => {
   const chinese = parseQuickSearch(`搜索查询: 武大 处分
 找到 2 条相关事实

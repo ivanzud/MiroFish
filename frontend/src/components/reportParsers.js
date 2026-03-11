@@ -9,12 +9,12 @@ const NO_REPLY_MARKERS = new Set([
 
 const INTERVIEW_REASON_SKIP_RE = /^(?:未选|综上|最终选择|not selected|overall|final selection)/i
 const INTERVIEW_SPLIT_RE = /####\s*(?:采访|Interview)\s*#\d+:/i
-const INTERVIEW_TOPIC_RE = /\*\*(?:采访主题|Interview Topic):\*\*\s*(.+?)(?:\n|$)/i
-const INTERVIEW_COUNT_RE = /\*\*(?:采访人数|Interview(?:ed)? Agents?):\*\*\s*(\d+)\s*\/\s*(\d+)/i
-const INTERVIEW_REASON_RE = /###\s*(?:采访对象选择理由|Why These Interviewees|Interviewee Selection Rationale)\n([\s\S]*?)(?=\n---\n|\n###\s*(?:采访实录|Interview Transcript))/i
-const INTERVIEW_BIO_RE = /_(?:简介|Bio):\s*([\s\S]*?)_\n/i
-const INTERVIEW_SUMMARY_RE = /###\s*(?:采访摘要与核心观点|Interview Summary(?: and Key Takeaways)?)\n([\s\S]*?)$/i
-const INTERVIEW_QUOTES_RE = /\*\*(?:关键引言|Key Quotes):\*\*\n([\s\S]*?)(?=\n---|\n####|$)/i
+const INTERVIEW_TOPIC_RE = /\*\*(?:采访主题|Interview Topic|Topic):\*\*\s*(.+?)(?:\n|$)/i
+const INTERVIEW_COUNT_RE = /\*\*(?:采访人数|Interview(?:ed)? Agents?|Agents Interviewed):\*\*\s*(\d+)\s*\/\s*(\d+)/i
+const INTERVIEW_REASON_RE = /###\s*(?:采访对象选择理由|Why These Interviewees|Interviewee Selection Rationale|Selection Rationale)\n([\s\S]*?)(?=\n---\n|\n###\s*(?:采访实录|Interview Transcript))/i
+const INTERVIEW_BIO_RE = /_(?:简介|Bio|Profile):\s*([\s\S]*?)_\n/i
+const INTERVIEW_SUMMARY_RE = /###\s*(?:采访摘要与核心观点|Interview Summary(?: and Key Takeaways)?|Key Takeaways)\n([\s\S]*?)$/i
+const INTERVIEW_QUOTES_RE = /\*\*(?:关键引言|Key Quotes|Quotes):\*\*\n([\s\S]*?)(?=\n---|\n####|$)/i
 const QUICK_QUERY_RE = /(?:搜索查询|Search Query):\s*(.+?)(?:\n|$)/i
 const QUICK_COUNT_RE = /(?:找到|Found)\s*(\d+)\s*(?:条(?:相关(?:信息|事实))?|relevant (?:items|facts|results)?)/i
 const QUICK_FACTS_RE = /###\s*(?:相关事实|Relevant Facts):\n([\s\S]*?)(?=\n###|$)/i
@@ -43,8 +43,11 @@ const QUESTION_PREFIX_RE = /(?:^|[\r\n]+)(?:问题|Question)\s*(\d+)[：:]\s*/g
 const NUMBERED_PREFIX_RE = /(?:^|[\r\n]+)(\d+)\.\s+/g
 const FINAL_ANSWER_RE = /Final\s*Answer:\s*\n*([\s\S]*)$/i
 const CHINESE_FINAL_ANSWER_RE = /最终答案[:：]\s*\n*([\s\S]*)$/i
-const TWITTER_ANSWER_RE = /【Twitter(?:平台回答| Reply)】\n?([\s\S]*?)(?=【Reddit(?:平台回答| Reply)】|$)/i
-const REDDIT_ANSWER_RE = /【Reddit(?:平台回答| Reply)】\n?([\s\S]*?)$/i
+const QUESTION_SECTION_RE = /\*\*(?:Q|Questions?):\*\*\s*([\s\S]*?)(?=\n\n\*\*(?:A|Answer):\*\*|\*\*(?:A|Answer):\*\*)/i
+const ANSWER_SECTION_RE = /\*\*(?:A|Answer):\*\*\s*([\s\S]*?)(?=\*\*(?:关键引言|Key Quotes|Quotes)|$)/i
+const QUESTION_PREFIX_SPLIT_RE = /(?:^|[\r\n]+)(?:问题|Question)\s*\d+[：:]\s*/i
+const TWITTER_SECTION_RE = /【Twitter(?:平台回答| Reply| Response| Answer)】\n?([\s\S]*?)(?=【Reddit(?:平台回答| Reply| Response| Answer)】|$)/i
+const REDDIT_SECTION_RE = /【Reddit(?:平台回答| Reply| Response| Answer)】\n?([\s\S]*?)$/i
 
 export const isMissingPlatformReply = (text) => {
   if (!text) {
@@ -104,6 +107,27 @@ const parseIndividualReasons = (reasonText) => {
 const splitQuestions = (questionText) => {
   if (!questionText) {
     return []
+  }
+
+  if (QUESTION_PREFIX_SPLIT_RE.test(questionText)) {
+    const questions = []
+    const prefixRe = new RegExp(QUESTION_PREFIX_RE.source, QUESTION_PREFIX_RE.flags)
+    const matches = [...questionText.matchAll(prefixRe)]
+
+    for (let index = 0; index < matches.length; index += 1) {
+      const current = matches[index]
+      const next = matches[index + 1]
+      const start = current.index + current[0].length
+      const end = next ? next.index : questionText.length
+      const question = questionText.slice(start, end).trim()
+      if (question) {
+        questions.push(question)
+      }
+    }
+
+    if (questions.length > 0) {
+      return questions
+    }
   }
 
   const questions = questionText.split(/\n\d+\.\s+/).filter((item) => item.trim())
@@ -243,16 +267,16 @@ export const parseInterview = (text) => {
         interview.bio = bioMatch[1].trim().replace(/\.\.\.$/, '...')
       }
 
-      const questionMatch = block.match(/\*\*Q:\*\*\s*([\s\S]*?)(?=\n\n\*\*A:\*\*|\*\*A:\*\*)/)
+      const questionMatch = block.match(QUESTION_SECTION_RE)
       if (questionMatch) {
         interview.questions = splitQuestions(questionMatch[1].trim())
       }
 
-      const answerMatch = block.match(/\*\*A:\*\*\s*([\s\S]*?)(?=\*\*(?:关键引言|Key Quotes)|$)/i)
+      const answerMatch = block.match(ANSWER_SECTION_RE)
       if (answerMatch) {
         const answerText = answerMatch[1].trim()
-        const twitterMatch = answerText.match(TWITTER_ANSWER_RE)
-        const redditMatch = answerText.match(REDDIT_ANSWER_RE)
+        const twitterMatch = answerText.match(TWITTER_SECTION_RE)
+        const redditMatch = answerText.match(REDDIT_SECTION_RE)
 
         if (twitterMatch) {
           interview.twitterAnswer = twitterMatch[1].trim()
