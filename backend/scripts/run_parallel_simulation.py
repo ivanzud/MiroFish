@@ -81,6 +81,7 @@ from llm_env import (
     missing_api_key_message,
     resolve_standard_llm_env,
     resolve_standard_model_name,
+    script_message,
 )
 
 
@@ -98,18 +99,17 @@ sys.path.insert(0, _backend_dir)
 
 # 加载项目根目录的 .env 文件（包含 LLM_API_KEY 等配置）
 from dotenv import load_dotenv
+SCRIPT_LOCALE = "en" if os.environ.get("MIROFISH_LOCALE", "").lower().startswith("en") else "zh"
 _env_file = os.path.join(_project_root, '.env')
 if os.path.exists(_env_file):
     load_dotenv(_env_file)
-    print(f"已加载环境配置: {_env_file}")
+    print(script_message("env_loaded", SCRIPT_LOCALE, path=_env_file))
 else:
     # 尝试加载 backend/.env
     _backend_env = os.path.join(_backend_dir, '.env')
     if os.path.exists(_backend_env):
         load_dotenv(_backend_env)
-        print(f"已加载环境配置: {_backend_env}")
-
-SCRIPT_LOCALE = "en" if os.environ.get("MIROFISH_LOCALE", "").lower().startswith("en") else "zh"
+        print(script_message("env_loaded", SCRIPT_LOCALE, path=_backend_env))
 
 
 def _t(zh: str, en: str) -> str:
@@ -387,11 +387,26 @@ class ParallelIPCHandler:
             
             if "error" in result:
                 self.send_response(command_id, "failed", error=result["error"])
-                print(f"  Interview失败: agent_id={agent_id}, platform={platform}, error={result['error']}")
+                print(
+                    script_message(
+                        "interview_platform_failed",
+                        SCRIPT_LOCALE,
+                        agent_id=agent_id,
+                        platform=platform,
+                        error=result["error"],
+                    )
+                )
                 return False
             else:
                 self.send_response(command_id, "completed", result=result)
-                print(f"  Interview完成: agent_id={agent_id}, platform={platform}")
+                print(
+                    script_message(
+                        "interview_platform_completed",
+                        SCRIPT_LOCALE,
+                        agent_id=agent_id,
+                        platform=platform,
+                    )
+                )
                 return True
         
         # 未指定平台：同时采访两个平台
@@ -432,12 +447,23 @@ class ParallelIPCHandler:
         
         if success_count > 0:
             self.send_response(command_id, "completed", result=results)
-            print(f"  Interview完成: agent_id={agent_id}, 成功平台数={success_count}/{len(platforms_to_interview)}")
+            print(
+                script_message(
+                    "multi_platform_interview_completed",
+                    SCRIPT_LOCALE,
+                    agent_id=agent_id,
+                    success_count=success_count,
+                    platform_count=len(platforms_to_interview),
+                )
+            )
             return True
         else:
-            errors = [f"{p}: {r.get('error', '未知错误')}" for p, r in results["platforms"].items()]
+            errors = [
+                f"{p}: {r.get('error', script_message('unknown_error', SCRIPT_LOCALE))}"
+                for p, r in results["platforms"].items()
+            ]
             self.send_response(command_id, "failed", error="; ".join(errors))
-            print(f"  Interview失败: agent_id={agent_id}, 所有平台都失败")
+            print(script_message("multi_platform_interview_failed", SCRIPT_LOCALE, agent_id=agent_id))
             return False
     
     async def handle_batch_interview(self, command_id: str, interviews: List[Dict], platform: str = None) -> bool:
@@ -501,7 +527,7 @@ class ParallelIPCHandler:
                         result["platform"] = "twitter"
                         results[f"twitter_{agent_id}"] = result
             except Exception as e:
-                print(f"  Twitter批量Interview失败: {e}")
+                print(script_message("twitter_batch_interview_failed", SCRIPT_LOCALE, error=e))
         
         # 处理Reddit平台的采访
         if reddit_interviews and self.reddit_env:
@@ -528,14 +554,14 @@ class ParallelIPCHandler:
                         result["platform"] = "reddit"
                         results[f"reddit_{agent_id}"] = result
             except Exception as e:
-                print(f"  Reddit批量Interview失败: {e}")
+                print(script_message("reddit_batch_interview_failed", SCRIPT_LOCALE, error=e))
         
         if results:
             self.send_response(command_id, "completed", result={
                 "interviews_count": len(results),
                 "results": results
             })
-            print(f"  批量Interview完成: {len(results)} 个Agent")
+            print(script_message("batch_interview_completed", SCRIPT_LOCALE, count=len(results)))
             return True
         else:
             self.send_response(
@@ -1157,7 +1183,7 @@ async def run_twitter_simulation(
             main_logger.info(f"[Twitter] {msg}")
         print(f"[Twitter] {msg}")
     
-    log_info("初始化...")
+    log_info(script_message("init", SCRIPT_LOCALE))
     
     # Twitter 使用通用 LLM 配置
     model = create_model(config, use_boost=False)
@@ -1165,7 +1191,7 @@ async def run_twitter_simulation(
     # OASIS Twitter使用CSV格式
     profile_path = os.path.join(simulation_dir, "twitter_profiles.csv")
     if not os.path.exists(profile_path):
-        log_info(f"错误: Profile文件不存在: {profile_path}")
+        log_info(script_message("profile_missing", SCRIPT_LOCALE, path=profile_path))
         return result
     
     result.agent_graph = await generate_twitter_agent_graph(
@@ -1349,14 +1375,14 @@ async def run_reddit_simulation(
             main_logger.info(f"[Reddit] {msg}")
         print(f"[Reddit] {msg}")
     
-    log_info("初始化...")
+    log_info(script_message("init", SCRIPT_LOCALE))
     
     # Reddit 使用加速 LLM 配置（如果有的话，否则回退到通用配置）
     model = create_model(config, use_boost=True)
     
     profile_path = os.path.join(simulation_dir, "reddit_profiles.json")
     if not os.path.exists(profile_path):
-        log_info(f"错误: Profile文件不存在: {profile_path}")
+        log_info(script_message("profile_missing", SCRIPT_LOCALE, path=profile_path))
         return result
     
     result.agent_graph = await generate_reddit_agent_graph(
@@ -1560,7 +1586,7 @@ async def main():
     _shutdown_event = asyncio.Event()
     
     if not os.path.exists(args.config):
-        print(f"错误: 配置文件不存在: {args.config}")
+        print(script_message("config_missing", SCRIPT_LOCALE, path=args.config))
         sys.exit(1)
     
     config = load_config(args.config)
@@ -1595,7 +1621,9 @@ async def main():
         log_manager.info(f"  - 最大轮数限制: {args.max_rounds}")
         if args.max_rounds < config_total_rounds:
             log_manager.info(f"  - 实际执行轮数: {args.max_rounds} (已截断)")
-    log_manager.info(f"  - Agent数量: {len(config.get('agent_configs', []))}")
+    log_manager.info(
+        script_message("agent_count", SCRIPT_LOCALE, count=len(config.get('agent_configs', [])))
+    )
     
     log_manager.info("日志结构:")
     log_manager.info(f"  - 主日志: simulation.log")

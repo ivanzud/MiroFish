@@ -10,6 +10,20 @@ def _load_simulation_runner_module():
     if "zep_cloud" not in sys.modules:
         zep_cloud = types.ModuleType("zep_cloud")
         zep_cloud_client = types.ModuleType("zep_cloud.client")
+        zep_cloud.EpisodeData = type("EpisodeData", (), {})
+        zep_cloud.EntityEdgeSourceTarget = type("EntityEdgeSourceTarget", (), {})
+        zep_cloud.InternalServerError = type("InternalServerError", (Exception,), {})
+        zep_cloud.NotFoundError = type("NotFoundError", (Exception,), {})
+
+        def _make_placeholder(name):
+            return type(name, (), {})
+
+        def _missing_attr(name):
+            value = _make_placeholder(name)
+            setattr(zep_cloud, name, value)
+            return value
+
+        zep_cloud.__getattr__ = _missing_attr
         zep_cloud_client.Zep = object
         zep_cloud.client = zep_cloud_client
         sys.modules["zep_cloud"] = zep_cloud

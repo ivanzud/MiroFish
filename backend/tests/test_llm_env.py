@@ -91,3 +91,23 @@ def test_missing_api_key_message_supports_english(monkeypatch):
         "Missing API key configuration. Set LLM_API_KEY or OPENAI_API_KEY "
         "in the project root .env file."
     )
+
+
+def test_script_message_supports_english_runtime_strings():
+    llm_env = load_llm_env_module()
+
+    assert llm_env.script_message("profile_missing", "en", path="/tmp/profile.json") == (
+        "Error: profile file does not exist: /tmp/profile.json"
+    )
+    assert llm_env.script_message("batch_interview_completed", "en", count=3) == (
+        "  Batch interview completed: 3 agents"
+    )
+
+
+def test_script_message_defaults_to_chinese_runtime_strings():
+    llm_env = load_llm_env_module()
+
+    assert llm_env.script_message("config_missing", path="/tmp/config.json") == (
+        "错误: 配置文件不存在: /tmp/config.json"
+    )
+    assert llm_env.script_message("unknown_error") == "未知错误"

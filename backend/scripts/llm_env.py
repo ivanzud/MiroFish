@@ -4,6 +4,81 @@ from __future__ import annotations
 
 import os
 
+SCRIPT_MESSAGES = {
+    "env_loaded": {
+        "zh": "已加载环境配置: {path}",
+        "en": "Loaded environment configuration: {path}",
+    },
+    "init": {
+        "zh": "初始化...",
+        "en": "Initializing...",
+    },
+    "agent_count": {
+        "zh": "  - Agent数量: {count}",
+        "en": "  - Agent count: {count}",
+    },
+    "init_model": {
+        "zh": "\n初始化LLM模型...",
+        "en": "\nInitializing LLM model...",
+    },
+    "load_profiles": {
+        "zh": "加载Agent Profile...",
+        "en": "Loading agent profiles...",
+    },
+    "profile_missing": {
+        "zh": "错误: Profile文件不存在: {path}",
+        "en": "Error: profile file does not exist: {path}",
+    },
+    "config_missing": {
+        "zh": "错误: 配置文件不存在: {path}",
+        "en": "Error: config file does not exist: {path}",
+    },
+    "interview_completed": {
+        "zh": "  Interview完成: agent_id={agent_id}",
+        "en": "  Interview completed: agent_id={agent_id}",
+    },
+    "interview_platform_completed": {
+        "zh": "  Interview完成: agent_id={agent_id}, platform={platform}",
+        "en": "  Interview completed: agent_id={agent_id}, platform={platform}",
+    },
+    "interview_failed": {
+        "zh": "  Interview失败: agent_id={agent_id}, error={error}",
+        "en": "  Interview failed: agent_id={agent_id}, error={error}",
+    },
+    "interview_platform_failed": {
+        "zh": "  Interview失败: agent_id={agent_id}, platform={platform}, error={error}",
+        "en": "  Interview failed: agent_id={agent_id}, platform={platform}, error={error}",
+    },
+    "multi_platform_interview_completed": {
+        "zh": "  Interview完成: agent_id={agent_id}, 成功平台数={success_count}/{platform_count}",
+        "en": "  Interview completed: agent_id={agent_id}, successful platforms={success_count}/{platform_count}",
+    },
+    "multi_platform_interview_failed": {
+        "zh": "  Interview失败: agent_id={agent_id}, 所有平台都失败",
+        "en": "  Interview failed: agent_id={agent_id}, all platforms failed",
+    },
+    "batch_interview_completed": {
+        "zh": "  批量Interview完成: {count} 个Agent",
+        "en": "  Batch interview completed: {count} agents",
+    },
+    "batch_interview_failed": {
+        "zh": "  批量Interview失败: {error}",
+        "en": "  Batch interview failed: {error}",
+    },
+    "twitter_batch_interview_failed": {
+        "zh": "  Twitter批量Interview失败: {error}",
+        "en": "  Twitter batch interview failed: {error}",
+    },
+    "reddit_batch_interview_failed": {
+        "zh": "  Reddit批量Interview失败: {error}",
+        "en": "  Reddit batch interview failed: {error}",
+    },
+    "unknown_error": {
+        "zh": "未知错误",
+        "en": "unknown error",
+    },
+}
+
 
 def _first_env(*names: str) -> str:
     for name in names:
@@ -50,3 +125,12 @@ def missing_api_key_message(locale: str = "zh") -> str:
             "in the project root .env file."
         )
     return "缺少 API Key 配置，请在项目根目录 .env 文件中设置 LLM_API_KEY 或 OPENAI_API_KEY"
+
+
+def script_message(key: str, locale: str = "zh", **params) -> str:
+    """Return deterministic localized script/runtime strings."""
+    translations = SCRIPT_MESSAGES.get(key)
+    if not translations:
+        raise KeyError(f"Unknown script message key: {key}")
+    template = translations["en"] if locale == "en" else translations["zh"]
+    return template.format(**params)

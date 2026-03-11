@@ -54,7 +54,12 @@ def _t(zh: str, en: str) -> str:
 
 
 import re
-from llm_env import apply_openai_compat_env, missing_api_key_message, resolve_standard_llm_env
+from llm_env import (
+    apply_openai_compat_env,
+    missing_api_key_message,
+    resolve_standard_llm_env,
+    script_message,
+)
 
 
 class UnicodeFormatter(logging.Formatter):
@@ -250,12 +255,19 @@ class IPCHandler:
             result = self._get_interview_result(agent_id)
             
             self.send_response(command_id, "completed", result=result)
-            print(f"  Interview完成: agent_id={agent_id}")
+            print(script_message("interview_completed", SCRIPT_LOCALE, agent_id=agent_id))
             return True
             
         except Exception as e:
             error_msg = str(e)
-            print(f"  Interview失败: agent_id={agent_id}, error={error_msg}")
+            print(
+                script_message(
+                    "interview_failed",
+                    SCRIPT_LOCALE,
+                    agent_id=agent_id,
+                    error=error_msg,
+                )
+            )
             self.send_response(command_id, "failed", error=error_msg)
             return False
     
@@ -306,12 +318,12 @@ class IPCHandler:
                 "interviews_count": len(results),
                 "results": results
             })
-            print(f"  批量Interview完成: {len(results)} 个Agent")
+            print(script_message("batch_interview_completed", SCRIPT_LOCALE, count=len(results)))
             return True
             
         except Exception as e:
             error_msg = str(e)
-            print(f"  批量Interview失败: {error_msg}")
+            print(script_message("batch_interview_failed", SCRIPT_LOCALE, error=error_msg))
             self.send_response(command_id, "failed", error=error_msg)
             return False
     
@@ -582,17 +594,17 @@ class TwitterSimulationRunner:
         print(f"  - 总轮数: {total_rounds}")
         if max_rounds:
             print(f"  - 最大轮数限制: {max_rounds}")
-        print(f"  - Agent数量: {len(self.config.get('agent_configs', []))}")
+        print(script_message("agent_count", SCRIPT_LOCALE, count=len(self.config.get('agent_configs', []))))
         
         # 创建模型
-        print("\n初始化LLM模型...")
+        print(script_message("init_model", SCRIPT_LOCALE))
         model = self._create_model()
         
         # 加载Agent图
-        print("加载Agent Profile...")
+        print(script_message("load_profiles", SCRIPT_LOCALE))
         profile_path = self._get_profile_path()
         if not os.path.exists(profile_path):
-            print(f"错误: Profile文件不存在: {profile_path}")
+            print(script_message("profile_missing", SCRIPT_LOCALE, path=profile_path))
             return
         
         self.agent_graph = await generate_twitter_agent_graph(
@@ -752,7 +764,7 @@ async def main():
     _shutdown_event = asyncio.Event()
     
     if not os.path.exists(args.config):
-        print(f"错误: 配置文件不存在: {args.config}")
+        print(script_message("config_missing", SCRIPT_LOCALE, path=args.config))
         sys.exit(1)
     
     # 初始化日志配置（使用固定文件名，清理旧日志）
