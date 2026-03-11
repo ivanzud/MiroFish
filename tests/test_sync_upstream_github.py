@@ -134,8 +134,18 @@ class SyncUpstreamGithubTests(unittest.TestCase):
                 "updated_at": "2026-01-02T00:00:00Z",
                 "closed_at": "2026-01-03T00:00:00Z",
                 "merged_at": "2026-01-03T00:00:01Z",
-                "head": {"ref": "feature"},
-                "base": {"ref": "main"},
+                "head": {
+                    "ref": "feature",
+                    "sha": "abc123",
+                    "repo": {
+                        "full_name": "contrib/test-repo",
+                        "clone_url": "https://github.com/contrib/test-repo.git",
+                    },
+                },
+                "base": {
+                    "ref": "main",
+                    "repo": {"full_name": "test-owner/test-repo"},
+                },
                 "draft": False,
                 "mergeable_state": "clean",
                 "labels": [{"name": "enhancement"}],
@@ -149,6 +159,12 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(issue["closed_at"], "2026-01-03T00:00:00Z")
         self.assertEqual(pr["state"], "closed")
         self.assertEqual(pr["merged_at"], "2026-01-03T00:00:01Z")
+        self.assertEqual(pr["head"], "feature")
+        self.assertEqual(pr["head_sha"], "abc123")
+        self.assertEqual(pr["head_repo"], "contrib/test-repo")
+        self.assertEqual(pr["head_clone_url"], "https://github.com/contrib/test-repo.git")
+        self.assertEqual(pr["base"], "main")
+        self.assertEqual(pr["base_repo"], "test-owner/test-repo")
         self.assertEqual(pr["mergeable_state"], "clean")
         self.assertEqual(pr["labels"], ["enhancement"])
         self.assertTrue(pr["fork_mirrored"])

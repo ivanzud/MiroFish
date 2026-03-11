@@ -162,6 +162,10 @@ def compact_pr(
     fork_remote: str | None = None,
 ) -> dict[str, object]:
     number = int(pr["number"])
+    head = pr.get("head") or {}
+    base = pr.get("base") or {}
+    head_repo = head.get("repo") or {}
+    base_repo = base.get("repo") or {}
     fork_mirrored = False
     fork_mirror_ref = None
     if mirrored_pr_numbers is not None and fork_remote is not None:
@@ -177,8 +181,12 @@ def compact_pr(
         "updated_at": pr["updated_at"],
         "closed_at": pr.get("closed_at"),
         "merged_at": pr.get("merged_at"),
-        "head": pr.get("head", {}).get("ref"),
-        "base": pr.get("base", {}).get("ref"),
+        "head": head.get("ref"),
+        "head_sha": head.get("sha"),
+        "head_repo": head_repo.get("full_name"),
+        "head_clone_url": head_repo.get("clone_url"),
+        "base": base.get("ref"),
+        "base_repo": base_repo.get("full_name"),
         "draft": pr.get("draft", False),
         "mergeable_state": pr.get("mergeable_state"),
         "labels": [label["name"] for label in pr.get("labels", [])],

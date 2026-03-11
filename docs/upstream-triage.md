@@ -73,7 +73,8 @@ Last refreshed: `2026-03-11`
 - `./.tmp-test-venv/bin/pytest backend/tests/test_ontology_generator.py backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes after landing the ontology validation hardening and exception-scope cleanup.
 - `python3 -m unittest tests/test_sync_upstream_github.py` passes after teaching the sync script to hydrate per-PR details, so the local JSON/markdown snapshots now include real `mergeable_state` metadata instead of `unknown` placeholders.
 - `python3 scripts/sync_upstream_github.py --state open ...` and `--state all ...` refreshed the local snapshots again on March 11, 2026; the full-history capture currently shows `33` open upstream issues, `33` open upstream PRs, and `14` closed upstream PRs (`47` total PRs in the full snapshot).
-- `python3 scripts/sync_upstream_github.py --state open|all --fork-remote origin ...` now annotates each PR record with `fork_mirrored` / `fork_mirror_ref`; after mirroring the missing clean non-`main` branches, the refreshed snapshots show `28/33` open PRs and `29/47` total PRs mirrored into the fork.
+- `python3 scripts/sync_upstream_github.py --state open|all --fork-remote origin ...` now annotates each PR record with `fork_mirrored` / `fork_mirror_ref`; after mirroring the remaining open PR refs, the refreshed snapshots show `33/33` open PRs and `34/47` total PRs mirrored into the fork, with the remaining non-mirrored refs limited to older closed PR history.
+- `python3 -m unittest tests/test_sync_upstream_github.py` passes after extending the snapshot schema with `head_sha`, `head_repo`, `head_clone_url`, and `base_repo`, so ambiguous same-name upstream branches such as `main` can still be mirrored and traced back to the contributor fork deterministically.
 - `cd frontend && npm test` passes with new coverage for the frontend API base URL resolver, including the default `3000 -> 5001` dual-port deployment fallback.
 - `cd frontend && npm run build` passes after restoring dual-port frontend/backend compatibility for the default local and Docker topology.
 - `cd frontend && npm test -- --runInBand` and `cd frontend && npm run build` both pass after localizing the shared graph panel and Step 5 deep-interaction chrome.
@@ -83,7 +84,7 @@ Last refreshed: `2026-03-11`
 
 - `docs/upstream-open-state.json` and `docs/upstream-open-summary.md` remain the fast open-work triage view.
 - `docs/upstream-all-state.json` and `docs/upstream-all-summary.md` now capture the full upstream issue/PR state for historical triage and mirroring decisions.
-- `scripts/sync_upstream_github.py` now supports paginated `--state all` refreshes, hydrates PR detail records so machine-readable snapshots include labels plus `mergeable_state`, annotates optional fork mirror status via `--fork-remote`, and uses `GITHUB_TOKEN` / `GH_TOKEN` when available; when those env vars are absent but the GitHub CLI is authenticated, it falls back to `gh api` so upstream intake still works under anonymous API rate limits.
+- `scripts/sync_upstream_github.py` now supports paginated `--state all` refreshes, hydrates PR detail records so machine-readable snapshots include labels plus `mergeable_state`, preserves upstream head/base repo identity and head SHA for deterministic mirroring, annotates optional fork mirror status via `--fork-remote`, and uses `GITHUB_TOKEN` / `GH_TOKEN` when available; when those env vars are absent but the GitHub CLI is authenticated, it falls back to `gh api` so upstream intake still works under anonymous API rate limits.
 
 ## Practical mirror strategy for the fork
 

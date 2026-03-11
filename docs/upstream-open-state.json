@@ -1,7 +1,7 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T08:02:23.332174+00:00",
+  "captured_at": "2026-03-11T08:06:33.877918+00:00",
   "counts": {
     "issues": {
       "open": 33
@@ -10,8 +10,8 @@
       "open": 33
     },
     "mirrored_pull_requests": {
-      "mirrored": 28,
-      "not_mirrored": 5
+      "mirrored": 33,
+      "not_mirrored": 0
     }
   },
   "issues": [
@@ -410,7 +410,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/security-improvements",
+      "head_sha": "a33adf3e1f92e456f1134befd8745e0bad09034a",
+      "head_repo": "hobostay/MiroFish",
+      "head_clone_url": "https://github.com/hobostay/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -431,7 +435,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "docs/add-sys-architecture-part",
+      "head_sha": "a9d1c4839a23e6027b49d89af77728ab32cda167",
+      "head_repo": "Noblegasesgoo/MiroFish",
+      "head_clone_url": "https://github.com/Noblegasesgoo/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -452,7 +460,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "feat/zep-retry-mechanism",
+      "head_sha": "264d2c8757c1b9e5aead7c873ffd29f4add8ad4a",
+      "head_repo": "EuanTop/MiroFish",
+      "head_clone_url": "https://github.com/EuanTop/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -473,7 +485,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "docs/add-pr-guide",
+      "head_sha": "32d0571fd7bd59fae341a98cc63f7991409d8a9b",
+      "head_repo": "M-Tlinqinming/MiroFish",
+      "head_clone_url": "https://github.com/M-Tlinqinming/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -494,7 +510,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/fix-priority-issues-mNNjT",
+      "head_sha": "20c830af12cecd6fa6f03e8c0aca98b40dd8c858",
+      "head_repo": "ai-x-builder/MiroFish",
+      "head_clone_url": "https://github.com/ai-x-builder/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -515,7 +535,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "feature/custom-exceptions-and-config-validation",
+      "head_sha": "e639bd629ef5ebc260459287a863566453d07317",
+      "head_repo": "ZaviQ7/MiroFish",
+      "head_clone_url": "https://github.com/ZaviQ7/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -536,7 +560,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/issue-121",
+      "head_sha": "3cd206cfc291f7b7311d27cdd0382f24d582bf99",
+      "head_repo": "SergioChan/MiroFish",
+      "head_clone_url": "https://github.com/SergioChan/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -557,7 +585,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/issue-64",
+      "head_sha": "08d5313024500371140c713f72bedcd730a99914",
+      "head_repo": "SergioChan/MiroFish",
+      "head_clone_url": "https://github.com/SergioChan/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -578,7 +610,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/lm-studio-json-object-compat",
+      "head_sha": "481cc009a392549017c08f27b9500f5ab41415be",
+      "head_repo": "ImL1s/MiroFish",
+      "head_clone_url": "https://github.com/ImL1s/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -599,7 +635,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "language-option",
+      "head_sha": "cb868d30438bced7e10fe0efd4d30db0e6c32e3e",
+      "head_repo": "Pratiyankkumar/MiroFish",
+      "head_clone_url": "https://github.com/Pratiyankkumar/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -620,7 +660,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/ragflow-pattern-compliance",
+      "head_sha": "d700c0c7d0a595f20fd415c476a4b3547e1bfb0d",
+      "head_repo": "pratyush618/MiroFish",
+      "head_clone_url": "https://github.com/pratyush618/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -642,7 +686,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "chore/upgrade-actions",
+      "head_sha": "ddd20d9b615b660b6fc4604add767aaa30cb2f71",
+      "head_repo": "ailuntz/MiroFish",
+      "head_clone_url": "https://github.com/ailuntz/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -662,7 +710,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/pyproject-license",
+      "head_sha": "e7a1fbb4c2166c3ed95f0ac40b14c443c35c260b",
+      "head_repo": "ailuntz/MiroFish",
+      "head_clone_url": "https://github.com/ailuntz/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -682,7 +734,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/api-baseurl-default",
+      "head_sha": "866c7849c3bf9a35dea560e5f22030b3fab03c53",
+      "head_repo": "ailuntz/MiroFish",
+      "head_clone_url": "https://github.com/ailuntz/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -702,7 +758,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "add-ja-doc",
+      "head_sha": "0531fa640d186bf27de03c01d4bcc4bcd315cf4d",
+      "head_repo": "eltociear/MiroFish",
+      "head_clone_url": "https://github.com/eltociear/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -723,7 +783,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "main",
+      "head_sha": "9817c535d77dbd69ccefa58ca96cbae497dbff47",
+      "head_repo": "waitle/MiroFish-kor",
+      "head_clone_url": "https://github.com/waitle/MiroFish-kor.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -731,7 +795,7 @@
         "size:L"
       ],
       "author": "waitle",
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-112"
     },
     {
@@ -744,14 +808,18 @@
       "closed_at": null,
       "merged_at": null,
       "head": "main",
+      "head_sha": "42f9f9a72caf08f77d1db969ae7d7116d1a28d5f",
+      "head_repo": "MoeclubM/MiroFish",
+      "head_clone_url": "https://github.com/MoeclubM/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "dirty",
       "labels": [
         "size:S"
       ],
       "author": "MoeclubM",
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-72"
     },
     {
@@ -764,7 +832,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "feat/windows-installer",
+      "head_sha": "27ffc561637a2fd67a87415691dd5fddeb4a2e2d",
+      "head_repo": "JasonOA888/MiroFish",
+      "head_clone_url": "https://github.com/JasonOA888/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -785,7 +857,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/remove-hardcoded-api-url",
+      "head_sha": "6f2d41262fc4869b2037bcdda7d60cf20de4f6f1",
+      "head_repo": "nil957/MiroFish",
+      "head_clone_url": "https://github.com/nil957/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -806,7 +882,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/upgrade-actions-and-arm-support",
+      "head_sha": "40e92a66f2b91e9fc211e226f4beab47136170cb",
+      "head_repo": "nil957/MiroFish",
+      "head_clone_url": "https://github.com/nil957/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -827,7 +907,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/docker-multiplatform",
+      "head_sha": "14afd56e2c53b6f06692f2e00ce53f7ecb2aca9f",
+      "head_repo": "JasonOA888/MiroFish",
+      "head_clone_url": "https://github.com/JasonOA888/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -848,7 +932,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "feat/json-utils-helper",
+      "head_sha": "b46ee9befd1f792b986b758920810098ce582489",
+      "head_repo": "JasonOA888/MiroFish",
+      "head_clone_url": "https://github.com/JasonOA888/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -869,7 +957,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/frontend-baseurl",
+      "head_sha": "1e3451b05814d612c0864013c73f6bcd5b410f04",
+      "head_repo": "JasonOA888/MiroFish",
+      "head_clone_url": "https://github.com/JasonOA888/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -890,7 +982,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "upgrade-github-actions-node24-general",
+      "head_sha": "793d1581107a1fd4ffe120ff71ba82f674a8f206",
+      "head_repo": "salmanmkc/MiroFish",
+      "head_clone_url": "https://github.com/salmanmkc/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -910,7 +1006,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "upgrade-github-actions-node24",
+      "head_sha": "265a89bf577ca0e9e9c91090bbf161abc350f25b",
+      "head_repo": "salmanmkc/MiroFish",
+      "head_clone_url": "https://github.com/salmanmkc/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -930,7 +1030,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix-cve-2025-64712-unstructured",
+      "head_sha": "c0b1fee634ab03334f6eb1914a0498bc9b172056",
+      "head_repo": "orbisai0security/MiroFish",
+      "head_clone_url": "https://github.com/orbisai0security/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -950,7 +1054,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/issue-58-configurable-timeout",
+      "head_sha": "92efb3616f40027ade6ed2b7789bc27e3ab036f8",
+      "head_repo": "JasonOA888/MiroFish",
+      "head_clone_url": "https://github.com/JasonOA888/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -971,7 +1079,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/bare-excepts",
+      "head_sha": "1612dfe017c5bebc963ae2838096b66ce134ba05",
+      "head_repo": "haosenwang1018/MiroFish",
+      "head_clone_url": "https://github.com/haosenwang1018/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -991,7 +1103,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix-ontology-validation",
+      "head_sha": "6fce4705ff255915ccdb76f9402983fe43cbc9cd",
+      "head_repo": "calvinguo721/MiroFish",
+      "head_clone_url": "https://github.com/calvinguo721/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -1012,7 +1128,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "main",
+      "head_sha": "406ac1df624220a154552548173118769098b14f",
+      "head_repo": "Jonah-Wu23/MiroFish_exe",
+      "head_clone_url": "https://github.com/Jonah-Wu23/MiroFish_exe.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [
@@ -1020,7 +1140,7 @@
         "size:XXL"
       ],
       "author": "Jonah-Wu23",
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-70"
     },
     {
@@ -1033,12 +1153,16 @@
       "closed_at": null,
       "merged_at": null,
       "head": "feat/anthropic-sdk",
+      "head_sha": "9b795e1bd9a4f57feee53354328dc60acab9fd63",
+      "head_repo": "SmartisanNaive/MiroFish",
+      "head_clone_url": "https://github.com/SmartisanNaive/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "dirty",
       "labels": [],
       "author": "SmartisanNaive",
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-38"
     },
     {
@@ -1051,12 +1175,16 @@
       "closed_at": null,
       "merged_at": null,
       "head": "feat/local",
+      "head_sha": "b04d7f7e4fb014f376ac4085a3d6a83929a61cc3",
+      "head_repo": "Momoyeyu/MiroFish",
+      "head_clone_url": "https://github.com/Momoyeyu/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "dirty",
       "labels": [],
       "author": "Momoyeyu",
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-49"
     },
     {
@@ -1069,7 +1197,11 @@
       "closed_at": null,
       "merged_at": null,
       "head": "fix/frontend-simulation-error-handling",
+      "head_sha": "6a8bc97da085f67ae0edc0e62425e0375d9f8506",
+      "head_repo": "tt-a1i/MiroFish",
+      "head_clone_url": "https://github.com/tt-a1i/MiroFish.git",
       "base": "main",
+      "base_repo": "666ghj/MiroFish",
       "draft": false,
       "mergeable_state": "clean",
       "labels": [],
