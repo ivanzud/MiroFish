@@ -189,6 +189,9 @@ class OasisProfileGenerator:
         "university", "governmentagency", "organization", "ngo", 
         "mediaoutlet", "company", "institution", "group", "community"
     ]
+
+    def _default_country(self) -> str:
+        return "China" if self.locale == "en" else "中国"
     
     def __init__(
         self, 
@@ -920,7 +923,7 @@ Important:
                 "age": 30,  # 机构虚拟年龄
                 "gender": "other",  # 机构使用other
                 "mbti": "ISTJ",  # 机构风格：严谨保守
-                "country": "中国",
+                "country": self._default_country(),
                 "profession": "Media",
                 "interested_topics": ["General News", "Current Events", "Public Affairs"],
             }
@@ -932,7 +935,7 @@ Important:
                 "age": 30,  # 机构虚拟年龄
                 "gender": "other",  # 机构使用other
                 "mbti": "ISTJ",  # 机构风格：严谨保守
-                "country": "中国",
+                "country": self._default_country(),
                 "profession": entity_type,
                 "interested_topics": ["Public Policy", "Community", "Official Announcements"],
             }
@@ -1278,7 +1281,7 @@ Important:
                 "age": profile.age if profile.age else 30,
                 "gender": self._normalize_gender(profile.gender),
                 "mbti": profile.mbti if profile.mbti else "ISTJ",
-                "country": profile.country if profile.country else "中国",
+                "country": profile.country if profile.country else self._default_country(),
             }
             
             # 可选字段

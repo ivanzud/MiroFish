@@ -1,4 +1,5 @@
 import sys
+import json
 from types import SimpleNamespace
 from types import ModuleType
 
@@ -10,7 +11,7 @@ fake_zep_cloud.__getattr__ = lambda name: object
 sys.modules.setdefault("zep_cloud", fake_zep_cloud)
 sys.modules.setdefault("zep_cloud.client", fake_zep_client)
 
-from app.services.oasis_profile_generator import OasisProfileGenerator
+from app.services.oasis_profile_generator import OasisAgentProfile, OasisProfileGenerator
 from app.services.graph_builder import GraphBuilderService
 from app.services.simulation_config_generator import SimulationConfigGenerator
 from app.services.zep_entity_reader import ZepEntityReader
@@ -105,6 +106,51 @@ def test_oasis_profile_generator_english_prompts_switch_user_facing_language():
     assert "Write all user-facing text fields in English." in system_prompt
     assert "Use English for all user-facing fields except gender values" in user_prompt
     assert "country name in English" in user_prompt
+
+
+def test_oasis_profile_generator_english_rule_based_group_profile_uses_english_country():
+    generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+    generator.locale = "en"
+
+    profile = generator._generate_profile_rule_based(
+        entity_name="Example University",
+        entity_type="University",
+        entity_summary="A research university.",
+        entity_attributes={},
+    )
+
+    assert profile["country"] == "China"
+
+
+def test_oasis_profile_generator_save_profiles_defaults_country_by_locale(tmp_path):
+    generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+    generator.locale = "en"
+    output_path = tmp_path / "profiles.json"
+
+    generator.save_profiles(
+        [
+            OasisAgentProfile(
+                user_id=1,
+                name="Alice",
+                user_name="alice",
+                bio="Bio",
+                persona="Persona",
+                karma=1000,
+                created_at="2026-03-11",
+                age=30,
+                gender="female",
+                mbti="INTJ",
+                country=None,
+                profession="Engineer",
+                interested_topics=["Games"],
+            )
+        ],
+        str(output_path),
+        platform="reddit",
+    )
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload[0]["country"] == "China"
 
 
 def test_simulation_config_generator_missing_api_key_mentions_openai_alias(monkeypatch):
