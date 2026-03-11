@@ -99,6 +99,22 @@ export const formatAgentRole = (profile, fallbackRole) => {
 }
 
 const isTimeoutMessage = (message) => /timeout|timed out/i.test(message)
+const INTERVIEW_TIMEOUT_PREFIXES = [
+  '等待Interview响应超时',
+  'Waiting for Interview response timed out',
+]
+const ENV_CLOSED_PATTERNS = [
+  /模拟环境未运行或已关闭/,
+  /The simulation environment is not running or has already closed/i,
+  /The environment is not running or has already closed/i,
+  /The environment is already closed/i,
+]
+
+const isInterviewTimeoutMessage = (message) =>
+  INTERVIEW_TIMEOUT_PREFIXES.some((prefix) => message.includes(prefix)) || isTimeoutMessage(message)
+
+const isClosedEnvironmentMessage = (message) =>
+  ENV_CLOSED_PATTERNS.some((pattern) => pattern.test(message))
 
 export const summarizeInterviewEnvStatus = (envStatus, t) => {
   if (!envStatus) {
@@ -156,11 +172,11 @@ export const formatInterviewFailureMessage = (message, t) => {
     return t('step5.requestFailed')
   }
 
-  if (normalized.includes('模拟环境未运行或已关闭')) {
+  if (isClosedEnvironmentMessage(normalized)) {
     return t('step5.interviewEnvClosedError')
   }
 
-  if (normalized.includes('等待Interview响应超时') || isTimeoutMessage(normalized)) {
+  if (isInterviewTimeoutMessage(normalized)) {
     return t('step5.interviewTimeoutError', { message: normalized })
   }
 

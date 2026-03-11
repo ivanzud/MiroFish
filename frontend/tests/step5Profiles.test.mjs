@@ -128,7 +128,25 @@ test('formatInterviewFailureMessage normalizes timeout and env-closed backend er
   )
 
   assert.equal(
+    formatInterviewFailureMessage(
+      'The simulation environment is not running or has already closed. Make sure the simulation completed and is in wait-for-commands mode.',
+      t
+    ),
+    'step5.interviewEnvClosedError:{}'
+  )
+
+  assert.equal(
+    formatInterviewFailureMessage('The environment is already closed', t),
+    'step5.interviewEnvClosedError:{}'
+  )
+
+  assert.equal(
     formatInterviewFailureMessage('等待Interview响应超时: 300s', t),
     'step5.interviewTimeoutError:{"message":"等待Interview响应超时: 300s"}'
+  )
+
+  assert.equal(
+    formatInterviewFailureMessage('Waiting for Interview response timed out: 300s', t),
+    'step5.interviewTimeoutError:{"message":"Waiting for Interview response timed out: 300s"}'
   )
 })
