@@ -61,6 +61,7 @@ def test_simulation_config_generator_retries_without_response_format_on_unsuppor
 
     generator = SimulationConfigGenerator.__new__(SimulationConfigGenerator)
     generator.model_name = "test-model"
+    generator.locale = "zh"
     generator.client = SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions()))
 
     result = generator._request_json_completion(
@@ -111,3 +112,40 @@ def test_simulation_config_generator_missing_api_key_mentions_openai_alias(monke
         assert str(exc) == "LLM_API_KEY / OPENAI_API_KEY 未配置"
     else:
         raise AssertionError("expected ValueError when no API key is configured")
+
+
+def test_simulation_config_generator_missing_api_key_english_message(monkeypatch):
+    monkeypatch.setattr("app.services.simulation_config_generator.Config.LLM_API_KEY", "")
+
+    try:
+        SimulationConfigGenerator(locale="en")
+    except ValueError as exc:
+        assert str(exc) == "LLM_API_KEY / OPENAI_API_KEY is not configured"
+    else:
+        raise AssertionError("expected ValueError when no API key is configured")
+
+
+def test_simulation_config_generator_english_prompts_switch_user_facing_language():
+    generator = SimulationConfigGenerator.__new__(SimulationConfigGenerator)
+    generator.locale = "en"
+    generator.TIME_CONFIG_CONTEXT_LENGTH = 10000
+    generator.EVENT_CONFIG_CONTEXT_LENGTH = 8000
+    generator.AGENT_SUMMARY_LENGTH = 300
+
+    time_prompt, time_system = generator._build_time_config_prompt("## Simulation Requirement\nLaunch a new game.", 12)
+    event_prompt, event_system = generator._build_event_config_prompt(
+        context="## Simulation Requirement\nLaunch a new game.",
+        simulation_requirement="Predict the target audience for a new strategy game.",
+        type_info="- Student: Alice, Bob",
+    )
+    agent_prompt, agent_system = generator._build_agent_config_prompt(
+        entity_list=[{"agent_id": 0, "entity_name": "Alice", "entity_type": "Student", "summary": "Strategy gamer"}],
+        simulation_requirement="Predict the target audience for a new strategy game.",
+    )
+
+    assert "Generate a time-configuration JSON for this social simulation." in time_prompt
+    assert "Return strict JSON only." in time_system
+    assert "Generate the event configuration JSON for this simulation." in event_prompt
+    assert "poster_type must match one of the available entity types exactly" in event_system
+    assert "Generate social-media activity configurations for each entity below." in agent_prompt
+    assert "social-media behavior analyst" in agent_system

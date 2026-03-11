@@ -404,12 +404,13 @@ def prepare_simulation():
     
     try:
         data = request.get_json() or {}
+        locale = get_locale()
         
         simulation_id = data.get('simulation_id')
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": tr("simulation.simulation_id_required", locale)
             }), 400
         
         manager = SimulationManager()
@@ -583,7 +584,8 @@ def prepare_simulation():
                     defined_entity_types=entity_types_list,
                     use_llm_for_profiles=use_llm_for_profiles,
                     progress_callback=progress_callback,
-                    parallel_profile_count=parallel_profile_count
+                    parallel_profile_count=parallel_profile_count,
+                    locale=locale,
                 )
                 
                 # 任务完成
