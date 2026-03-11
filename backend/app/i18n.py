@@ -1088,6 +1088,18 @@ TRANSLATIONS = {
         "zh": "启用图谱记忆更新: simulation_id={simulation_id}, graph_id={graph_id}",
         "en": "Enabling graph-memory updates: simulation_id={simulation_id}, graph_id={graph_id}",
     },
+    "simulation.created_log": {
+        "zh": "创建模拟: {simulation_id}, project={project_id}, graph={graph_id}",
+        "en": "Created simulation: {simulation_id}, project={project_id}, graph={graph_id}",
+    },
+    "simulation.prepare_completed_log": {
+        "zh": "模拟准备完成: {simulation_id}, entities={entities}, profiles={profiles}",
+        "en": "Simulation preparation completed: {simulation_id}, entities={entities}, profiles={profiles}",
+    },
+    "simulation.prepare_failed_log": {
+        "zh": "模拟准备失败: {simulation_id}, error={error}",
+        "en": "Simulation preparation failed: {simulation_id}, error={error}",
+    },
 }
 
 

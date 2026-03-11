@@ -154,6 +154,30 @@ def test_prepare_simulation_empty_entities_uses_explicit_locale(tmp_path, monkey
     assert result.error == "No matching entities were found. Check that the graph was built correctly."
 
 
+def test_create_simulation_logs_use_english_request_locale(tmp_path, monkeypatch):
+    monkeypatch.setattr(SimulationManager, "SIMULATION_DATA_DIR", str(tmp_path))
+
+    info_messages = []
+    monkeypatch.setattr(
+        "app.services.simulation_manager.logger",
+        SimpleNamespace(info=info_messages.append, error=lambda *_: None),
+    )
+
+    app = Flask(__name__)
+    manager = SimulationManager()
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        state = manager.create_simulation(
+            project_id="project-1",
+            graph_id="graph-1",
+        )
+
+    assert state.status == SimulationStatus.CREATED
+    assert info_messages == [
+        f"Created simulation: {state.simulation_id}, project=project-1, graph=graph-1"
+    ]
+
+
 def test_prepare_simulation_progress_messages_use_explicit_locale(tmp_path, monkeypatch):
     monkeypatch.setattr(SimulationManager, "SIMULATION_DATA_DIR", str(tmp_path))
 
@@ -223,6 +247,120 @@ def test_prepare_simulation_progress_messages_use_explicit_locale(tmp_path, monk
     assert "Calling the LLM to generate the config..." in messages
     assert "Saving the config file..." in messages
     assert "Configuration generation completed" in messages
+
+
+def test_prepare_simulation_logs_success_message_in_english(tmp_path, monkeypatch):
+    monkeypatch.setattr(SimulationManager, "SIMULATION_DATA_DIR", str(tmp_path))
+
+    manager = SimulationManager()
+    state = manager.create_simulation(
+        project_id="project-1",
+        graph_id="graph-1",
+    )
+
+    monkeypatch.setattr(
+        "app.services.simulation_manager.ZepEntityReader",
+        lambda: SimpleNamespace(
+            filter_defined_entities=lambda **kwargs: SimpleNamespace(
+                filtered_count=2,
+                entity_types={"Person"},
+                entities=[{"id": "a"}, {"id": "b"}],
+            )
+        ),
+    )
+
+    class FakeProfileGenerator:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def generate_profiles_from_entities(self, entities, progress_callback, **kwargs):
+            return [{"name": "A"}, {"name": "B"}]
+
+        def save_profiles(self, **kwargs):
+            return None
+
+    class FakeConfig:
+        generation_reasoning = "done"
+
+        def to_json(self):
+            return "{}"
+
+    class FakeConfigGenerator:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def generate_config(self, **kwargs):
+            return FakeConfig()
+
+    info_messages = []
+    monkeypatch.setattr("app.services.simulation_manager.OasisProfileGenerator", FakeProfileGenerator)
+    monkeypatch.setattr("app.services.simulation_manager.SimulationConfigGenerator", FakeConfigGenerator)
+    monkeypatch.setattr(
+        "app.services.simulation_manager.logger",
+        SimpleNamespace(info=info_messages.append, error=lambda *_: None),
+    )
+
+    manager.prepare_simulation(
+        simulation_id=state.simulation_id,
+        simulation_requirement="predict something",
+        document_text="context",
+        locale="en",
+    )
+
+    assert info_messages[-1] == (
+        f"Simulation preparation completed: {state.simulation_id}, entities=2, profiles=2"
+    )
+
+
+def test_prepare_simulation_logs_failure_message_in_english(tmp_path, monkeypatch):
+    monkeypatch.setattr(SimulationManager, "SIMULATION_DATA_DIR", str(tmp_path))
+
+    manager = SimulationManager()
+    state = manager.create_simulation(
+        project_id="project-1",
+        graph_id="graph-1",
+    )
+
+    monkeypatch.setattr(
+        "app.services.simulation_manager.ZepEntityReader",
+        lambda: SimpleNamespace(
+            filter_defined_entities=lambda **kwargs: SimpleNamespace(
+                filtered_count=1,
+                entity_types={"Person"},
+                entities=[{"id": "a"}],
+            )
+        ),
+    )
+
+    class FailingProfileGenerator:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def generate_profiles_from_entities(self, **kwargs):
+            raise RuntimeError("profile generation blew up")
+
+    error_messages = []
+    monkeypatch.setattr("app.services.simulation_manager.OasisProfileGenerator", FailingProfileGenerator)
+    monkeypatch.setattr(
+        "app.services.simulation_manager.logger",
+        SimpleNamespace(info=lambda *_: None, error=error_messages.append),
+    )
+
+    try:
+        manager.prepare_simulation(
+            simulation_id=state.simulation_id,
+            simulation_requirement="predict something",
+            document_text="context",
+            locale="en",
+        )
+    except RuntimeError as exc:
+        assert str(exc) == "profile generation blew up"
+    else:
+        raise AssertionError("expected RuntimeError from profile generation")
+
+    assert error_messages[0] == (
+        f"Simulation preparation failed: {state.simulation_id}, error=profile generation blew up"
+    )
 
 
 def test_get_profiles_falls_back_to_enabled_twitter_platform_and_reads_csv(tmp_path, monkeypatch):
