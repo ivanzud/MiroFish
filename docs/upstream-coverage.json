@@ -1,7 +1,17 @@
 {
   "repo": "666ghj/MiroFish",
-  "captured_at": "2026-03-11T14:45:31.057867+00:00",
+  "captured_at": "2026-03-11T16:53:01.002573+00:00",
   "issues": [
+    {
+      "number": 148,
+      "status": "covered",
+      "summary": "Interview env liveness now validates the persisted runner state and recorded process PID instead of trusting stale env_status.json alone, so Step 5 world-agent chat fails fast with the existing closed-environment guidance instead of hanging into a 504 when the simulation process has already exited.",
+      "local_refs": [
+        "backend/app/services/simulation_runner.py",
+        "backend/tests/test_simulation_runner_actions.py",
+        "backend/tests/test_simulation_api_i18n.py"
+      ]
+    },
     {
       "number": 17,
       "status": "tracked",
@@ -222,22 +232,22 @@
         "workflow review only"
       ]
     },
-  {
-    "number": 9,
-    "status": "partial",
-    "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, and the history modal now exposes a replay-only Step 3 route that loads an existing timeline without accidentally auto-starting a fresh run. True mid-run checkpoint/resume is still deferred.",
-    "local_refs": [
-      "frontend/src/components/HistoryDatabase.vue",
-      "frontend/src/views/SimulationRunView.vue",
-      "frontend/src/components/Step3Simulation.vue",
-      "frontend/src/components/historyPlayback.js",
-      "frontend/src/components/simulationReplay.js"
-    ],
-    "validation": [
-      "frontend: npm test",
-      "frontend: npm run build"
-    ]
-  },
+    {
+      "number": 9,
+      "status": "partial",
+      "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, and the history modal now exposes a replay-only Step 3 route that loads an existing timeline without accidentally auto-starting a fresh run. True mid-run checkpoint/resume is still deferred.",
+      "local_refs": [
+        "frontend/src/components/HistoryDatabase.vue",
+        "frontend/src/views/SimulationRunView.vue",
+        "frontend/src/components/Step3Simulation.vue",
+        "frontend/src/components/historyPlayback.js",
+        "frontend/src/components/simulationReplay.js"
+      ],
+      "validation": [
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
     {
       "number": 21,
       "status": "covered",

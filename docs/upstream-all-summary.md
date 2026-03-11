@@ -2,15 +2,19 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T16:42:47.485298+00:00`
-- Issues: `87` total (`open=38`, `closed=49`)
+- Captured: `2026-03-11T16:52:55.300915+00:00`
+- Issues: `88` total (`open=39`, `closed=49`)
 - Pull requests: `51` total (`open=37`, `closed=14`)
 - Mirrored in `origin`: `51` of `51` PR refs
-- Mirrored in `ivanzud/MiroFish`: `87` of `87` issues
+- Mirrored in `ivanzud/MiroFish`: `88` of `88` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
+- #148 [open, mirror=#89] Request failed with status code 504 (LLM API)
+  - local coverage [covered]: Interview env liveness now validates the persisted runner state and recorded process PID instead of trusting stale env_status.json alone, so Step 5 world-agent chat fails fast with the existing closed-environment guidance instead of hanging into a 504 when the simulation process has already exited.
+  - 完成report后，进入深度对话，在Interactive Tools中，与Report agent对话是正常的，但是与世界中任意个体对话则报错：“抱歉，发生了错误: Request failed with status code 504“。
+  - latest comment by `dosubot[bot]`: <!-- Answer --> 这个504错误是因为**与世界个体对话需要模拟环境保持运行状态**，而Report Agent对话则不需要。 具体原因： - **Report Agent对话**使用的是 `/api/report/chat` 端点，它[独立创建ReportAgent实例，不依赖模拟环境](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d680682c741a44eeebe/backe…
 - #146 [open, mirror=#88] [Feature Request] Add Husky for Git Hook Automated Checks (enhancement)
   - local coverage [covered]: The repo now ships an opt-in, repo-native git hook workflow: `.githooks/pre-commit` runs the shared fast validation bundle, `.githooks/pre-push` runs the full validation bundle, and `npm run hooks:install` enables them without introducing a mandatory Husky/Node-only hook dependency.
   - Background The current project lacks automated validation before code commits, which may lead to the following issues: 1. Committing non-compliant code (e.g., syntax errors, messy formatting); 2. Inconsistent commit messages, which is not conducive to subsequent maintenance and version tracking; 3. Inefficiency in team collaboration due to the need for manual reminders of specifications. Solution…
@@ -40,9 +44,6 @@
   - local coverage [covered]: The backend root path `/` plus `/health` and `/healthz` now return a small JSON status payload with the live API prefixes, so local or Docker users no longer need to infer backend health from a bare 404.
   - 前后端启动都显示成功了，0.0.0.0:5001无法访问，提示404。前端0.0.0.0:3000虽然可以访问，但是一到这个界面就会报错 <img width="2550" height="1233" alt="Image" src="https://github.com/user-attachments/assets/032cf0ac-78ae-406d-831d-da5b9a28d5a0" />，看了项目也没有报错日志，请问这是什么问题呢
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @Axing93! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这是一个常见的前后端连接配置问题。 **后端 5001 返回 404 是正常的** — [根路径 `/` 未定义端点](https://github.com/666ghj/MiroFish/issues/68)，实际 API 通过具体…
-- #121 [closed, mirror=#41] 卡在了Exception in handleNewProject: Network Error (question)
-  - <img width="859" height="151" alt="Image" src="https://github.com/user-attachments/assets/1a41f8a5-2cff-40a3-837b-f4955cc7b9b7" />
-  - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @jackytianjp! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这个 "Network Error" 发生在 [`handleNewProject`](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d680682c…
 
 ## Recently Updated Pull Requests
 

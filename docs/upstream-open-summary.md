@@ -2,15 +2,19 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T16:42:36.507645+00:00`
-- Issues: `38` total (`open=38`, `closed=0`)
+- Captured: `2026-03-11T16:52:30.198382+00:00`
+- Issues: `39` total (`open=39`, `closed=0`)
 - Pull requests: `37` total (`open=37`, `closed=0`)
 - Mirrored in `origin`: `37` of `37` PR refs
-- Mirrored in `ivanzud/MiroFish`: `38` of `38` issues
+- Mirrored in `ivanzud/MiroFish`: `39` of `39` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
+- #148 [open, mirror=#89] Request failed with status code 504 (LLM API)
+  - local coverage [covered]: Interview env liveness now validates the persisted runner state and recorded process PID instead of trusting stale env_status.json alone, so Step 5 world-agent chat fails fast with the existing closed-environment guidance instead of hanging into a 504 when the simulation process has already exited.
+  - 完成report后，进入深度对话，在Interactive Tools中，与Report agent对话是正常的，但是与世界中任意个体对话则报错：“抱歉，发生了错误: Request failed with status code 504“。
+  - latest comment by `dosubot[bot]`: <!-- Answer --> 这个504错误是因为**与世界个体对话需要模拟环境保持运行状态**，而Report Agent对话则不需要。 具体原因： - **Report Agent对话**使用的是 `/api/report/chat` 端点，它[独立创建ReportAgent实例，不依赖模拟环境](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d680682c741a44eeebe/backe…
 - #146 [open, mirror=#88] [Feature Request] Add Husky for Git Hook Automated Checks (enhancement)
   - local coverage [covered]: The repo now ships an opt-in, repo-native git hook workflow: `.githooks/pre-commit` runs the shared fast validation bundle, `.githooks/pre-push` runs the full validation bundle, and `npm run hooks:install` enables them without introducing a mandatory Husky/Node-only hook dependency.
   - Background The current project lacks automated validation before code commits, which may lead to the following issues: 1. Committing non-compliant code (e.g., syntax errors, messy formatting); 2. Inconsistent commit messages, which is not conducive to subsequent maintenance and version tracking; 3. Inefficiency in team collaboration due to the need for manual reminders of specifications. Solution…
@@ -40,10 +44,6 @@
   - local coverage [covered]: The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.
   - 阿里云百炼 API 调用异常：付费计划（Coding Plan）非千文模型及大模型API中转站的API均失效，仅免费额度模型或coding plan的千文模型可用
   - latest comment by `lukeliu95`: 使用以下方式调用Coding Plan LLM_BASE_URL=https://coding.dashscope.aliyuncs.com/v1 LLM_MODEL_NAME=qwen3.5-plus
-- #106 [open, mirror=#10] 能否采用除了zep的别的知识图谱 (no labels)
-  - local coverage [tracked]: Tracked under beads issue `mirofish-8eg`: requests for non-Zep graph backends are preserved locally, but implementing them safely requires a fresh graph-backend abstraction instead of wiring another provider into current graph/simulation flows ad hoc.
-  - 如题所示，今天在跑的时候发现zep的免费额度被耗光了，能否添加使用本地部署的memv作为知识图谱
-  - latest comment by `addisjeams`: 对，一开始半天都是网络报错，后来才发现是这个问题。必须要申请zep
 
 ## Recently Updated Pull Requests
 

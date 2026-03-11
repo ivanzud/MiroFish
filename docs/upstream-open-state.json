@@ -1,12 +1,12 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T16:42:36.507645+00:00",
-  "generated_at": "2026-03-11T16:42:36.507645+00:00",
+  "captured_at": "2026-03-11T16:52:30.198382+00:00",
+  "generated_at": "2026-03-11T16:52:30.198382+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
-      "open": 38
+      "open": 39
     },
     "pull_requests": {
       "open": 37
@@ -16,11 +16,48 @@
       "not_mirrored": 0
     },
     "mirrored_issues": {
-      "mirrored": 38,
+      "mirrored": 39,
       "not_mirrored": 0
     }
   },
   "issues": [
+    {
+      "number": 148,
+      "title": "Request failed with status code 504",
+      "url": "https://github.com/666ghj/MiroFish/issues/148",
+      "state": "open",
+      "created_at": "2026-03-11T16:46:05Z",
+      "updated_at": "2026-03-11T16:49:18Z",
+      "closed_at": null,
+      "labels": [
+        "LLM API"
+      ],
+      "author": "darfy22",
+      "body_excerpt": "完成report后，进入深度对话，在Interactive Tools中，与Report agent对话是正常的，但是与世界中任意个体对话则报错：“抱歉，发生了错误: Request failed with status code 504“。",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "dosubot[bot]",
+          "created_at": "2026-03-11T16:49:18Z",
+          "updated_at": "2026-03-11T16:49:18Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/148#issuecomment-4040617202",
+          "body_excerpt": "<!-- Answer --> 这个504错误是因为**与世界个体对话需要模拟环境保持运行状态**，而Report Agent对话则不需要。 具体原因： - **Report Agent对话**使用的是 `/api/report/chat` 端点，它[独立创建ReportAgent实例，不依赖模拟环境](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d680682c741a44eeebe/backe…"
+        }
+      ],
+      "local_coverage": {
+        "number": 148,
+        "status": "covered",
+        "summary": "Interview env liveness now validates the persisted runner state and recorded process PID instead of trusting stale env_status.json alone, so Step 5 world-agent chat fails fast with the existing closed-environment guidance instead of hanging into a 504 when the simulation process has already exited.",
+        "local_refs": [
+          "backend/app/services/simulation_runner.py",
+          "backend/tests/test_simulation_runner_actions.py",
+          "backend/tests/test_simulation_api_i18n.py"
+        ]
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 89,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/89"
+    },
     {
       "number": 146,
       "title": "[Feature Request] Add Husky for Git Hook Automated Checks",

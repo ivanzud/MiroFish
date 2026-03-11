@@ -1503,6 +1503,37 @@ class SimulationRunner:
             if process.poll() is None:
                 running.append(sim_id)
         return running
+
+    @staticmethod
+    def _process_pid_is_alive(process_pid: int | None) -> bool:
+        """Best-effort PID liveness check for persisted simulation processes."""
+        if not isinstance(process_pid, int) or process_pid <= 0:
+            return False
+
+        try:
+            os.kill(process_pid, 0)
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            return True
+        except OSError:
+            return False
+
+        return True
+
+    @classmethod
+    def _mark_env_status_stopped(cls, simulation_id: str):
+        sim_dir = os.path.join(cls.RUN_STATE_DIR, simulation_id)
+        status_file = os.path.join(sim_dir, "env_status.json")
+        status = cls.get_env_status_detail(simulation_id)
+        status["status"] = "stopped"
+        status["timestamp"] = datetime.now().isoformat()
+
+        try:
+            with open(status_file, 'w', encoding='utf-8') as f:
+                json.dump(status, f, ensure_ascii=False, indent=2)
+        except OSError:
+            pass
     
     # ============== Interview 功能 ==============
     
@@ -1519,6 +1550,28 @@ class SimulationRunner:
         """
         sim_dir = os.path.join(cls.RUN_STATE_DIR, simulation_id)
         if not os.path.exists(sim_dir):
+            return False
+
+        state = cls.get_run_state(simulation_id)
+        if state and state.runner_status not in {
+            RunnerStatus.RUNNING,
+            RunnerStatus.STARTING,
+            RunnerStatus.PAUSED,
+        }:
+            cls._mark_env_status_stopped(simulation_id)
+            return False
+
+        if state and state.process_pid and not cls._process_pid_is_alive(state.process_pid):
+            if state.runner_status in {
+                RunnerStatus.RUNNING,
+                RunnerStatus.STARTING,
+                RunnerStatus.PAUSED,
+            }:
+                state.runner_status = RunnerStatus.STOPPED
+                state.completed_at = state.completed_at or datetime.now().isoformat()
+                state.error = state.error or tr("simulation.environment_not_alive", state.locale)
+                cls._save_run_state(state)
+            cls._mark_env_status_stopped(simulation_id)
             return False
 
         ipc_client = SimulationIPCClient(sim_dir)

@@ -467,3 +467,89 @@ def test_cleanup_all_simulations_persists_english_shutdown_error(tmp_path):
         runner._stderr_files = original_stderr_files
         runner._graph_memory_enabled = original_graph_memory_enabled
         runner._cleanup_done = original_cleanup_done
+
+
+def test_check_env_alive_rejects_stale_alive_status_when_process_is_gone(tmp_path):
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+    original_run_state_dir = runner.RUN_STATE_DIR
+    original_states = runner._run_states.copy()
+    runner.RUN_STATE_DIR = str(tmp_path)
+    runner._run_states = {}
+
+    simulation_dir = tmp_path / "sim-stale-env"
+    simulation_dir.mkdir()
+    (simulation_dir / "env_status.json").write_text(
+        json.dumps(
+            {
+                "status": "alive",
+                "twitter_available": True,
+                "reddit_available": True,
+                "timestamp": "2026-03-11T16:00:00",
+            }
+        ),
+        encoding="utf-8",
+    )
+    runner._save_run_state(
+        module.SimulationRunState(
+            simulation_id="sim-stale-env",
+            locale="en",
+            runner_status=module.RunnerStatus.RUNNING,
+            process_pid=424242,
+        )
+    )
+
+    try:
+        with mock.patch.object(runner, "_process_pid_is_alive", return_value=False):
+            assert runner.check_env_alive("sim-stale-env") is False
+
+        updated = runner.get_run_state("sim-stale-env")
+        assert updated is not None
+        assert updated.runner_status == module.RunnerStatus.STOPPED
+        assert updated.error == module.tr("simulation.environment_not_alive", "en")
+
+        env_status = json.loads((simulation_dir / "env_status.json").read_text(encoding="utf-8"))
+        assert env_status["status"] == "stopped"
+    finally:
+        runner.RUN_STATE_DIR = original_run_state_dir
+        runner._run_states = original_states
+
+
+def test_check_env_alive_rejects_non_running_run_state_even_with_alive_file(tmp_path):
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+    original_run_state_dir = runner.RUN_STATE_DIR
+    original_states = runner._run_states.copy()
+    runner.RUN_STATE_DIR = str(tmp_path)
+    runner._run_states = {}
+
+    simulation_dir = tmp_path / "sim-completed-env"
+    simulation_dir.mkdir()
+    (simulation_dir / "env_status.json").write_text(
+        json.dumps(
+            {
+                "status": "alive",
+                "twitter_available": False,
+                "reddit_available": True,
+                "timestamp": "2026-03-11T16:00:00",
+            }
+        ),
+        encoding="utf-8",
+    )
+    runner._save_run_state(
+        module.SimulationRunState(
+            simulation_id="sim-completed-env",
+            locale="zh",
+            runner_status=module.RunnerStatus.COMPLETED,
+            process_pid=999,
+        )
+    )
+
+    try:
+        assert runner.check_env_alive("sim-completed-env") is False
+
+        env_status = json.loads((simulation_dir / "env_status.json").read_text(encoding="utf-8"))
+        assert env_status["status"] == "stopped"
+    finally:
+        runner.RUN_STATE_DIR = original_run_state_dir
+        runner._run_states = original_states
