@@ -1,5 +1,7 @@
 import importlib.util
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -98,3 +100,43 @@ def test_main_returns_nonzero_when_config_is_invalid(monkeypatch, capsys):
     assert payload["data"]["validation"]["errors"] == [
         "LLM_API_KEY / OPENAI_API_KEY is not configured"
     ]
+
+
+def test_print_config_status_script_accepts_openai_aliases_end_to_end():
+    script_path = Path(__file__).resolve().parents[1] / "scripts" / "print_config_status.py"
+    env = {
+        **os.environ,
+        "LLM_API_KEY": "",
+        "LLM_BASE_URL": "",
+        "LLM_MODEL_NAME": "",
+        "OPENAI_API_KEY": "codex-test-key",
+        "OPENAI_API_BASE_URL": "https://codex.example.test/v1",
+        "OPENAI_MODEL": "gpt-4.1-mini",
+        "ZEP_API_KEY": "zep-test-key",
+    }
+
+    result = subprocess.run(
+        [sys.executable, str(script_path), "--locale", "en", "--compact"],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["success"] is True
+    assert payload["data"]["summary"]["llm"] == {
+        "backend_mode": "openai_compatible",
+        "base_url": "https://codex.example.test/v1",
+        "model": "gpt-4.1-mini",
+        "max_tokens": 4096,
+        "configured": True,
+        "sources": {
+            "api_key_env": "OPENAI_API_KEY",
+            "base_url_env": "OPENAI_API_BASE_URL",
+            "model_env": "OPENAI_MODEL",
+            "uses_project_aliases": False,
+            "uses_openai_aliases": True,
+        },
+    }

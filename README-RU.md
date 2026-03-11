@@ -75,6 +75,13 @@ LLM_MODEL_NAME=gpt-4.1
 
 This also works with OpenAI-compatible gateways such as DashScope, LM Studio, Ollama, or self-hosted proxies if they expose the same API surface.
 
+How to verify that MiroFish detected the direct OpenAI-compatible path:
+
+- Visit `http://localhost:5001/health` to confirm the backend is running.
+- Or run `npm run check:backend-config` to print the same non-sensitive config-status JSON without starting the server.
+- Then open `http://localhost:5001/api/graph/config/status`. The JSON payload should report `llm.backend_mode = openai_compatible`.
+- `summary.llm.sources` shows whether MiroFish resolved `LLM_*` or `OPENAI_*` variables, so you can confirm that a Codex/OpenAI-compatible gateway is wired correctly without adding `LLM_PROVIDER`.
+
 ## Workflow
 
 1. Build the graph from source material.
