@@ -339,14 +339,14 @@ const truncateText = (text, maxLength) => {
 
 // 从模拟需求生成标题（取前20字）
 const getSimulationTitle = (requirement) => {
-  if (!requirement) return '未命名模拟'
+  if (!requirement) return t('history.unnamedSimulation')
   const title = requirement.slice(0, 20)
   return requirement.length > 20 ? title + '...' : title
 }
 
 // 格式化 simulation_id 显示（截取前6位）
 const formatSimulationId = (simulationId) => {
-  if (!simulationId) return 'SIM_UNKNOWN'
+  if (!simulationId) return t('history.unknownSimulationId')
   const prefix = simulationId.replace('sim_', '').slice(0, 6)
   return `SIM_${prefix.toUpperCase()}`
 }
@@ -355,8 +355,8 @@ const formatSimulationId = (simulationId) => {
 const formatRounds = (simulation) => {
   const current = simulation.current_round || 0
   const total = simulation.total_rounds || 0
-  if (total === 0) return '未开始'
-  return `${current}/${total} 轮`
+  if (total === 0) return t('history.notStarted')
+  return t('history.roundProgress', { current, total })
 }
 
 // 获取文件类型（用于样式）
