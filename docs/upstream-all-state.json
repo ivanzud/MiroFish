@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T14:56:03.260076+00:00",
-  "generated_at": "2026-03-11T14:56:03.260076+00:00",
+  "captured_at": "2026-03-11T15:05:13.225939+00:00",
+  "generated_at": "2026-03-11T15:05:13.225939+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -45,7 +45,7 @@
           "tracking only",
           "triage diff review"
         ],
-        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+        "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
       }
     },
     {
@@ -168,7 +168,7 @@
           "backend/tests/test_graph_builder.py::test_format_user_facing_error_maps_embedded_traceback_auth_failures",
           "backend/tests/test_graph_upload_api.py::test_build_graph_task_persists_sanitized_zep_auth_error"
         ],
-        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+        "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
       }
     },
     {
@@ -252,7 +252,7 @@
         "validation": [
           "backend/tests/test_graph_builder.py::test_set_ontology_accepts_string_attribute_definitions"
         ],
-        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+        "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
       }
     },
     {
@@ -289,7 +289,7 @@
         "validation": [
           "backend/tests/test_app_routes.py::test_root_and_health_endpoints_expose_backend_status"
         ],
-        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+        "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
       }
     },
     {
@@ -384,7 +384,7 @@
           "frontend: npm test",
           "frontend: npm run build"
         ],
-        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+        "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
       }
     },
     {
@@ -426,7 +426,7 @@
           "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_mentions_openai_alias",
           "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_english_message"
         ],
-        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+        "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
       }
     },
     {
@@ -623,7 +623,7 @@
         "validation": [
           "docker compose config"
         ],
-        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+        "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
       }
     },
     {
@@ -1125,7 +1125,7 @@
           "backend/tests/test_graph_builder.py::test_create_graph_caps_retry_after_delay",
           "scripts/test_backend_lite.sh"
         ],
-        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+        "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
       }
     },
     {
@@ -1475,7 +1475,7 @@
           "backend/tests/test_graph_builder.py::test_create_graph_caps_retry_after_delay",
           "scripts/test_backend_lite.sh"
         ],
-        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+        "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
       }
     },
     {

@@ -31,6 +31,8 @@ REQUEST_TIMEOUT = DEFAULT_API_TIMEOUT
 DEFAULT_STALE_CACHE_HOURS = int(os.environ.get("MIROFISH_GITHUB_SYNC_STALE_HOURS", "24"))
 DEFAULT_MAX_WORKERS = int(os.environ.get("MIROFISH_GITHUB_SYNC_MAX_WORKERS", "8"))
 DEFAULT_REPO = "666ghj/MiroFish"
+UPSTREAM_ISSUE_REPO_MARKER = "mirofish-upstream-repo:"
+UPSTREAM_ISSUE_NUMBER_MARKER = "mirofish-upstream-issue:"
 GH_CLI_USABLE: bool | None = None
 GH_CLI_DISABLED_REASON: str | None = None
 
@@ -390,6 +392,192 @@ def compact_issues(
     )
 
 
+def build_mirror_issue_title(issue: dict[str, object]) -> str:
+    return f"[Upstream #{issue['number']}] {issue['title']}"
+
+
+def build_mirror_issue_body(upstream_repo: str, issue: dict[str, object]) -> str:
+    labels = ", ".join(issue.get("labels", [])) or "none"
+    lines = [
+        f"<!-- {UPSTREAM_ISSUE_REPO_MARKER}{upstream_repo} -->",
+        f"<!-- {UPSTREAM_ISSUE_NUMBER_MARKER}{issue['number']} -->",
+        "# Upstream Issue Mirror",
+        "",
+        f"- Upstream issue: {issue['url']}",
+        f"- Upstream repository: `{upstream_repo}`",
+        f"- State: `{issue['state']}`",
+        f"- Author: `{issue.get('author') or 'unknown'}`",
+        f"- Labels: `{labels}`",
+        f"- Last updated: `{issue.get('updated_at') or 'unknown'}`",
+        "",
+        "## Summary",
+        "",
+        issue.get("body_excerpt") or "_No upstream body excerpt available._",
+    ]
+    local_coverage = issue.get("local_coverage") or {}
+    if local_coverage:
+        lines.extend(
+            [
+                "",
+                "## Local Coverage",
+                "",
+                f"- Status: `{local_coverage.get('status') or 'tracked'}`",
+                f"- Summary: {local_coverage.get('summary') or 'Tracked locally on this branch.'}",
+            ]
+        )
+        local_refs = local_coverage.get("local_refs") or []
+        if local_refs:
+            lines.append(f"- Local refs: {', '.join(f'`{ref}`' for ref in local_refs)}")
+        notes = local_coverage.get("notes")
+        if notes:
+            lines.append(f"- Notes: {notes}")
+
+    recent_comments = issue.get("recent_comments") or []
+    if recent_comments:
+        lines.extend(["", "## Recent Upstream Comments", ""])
+        for comment in recent_comments:
+            author = comment.get("author") or "unknown"
+            created_at = comment.get("created_at") or "unknown"
+            excerpt = comment.get("body_excerpt") or "(no comment body)"
+            lines.append(f"- `{author}` at `{created_at}`: {excerpt}")
+
+    return "\n".join(lines) + "\n"
+
+
+def extract_upstream_issue_marker(body: str | None) -> tuple[str, int] | None:
+    if not body:
+        return None
+
+    repo_match = re.search(rf"<!--\s*{re.escape(UPSTREAM_ISSUE_REPO_MARKER)}(.*?)\s*-->", body)
+    issue_match = re.search(rf"<!--\s*{re.escape(UPSTREAM_ISSUE_NUMBER_MARKER)}(\d+)\s*-->", body)
+    if not repo_match or not issue_match:
+        return None
+
+    try:
+        return repo_match.group(1).strip(), int(issue_match.group(1))
+    except ValueError:
+        return None
+
+
+def run_gh_command(args: list[str], input_text: str | None = None) -> str:
+    try:
+        result = subprocess.run(
+            ["gh", *args],
+            check=True,
+            capture_output=True,
+            input=input_text,
+            text=True,
+            timeout=REQUEST_TIMEOUT,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise RuntimeError(f"gh {' '.join(args)} failed") from exc
+    except subprocess.CalledProcessError as exc:
+        details = (exc.stderr or exc.stdout or "").strip() or f"exit status {exc.returncode}"
+        raise RuntimeError(f"gh {' '.join(args)} failed: {details}") from exc
+
+    return result.stdout
+
+
+def list_fork_issue_mirrors(fork_repo: str, upstream_repo: str) -> dict[int, dict[str, object]]:
+    payload = run_gh_command(
+        [
+            "issue",
+            "list",
+            "-R",
+            fork_repo,
+            "--state",
+            "all",
+            "--limit",
+            "200",
+            "--json",
+            "number,title,body,url,state",
+        ]
+    )
+    issues = json.loads(payload or "[]")
+    mirrors: dict[int, dict[str, object]] = {}
+    for issue in issues:
+        if not isinstance(issue, dict):
+            continue
+        marker = extract_upstream_issue_marker(issue.get("body"))
+        if marker is None:
+            continue
+        marker_repo, marker_number = marker
+        if marker_repo != upstream_repo:
+            continue
+        mirrors[marker_number] = issue
+    return mirrors
+
+
+def attach_fork_issue_mirror_metadata(
+    issues: list[dict[str, object]],
+    fork_issue_map: dict[int, dict[str, object]],
+) -> list[dict[str, object]]:
+    attached: list[dict[str, object]] = []
+    for issue in issues:
+        enriched = dict(issue)
+        mirrored = fork_issue_map.get(int(issue["number"]))
+        if mirrored:
+            enriched["fork_issue_mirrored"] = True
+            enriched["fork_issue_number"] = mirrored.get("number")
+            enriched["fork_issue_url"] = mirrored.get("url")
+        else:
+            enriched["fork_issue_mirrored"] = False
+            enriched["fork_issue_number"] = None
+            enriched["fork_issue_url"] = None
+        attached.append(enriched)
+    return attached
+
+
+def mirror_issues_to_fork(
+    fork_repo: str,
+    upstream_repo: str,
+    issues: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    existing = list_fork_issue_mirrors(fork_repo, upstream_repo)
+    for issue in issues:
+        desired_title = build_mirror_issue_title(issue)
+        desired_body = build_mirror_issue_body(upstream_repo, issue)
+        current = existing.get(int(issue["number"]))
+        if current is None:
+            run_gh_command(
+                [
+                    "issue",
+                    "create",
+                    "-R",
+                    fork_repo,
+                    "--title",
+                    desired_title,
+                    "--body-file",
+                    "-",
+                ],
+                input_text=desired_body,
+            )
+            continue
+
+        if current.get("title") == desired_title and (current.get("body") or "").rstrip() == desired_body.rstrip():
+            continue
+
+        run_gh_command(
+            [
+                "issue",
+                "edit",
+                "-R",
+                fork_repo,
+                str(current["number"]),
+                "--title",
+                desired_title,
+                "--body-file",
+                "-",
+            ],
+            input_text=desired_body,
+        )
+
+    return attach_fork_issue_mirror_metadata(
+        issues,
+        list_fork_issue_mirrors(fork_repo, upstream_repo),
+    )
+
+
 def compact_pr(
     pr: dict[str, object],
     mirrored_pr_numbers: set[int] | None = None,
@@ -470,12 +658,14 @@ def write_summary(
     issues: list[dict[str, object]],
     prs: list[dict[str, object]],
     fork_remote: str | None = None,
+    mirror_issues_repo: str | None = None,
     captured_at: str | None = None,
     coverage_map_path: str | None = None,
 ) -> None:
     issue_counts = summarize_counts(issues)
     pr_counts = summarize_counts(prs)
     mirrored_count = sum(1 for pr in prs if pr.get("fork_mirrored"))
+    mirrored_issue_count = sum(1 for issue in issues if issue.get("fork_issue_mirrored"))
     lines = [
         "# Upstream Triage Snapshot",
         "",
@@ -487,13 +677,18 @@ def write_summary(
     ]
     if fork_remote:
         lines.append(f"- Mirrored in `{fork_remote}`: `{mirrored_count}` of `{len(prs)}` PR refs")
+    if mirror_issues_repo:
+        lines.append(f"- Mirrored in `{mirror_issues_repo}`: `{mirrored_issue_count}` of `{len(issues)}` issues")
     if coverage_map_path:
         lines.append(f"- Local issue coverage map: `{coverage_map_path}`")
     lines.extend(["", "## Recently Updated Issues", ""])
 
     for issue in issues[:10]:
         labels = ", ".join(issue["labels"]) if issue["labels"] else "no labels"
-        lines.append(f"- #{issue['number']} [{issue['state']}] {issue['title']} ({labels})")
+        issue_suffix = ""
+        if issue.get("fork_issue_mirrored"):
+            issue_suffix = f", mirror=#{issue.get('fork_issue_number')}"
+        lines.append(f"- #{issue['number']} [{issue['state']}{issue_suffix}] {issue['title']} ({labels})")
         local_coverage = issue.get("local_coverage") or {}
         if local_coverage:
             status = local_coverage.get("status") or "covered"
@@ -706,6 +901,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional git remote name used to annotate whether upstream PR refs are mirrored into the fork",
     )
     parser.add_argument(
+        "--mirror-issues-repo",
+        default=None,
+        help="Optional owner/repo used to mirror upstream issues into fork GitHub issues",
+    )
+    parser.add_argument(
         "--stale-cache-hours",
         type=int,
         default=DEFAULT_STALE_CACHE_HOURS,
@@ -802,6 +1002,8 @@ def main() -> int:
                 max_workers=max_workers,
                 coverage_map=issue_coverage_map,
             )
+            if args.mirror_issues_repo:
+                issues = mirror_issues_to_fork(args.mirror_issues_repo, args.repo, issues)
             pr_details = hydrate_pull_requests(owner, name, pr_items, max_workers=max_workers)
             mirrored_pr_numbers = (
                 list_mirrored_pull_request_numbers(args.fork_remote) if args.fork_remote else None
@@ -849,6 +1051,13 @@ def main() -> int:
                 "mirrored": mirrored_total,
                 "not_mirrored": len(prs) - mirrored_total,
             }
+        if args.mirror_issues_repo:
+            mirrored_issue_total = sum(1 for issue in issues if issue.get("fork_issue_mirrored"))
+            payload["mirror_issues_repo"] = args.mirror_issues_repo
+            payload["counts"]["mirrored_issues"] = {
+                "mirrored": mirrored_issue_total,
+                "not_mirrored": len(issues) - mirrored_issue_total,
+            }
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -859,6 +1068,7 @@ def main() -> int:
             issues,
             prs,
             args.fork_remote,
+            mirror_issues_repo=args.mirror_issues_repo,
             captured_at=captured_at,
             coverage_map_path=str(coverage_map_path) if coverage_map_path and coverage_map_path.exists() else None,
         )

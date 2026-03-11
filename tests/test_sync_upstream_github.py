@@ -69,6 +69,56 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(compacted["local_coverage"]["status"], "covered")
         self.assertEqual(compacted["local_coverage"]["summary"], "Auth failures are sanitized")
 
+    def test_build_mirror_issue_body_includes_markers_and_local_coverage(self):
+        body = sync_upstream_github.build_mirror_issue_body(
+            "666ghj/MiroFish",
+            {
+                "number": 145,
+                "title": "Duplicate entity nodes",
+                "url": "https://example.test/issues/145",
+                "state": "open",
+                "updated_at": "2026-03-11T15:00:00Z",
+                "labels": ["bug"],
+                "author": "alice",
+                "body_excerpt": "Graph contains duplicate entities",
+                "recent_comments": [
+                    {
+                        "author": "bob",
+                        "created_at": "2026-03-11T15:01:00Z",
+                        "body_excerpt": "I can reproduce this too.",
+                    }
+                ],
+                "local_coverage": {
+                    "status": "tracked",
+                    "summary": "Tracked in beads for repo-native follow-up",
+                    "local_refs": [".beads/issues.jsonl", "docs/upstream-triage.md"],
+                },
+            },
+        )
+
+        self.assertIn("<!-- mirofish-upstream-repo:666ghj/MiroFish -->", body)
+        self.assertIn("<!-- mirofish-upstream-issue:145 -->", body)
+        self.assertIn("Tracked in beads for repo-native follow-up", body)
+        self.assertIn("`bob` at `2026-03-11T15:01:00Z`", body)
+
+    def test_extract_upstream_issue_marker_reads_repo_and_number(self):
+        marker = sync_upstream_github.extract_upstream_issue_marker(
+            "<!-- mirofish-upstream-repo:666ghj/MiroFish -->\n"
+            "<!-- mirofish-upstream-issue:145 -->\n"
+        )
+
+        self.assertEqual(marker, ("666ghj/MiroFish", 145))
+
+    def test_attach_fork_issue_mirror_metadata_marks_mirrored_entries(self):
+        attached = sync_upstream_github.attach_fork_issue_mirror_metadata(
+            [{"number": 145, "title": "Duplicate entity nodes"}],
+            {145: {"number": 12, "url": "https://example.test/issues/12"}},
+        )
+
+        self.assertTrue(attached[0]["fork_issue_mirrored"])
+        self.assertEqual(attached[0]["fork_issue_number"], 12)
+        self.assertEqual(attached[0]["fork_issue_url"], "https://example.test/issues/12")
+
     def test_load_local_pr_coverage_reads_machine_readable_map(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             coverage_path = Path(tmpdir) / "coverage.json"
@@ -149,6 +199,35 @@ class SyncUpstreamGithubTests(unittest.TestCase):
 
         self.assertIn("Local issue coverage map: `docs/upstream-coverage.json`", summary)
         self.assertIn("local coverage [covered]: Root and health endpoints now return backend status JSON", summary)
+
+    def test_write_summary_includes_mirrored_issue_count(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "summary.md"
+            sync_upstream_github.write_summary(
+                summary_path,
+                "666ghj/MiroFish",
+                "open",
+                [
+                    {
+                        "number": 145,
+                        "title": "Duplicate entity nodes",
+                        "state": "open",
+                        "labels": [],
+                        "body_excerpt": "Body",
+                        "recent_comments": [],
+                        "fork_issue_mirrored": True,
+                        "fork_issue_number": 12,
+                    }
+                ],
+                [],
+                mirror_issues_repo="ivanzud/MiroFish",
+                captured_at="2026-03-11T09:00:00+00:00",
+            )
+
+            summary = summary_path.read_text(encoding="utf-8")
+
+        self.assertIn("Mirrored in `ivanzud/MiroFish`: `1` of `1` issues", summary)
+        self.assertIn("[open, mirror=#12]", summary)
 
     def test_write_summary_includes_pull_request_local_coverage_notes(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -431,6 +510,100 @@ class SyncUpstreamGithubTests(unittest.TestCase):
                 sync_upstream_github.fetch_json("https://api.github.com/repos/test/repo/issues")
 
         self.assertEqual(mocked_sleep.call_count, sync_upstream_github.GH_API_MAX_ATTEMPTS - 1)
+
+    def test_list_fork_issue_mirrors_filters_by_marker(self):
+        listed = json.dumps(
+            [
+                {
+                    "number": 12,
+                    "title": "[Upstream #145] Duplicate entity nodes",
+                    "body": "<!-- mirofish-upstream-repo:666ghj/MiroFish -->\n<!-- mirofish-upstream-issue:145 -->\n",
+                    "url": "https://example.test/issues/12",
+                    "state": "OPEN",
+                },
+                {
+                    "number": 13,
+                    "title": "Local issue",
+                    "body": "No marker",
+                    "url": "https://example.test/issues/13",
+                    "state": "OPEN",
+                },
+            ]
+        )
+        with patch.object(sync_upstream_github, "run_gh_command", return_value=listed):
+            mirrors = sync_upstream_github.list_fork_issue_mirrors("ivanzud/MiroFish", "666ghj/MiroFish")
+
+        self.assertEqual(sorted(mirrors), [145])
+        self.assertEqual(mirrors[145]["number"], 12)
+
+    def test_mirror_issues_to_fork_creates_and_updates_issue_mirrors(self):
+        issues = [
+            {
+                "number": 145,
+                "title": "Duplicate entity nodes",
+                "url": "https://example.test/issues/145",
+                "state": "open",
+                "updated_at": "2026-03-11T15:00:00Z",
+                "labels": [],
+                "author": "alice",
+                "body_excerpt": "Body",
+                "recent_comments": [],
+            },
+            {
+                "number": 133,
+                "title": "Backend root confusion",
+                "url": "https://example.test/issues/133",
+                "state": "open",
+                "updated_at": "2026-03-11T15:00:00Z",
+                "labels": [],
+                "author": "bob",
+                "body_excerpt": "Body",
+                "recent_comments": [],
+            },
+        ]
+        existing_before = {
+            133: {
+                "number": 7,
+                "title": "[Upstream #133] stale title",
+                "body": "stale body",
+                "url": "https://example.test/issues/7",
+            }
+        }
+        existing_after = {
+            133: {
+                "number": 7,
+                "title": "[Upstream #133] Backend root confusion",
+                "body": sync_upstream_github.build_mirror_issue_body("666ghj/MiroFish", issues[1]),
+                "url": "https://example.test/issues/7",
+            },
+            145: {
+                "number": 8,
+                "title": "[Upstream #145] Duplicate entity nodes",
+                "body": sync_upstream_github.build_mirror_issue_body("666ghj/MiroFish", issues[0]),
+                "url": "https://example.test/issues/8",
+            },
+        }
+
+        with patch.object(
+            sync_upstream_github,
+            "list_fork_issue_mirrors",
+            side_effect=[existing_before, existing_after],
+        ), patch.object(sync_upstream_github, "run_gh_command") as mocked_run:
+            mirrored = sync_upstream_github.mirror_issues_to_fork(
+                "ivanzud/MiroFish",
+                "666ghj/MiroFish",
+                issues,
+            )
+
+        create_call = mocked_run.call_args_list[0]
+        edit_call = mocked_run.call_args_list[1]
+        self.assertIn("issue", create_call.args[0])
+        self.assertIn("create", create_call.args[0])
+        self.assertIn("[Upstream #145] Duplicate entity nodes", create_call.args[0])
+        self.assertIn("issue", edit_call.args[0])
+        self.assertIn("edit", edit_call.args[0])
+        self.assertEqual(mirrored[0]["fork_issue_number"], 8)
+        self.assertEqual(mirrored[1]["fork_issue_number"], 7)
 
     def test_main_reuses_recent_cached_snapshot_on_rate_limit(self):
         with tempfile.TemporaryDirectory() as tmpdir:
