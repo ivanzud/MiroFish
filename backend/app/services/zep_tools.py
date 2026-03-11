@@ -1471,18 +1471,32 @@ class ZepToolsService:
         combined_prompt = "\n".join([f"{i+1}. {q}" for i, q in enumerate(result.interview_questions)])
         
         # 添加优化前缀，约束Agent回复格式
-        INTERVIEW_PROMPT_PREFIX = (
-            "你正在接受一次采访。请结合你的人设、所有的过往记忆与行动，"
-            "以纯文本方式直接回答以下问题。\n"
-            "回复要求：\n"
-            "1. 直接用自然语言回答，不要调用任何工具\n"
-            "2. 不要返回JSON格式或工具调用格式\n"
-            "3. 不要使用Markdown标题（如#、##、###）\n"
-            "4. 按问题编号逐一回答，每个回答以「问题X：」开头（X为问题编号）\n"
-            "5. 每个问题的回答之间用空行分隔\n"
-            "6. 回答要有实质内容，每个问题至少回答2-3句话\n\n"
-        )
-        optimized_prompt = f"{INTERVIEW_PROMPT_PREFIX}{combined_prompt}"
+        if locale == "en":
+            interview_prompt_prefix = (
+                "You are being interviewed. Combine your persona with your prior memories "
+                "and actions, then answer the following questions directly in plain text.\n"
+                "Response requirements:\n"
+                "1. Answer naturally in plain language and do not call any tools\n"
+                "2. Do not return JSON or tool-call payloads\n"
+                "3. Do not use Markdown headings such as #, ##, or ###\n"
+                "4. Answer each numbered question in order, and begin each answer with "
+                "\"Question X:\" where X is the question number\n"
+                "5. Separate each answer with a blank line\n"
+                "6. Provide substantive content, with at least 2-3 sentences per question\n\n"
+            )
+        else:
+            interview_prompt_prefix = (
+                "你正在接受一次采访。请结合你的人设、所有的过往记忆与行动，"
+                "以纯文本方式直接回答以下问题。\n"
+                "回复要求：\n"
+                "1. 直接用自然语言回答，不要调用任何工具\n"
+                "2. 不要返回JSON格式或工具调用格式\n"
+                "3. 不要使用Markdown标题（如#、##、###）\n"
+                "4. 按问题编号逐一回答，每个回答以「问题X：」开头（X为问题编号）\n"
+                "5. 每个问题的回答之间用空行分隔\n"
+                "6. 回答要有实质内容，每个问题至少回答2-3句话\n\n"
+            )
+        optimized_prompt = f"{interview_prompt_prefix}{combined_prompt}"
         
         # Step 4: 调用真实的采访API（不指定platform，默认双平台同时采访）
         try:

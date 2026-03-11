@@ -111,6 +111,37 @@ def test_interview_agents_localizes_api_failure_summary_in_english(monkeypatch):
     )
 
 
+def test_interview_agents_localizes_live_api_prompt_prefix_in_english(monkeypatch):
+    app = Flask(__name__)
+    service = _make_service()
+    service._load_agent_profiles = lambda simulation_id: [{"username": "alice", "bio": ""}]
+    service._select_agents_for_interview = lambda **kwargs: ([{"username": "alice", "bio": ""}], [0], "")
+    service._generate_interview_questions = lambda **kwargs: ["What happened?"]
+    captured = {}
+
+    def fake_batch(**kwargs):
+        captured["prompt"] = kwargs["interviews"][0]["prompt"]
+        return {
+            "success": True,
+            "interviews_count": 1,
+            "result": {"results": {"twitter_0": {"response": "It changed quickly."}, "reddit_0": {"response": ""}}},
+        }
+
+    monkeypatch.setattr(
+        "app.services.simulation_runner.SimulationRunner.interview_agents_batch",
+        fake_batch,
+    )
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        result = service.interview_agents("sim_123", "Understand the reaction")
+
+    assert result.summary
+    assert captured["prompt"].startswith("You are being interviewed.")
+    assert "Response requirements:" in captured["prompt"]
+    assert "\"Question X:\"" in captured["prompt"]
+    assert "What happened?" in captured["prompt"]
+
+
 def test_tool_result_renderers_localize_deterministic_wrappers_in_english():
     search = SearchResult(
         facts=["Alice joined the discussion."],
