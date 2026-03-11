@@ -1,10 +1,11 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T09:37:48.303575+00:00",
+  "captured_at": "2026-03-11T09:57:42.497452+00:00",
+  "generated_at": "2026-03-11T09:57:42.497452+00:00",
   "counts": {
     "issues": {
-      "open": 35,
+      "open": 36,
       "closed": 47
     },
     "pull_requests": {
@@ -17,6 +18,22 @@
     }
   },
   "issues": [
+    {
+      "number": 138,
+      "title": "生成的报告让人看不懂",
+      "url": "https://github.com/666ghj/MiroFish/issues/138",
+      "state": "open",
+      "created_at": "2026-03-11T09:53:19Z",
+      "updated_at": "2026-03-11T09:55:27Z",
+      "closed_at": null,
+      "labels": [
+        "question"
+      ],
+      "author": "huamingjie0815",
+      "body_excerpt": "生成的报告感觉有点太偏题了，看不懂😭 ，比如我写了一个游戏的设计方案，预测这个游戏的受众群体将会是什么，给我的报告题目是《未来受众群体生态的静默与解体：一项基于模拟的预测报告》",
+      "comment_count": 0,
+      "recent_comments": []
+    },
     {
       "number": 135,
       "title": "报错，Zep图谱构建失败",

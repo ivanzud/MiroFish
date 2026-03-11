@@ -2,13 +2,15 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T09:37:48.305470+00:00`
-- Issues: `82` total (`open=35`, `closed=47`)
+- Captured: `2026-03-11T09:57:42.497452+00:00`
+- Issues: `83` total (`open=36`, `closed=47`)
 - Pull requests: `47` total (`open=33`, `closed=14`)
 - Mirrored in `origin`: `34` of `47` PR refs
 
 ## Recently Updated Issues
 
+- #138 [open] 生成的报告让人看不懂 (question)
+  - 生成的报告感觉有点太偏题了，看不懂😭 ，比如我写了一个游戏的设计方案，预测这个游戏的受众群体将会是什么，给我的报告题目是《未来受众群体生态的静默与解体：一项基于模拟的预测报告》
 - #135 [open] 报错，Zep图谱构建失败 (no labels)
   - Graph build task failed: Traceback (most recent call last): File "/app/backend/app/api/graph.py", line 418, in build_task builder.set_ontology(graph_id, ontology) File "/app/backend/app/services/graph_builder.py", line 230, in set_ontology attr_name = safe_attr_name(attr_def["name"]) # 使用安全名称 ~~~~~~~~^^^^^^^^ TypeError: string indices must be integers, not 'str'
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @rheeh! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这个错误是因为 `attr_def` 应该是字典格式 `{"name": "attr_name", ...}`，但实际收到的是字符串。 **根本原因**：LLM 生成的 ontology 中，`attributes` 字段可能返回了简单的…
@@ -33,9 +35,6 @@
 - #106 [open] 能否采用除了zep的别的知识图谱 (no labels)
   - 如题所示，今天在跑的时候发现zep的免费额度被耗光了，能否添加使用本地部署的memv作为知识图谱
   - latest comment by `addisjeams`: 对，一开始半天都是网络报错，后来才发现是这个问题。必须要申请zep
-- #109 [closed] 纯小白看到新闻后本机部署，但似乎Zep额度用完后不知道接下来咋办了 (question)
-  - <img width="1242" height="707" alt="Image" src="https://github.com/user-attachments/assets/c3322506-4644-4194-bf60-760ba929d415" /> 作者你好，看到你的新闻之后，怀着巨大的好奇心本地部署了一下。 用的 Google 反重力很快就部署成功，完全是代码小白。 我只是把自己公众号和 AI 对话的几个 MD 文件传上去，然后 Zep API 在第三轮开始模拟阶段很快就报错，如截图所示。 请问我是升级付费Zep呢，还是等3月底重置，不想再来一次呀，的确某个环节内存飙升在Win系统下，起初就是感兴趣想体验下投喂自己的资料后（写了十多年的公众号和AI对话后梳理的一些MD文档），预测下你的系统和我今年会做的事会不会有一些预测的重合，感觉值得一试，但是碰到这个问题，期待回复解决…
-  - latest comment by `xingjia10086`: 以下是 claude 给的方案： 立即恢复运行的方法 最快的方式是直接补充当前 API 的额度，或者在配置文件/环境变量里替换成另一个有余额的 Key，重启程序即可从中断处继续（前提是程序支持断点续跑）。 如果暂时没有额度，可以考虑的替代方案 换一个 Provider：如果你原来用的是 OpenAI，可以临时切到 Anthropic、Google Gemini、DeepSeek、阿里云百炼等，接口格式大多兼容 OpenAI SDK，改动量很小。 用本地模型顶上：用 Olla…
 
 ## Recently Updated Pull Requests
 

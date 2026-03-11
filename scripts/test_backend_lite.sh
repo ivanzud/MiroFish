@@ -22,6 +22,7 @@ fi
   "${ROOT_DIR}/backend/tests/test_llm_env.py" \
   "${ROOT_DIR}/backend/tests/test_llm_client.py" \
   "${ROOT_DIR}/backend/tests/test_graph_builder.py" \
+  "${ROOT_DIR}/backend/tests/test_report_agent.py" \
   "${ROOT_DIR}/backend/tests/test_simulation_runner_actions.py" \
   "${ROOT_DIR}/backend/tests/test_openai_compat_services.py" \
   -q
