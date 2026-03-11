@@ -18,21 +18,21 @@
           </div>
           <div class="platform-stats">
             <span class="stat">
-              <span class="stat-label">ROUND</span>
+              <span class="stat-label">{{ t('step3.round') }}</span>
               <span class="stat-value mono">{{ runStatus.twitter_current_round || 0 }}<span class="stat-total">/{{ runStatus.total_rounds || maxRounds || '-' }}</span></span>
             </span>
             <span class="stat">
-              <span class="stat-label">Elapsed Time</span>
+              <span class="stat-label">{{ t('step3.elapsedTime') }}</span>
               <span class="stat-value mono">{{ twitterElapsedTime }}</span>
             </span>
             <span class="stat">
-              <span class="stat-label">ACTS</span>
+              <span class="stat-label">{{ t('step3.acts') }}</span>
               <span class="stat-value mono">{{ runStatus.twitter_actions_count || 0 }}</span>
             </span>
           </div>
           <!-- 可用动作提示 -->
           <div class="actions-tooltip">
-            <div class="tooltip-title">Available Actions</div>
+            <div class="tooltip-title">{{ t('step3.availableActions') }}</div>
             <div class="tooltip-actions">
               <span class="tooltip-action">POST</span>
               <span class="tooltip-action">LIKE</span>
@@ -59,21 +59,21 @@
           </div>
           <div class="platform-stats">
             <span class="stat">
-              <span class="stat-label">ROUND</span>
+              <span class="stat-label">{{ t('step3.round') }}</span>
               <span class="stat-value mono">{{ runStatus.reddit_current_round || 0 }}<span class="stat-total">/{{ runStatus.total_rounds || maxRounds || '-' }}</span></span>
             </span>
             <span class="stat">
-              <span class="stat-label">Elapsed Time</span>
+              <span class="stat-label">{{ t('step3.elapsedTime') }}</span>
               <span class="stat-value mono">{{ redditElapsedTime }}</span>
             </span>
             <span class="stat">
-              <span class="stat-label">ACTS</span>
+              <span class="stat-label">{{ t('step3.acts') }}</span>
               <span class="stat-value mono">{{ runStatus.reddit_actions_count || 0 }}</span>
             </span>
           </div>
           <!-- 可用动作提示 -->
           <div class="actions-tooltip">
-            <div class="tooltip-title">Available Actions</div>
+            <div class="tooltip-title">{{ t('step3.availableActions') }}</div>
             <div class="tooltip-actions">
               <span class="tooltip-action">POST</span>
               <span class="tooltip-action">COMMENT</span>
@@ -97,7 +97,7 @@
           @click="handleNextStep"
         >
           <span v-if="isGeneratingReport" class="loading-spinner-small"></span>
-          {{ isGeneratingReport ? '启动中...' : '开始生成结果报告' }} 
+          {{ isGeneratingReport ? t('step3.starting') : t('step3.startReport') }}
           <span v-if="!isGeneratingReport" class="arrow-icon">→</span>
         </button>
       </div>
@@ -108,7 +108,7 @@
       <!-- Timeline Header -->
       <div class="timeline-header" v-if="allActions.length > 0">
         <div class="timeline-stats">
-          <span class="total-count">TOTAL EVENTS: <span class="mono">{{ allActions.length }}</span></span>
+          <span class="total-count">{{ t('step3.totalEvents') }}: <span class="mono">{{ allActions.length }}</span></span>
           <span class="platform-breakdown">
             <span class="breakdown-item twitter">
               <svg class="mini-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
@@ -264,7 +264,7 @@
 
         <div v-if="allActions.length === 0" class="waiting-state">
           <div class="pulse-ring"></div>
-          <span>Waiting for agent actions...</span>
+          <span>{{ t('step3.waitingActions') }}</span>
         </div>
       </div>
     </div>
@@ -272,7 +272,7 @@
     <!-- Bottom Info / Logs -->
     <div class="system-logs">
       <div class="log-header">
-        <span class="log-title">SIMULATION MONITOR</span>
+        <span class="log-title">{{ t('step3.monitor') }}</span>
         <span class="log-id">{{ simulationId || 'NO_SIMULATION' }}</span>
       </div>
       <div class="log-content" ref="logContent">
@@ -287,6 +287,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { 
   startSimulation, 
@@ -311,6 +312,7 @@ const props = defineProps({
 const emit = defineEmits(['go-back', 'next-step', 'add-log', 'update-status'])
 
 const router = useRouter()
+const { t, locale } = useI18n()
 
 // State
 const isGeneratingReport = ref(false)
@@ -379,7 +381,7 @@ const resetAllState = () => {
 // 启动模拟
 const doStartSimulation = async () => {
   if (!props.simulationId) {
-    addLog('错误：缺少 simulationId')
+    addLog(t('step3.missingSimulationId'))
     return
   }
   
@@ -388,7 +390,7 @@ const doStartSimulation = async () => {
   
   isStarting.value = true
   startError.value = null
-  addLog('正在启动双平台并行模拟...')
+  addLog(t('step3.startingSimulation'))
   emit('update-status', 'processing')
   
   try {
@@ -401,18 +403,18 @@ const doStartSimulation = async () => {
     
     if (props.maxRounds) {
       params.max_rounds = props.maxRounds
-      addLog(`设置最大模拟轮数: ${props.maxRounds}`)
+      addLog(t('step3.setMaxRounds', { count: props.maxRounds }))
     }
     
-    addLog('已开启动态图谱更新模式')
+    addLog(t('step3.graphMemoryEnabled'))
     
     const res = await startSimulation(params)
     
     if (res.success && res.data) {
       if (res.data.force_restarted) {
-        addLog('✓ 已清理旧的模拟日志，重新开始模拟')
+        addLog(`✓ ${t('step3.clearedOldLogs')}`)
       }
-      addLog('✓ 模拟引擎启动成功')
+      addLog(`✓ ${t('step3.simulationStarted')}`)
       addLog(`  ├─ PID: ${res.data.process_pid || '-'}`)
       
       phase.value = 1
@@ -421,13 +423,13 @@ const doStartSimulation = async () => {
       startStatusPolling()
       startDetailPolling()
     } else {
-      startError.value = res.error || '启动失败'
-      addLog(`✗ 启动失败: ${res.error || '未知错误'}`)
+      startError.value = res.error || t('step3.startFailed')
+      addLog(`✗ ${t('step3.startFailedWithMessage', { message: res.error || t('process.unknownError') })}`)
       emit('update-status', 'error')
     }
   } catch (err) {
     startError.value = err.message
-    addLog(`✗ 启动异常: ${err.message}`)
+    addLog(`✗ ${t('step3.startException', { message: err.message })}`)
     emit('update-status', 'error')
   } finally {
     isStarting.value = false
@@ -439,21 +441,21 @@ const handleStopSimulation = async () => {
   if (!props.simulationId) return
   
   isStopping.value = true
-  addLog('正在停止模拟...')
+  addLog(t('step3.stoppingSimulation'))
   
   try {
     const res = await stopSimulation({ simulation_id: props.simulationId })
     
     if (res.success) {
-      addLog('✓ 模拟已停止')
+      addLog(`✓ ${t('step3.simulationStopped')}`)
       phase.value = 2
       stopPolling()
       emit('update-status', 'completed')
     } else {
-      addLog(`停止失败: ${res.error || '未知错误'}`)
+      addLog(t('step3.stopFailed', { message: res.error || t('process.unknownError') }))
     }
   } catch (err) {
-    addLog(`停止异常: ${err.message}`)
+    addLog(t('step3.stopException', { message: err.message }))
   } finally {
     isStopping.value = false
   }
@@ -509,8 +511,8 @@ const fetchRunStatus = async () => {
       }
 
       if (data.runner_status === 'failed') {
-        const errorMsg = data.error || '模拟运行失败'
-        addLog(`✗ 模拟失败: ${errorMsg}`)
+        const errorMsg = data.error || t('process.unknownError')
+        addLog(`✗ ${t('step3.simulationFailed', { message: errorMsg })}`)
         stopPolling()
         emit('update-status', 'error')
         return
@@ -525,9 +527,9 @@ const fetchRunStatus = async () => {
       
       if (isCompleted || platformsCompleted) {
         if (platformsCompleted && !isCompleted) {
-          addLog('✓ 检测到所有平台模拟已结束')
+          addLog(`✓ ${t('step3.allPlatformsEnded')}`)
         }
-        addLog('✓ 模拟已完成')
+        addLog(`✓ ${t('step3.simulationCompleted')}`)
         phase.value = 2
         stopPolling()
         emit('update-status', 'completed')
@@ -640,7 +642,7 @@ const truncateContent = (content, maxLength = 100) => {
 const formatActionTime = (timestamp) => {
   if (!timestamp) return ''
   try {
-    return new Date(timestamp).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    return new Date(timestamp).toLocaleTimeString(locale.value === 'en' ? 'en-US' : 'zh-CN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
   } catch {
     return ''
   }
@@ -648,17 +650,17 @@ const formatActionTime = (timestamp) => {
 
 const handleNextStep = async () => {
   if (!props.simulationId) {
-    addLog('错误：缺少 simulationId')
+    addLog(t('step3.missingSimulationId'))
     return
   }
   
   if (isGeneratingReport.value) {
-    addLog('报告生成请求已发送，请稍候...')
+    addLog(t('step3.reportAlreadyRequested'))
     return
   }
   
   isGeneratingReport.value = true
-  addLog('正在启动报告生成...')
+  addLog(t('step3.reportStarting'))
   
   try {
     const res = await generateReport({
@@ -668,16 +670,16 @@ const handleNextStep = async () => {
     
     if (res.success && res.data) {
       const reportId = res.data.report_id
-      addLog(`✓ 报告生成任务已启动: ${reportId}`)
+      addLog(`✓ ${t('step3.reportStarted', { id: reportId })}`)
       
       // 跳转到报告页面
       router.push({ name: 'Report', params: { reportId } })
     } else {
-      addLog(`✗ 启动报告生成失败: ${res.error || '未知错误'}`)
+      addLog(`✗ ${t('step3.reportStartFailed', { message: res.error || t('process.unknownError') })}`)
       isGeneratingReport.value = false
     }
   } catch (err) {
-    addLog(`✗ 启动报告生成异常: ${err.message}`)
+    addLog(`✗ ${t('step3.reportStartException', { message: err.message })}`)
     isGeneratingReport.value = false
   }
 }
@@ -693,7 +695,7 @@ watch(() => props.systemLogs?.length, () => {
 })
 
 onMounted(() => {
-  addLog('Step3 模拟运行初始化')
+  addLog(t('step3.initLog'))
   if (props.simulationId) {
     doStartSimulation()
   }
