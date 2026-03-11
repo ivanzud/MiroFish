@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T17:22:01.400919+00:00",
-  "generated_at": "2026-03-11T17:22:01.400919+00:00",
+  "captured_at": "2026-03-11T17:34:12.430550+00:00",
+  "generated_at": "2026-03-11T17:34:12.430550+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -172,23 +172,27 @@
       "local_coverage": {
         "number": 145,
         "status": "partial",
-        "summary": "A repo-native partial mitigation is now landed locally: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants (for example title-prefixed duplicates such as `美国总统特朗普` vs `特朗普`) before simulation/profile generation, which reduces downstream duplicate-agent noise without mutating the stored Zep graph. Full graph-level deduplication remains tracked under beads issue `mirofish-975` because upstream PR #141 is still not safe to cherry-pick wholesale.",
+        "summary": "Repo-native partial mitigations are now landed locally for both simulation inputs and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, and `frontend/src/views/processGraphData.js` now collapses the same conservative alias pairs while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer show as separate nodes in the main visualization. Full graph-level deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
         "local_refs": [
           ".beads/issues.jsonl",
           "docs/upstream-triage.md",
           "origin/mirror/upstream-pr-141",
           "backend/app/services/zep_entity_reader.py",
-          "backend/tests/test_zep_entity_reader.py"
+          "backend/tests/test_zep_entity_reader.py",
+          "frontend/src/views/processGraphData.js",
+          "frontend/tests/processGraphData.test.mjs"
         ],
         "validation": [
           "cd backend && uv run pytest -q tests/test_zep_entity_reader.py tests/test_openai_compat_services.py",
+          "npm --prefix frontend test -- processGraphData.test.mjs --runInBand",
+          "npm --prefix frontend run build",
           "bash ./scripts/test_backend_lite.sh",
           "triage diff review"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
       },
       "local_status": "partial",
-      "local_summary": "A repo-native partial mitigation is now landed locally: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants (for example title-prefixed duplicates such as `美国总统特朗普` vs `特朗普`) before simulation/profile generation, which reduces downstream duplicate-agent noise without mutating the stored Zep graph. Full graph-level deduplication remains tracked under beads issue `mirofish-975` because upstream PR #141 is still not safe to cherry-pick wholesale.",
+      "local_summary": "Repo-native partial mitigations are now landed locally for both simulation inputs and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, and `frontend/src/views/processGraphData.js` now collapses the same conservative alias pairs while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer show as separate nodes in the main visualization. Full graph-level deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 2,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/2"

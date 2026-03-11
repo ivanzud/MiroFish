@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T17:21:45.035649+00:00`
+- Captured: `2026-03-11T17:34:01.772369+00:00`
 - Issues: `39` total (`open=39`, `closed=0`)
 - Pull requests: `37` total (`open=37`, `closed=0`)
 - Mirrored in `origin`: `37` of `37` PR refs
@@ -19,7 +19,7 @@
   - local coverage [covered]: The repo now ships an opt-in, repo-native git hook workflow: `.githooks/pre-commit` runs the shared fast validation bundle, `.githooks/pre-push` runs the full validation bundle, and `npm run hooks:install` enables them without introducing a mandatory Husky/Node-only hook dependency.
   - Background The current project lacks automated validation before code commits, which may lead to the following issues: 1. Committing non-compliant code (e.g., syntax errors, messy formatting); 2. Inconsistent commit messages, which is not conducive to subsequent maintenance and version tracking; 3. Inefficiency in team collaboration due to the need for manual reminders of specifications. Solution…
 - #145 [open, mirror=#2] 知识图谱中存在重复实体节点 (no labels)
-  - local coverage [partial]: A repo-native partial mitigation is now landed locally: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants (for example title-prefixed duplicates such as `美国总统特朗普` vs `特朗普`) before simulation/profile generation, which reduces downstream duplicate-agent noise without mutating the stored Zep graph. Full graph-level deduplication remains tracked under beads issue `mirofish-975` because upstream PR #141 is still not safe to cherry-pick wholesale.
+  - local coverage [partial]: Repo-native partial mitigations are now landed locally for both simulation inputs and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, and `frontend/src/views/processGraphData.js` now collapses the same conservative alias pairs while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer show as separate nodes in the main visualization. Full graph-level deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.
   - ## 问题描述 在使用 MiroFish 构建知识图谱时，Zep 会将同一现实实体识别为多个不同节点。 例如输入包含"特朗普"相关内容的文本后，图谱中会同时出现"特朗普"和 "美国总统特朗普"两个独立节点，它们各自有独立的边和关系。 这会导致： - 图谱中同一实体的信息被分散到多个节点上 - 后续的模拟推演基于不完整的实体关系进行，影响准确性 - 图谱可视化时出现冗余节点，影响可读性 ## 复现步骤 1. 准备一段包含同一人物/组织不同称呼的背景文本 2. 通过前端正常流程构建知识图谱 3. 查看生成的图谱，可以看到同一实体被拆分为多个节点 ## 截图 <img width="675" height="399" alt="Image" src="https://github.com/user-attachments/assets/593f4188-e766-46b3-9b88-25486…
 - #142 [open, mirror=#3] 这个方向最后商业化落地应用的点是什么呢 (question)
   - local coverage [no_action]: Upstream issue #142 asks about long-term commercialization direction rather than reporting a reproducible bug or scoped feature request, so there is no local implementation task attached to it.
