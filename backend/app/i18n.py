@@ -88,6 +88,34 @@ TRANSLATIONS = {
         "zh": "MiroFish Backend 启动完成",
         "en": "MiroFish Backend startup completed",
     },
+    "retry.sync_failed_final": {
+        "zh": "函数 {func_name} 在 {max_retries} 次重试后仍失败: {error}",
+        "en": "Function {func_name} still failed after {max_retries} retries: {error}",
+    },
+    "retry.sync_failed_attempt": {
+        "zh": "函数 {func_name} 第 {attempt} 次尝试失败: {error}, {delay:.1f}秒后重试...",
+        "en": "Function {func_name} failed on attempt {attempt}: {error}, retrying in {delay:.1f}s...",
+    },
+    "retry.async_failed_final": {
+        "zh": "异步函数 {func_name} 在 {max_retries} 次重试后仍失败: {error}",
+        "en": "Async function {func_name} still failed after {max_retries} retries: {error}",
+    },
+    "retry.async_failed_attempt": {
+        "zh": "异步函数 {func_name} 第 {attempt} 次尝试失败: {error}, {delay:.1f}秒后重试...",
+        "en": "Async function {func_name} failed on attempt {attempt}: {error}, retrying in {delay:.1f}s...",
+    },
+    "retry.api_failed_final": {
+        "zh": "API调用在 {max_retries} 次重试后仍失败: {error}",
+        "en": "API call still failed after {max_retries} retries: {error}",
+    },
+    "retry.api_failed_attempt": {
+        "zh": "API调用第 {attempt} 次尝试失败: {error}, {delay:.1f}秒后重试...",
+        "en": "API call failed on attempt {attempt}: {error}, retrying in {delay:.1f}s...",
+    },
+    "retry.batch_item_failed": {
+        "zh": "处理第 {index} 项失败: {error}",
+        "en": "Failed to process item {index}: {error}",
+    },
     "llm.invalid_json": {
         "zh": "LLM返回的JSON格式无效: {payload}",
         "en": "The LLM returned invalid JSON: {payload}",
