@@ -117,7 +117,7 @@ class GraphBuilderService:
     def format_user_facing_error(self, error: Exception) -> str:
         """Collapse noisy provider exceptions into actionable graph-build messages."""
         status_code = getattr(error, "status_code", None)
-        error_text = str(error).strip()
+        error_text = self._normalize_error_text(error)
         lowered = error_text.lower()
 
         if status_code == 401 or ("401" in lowered and "unauthorized" in lowered):
@@ -130,6 +130,33 @@ class GraphBuilderService:
             return tr("graph.zep_auth_failed", self.locale)
 
         return error_text or error.__class__.__name__
+
+    @staticmethod
+    def _normalize_error_text(error: Exception) -> str:
+        """Strip traceback noise from SDK/provider exceptions before surfacing them."""
+        error_text = str(error).strip()
+        if "Traceback (most recent call last):" not in error_text:
+            return error_text
+
+        cleaned_lines: List[str] = []
+        for raw_line in error_text.splitlines():
+            line = raw_line.strip()
+            if not line:
+                continue
+            if (
+                line.startswith("Traceback (most recent call last):")
+                or line.startswith('File "')
+                or line.startswith("^")
+                or line.startswith("During handling of the above exception")
+            ):
+                continue
+            cleaned_lines.append(line)
+
+        # Prefer the last meaningful line once stack frames are removed.
+        if cleaned_lines:
+            return cleaned_lines[-1]
+
+        return error_text
     
     def build_graph_async(
         self,

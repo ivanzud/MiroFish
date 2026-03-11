@@ -184,9 +184,38 @@ def test_format_user_facing_error_maps_zep_auth_failures(graph_builder_module):
     assert "ZEP_API_KEY" in service.format_user_facing_error(error)
 
 
+def test_format_user_facing_error_maps_embedded_traceback_auth_failures(graph_builder_module):
+    service = build_service(graph_builder_module)
+
+    error = RuntimeError(
+        """Traceback (most recent call last):
+  File "/app/backend/.venv/lib/python3.11/site-packages/zep_cloud/graph/raw_client.py", line 713, in create
+    _response_json = _response.json()
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+401 unauthorized
+"""
+    )
+
+    assert "ZEP_API_KEY" in service.format_user_facing_error(error)
+
+
 def test_format_user_facing_error_keeps_generic_message(graph_builder_module):
     service = build_service(graph_builder_module)
 
     error = RuntimeError("invalid graph payload")
 
     assert service.format_user_facing_error(error) == "invalid graph payload"
+
+
+def test_format_user_facing_error_strips_traceback_noise_from_generic_errors(graph_builder_module):
+    service = build_service(graph_builder_module)
+
+    error = RuntimeError(
+        """Traceback (most recent call last):
+  File "/app/backend/app/services/graph_builder.py", line 42, in create_graph
+    raise RuntimeError("provider temporarily unavailable")
+RuntimeError: provider temporarily unavailable
+"""
+    )
+
+    assert service.format_user_facing_error(error) == "RuntimeError: provider temporarily unavailable"
