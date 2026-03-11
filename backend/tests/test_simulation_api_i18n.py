@@ -261,6 +261,40 @@ def test_close_env_passes_locale_and_returns_localized_message(monkeypatch):
     assert payload["message"] == "The environment is already closed"
 
 
+def test_run_status_exception_logs_english_context(monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    class FakeLogger:
+        def __init__(self):
+            self.errors = []
+            self.debugs = []
+
+        def error(self, message):
+            self.errors.append(message)
+
+        def debug(self, message):
+            self.debugs.append(message)
+
+    logger = FakeLogger()
+    monkeypatch.setattr(simulation_api, "logger", logger)
+
+    def boom(simulation_id):
+        raise RuntimeError("runner exploded")
+
+    monkeypatch.setattr(simulation_api.SimulationRunner, "get_run_state", boom)
+
+    response = client.get(
+        "/api/simulation/sim_123/run-status",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 500
+    assert response.get_json()["error"] == "runner exploded"
+    assert logger.errors == ["Failed to get run status: runner exploded"]
+    assert logger.debugs
+
+
 def test_posts_missing_database_message_is_localized(monkeypatch, tmp_path):
     app = create_simulation_test_app()
     client = app.test_client()

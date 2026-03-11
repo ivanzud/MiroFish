@@ -34,6 +34,13 @@ GRAPH_TASK_MESSAGE_MAP = {
     "图谱构建完成": "graph.build_completed",
 }
 
+GRAPH_ERROR_CONTEXTS_EN = {
+    "生成本体失败": "Failed to generate the ontology",
+    "启动图谱构建失败": "Failed to start the graph build",
+    "获取图谱数据失败": "Failed to fetch graph data",
+    "删除图谱失败": "Failed to delete the graph",
+}
+
 
 def allowed_file(filename: str) -> bool:
     """检查文件扩展名是否允许"""
@@ -111,6 +118,16 @@ def _translate_graph_task_payload(locale: str, payload: dict | None) -> dict | N
     translated = dict(payload)
     translated["message"] = _translate_graph_task_message(locale, payload.get("message"))
     return translated
+
+
+def _graph_error_context(locale: str, context: str) -> str:
+    if locale == "en":
+        return GRAPH_ERROR_CONTEXTS_EN.get(context, context)
+    return context
+
+
+def _handle_graph_api_exception(error: Exception, locale: str, context: str):
+    return handle_api_exception(logger, error, _graph_error_context(locale, context))
 
 
 # ============== 项目管理接口 ==============
@@ -401,7 +418,7 @@ def generate_ontology():
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "生成本体失败")
+        return _handle_graph_api_exception(e, get_locale(), "生成本体失败")
 
 
 # ============== 接口2：构建图谱 ==============
@@ -662,7 +679,7 @@ def build_graph():
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "启动图谱构建失败")
+        return _handle_graph_api_exception(e, get_locale(), "启动图谱构建失败")
 
 
 # ============== 任务查询接口 ==============
@@ -723,7 +740,7 @@ def get_graph_data(graph_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取图谱数据失败")
+        return _handle_graph_api_exception(e, get_locale(), "获取图谱数据失败")
 
 
 @graph_bp.route('/delete/<graph_id>', methods=['DELETE'])
@@ -747,4 +764,4 @@ def delete_graph(graph_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "删除图谱失败")
+        return _handle_graph_api_exception(e, get_locale(), "删除图谱失败")

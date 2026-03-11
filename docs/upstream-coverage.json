@@ -527,6 +527,21 @@
       "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
     },
     {
+      "number": 146,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-2uk`: upstream issue #146 requests automated pre-commit validation, but the local follow-up is to evaluate a repo-native hooks workflow instead of assuming Husky is the right fit for this mixed Python/Vue/beads repository.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-triage.md",
+        "https://github.com/ivanzud/MiroFish/issues/88"
+      ],
+      "validation": [
+        "tracking only",
+        "fork issue mirror review"
+      ],
+      "notes": "Mirrored into fork issue #88 on March 11, 2026."
+    },
+    {
       "number": 69,
       "status": "covered",
       "summary": "Both READMEs now explicitly document direct OpenAI-compatible usage through either `LLM_*` or `OPENAI_*` environment variables, with examples for Codex/OpenAI-compatible gateways, DashScope, LM Studio, and Ollama.",

@@ -28,6 +28,18 @@ class FakeValidationResult:
         }
 
 
+class FakeLogger:
+    def __init__(self):
+        self.errors = []
+        self.debugs = []
+
+    def error(self, message):
+        self.errors.append(message)
+
+    def debug(self, message):
+        self.debugs.append(message)
+
+
 def load_graph_blueprint(monkeypatch):
     for name in (
         "app.api",
@@ -231,6 +243,32 @@ def test_generate_ontology_reports_unsupported_extensions_in_english(monkeypatch
             "supported_extensions": ["markdown", "md", "pdf", "txt"],
         }
     ]
+
+
+def test_get_graph_data_exception_logs_english_context(monkeypatch, tmp_path):
+    client, graph_module = create_graph_build_test_client(monkeypatch, tmp_path)
+    logger = FakeLogger()
+    monkeypatch.setattr(graph_module, "logger", logger)
+
+    class ExplodingGraphBuilder:
+        def __init__(self, api_key):
+            assert api_key == "zep-test-key"
+
+        def get_graph_data(self, graph_id):
+            assert graph_id == "graph_123"
+            raise RuntimeError("graph exploded")
+
+    monkeypatch.setattr(graph_module, "GraphBuilderService", ExplodingGraphBuilder)
+
+    response = client.get(
+        "/api/graph/data/graph_123",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 500
+    assert response.get_json()["error"] == "graph exploded"
+    assert logger.errors == ["Failed to fetch graph data: graph exploded"]
+    assert logger.debugs
 
 
 def test_generate_ontology_returns_backend_config_validation_when_env_is_missing(monkeypatch, tmp_path):

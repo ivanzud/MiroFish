@@ -57,6 +57,39 @@ SIMULATION_PROGRESS_MESSAGE_MAP = {
     "配置生成完成": "Configuration generation completed",
 }
 
+SIMULATION_ERROR_CONTEXTS_EN = {
+    "获取图谱实体失败": "Failed to get graph entities",
+    "获取实体详情失败": "Failed to get entity details",
+    "获取实体失败": "Failed to get entities",
+    "创建模拟失败": "Failed to create the simulation",
+    "启动准备任务失败": "Failed to start the preparation task",
+    "获取模拟状态失败": "Failed to get the simulation status",
+    "列出模拟失败": "Failed to list simulations",
+    "获取历史模拟失败": "Failed to get simulation history",
+    "获取Profile失败": "Failed to get profiles",
+    "实时获取Profile失败": "Failed to get live profiles",
+    "实时获取Config失败": "Failed to get the live config",
+    "获取配置失败": "Failed to get the config",
+    "下载配置失败": "Failed to download the config",
+    "下载脚本失败": "Failed to download the scripts",
+    "生成Profile失败": "Failed to generate profiles",
+    "启动模拟失败": "Failed to start the simulation",
+    "停止模拟失败": "Failed to stop the simulation",
+    "获取运行状态失败": "Failed to get run status",
+    "获取详细状态失败": "Failed to get detailed run status",
+    "获取动作历史失败": "Failed to get the action history",
+    "获取时间线失败": "Failed to get the timeline",
+    "获取Agent统计失败": "Failed to get agent statistics",
+    "获取帖子失败": "Failed to get posts",
+    "获取评论失败": "Failed to get comments",
+    "Interview失败": "Interview request failed",
+    "批量Interview失败": "Batch interview request failed",
+    "全局Interview失败": "Global interview request failed",
+    "获取Interview历史失败": "Failed to get interview history",
+    "获取环境状态失败": "Failed to get environment status",
+    "关闭环境失败": "Failed to close the environment",
+}
+
 
 def _translate_simulation_progress_message(locale: str, message: str | None) -> str | None:
     if locale != "en" or not message:
@@ -107,6 +140,16 @@ def _translate_prepare_task_payload(locale: str, payload: dict | None) -> dict |
         translated_payload["progress_detail"] = translated_detail
 
     return translated_payload
+
+
+def _simulation_error_context(locale: str, context: str) -> str:
+    if locale == "en":
+        return SIMULATION_ERROR_CONTEXTS_EN.get(context, context)
+    return context
+
+
+def _handle_simulation_api_exception(error: Exception, locale: str, context: str):
+    return handle_api_exception(logger, error, _simulation_error_context(locale, context))
 
 
 def optimize_interview_prompt(prompt: str) -> str:
@@ -183,7 +226,7 @@ def get_graph_entities(graph_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取图谱实体失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取图谱实体失败")
 
 
 @simulation_bp.route('/entities/<graph_id>/<entity_uuid>', methods=['GET'])
@@ -212,7 +255,7 @@ def get_entity_detail(graph_id: str, entity_uuid: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取实体详情失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取实体详情失败")
 
 
 @simulation_bp.route('/entities/<graph_id>/by-type/<entity_type>', methods=['GET'])
@@ -245,7 +288,7 @@ def get_entities_by_type(graph_id: str, entity_type: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取实体失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取实体失败")
 
 
 # ============== 模拟管理接口 ==============
@@ -318,7 +361,7 @@ def create_simulation():
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "创建模拟失败")
+        return _handle_simulation_api_exception(e, get_locale(), "创建模拟失败")
 
 
 def _check_simulation_prepared(simulation_id: str, locale: str | None = None) -> tuple:
@@ -722,7 +765,7 @@ def prepare_simulation():
         }), 404
         
     except Exception as e:
-        return handle_api_exception(logger, e, "启动准备任务失败")
+        return _handle_simulation_api_exception(e, get_locale(), "启动准备任务失败")
 
 
 @simulation_bp.route('/prepare/status', methods=['POST'])
@@ -865,7 +908,7 @@ def get_simulation(simulation_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取模拟状态失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取模拟状态失败")
 
 
 @simulation_bp.route('/list', methods=['GET'])
@@ -889,7 +932,7 @@ def list_simulations():
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "列出模拟失败")
+        return _handle_simulation_api_exception(e, get_locale(), "列出模拟失败")
 
 
 def _get_report_id_for_simulation(simulation_id: str) -> str:
@@ -1057,7 +1100,7 @@ def get_simulation_history():
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取历史模拟失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取历史模拟失败")
 
 
 @simulation_bp.route('/<simulation_id>/profiles', methods=['GET'])
@@ -1090,7 +1133,7 @@ def get_simulation_profiles(simulation_id: str):
         }), 404
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取Profile失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取Profile失败")
 
 
 @simulation_bp.route('/<simulation_id>/profiles/realtime', methods=['GET'])
@@ -1196,7 +1239,7 @@ def get_simulation_profiles_realtime(simulation_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "实时获取Profile失败")
+        return _handle_simulation_api_exception(e, get_locale(), "实时获取Profile失败")
 
 
 @simulation_bp.route('/<simulation_id>/config/realtime', methods=['GET'])
@@ -1312,7 +1355,7 @@ def get_simulation_config_realtime(simulation_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "实时获取Config失败")
+        return _handle_simulation_api_exception(e, get_locale(), "实时获取Config失败")
 
 
 @simulation_bp.route('/<simulation_id>/config', methods=['GET'])
@@ -1344,7 +1387,7 @@ def get_simulation_config(simulation_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取配置失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取配置失败")
 
 
 @simulation_bp.route('/<simulation_id>/config/download', methods=['GET'])
@@ -1369,7 +1412,7 @@ def download_simulation_config(simulation_id: str):
         )
         
     except Exception as e:
-        return handle_api_exception(logger, e, "下载配置失败")
+        return _handle_simulation_api_exception(e, get_locale(), "下载配置失败")
 
 
 @simulation_bp.route('/script/<script_name>/download', methods=['GET'])
@@ -1422,7 +1465,7 @@ def download_simulation_script(script_name: str):
         )
         
     except Exception as e:
-        return handle_api_exception(logger, e, "下载脚本失败")
+        return _handle_simulation_api_exception(e, get_locale(), "下载脚本失败")
 
 
 # ============== Profile生成接口（独立使用） ==============
@@ -1492,7 +1535,7 @@ def generate_profiles():
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "生成Profile失败")
+        return _handle_simulation_api_exception(e, get_locale(), "生成Profile失败")
 
 
 # ============== 模拟运行控制接口 ==============
@@ -1684,7 +1727,7 @@ def start_simulation():
         }), 400
         
     except Exception as e:
-        return handle_api_exception(logger, e, "启动模拟失败")
+        return _handle_simulation_api_exception(e, get_locale(), "启动模拟失败")
 
 
 @simulation_bp.route('/stop', methods=['POST'])
@@ -1739,7 +1782,7 @@ def stop_simulation():
         }), 400
         
     except Exception as e:
-        return handle_api_exception(logger, e, "停止模拟失败")
+        return _handle_simulation_api_exception(e, get_locale(), "停止模拟失败")
 
 
 # ============== 实时状态监控接口 ==============
@@ -1794,7 +1837,7 @@ def get_run_status(simulation_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取运行状态失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取运行状态失败")
 
 
 @simulation_bp.route('/<simulation_id>/run-status/detail', methods=['GET'])
@@ -1900,7 +1943,7 @@ def get_run_status_detail(simulation_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取详细状态失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取详细状态失败")
 
 
 @simulation_bp.route('/<simulation_id>/actions', methods=['GET'])
@@ -1949,7 +1992,7 @@ def get_simulation_actions(simulation_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取动作历史失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取动作历史失败")
 
 
 @simulation_bp.route('/<simulation_id>/timeline', methods=['GET'])
@@ -1984,7 +2027,7 @@ def get_simulation_timeline(simulation_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取时间线失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取时间线失败")
 
 
 @simulation_bp.route('/<simulation_id>/agent-stats', methods=['GET'])
@@ -2006,7 +2049,7 @@ def get_agent_stats(simulation_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取Agent统计失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取Agent统计失败")
 
 
 # ============== 数据库查询接口 ==============
@@ -2082,7 +2125,7 @@ def get_simulation_posts(simulation_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取帖子失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取帖子失败")
 
 
 @simulation_bp.route('/<simulation_id>/comments', methods=['GET'])
@@ -2152,7 +2195,7 @@ def get_simulation_comments(simulation_id: str):
         })
         
     except Exception as e:
-        return handle_api_exception(logger, e, "获取评论失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取评论失败")
 
 
 # ============== Interview 采访接口 ==============
@@ -2282,7 +2325,7 @@ def interview_agent():
         }), 504
         
     except Exception as e:
-        return handle_api_exception(logger, e, "Interview失败")
+        return _handle_simulation_api_exception(e, get_locale(), "Interview失败")
 
 
 @simulation_bp.route('/interview/batch', methods=['POST'])
@@ -2420,7 +2463,7 @@ def interview_agents_batch():
         }), 504
 
     except Exception as e:
-        return handle_api_exception(logger, e, "批量Interview失败")
+        return _handle_simulation_api_exception(e, get_locale(), "批量Interview失败")
 
 
 @simulation_bp.route('/interview/all', methods=['POST'])
@@ -2523,7 +2566,7 @@ def interview_all_agents():
         }), 504
 
     except Exception as e:
-        return handle_api_exception(logger, e, "全局Interview失败")
+        return _handle_simulation_api_exception(e, get_locale(), "全局Interview失败")
 
 
 @simulation_bp.route('/interview/history', methods=['POST'])
@@ -2591,7 +2634,7 @@ def get_interview_history():
         })
 
     except Exception as e:
-        return handle_api_exception(logger, e, "获取Interview历史失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取Interview历史失败")
 
 
 @simulation_bp.route('/env-status', methods=['POST'])
@@ -2652,7 +2695,7 @@ def get_env_status():
         })
 
     except Exception as e:
-        return handle_api_exception(logger, e, "获取环境状态失败")
+        return _handle_simulation_api_exception(e, get_locale(), "获取环境状态失败")
 
 
 @simulation_bp.route('/close-env', methods=['POST'])
@@ -2719,4 +2762,4 @@ def close_simulation_env():
         }), 400
         
     except Exception as e:
-        return handle_api_exception(logger, e, "关闭环境失败")
+        return _handle_simulation_api_exception(e, get_locale(), "关闭环境失败")
