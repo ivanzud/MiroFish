@@ -18,6 +18,42 @@ sync_upstream_github = load_module()
 
 
 class SyncUpstreamGithubTests(unittest.TestCase):
+    def test_normalize_excerpt_collapses_whitespace_and_truncates(self):
+        excerpt = sync_upstream_github.normalize_excerpt(" line 1\n\nline\t2  " * 20, limit=30)
+
+        self.assertEqual(excerpt, "line 1 line 2 line 1 line 2 l…")
+
+    def test_fetch_recent_comments_returns_compact_preview(self):
+        with patch.object(
+            sync_upstream_github,
+            "fetch_json",
+            return_value=[
+                {
+                    "user": {"login": "alice"},
+                    "created_at": "2026-01-02T00:00:00Z",
+                    "updated_at": "2026-01-03T00:00:00Z",
+                    "html_url": "https://example.test/comment/1",
+                    "body": "First line\nSecond line",
+                }
+            ],
+        ) as mocked:
+            comments = sync_upstream_github.fetch_recent_comments("https://api.github.com/repos/test/repo/issues/10/comments")
+
+        self.assertEqual(
+            comments,
+            [
+                {
+                    "author": "alice",
+                    "created_at": "2026-01-02T00:00:00Z",
+                    "updated_at": "2026-01-03T00:00:00Z",
+                    "url": "https://example.test/comment/1",
+                    "body_excerpt": "First line Second line",
+                }
+            ],
+        )
+        mocked.assert_called_once()
+        self.assertIn("per_page=3", mocked.call_args.args[0])
+
     def test_list_mirrored_pull_request_numbers_reads_remote_and_local_refs(self):
         with patch.object(
             sync_upstream_github.subprocess,
@@ -111,52 +147,70 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(mocked.call_args_list[1].args, ("/repos/test-owner/test-repo/pulls/102", {}))
 
     def test_compact_records_include_state_fields(self):
-        issue = sync_upstream_github.compact_issue(
-            {
-                "number": 10,
-                "title": "Issue title",
-                "html_url": "https://example.test/issues/10",
-                "state": "closed",
-                "created_at": "2026-01-01T00:00:00Z",
-                "updated_at": "2026-01-02T00:00:00Z",
-                "closed_at": "2026-01-03T00:00:00Z",
-                "labels": [{"name": "bug"}],
-                "user": {"login": "alice"},
-            }
-        )
-        pr = sync_upstream_github.compact_pr(
-            {
-                "number": 11,
-                "title": "PR title",
-                "html_url": "https://example.test/pull/11",
-                "state": "closed",
-                "created_at": "2026-01-01T00:00:00Z",
-                "updated_at": "2026-01-02T00:00:00Z",
-                "closed_at": "2026-01-03T00:00:00Z",
-                "merged_at": "2026-01-03T00:00:01Z",
-                "head": {
-                    "ref": "feature",
-                    "sha": "abc123",
-                    "repo": {
-                        "full_name": "contrib/test-repo",
-                        "clone_url": "https://github.com/contrib/test-repo.git",
+        with patch.object(
+            sync_upstream_github,
+            "fetch_recent_comments",
+            side_effect=[
+                [{"author": "carol", "body_excerpt": "issue comment"}],
+                [{"author": "dave", "body_excerpt": "pr comment"}],
+            ],
+        ):
+            issue = sync_upstream_github.compact_issue(
+                {
+                    "number": 10,
+                    "title": "Issue title",
+                    "html_url": "https://example.test/issues/10",
+                    "state": "closed",
+                    "created_at": "2026-01-01T00:00:00Z",
+                    "updated_at": "2026-01-02T00:00:00Z",
+                    "closed_at": "2026-01-03T00:00:00Z",
+                    "labels": [{"name": "bug"}],
+                    "user": {"login": "alice"},
+                    "body": "Issue body",
+                    "comments": 1,
+                    "comments_url": "https://api.github.com/repos/test/repo/issues/10/comments",
+                }
+            )
+            pr = sync_upstream_github.compact_pr(
+                {
+                    "number": 11,
+                    "title": "PR title",
+                    "html_url": "https://example.test/pull/11",
+                    "state": "closed",
+                    "created_at": "2026-01-01T00:00:00Z",
+                    "updated_at": "2026-01-02T00:00:00Z",
+                    "closed_at": "2026-01-03T00:00:00Z",
+                    "merged_at": "2026-01-03T00:00:01Z",
+                    "head": {
+                        "ref": "feature",
+                        "sha": "abc123",
+                        "repo": {
+                            "full_name": "contrib/test-repo",
+                            "clone_url": "https://github.com/contrib/test-repo.git",
+                        },
                     },
+                    "base": {
+                        "ref": "main",
+                        "repo": {"full_name": "test-owner/test-repo"},
+                    },
+                    "draft": False,
+                    "mergeable_state": "clean",
+                    "labels": [{"name": "enhancement"}],
+                    "user": {"login": "bob"},
+                    "body": "PR body",
+                    "comments": 1,
+                    "comments_url": "https://api.github.com/repos/test/repo/issues/11/comments",
+                    "review_comments": 2,
                 },
-                "base": {
-                    "ref": "main",
-                    "repo": {"full_name": "test-owner/test-repo"},
-                },
-                "draft": False,
-                "mergeable_state": "clean",
-                "labels": [{"name": "enhancement"}],
-                "user": {"login": "bob"},
-            },
-            mirrored_pr_numbers={11},
-            fork_remote="origin",
-        )
+                mirrored_pr_numbers={11},
+                fork_remote="origin",
+            )
 
         self.assertEqual(issue["state"], "closed")
         self.assertEqual(issue["closed_at"], "2026-01-03T00:00:00Z")
+        self.assertEqual(issue["body_excerpt"], "Issue body")
+        self.assertEqual(issue["comment_count"], 1)
+        self.assertEqual(issue["recent_comments"], [{"author": "carol", "body_excerpt": "issue comment"}])
         self.assertEqual(pr["state"], "closed")
         self.assertEqual(pr["merged_at"], "2026-01-03T00:00:01Z")
         self.assertEqual(pr["head"], "feature")
@@ -167,6 +221,10 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(pr["base_repo"], "test-owner/test-repo")
         self.assertEqual(pr["mergeable_state"], "clean")
         self.assertEqual(pr["labels"], ["enhancement"])
+        self.assertEqual(pr["body_excerpt"], "PR body")
+        self.assertEqual(pr["comment_count"], 1)
+        self.assertEqual(pr["review_comment_count"], 2)
+        self.assertEqual(pr["recent_comments"], [{"author": "dave", "body_excerpt": "pr comment"}])
         self.assertTrue(pr["fork_mirrored"])
         self.assertEqual(pr["fork_mirror_ref"], "origin/mirror/upstream-pr-11")
 

@@ -17,6 +17,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+BODY_EXCERPT_LIMIT = 400
+COMMENT_EXCERPT_LIMIT = 240
+RECENT_COMMENT_LIMIT = 3
+
 
 def has_github_token() -> bool:
     return bool(os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN"))
@@ -104,6 +108,41 @@ def github_api_paginated(path: str, params: dict[str, object], limit: int) -> li
     return items[:limit]
 
 
+def normalize_excerpt(text: str | None, limit: int) -> str:
+    if not text:
+        return ""
+
+    collapsed = re.sub(r"\s+", " ", text).strip()
+    if len(collapsed) <= limit:
+        return collapsed
+
+    return collapsed[: max(0, limit - 1)].rstrip() + "…"
+
+
+def fetch_recent_comments(comments_url: str | None, limit: int = RECENT_COMMENT_LIMIT) -> list[dict[str, Any]]:
+    if not comments_url or limit <= 0:
+        return []
+
+    payload = fetch_json(
+        f"{comments_url}?{urllib.parse.urlencode({'per_page': limit, 'sort': 'updated', 'direction': 'desc'})}"
+    )
+    if not isinstance(payload, list):
+        raise ValueError(f"Expected list payload when fetching comments from {comments_url}, got {type(payload)!r}")
+
+    comments: list[dict[str, Any]] = []
+    for item in payload[:limit]:
+        comments.append(
+            {
+                "author": item.get("user", {}).get("login"),
+                "created_at": item.get("created_at"),
+                "updated_at": item.get("updated_at"),
+                "url": item.get("html_url"),
+                "body_excerpt": normalize_excerpt(item.get("body"), COMMENT_EXCERPT_LIMIT),
+            }
+        )
+    return comments
+
+
 def hydrate_pull_requests(owner: str, name: str, pull_requests: list[dict[str, Any]]) -> list[dict[str, Any]]:
     hydrated: list[dict[str, Any]] = []
     for pull_request in pull_requests:
@@ -143,6 +182,7 @@ def list_mirrored_pull_request_numbers(remote: str) -> set[int]:
 
 
 def compact_issue(issue: dict[str, object]) -> dict[str, object]:
+    comment_count = int(issue.get("comments") or 0)
     return {
         "number": issue["number"],
         "title": issue["title"],
@@ -153,6 +193,9 @@ def compact_issue(issue: dict[str, object]) -> dict[str, object]:
         "closed_at": issue.get("closed_at"),
         "labels": [label["name"] for label in issue.get("labels", [])],
         "author": issue.get("user", {}).get("login"),
+        "body_excerpt": normalize_excerpt(issue.get("body"), BODY_EXCERPT_LIMIT),
+        "comment_count": comment_count,
+        "recent_comments": fetch_recent_comments(issue.get("comments_url")) if comment_count else [],
     }
 
 
@@ -171,6 +214,8 @@ def compact_pr(
     if mirrored_pr_numbers is not None and fork_remote is not None:
         fork_mirrored = number in mirrored_pr_numbers
         fork_mirror_ref = f"{fork_remote}/mirror/upstream-pr-{number}"
+    comment_count = int(pr.get("comments") or 0)
+    review_comment_count = int(pr.get("review_comments") or 0)
 
     return {
         "number": number,
@@ -191,6 +236,10 @@ def compact_pr(
         "mergeable_state": pr.get("mergeable_state"),
         "labels": [label["name"] for label in pr.get("labels", [])],
         "author": pr.get("user", {}).get("login"),
+        "body_excerpt": normalize_excerpt(pr.get("body"), BODY_EXCERPT_LIMIT),
+        "comment_count": comment_count,
+        "review_comment_count": review_comment_count,
+        "recent_comments": fetch_recent_comments(pr.get("comments_url")) if comment_count else [],
         "fork_mirrored": fork_mirrored,
         "fork_mirror_ref": fork_mirror_ref,
     }
@@ -231,6 +280,13 @@ def write_summary(
     for issue in issues[:10]:
         labels = ", ".join(issue["labels"]) if issue["labels"] else "no labels"
         lines.append(f"- #{issue['number']} [{issue['state']}] {issue['title']} ({labels})")
+        if issue.get("body_excerpt"):
+            lines.append(f"  - {issue['body_excerpt']}")
+        if issue.get("recent_comments"):
+            latest_comment = issue["recent_comments"][0]
+            author = latest_comment.get("author") or "unknown"
+            excerpt = latest_comment.get("body_excerpt") or "(no comment body)"
+            lines.append(f"  - latest comment by `{author}`: {excerpt}")
 
     lines.extend(["", "## Recently Updated Pull Requests", ""])
     for pr in prs[:10]:
@@ -243,6 +299,13 @@ def write_summary(
             f"- #{pr['number']} [{pr['state']}{suffix}, mergeable={mergeable_state}{mirror_suffix}] "
             f"{pr['title']} (`{pr['head']}` -> `{pr['base']}`)"
         )
+        if pr.get("body_excerpt"):
+            lines.append(f"  - {pr['body_excerpt']}")
+        if pr.get("recent_comments"):
+            latest_comment = pr["recent_comments"][0]
+            author = latest_comment.get("author") or "unknown"
+            excerpt = latest_comment.get("body_excerpt") or "(no comment body)"
+            lines.append(f"  - latest comment by `{author}`: {excerpt}")
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")

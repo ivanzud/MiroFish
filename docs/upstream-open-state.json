@@ -1,7 +1,7 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T08:06:33.877918+00:00",
+  "captured_at": "2026-03-11T08:10:32.934649+00:00",
   "counts": {
     "issues": {
       "open": 33
@@ -26,7 +26,18 @@
       "labels": [
         "question"
       ],
-      "author": "Axing93"
+      "author": "Axing93",
+      "body_excerpt": "前后端启动都显示成功了，0.0.0.0:5001无法访问，提示404。前端0.0.0.0:3000虽然可以访问，但是一到这个界面就会报错 <img width=\"2550\" height=\"1233\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/032cf0ac-78ae-406d-831d-da5b9a28d5a0\" />，看了项目也没有报错日志，请问这是什么问题呢",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "dosubot[bot]",
+          "created_at": "2026-03-11T07:47:36Z",
+          "updated_at": "2026-03-11T07:47:36Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/133#issuecomment-4037175500",
+          "body_excerpt": "<!-- Greeting --> Hi @Axing93! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这是一个常见的前后端连接配置问题。 **后端 5001 返回 404 是正常的** — [根路径 `/` 未定义端点](https://github.com/666ghj/MiroFish/issues/68)，实际 API 通过具体…"
+        }
+      ]
     },
     {
       "number": 117,
@@ -39,7 +50,10 @@
       "labels": [
         "enhancement"
       ],
-      "author": "malpaniga"
+      "author": "malpaniga",
+      "body_excerpt": "Hi, First of all, thank you for creating and open-sourcing this amazing project. MiroFish is a very interesting and powerful multi-agent prediction engine. Currently, a large portion of the documentation, UI text, and comments appear to be primarily in Chinese. This makes it difficult for international developers to fully understand and use the project. ### Request It would be very helpful if the…",
+      "comment_count": 0,
+      "recent_comments": []
     },
     {
       "number": 110,
@@ -52,7 +66,18 @@
       "labels": [
         "LLM API"
       ],
-      "author": "weilb"
+      "author": "weilb",
+      "body_excerpt": "阿里云百炼 API 调用异常：付费计划（Coding Plan）非千文模型及大模型API中转站的API均失效，仅免费额度模型或coding plan的千文模型可用",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "lukeliu95",
+          "created_at": "2026-03-10T06:40:37Z",
+          "updated_at": "2026-03-10T06:40:37Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/110#issuecomment-4029067259",
+          "body_excerpt": "使用以下方式调用Coding Plan LLM_BASE_URL=https://coding.dashscope.aliyuncs.com/v1 LLM_MODEL_NAME=qwen3.5-plus"
+        }
+      ]
     },
     {
       "number": 64,
@@ -63,7 +88,32 @@
       "updated_at": "2026-03-10T05:40:36Z",
       "closed_at": null,
       "labels": [],
-      "author": "G-LJDS2022"
+      "author": "G-LJDS2022",
+      "body_excerpt": "<img width=\"1206\" height=\"1234\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/5befa186-6f0f-493a-a6fa-7fb33940f233\" /> TXT、MD、PDF文件格式都试了，内容甚至精简到就几百字，但就是卡在上传文件错误，到底什么原因？",
+      "comment_count": 14,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-02-02T07:16:30Z",
+          "updated_at": "2026-02-02T07:16:30Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/64#issuecomment-3833393441",
+          "body_excerpt": "以前的代码因为编码格式的缘故会报这样的错，最新代码已经修复了。 你是把他部署在服务器上吗，那好像会有一些问题。"
+        },
+        {
+          "author": "wjh-w",
+          "created_at": "2026-02-05T07:52:32Z",
+          "updated_at": "2026-02-05T07:52:32Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/64#issuecomment-3851616788",
+          "body_excerpt": "我也遇到这样的问题上传文件 的时候一直处于 500的问题 <img width=\"1051\" height=\"356\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/536df0ba-f13a-4dcf-a588-455f9c4f1084\" />"
+        },
+        {
+          "author": "HAN-GITWarehouse",
+          "created_at": "2026-02-07T03:21:04Z",
+          "updated_at": "2026-02-07T03:21:04Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/64#issuecomment-3863455964",
+          "body_excerpt": "这个 500的报错 你要看下你前端界面 调用generate 这个接口的反馈 结果反馈是什么吧 我之前也是500的 报错 原因在调用这个接口的时候 发现 因为zep cloude 只提供 秘钥 但是不提供模型 而 项目中的模型 你要需要去申请一个没药来使用 很多模型也并不是免费的 但是一般 新用户注册 都有免费额度"
+        }
+      ]
     },
     {
       "number": 106,
@@ -74,7 +124,25 @@
       "updated_at": "2026-03-10T02:33:21Z",
       "closed_at": null,
       "labels": [],
-      "author": "paipaiio"
+      "author": "paipaiio",
+      "body_excerpt": "如题所示，今天在跑的时候发现zep的免费额度被耗光了，能否添加使用本地部署的memv作为知识图谱",
+      "comment_count": 2,
+      "recent_comments": [
+        {
+          "author": "addisjeams",
+          "created_at": "2026-03-09T17:29:02Z",
+          "updated_at": "2026-03-09T17:29:02Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/106#issuecomment-4025506309",
+          "body_excerpt": "对，一开始半天都是网络报错，后来才发现是这个问题。必须要申请zep"
+        },
+        {
+          "author": "xingjia10086",
+          "created_at": "2026-03-10T02:33:21Z",
+          "updated_at": "2026-03-10T02:33:21Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/106#issuecomment-4028182818",
+          "body_excerpt": "作者写的很明确 必须依靠ZEP哈 我也碰到一样的问题 没办法 只能换一个KEY"
+        }
+      ]
     },
     {
       "number": 42,
@@ -85,7 +153,25 @@
       "updated_at": "2026-03-09T17:28:20Z",
       "closed_at": null,
       "labels": [],
-      "author": "s1f102500012"
+      "author": "s1f102500012",
+      "body_excerpt": "作为可能会用到的信息，我上传了大约有260000字符的《白夜行》前十二章。推测原因是simulation.py的接口会把所有动作读全量并返回，这些动作会随着模拟变大而线性膨胀，从而导致巨量内存消耗。 <img width=\"988\" height=\"666\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/3fce3699-5e8d-4a8c-a33f-5290b236a2f0\" />",
+      "comment_count": 2,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-01-21T07:14:28Z",
+          "updated_at": "2026-01-21T07:14:28Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/42#issuecomment-3776532125",
+          "body_excerpt": "我后续会进行算法层面的优化"
+        },
+        {
+          "author": "xingjia10086",
+          "created_at": "2026-03-09T17:28:20Z",
+          "updated_at": "2026-03-09T17:28:20Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/42#issuecomment-4025501526",
+          "body_excerpt": "你的Zep的API够用吗 ？"
+        }
+      ]
     },
     {
       "number": 84,
@@ -98,7 +184,25 @@
       "labels": [
         "question"
       ],
-      "author": "luchenwei9266"
+      "author": "luchenwei9266",
+      "body_excerpt": "<img width=\"2538\" height=\"1213\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/e3d01822-aa09-45b7-9210-2ce8e23bca8f\" /> 好像是Zep超出调用限额导致报告生成失败，但是即使我充值了Zep，似乎也没有办法重新生成报告，难道只能重新走一轮？",
+      "comment_count": 2,
+      "recent_comments": [
+        {
+          "author": "dosubot[bot]",
+          "created_at": "2026-03-08T08:12:58Z",
+          "updated_at": "2026-03-08T08:12:58Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/84#issuecomment-4018615761",
+          "body_excerpt": "<!-- Greeting --> Hi @luchenwei9266! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 目前 MiroFish **不支持通过界面重试报告生成**，这是一个[已知问题](https://github.com/666ghj/MiroFish/issues/30)。系统虽然有 `force_regenerate`…"
+        },
+        {
+          "author": "xingjia10086",
+          "created_at": "2026-03-09T17:24:34Z",
+          "updated_at": "2026-03-09T17:26:28Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/84#issuecomment-4025475607",
+          "body_excerpt": "<img width=\"1242\" height=\"707\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/871bbcaa-85e2-4f1c-a714-cc038fdf6fd7\" /> 我这跑了一个任务还没结束 ZEP的API就用完了 用了默认的设置 40 ，现在很尴尬的状态 接下来应该怎么才能继续呢？ @dosu 难道只能重新注册一个Zep 再跑一遍流程吗？"
+        }
+      ]
     },
     {
       "number": 107,
@@ -109,7 +213,10 @@
       "updated_at": "2026-03-09T14:44:45Z",
       "closed_at": null,
       "labels": [],
-      "author": "zhuhw19"
+      "author": "zhuhw19",
+      "body_excerpt": "✘ Image ghcr.io/666ghj/mirofish:latest Error Get \"https://ghcr.io/v2/\": EOF 7.9s Error response from daemon: Get \"https://ghcr.io/v2/\": EOF",
+      "comment_count": 0,
+      "recent_comments": []
     },
     {
       "number": 99,
@@ -122,7 +229,18 @@
       "labels": [
         "enhancement"
       ],
-      "author": "linqiu919"
+      "author": "linqiu919",
+      "body_excerpt": "arm架构机器使用docker-compose部署提示： `no matching manifest for linux/arm64/v8 in the manifest list entries ` 可以调整一下工作流的脚本，支持一下么？",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "dosubot[bot]",
+          "created_at": "2026-03-09T06:54:58Z",
+          "updated_at": "2026-03-09T06:54:58Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/99#issuecomment-4021549881",
+          "body_excerpt": "<!-- Answer --> 好消息！当前的工作流 [`.github/workflows/docker-image.yml`](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d680682c741a44eeebe/.github/workflows/docker-image.yml) 已经配置了 QEMU 和 Buildx（支持多架构构建的必要组件），只需要在构建步骤中添加 `platforms…"
+        }
+      ]
     },
     {
       "number": 93,
@@ -135,7 +253,18 @@
       "labels": [
         "enhancement"
       ],
-      "author": "HexStan"
+      "author": "HexStan",
+      "body_excerpt": "https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d680682c741a44eeebe/frontend/src/api/index.js#L5 如#59 #57 所发现的一样，在上传文件时前端会尝试跳转硬编码的`localhost:5001`，这就意味着我只能在部署mirofish的本机上使用，并且在Docker部署时也不能映射其他的端口，对服务器环境很不友好。我代码水平不够，不知道应该怎么修，所以希望作者可以修一下，谢谢！",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "hxx221",
+          "created_at": "2026-03-09T01:53:47Z",
+          "updated_at": "2026-03-09T01:53:47Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/93#issuecomment-4020607805",
+          "body_excerpt": "VITE_API_BASE_URL 你修改这个配置就可以了吧，那个5001是容错的，没有VITE_API_BASE_URL配置才会启用这个吧"
+        }
+      ]
     },
     {
       "number": 92,
@@ -148,7 +277,10 @@
       "labels": [
         "enhancement"
       ],
-      "author": "leon-x-labs"
+      "author": "leon-x-labs",
+      "body_excerpt": "",
+      "comment_count": 0,
+      "recent_comments": []
     },
     {
       "number": 56,
@@ -159,7 +291,32 @@
       "updated_at": "2026-03-06T01:40:22Z",
       "closed_at": null,
       "labels": [],
-      "author": "666ghj"
+      "author": "666ghj",
+      "body_excerpt": "很多小伙伴已经实现了自己的 Zep 本地化版本，这非常酷！为了方便社区查阅及参考，特开此 Issue 进行统一的展示与讨论。",
+      "comment_count": 7,
+      "recent_comments": [
+        {
+          "author": "jstdoit",
+          "created_at": "2026-01-23T07:40:33Z",
+          "updated_at": "2026-01-23T07:40:33Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/56#issuecomment-3788811442",
+          "body_excerpt": "好多小伙伴虽然实现了，但是效果一般啊，很多效果都没达到zep的"
+        },
+        {
+          "author": "666ghj",
+          "created_at": "2026-01-23T07:43:29Z",
+          "updated_at": "2026-01-23T07:45:28Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/56#issuecomment-3788820464",
+          "body_excerpt": "Issue： https://github.com/666ghj/MiroFish/issues/55#issue-3845610782 https://github.com/666ghj/MiroFish/issues/41#issuecomment-3776456714 https://github.com/666ghj/MiroFish/issues/35#issue-3828698112 PR： https://github.com/666ghj/MiroFish/…"
+        },
+        {
+          "author": "666ghj",
+          "created_at": "2026-01-23T07:44:09Z",
+          "updated_at": "2026-01-23T07:44:09Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/56#issuecomment-3788822532",
+          "body_excerpt": "> 好多小伙伴虽然实现了，但是效果一般啊，很多效果都没达到zep的 是的，可以再广泛的调研一下，agent记忆方面的论文很多"
+        }
+      ]
     },
     {
       "number": 68,
@@ -172,7 +329,25 @@
       "labels": [
         "question"
       ],
-      "author": "GarretRen"
+      "author": "GarretRen",
+      "body_excerpt": "<img width=\"1917\" height=\"1884\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/a3b1f1c4-b406-4918-8c7a-7065e7d8dabb\" /> 我尝试进行了一次模拟，选择40轮，需要进行多久呢？此处的60min每轮，代表需要真实世界的60min吗？昨天放了一晚上也没好，看起来控制台在重复输出这样的内容 <img width=\"1734\" height=\"2887\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/cf505633-93ae-432c-99a3-85fae480919d\" /> 另外我在尝试弄清楚发生了什么的时候，尝试打开后端api界面(http://localhost:5001/)…",
+      "comment_count": 2,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-02-28T08:06:05Z",
+          "updated_at": "2026-02-28T08:06:05Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/68#issuecomment-3976635156",
+          "body_excerpt": "看一下后端文件夹中的模拟日志，类似于在backend/uploads/simulations/sim_id/simulation.log，控制台显示的是日志信息获取接口200，你这个应该是模拟任务出bug了，因为他内部用了机器学习模型做推荐算法，盲猜是从huggingface上拉模型的时候网络错误了。你有更多反馈的话可以贴出来，我再看看。"
+        },
+        {
+          "author": "GarretRen",
+          "created_at": "2026-03-01T08:29:56Z",
+          "updated_at": "2026-03-01T08:29:56Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/68#issuecomment-3979489505",
+          "body_excerpt": "感谢帮助，确实是网络问题。在使用全局vpn之后，问题解决了"
+        }
+      ]
     },
     {
       "number": 75,
@@ -183,7 +358,25 @@
       "updated_at": "2026-02-28T08:13:33Z",
       "closed_at": null,
       "labels": [],
-      "author": "fengkuangyibo"
+      "author": "fengkuangyibo",
+      "body_excerpt": "",
+      "comment_count": 2,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-02-28T08:09:36Z",
+          "updated_at": "2026-02-28T08:09:36Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/75#issuecomment-3976640239",
+          "body_excerpt": "> No description provided. 现在重试机制好像写的不太行，zep卡了以后就要重跑了，这部分我最近优化一下，可以先试一个小一点的文档，把流程先跑通。稍微大一点的任务充一个zep会员额度够够的，用不完，我觉得还是很划算的。也可以用完以后换一个邮箱，他是按照邮箱送每月额度的。 实在不行邮箱联系我，我自己充了一些额度，给你测试用一下。"
+        },
+        {
+          "author": "666ghj",
+          "created_at": "2026-02-28T08:13:21Z",
+          "updated_at": "2026-02-28T08:13:33Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/75#issuecomment-3976645572",
+          "body_excerpt": "现在主页挂了一个在线演示demo，老哥感兴趣可以玩一下：https://666ghj.github.io/mirofish-demo/"
+        }
+      ]
     },
     {
       "number": 76,
@@ -196,7 +389,18 @@
       "labels": [
         "Memory Layer"
       ],
-      "author": "Hitomogami"
+      "author": "Hitomogami",
+      "body_excerpt": "目前知识图谱的生成依赖于 zep 的api 接口，整个过程较为黑箱，同时免费额度有限，能否考虑接入 ragflow 的 api？ ragflow 是一个本地部署很方便的项目，可以通过 api 发起知识图谱创建的请求，也可以手动制作知识图谱后直接通过 api 调用，自定义程度高，且使用的都是通用大模型 api，成本更可控，自定义程度更高。 ragflow 项目地址：https://github.com/infiniflow/ragflow",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-02-28T08:02:10Z",
+          "updated_at": "2026-02-28T08:02:10Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/76#issuecomment-3976629901",
+          "body_excerpt": "感谢反馈，我近期看一下是否合适"
+        }
+      ]
     },
     {
       "number": 9,
@@ -207,7 +411,32 @@
       "updated_at": "2026-02-21T09:55:20Z",
       "closed_at": null,
       "labels": [],
-      "author": "LMG-arch"
+      "author": "LMG-arch",
+      "body_excerpt": "希望可以中断重新加载，有时候调用大模型会出错就要重新开始了，",
+      "comment_count": 4,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2025-12-31T03:40:35Z",
+          "updated_at": "2025-12-31T03:40:35Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/9#issuecomment-3701372628",
+          "body_excerpt": "> 希望可以中断重新加载，有时候调用大模型会出错就要重新开始了， 好，可以具体说一下场景吗，是在模拟过程中还是前面生成配置的过程中，或者是后面report的环节？因为我记得运行时加了重试机制的嘞。"
+        },
+        {
+          "author": "LMG-arch",
+          "created_at": "2025-12-31T03:43:45Z",
+          "updated_at": "2025-12-31T03:43:45Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/9#issuecomment-3701377365",
+          "body_excerpt": "> > 希望可以中断重新加载，有时候调用大模型会出错就要重新开始了， > > 好，可以具体说一下场景吗，是在模拟过程中还是前面生成配置的过程中，或者是后面report的环节？因为我记得运行时加了重试机制的嘞。 在模拟过程中，我使用阿里百炼的时候免费额度用完以后他就断了，重新配置启动以后就要重新模拟了"
+        },
+        {
+          "author": "666ghj",
+          "created_at": "2025-12-31T19:33:31Z",
+          "updated_at": "2025-12-31T19:33:31Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/9#issuecomment-3702763655",
+          "body_excerpt": "> > > 希望可以中断重新加载，有时候调用大模型会出错就要重新开始了， > > > > > > 好，可以具体说一下场景吗，是在模拟过程中还是前面生成配置的过程中，或者是后面report的环节？因为我记得运行时加了重试机制的嘞。 > > 在模拟过程中，我使用阿里百炼的时候免费额度用完以后他就断了，重新配置启动以后就要重新模拟了 模拟过程中这个目前没有办法，因为直接使用的是第三方库，开源为了大家部署方便没有使用源码部署，后续应该会开个分支，把专业开发版分出来就可以更改了"
+        }
+      ]
     },
     {
       "number": 69,
@@ -220,7 +449,18 @@
       "labels": [
         "question"
       ],
-      "author": "wjh-w"
+      "author": "wjh-w",
+      "body_excerpt": "我们使用mirofish 的时候可以对接 哪些模型可以帮忙解答一下，比如 # ===== ZEP记忆图谱配置 ===== # 每月免费额度即可支撑简单使用：https://app.getzep.com/ 这个额度用完了还可以使用哪个模型接口，或者说适配哪些模型接口 等等一系列的 都有哪些呢？",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "dosubot[bot]",
+          "created_at": "2026-02-10T07:56:20Z",
+          "updated_at": "2026-02-10T07:56:20Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/69#issuecomment-3875973660",
+          "body_excerpt": "<!-- Answer --> MiroFish 支持对接任何兼容 OpenAI SDK 格式的 LLM API，比如 OpenAI、Azure OpenAI、阿里云百炼（qwen-plus）、以及本地自部署的 OpenAI 兼容模型等。你只需要在 .env 配置文件中填写对应的 LLM_API_KEY、LLM_BASE_URL 和 LLM_MODEL_NAME，就可以切换不同的模型接口。例如官方推荐的配置是阿里云百炼的 qwen-plus 模型，也可以直接用 OpenAI…"
+        }
+      ]
     },
     {
       "number": 37,
@@ -231,7 +471,18 @@
       "updated_at": "2026-02-09T04:54:14Z",
       "closed_at": null,
       "labels": [],
-      "author": "Ezj-Amon"
+      "author": "Ezj-Amon",
+      "body_excerpt": "这个报错不知道是为啥",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "maicent",
+          "created_at": "2026-02-09T04:54:14Z",
+          "updated_at": "2026-02-09T04:54:14Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/37#issuecomment-3869291906",
+          "body_excerpt": "我也遇到了相同问题，请问如何解决"
+        }
+      ]
     },
     {
       "number": 60,
@@ -242,7 +493,32 @@
       "updated_at": "2026-01-28T08:36:57Z",
       "closed_at": null,
       "labels": [],
-      "author": "Jonah-Wu23"
+      "author": "Jonah-Wu23",
+      "body_excerpt": "问题反馈：图谱构建时遇到 Zep 429 限流 现象： 在构建图谱时（调用 Zep Graph API），后台出现 429： [backend] [23:36:22] ERROR: [e1379cb6-ee6b-4989-810b-63ef2e07fa84] 图谱构建失败: headers: {'date': 'Sat, 24 Jan 2026 15:36:21 GMT', 'content-type': 'text/plain; charset=utf-8', 'content-length': '34', 'connection': 'keep-alive', 'cf-ray': '9c309b1a5c42db20-MNL', 'retry-after': '60', 'vary': 'Origin', 'x-content-type-options': 'nosniff', 'x-…",
+      "comment_count": 4,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-01-24T16:17:07Z",
+          "updated_at": "2026-01-24T16:17:07Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/60#issuecomment-3794956637",
+          "body_excerpt": "感谢反馈"
+        },
+        {
+          "author": "jstdoit",
+          "created_at": "2026-01-27T15:11:45Z",
+          "updated_at": "2026-01-27T15:11:45Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/60#issuecomment-3805766080",
+          "body_excerpt": "这个还挺头疼的，导致demo可以，实用上稍微不理想"
+        },
+        {
+          "author": "magicnight",
+          "created_at": "2026-01-27T17:34:00Z",
+          "updated_at": "2026-01-27T17:34:00Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/60#issuecomment-3806536285",
+          "body_excerpt": "免费版本只有1000个额度，基本跑一两个实验性的就没了。充值吧，要么考虑自己本地搞。"
+        }
+      ]
     },
     {
       "number": 61,
@@ -253,7 +529,18 @@
       "updated_at": "2026-01-28T08:35:08Z",
       "closed_at": null,
       "labels": [],
-      "author": "skoa323"
+      "author": "skoa323",
+      "body_excerpt": "",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-01-28T08:35:08Z",
+          "updated_at": "2026-01-28T08:35:08Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/61#issuecomment-3809795302",
+          "body_excerpt": "可以详细描述一下吗，不是很懂"
+        }
+      ]
     },
     {
       "number": 62,
@@ -264,7 +551,18 @@
       "updated_at": "2026-01-28T08:34:36Z",
       "closed_at": null,
       "labels": [],
-      "author": "piaopiaomiaomiao"
+      "author": "piaopiaomiaomiao",
+      "body_excerpt": "1，我也是ollama本地部署，用的是qwen3 A3B那个模型，图谱用的zep，下一步也考虑本地，如果有整合本地包就更好了~~ 2，使用了三天了，跑了4个项目，都不大，zep一共用了200多，小规模实验用还好。 3,4个小项目的共性问题是形成结果后报告助手沟通没问题，但是单人采访不行，报错504. 4，建议自定义轮数可以一开始就填入，给一个一键运行到底的按钮，这样提交完现实种子，选好轮数，点一下就可以静候佳音了，现在中间还要确定两次。 5，up加油！！",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-01-28T08:34:36Z",
+          "updated_at": "2026-01-28T08:34:36Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/62#issuecomment-3809793307",
+          "body_excerpt": "> 1，我也是ollama本地部署，用的是qwen3 A3B那个模型，图谱用的zep，下一步也考虑本地，如果有整合本地包就更好了~~ 2，使用了三天了，跑了4个项目，都不大，zep一共用了200多，小规模实验用还好。 3,4个小项目的共性问题是形成结果后报告助手沟通没问题，但是单人采访不行，报错504. 4，建议自定义轮数可以一开始就填入，给一个一键运行到底的按钮，这样提交完现实种子，选好轮数，点一下就可以静候佳音了，现在中间还要确定两次。 5，up加油！！ 第三个采访，i…"
+        }
+      ]
     },
     {
       "number": 58,
@@ -275,7 +573,32 @@
       "updated_at": "2026-01-24T16:18:14Z",
       "closed_at": null,
       "labels": [],
-      "author": "ThomasWang071001"
+      "author": "ThomasWang071001",
+      "body_excerpt": "如果本地大模型响应时间太长（超过300000ms）则会出现error并且即使后台监控大模型完成了输出前端也无法正常显示 有没有办法把这个超时限制关掉",
+      "comment_count": 3,
+      "recent_comments": [
+        {
+          "author": "ThomasWang071001",
+          "created_at": "2026-01-24T12:30:18Z",
+          "updated_at": "2026-01-24T12:30:18Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/58#issuecomment-3794560081",
+          "body_excerpt": "backend会不断试图进行本体生成 [backend] * Serving Flask app 'app' [backend] * Debug mode: on [backend] WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead. [backend] * Running on all a…"
+        },
+        {
+          "author": "puji4810",
+          "created_at": "2026-01-24T12:38:17Z",
+          "updated_at": "2026-01-24T12:38:17Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/58#issuecomment-3794571191",
+          "body_excerpt": "源码部署自己修改一下咯。本地ai又慢又弱，不推荐。你这响应时间超过300000ms了还是用api吧"
+        },
+        {
+          "author": "666ghj",
+          "created_at": "2026-01-24T16:18:13Z",
+          "updated_at": "2026-01-24T16:18:13Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/58#issuecomment-3794961360",
+          "body_excerpt": "这个让ai帮忙定位一下，一个超时参数的数值问题"
+        }
+      ]
     },
     {
       "number": 46,
@@ -286,7 +609,25 @@
       "updated_at": "2026-01-23T10:34:52Z",
       "closed_at": null,
       "labels": [],
-      "author": "Vamco2022"
+      "author": "Vamco2022",
+      "body_excerpt": "npm run setup:all提示 Please use a simple string containing a SPDX expression for `project.license`. You can also use `project.license-files`. (Both options available on setuptools>=77.0.0). By 2026-Feb-18, you need to update your project and remove deprecated calls or your builds will no longer be supported. See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for deta…",
+      "comment_count": 2,
+      "recent_comments": [
+        {
+          "author": "wjcwqc",
+          "created_at": "2026-01-22T09:09:47Z",
+          "updated_at": "2026-01-22T09:09:47Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/46#issuecomment-3783323757",
+          "body_excerpt": "python3.12 venv 可以借解决 tiktoken没有提供高版本python的wheel"
+        },
+        {
+          "author": "Vamco2022",
+          "created_at": "2026-01-23T10:34:52Z",
+          "updated_at": "2026-01-23T10:34:52Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/46#issuecomment-3789585469",
+          "body_excerpt": "现在没事了，给自己气笑了，uv自带python的版本问题"
+        }
+      ]
     },
     {
       "number": 55,
@@ -297,7 +638,18 @@
       "updated_at": "2026-01-23T06:27:04Z",
       "closed_at": null,
       "labels": [],
-      "author": "xumengke2025-sys"
+      "author": "xumengke2025-sys",
+      "body_excerpt": "感谢博主的思路和分享！因为我的zep限额一下就用完了还经常返回超时报错，所以做了个基于本地部署neo4j的版本，neo4j的设置也体现在env文件里，优点是终于稳定了也可以无限生成了，缺点是比zep要慢；可以联系博主直接把项目包发你吗",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-01-23T06:27:04Z",
+          "updated_at": "2026-01-23T06:27:04Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/55#issuecomment-3788527267",
+          "body_excerpt": "厉害👍，网络上确实有一些本地化的实现方式，如果你愿意的话，可以把你的方法提pr出来，我们会把所有本地化的方案都放在首页供大家参考的。"
+        }
+      ]
     },
     {
       "number": 54,
@@ -308,7 +660,10 @@
       "updated_at": "2026-01-23T02:39:53Z",
       "closed_at": null,
       "labels": [],
-      "author": "zb2947244682"
+      "author": "zb2947244682",
+      "body_excerpt": "太喜欢你这个项目了！给了我巨大的帮助！ 我正好也在研究这个方向。",
+      "comment_count": 0,
+      "recent_comments": []
     },
     {
       "number": 52,
@@ -319,7 +674,10 @@
       "updated_at": "2026-01-22T13:25:33Z",
       "closed_at": null,
       "labels": [],
-      "author": "ngyygm"
+      "author": "ngyygm",
+      "body_excerpt": "在调用自己部署的API时，模型最大长度如果小于18000可能会报错。 个人使用的时候，显示系统传输的token数在16384，我设定的是16000最大长度，然后我改成320000就能正常跑了。",
+      "comment_count": 0,
+      "recent_comments": []
     },
     {
       "number": 24,
@@ -330,7 +688,25 @@
       "updated_at": "2026-01-21T13:28:41Z",
       "closed_at": null,
       "labels": [],
-      "author": "Joe-rq"
+      "author": "Joe-rq",
+      "body_excerpt": "ERROR: 报告生成失败: 'NoneType' object is not subscriptable LLM返回了一个异常长的响应（4856字符），内容是重复的文本\"意识流捕获、语义锚点、灵感固化。探究AI如何处理\"非线性跳跃\"。\"重复了上百次 LLM返回了空响应（response_length: 0），这导致后续代码尝试访问None对象时出错 问题根源： LLM API返回了空响应或异常响应，导致代码在处理时出现 'NoneType' object is not subscriptable 错误。",
+      "comment_count": 2,
+      "recent_comments": [
+        {
+          "author": "moonhalf-nostar",
+          "created_at": "2026-01-19T09:55:33Z",
+          "updated_at": "2026-01-19T09:55:33Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/24#issuecomment-3767439957",
+          "body_excerpt": "可以把详细的日志贴出来，方便后续修复 bug"
+        },
+        {
+          "author": "xyz50270",
+          "created_at": "2026-01-21T13:28:41Z",
+          "updated_at": "2026-01-21T13:28:41Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/24#issuecomment-3778142354",
+          "body_excerpt": "碰上一样的情况了 ``` [21:11:54] INFO: 从 reddit_profiles.json 加载了 34 个人设 [21:11:54] INFO: 加载到 34 个Agent人设 [21:12:09] INFO: 选择了 5 个Agent进行采访: [1, 2, 3, 30, 6] [21:12:22] INFO: 生成了 5 个采访问题 [21:12:22] INFO: 调用批量采访API（双平台）: 5 个Agent [21:12:37] INFO: 采访…"
+        }
+      ]
     },
     {
       "number": 45,
@@ -341,7 +717,18 @@
       "updated_at": "2026-01-21T07:11:18Z",
       "closed_at": null,
       "labels": [],
-      "author": "LucasXu666666"
+      "author": "LucasXu666666",
+      "body_excerpt": "前端报错信息： <img width=\"1453\" height=\"588\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/ed8cdb71-c7b8-463c-b287-e69ae82ae474\" /> 后端报错信息： [backend] [14:42:38] INFO: 发送批量Interview命令: simulation_id=sim_4ba82ee5afeb, count=1, platform=None [backend] [14:42:38] INFO: 发送IPC命令: batch_interview, command_id=fc8bf264-c5c5-43ab-bbe4-c93f99d55cb3 [backend] [14:42:39] INFO: 收到IPC响应: command_id=fc8b…",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-01-21T07:11:18Z",
+          "updated_at": "2026-01-21T07:11:18Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/45#issuecomment-3776523496",
+          "body_excerpt": "interview_agents 方法依赖于模拟环境处于运行状态才能运行，也就是需要从第三步跑完以后继续执行才行"
+        }
+      ]
     },
     {
       "number": 43,
@@ -352,7 +739,18 @@
       "updated_at": "2026-01-21T07:10:12Z",
       "closed_at": null,
       "labels": [],
-      "author": "dbplayer-git"
+      "author": "dbplayer-git",
+      "body_excerpt": "<img width=\"1446\" height=\"543\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/5d101d3b-6dbc-43c4-8c68-2493f9badad3\" />",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-01-21T07:10:12Z",
+          "updated_at": "2026-01-21T07:10:12Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/43#issuecomment-3776520523",
+          "body_excerpt": "是不是模拟世界太大了，这样采访接口就会好久"
+        }
+      ]
     },
     {
       "number": 19,
@@ -363,7 +761,18 @@
       "updated_at": "2026-01-15T05:57:37Z",
       "closed_at": null,
       "labels": [],
-      "author": "paperplane123"
+      "author": "paperplane123",
+      "body_excerpt": "没跑完，我的zep一个月额度就没有了，下个月再试吧",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-01-15T05:57:37Z",
+          "updated_at": "2026-01-15T05:57:37Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/19#issuecomment-3753021224",
+          "body_excerpt": "对的，还是建议一万字以内，30轮左右模拟"
+        }
+      ]
     },
     {
       "number": 21,
@@ -374,7 +783,10 @@
       "updated_at": "2026-01-14T08:33:53Z",
       "closed_at": null,
       "labels": [],
-      "author": "usernametooshort"
+      "author": "usernametooshort",
+      "body_excerpt": "做准备等了半天，不敢试，但是我觉得docker在服务器端，我关掉网页再打开应该也还是可以恢复吧 <img width=\"1728\" height=\"965\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/f132121a-ee66-4623-880b-3ea8782c2265\" />",
+      "comment_count": 0,
+      "recent_comments": []
     },
     {
       "number": 17,
@@ -385,7 +797,10 @@
       "updated_at": "2026-01-06T09:07:51Z",
       "closed_at": null,
       "labels": [],
-      "author": "tt-a1i"
+      "author": "tt-a1i",
+      "body_excerpt": "## 背景 我觉得这个项目做的很棒，很有意思，这两天跑了几轮，发现单次仿真的结果可能比较受模型偏好的影响？——同样的输入材料，换个模型，结论可能会有差异。这让我在想：有没有办法让预测结果更稳定、更可信？ ## 想法 核心思路是：**同一份材料跑多次仿真，然后在报告阶段做\"共识提取 + 分歧分析\"**。 具体来说： 1. **固定 Step1/2**：图谱构建和环境配置只跑一次，作为多次仿真的共享基础 2. **Step3 跑 2-3 次**：每次可以用不同的随机种子，或者稍微调整一些参数（比如 temperature） 3. **Step4 做元报告**： - 把\"多次都出现的结论\"作为**共识**（可信度高） - 把\"只在某一次出现的走向\"列为**分歧情景**，并尝试分析触发条件 4. **不同步骤用不同模型**： - 结构化抽取（本体/实体/配置 JSON）用格式稳定、指令遵从强的模…",
+      "comment_count": 0,
+      "recent_comments": []
     },
     {
       "number": 14,
@@ -396,7 +811,18 @@
       "updated_at": "2026-01-06T06:15:22Z",
       "closed_at": null,
       "labels": [],
-      "author": "tt-a1i"
+      "author": "tt-a1i",
+      "body_excerpt": "## What happened When a simulation fails (process crashes, missing deps, etc.), the frontend just sits there showing \"running\" status with no error message. The backend logs the error correctly and returns `runner_status: 'failed'` with an error message, but the UI never picks it up. Ran into this while testing locally - took me a while to figure out why nothing was happening. ## Steps to reprodu…",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-01-06T06:15:22Z",
+          "updated_at": "2026-01-06T06:15:22Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/14#issuecomment-3713269669",
+          "body_excerpt": "I'll investigate this, and you're also welcome to submit a PR first."
+        }
+      ]
     }
   ],
   "pull_requests": [
@@ -422,6 +848,25 @@
         "size:L"
       ],
       "author": "hobostay",
+      "body_excerpt": "## 问题概述 这个PR修复了项目中发现的多个安全问题和代码质量问题。 ## 安全修复 1. **硬编码的SECRET_KEY** - `backend/app/config.py` - 之前：使用硬编码的`'mirofish-secret-key'`作为默认值 - 现在：如果未设置环境变量，会生成随机密钥并发出警告 2. **DEBUG模式默认为True** - `backend/app/config.py` - 之前：`DEBUG`默认为`True` - 现在：`DEBUG`默认为`False`，生产环境更安全 3. **CORS配置允许所有来源** - `backend/app/__init__.py` - 之前：`CORS(app, resources={r\"/api/*\": {\"origins\": \"*\"}})` - 现在：通过环境变量`CORS_ALLOWED_ORIGINS…",
+      "comment_count": 2,
+      "review_comment_count": 0,
+      "recent_comments": [
+        {
+          "author": "JasonOA888",
+          "created_at": "2026-03-09T17:00:24Z",
+          "updated_at": "2026-03-09T17:00:24Z",
+          "url": "https://github.com/666ghj/MiroFish/pull/105#issuecomment-4025290222",
+          "body_excerpt": "## 代码审查反馈 优秀的PR！这些安全修复非常关键，特别是生产环境部署时。 ### 几个建议： 1. **SECRET_KEY随机生成** - 建议添加日志记录生成的key，方便调试但不要泄露到错误响应中 2. **CORS配置** - 考虑添加`CORS_ALLOW_METHODS`和`CORS_ALLOW_HEADERS`配置，提供更细粒度的控制 3. **error_handler.py** - 建议添加自定义异常类型，让API可以抛出特定错误而不是通用Except…"
+        },
+        {
+          "author": "hobostay",
+          "created_at": "2026-03-11T05:48:53Z",
+          "updated_at": "2026-03-11T05:48:53Z",
+          "url": "https://github.com/666ghj/MiroFish/pull/105#issuecomment-4036667034",
+          "body_excerpt": "@JasonOA888 感谢您的审查反馈！我已经根据您的建议完成了所有修改： **✅ 1. SECRET_KEY随机生成** - 使用 `secrets.token_hex(32)` 生成随机密钥 - 添加日志记录生成的key（方便调试） - 密钥只记录到日志，不会泄露到API错误响应中 **✅ 2. CORS细粒度配置** - 新增 `CORS_ALLOW_METHODS` 环境变量（默认：GET,POST,PUT,DELETE,OPTIONS） - 新增 `CORS_A…"
+        }
+      ],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-105"
     },
@@ -447,6 +892,10 @@
         "size:L"
       ],
       "author": "Noblegasesgoo",
+      "body_excerpt": "## PR Title docs(readme): simplify system architecture section to Layer Breakdown + Project Code Structure Tree only ## Summary This PR simplifies the **System Architecture** section in both Chinese and English README files by keeping only two high-signal sections: - **Layer Breakdown** - **Project Code Structure Tree** The previously added overall architecture diagram and related agent-intro blo…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-132"
     },
@@ -472,6 +921,10 @@
         "size:L"
       ],
       "author": "EuanTop",
+      "body_excerpt": "## Description Adds automatic retry mechanism to handle transient network errors when connecting to Zep Cloud API. This prevents graph build failures caused by temporary connection issues such as \"Connection reset by peer\" (errno 54). The retry logic uses exponential backoff (2s, 4s, 6s) and provides detailed progress feedback to users. ## Changes - Added retry logic (max 3 attempts) to `create_g…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-131"
     },
@@ -497,6 +950,10 @@
         "size:M"
       ],
       "author": "M-Tlinqinming",
+      "body_excerpt": "",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-130"
     },
@@ -522,6 +979,10 @@
         "size:M"
       ],
       "author": "ai-x-builder",
+      "body_excerpt": "Add error handling in LLMClient for context_length_exceeded errors with automatic message trimming and retry (fixes https://github.com/666ghj/MiroFish/issues/52) Add configurable LLM_MAX_TOKENS env variable (default 4096) so users with different models can set appropriate limits Add message history pruning in report agent ReACT loop to prevent unbounded context growth that causes token overflow I…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-129"
     },
@@ -547,6 +1008,10 @@
         "size:XXL"
       ],
       "author": "ZaviQ7",
+      "body_excerpt": "## Summary This PR improves the robustness of the MiroFish backend by implementing two key architectural improvements: ### 1. Custom Exception Hierarchy - Created a `MiroFishError` base class with error codes, severity levels, and HTTP status codes. - Added domain-specific exceptions for Configuration, Graphs, Simulations, and External APIs to replace generic Exception catches. ### 2. Enhanced Co…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-126"
     },
@@ -572,6 +1037,10 @@
         "size:S"
       ],
       "author": "SergioChan",
+      "body_excerpt": "## Summary Improve frontend error feedback when creating a new project so users can quickly diagnose \"Network Error\" and timeout failures instead of seeing a generic message. ## Changes - Added `formatProjectInitError` in `frontend/src/views/Process.vue` - Distinguish timeout errors and provide actionable hint (reduce file size / check model speed) - Distinguish network errors and show configured…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-125"
     },
@@ -597,6 +1066,10 @@
         "size:M"
       ],
       "author": "SergioChan",
+      "body_excerpt": "## SummarynnHarden backend JSON parsing for LLM responses so mixed outputs (markdown fences, pre/post text) are handled more robustly, reducing 500 errors reported during ontology generation.nn## Changesnn- Updated `LLMClient.chat()` to remove `<think ...>...</think>` tags case-insensitivelyn- Added `LLMClient._extract_json_payload()` to normalize and extract JSON from noisy model responsesn- Upd…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-124"
     },
@@ -622,6 +1095,10 @@
         "size:XS"
       ],
       "author": "ImL1s",
+      "body_excerpt": "## Problem `chat_json()` uses `response_format={\"type\": \"json_object\"}`, but LM Studio and Ollama do not support this parameter (only `json_schema` or `text`), causing API calls to fail when using local LLMs. Related references: - LM Studio: https://github.com/lmstudio-ai/lmstudio-bug-tracker/issues/534 - Similar to issue #110 (API call failures) ## Solution Remove `response_format` from `chat_js…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-122"
     },
@@ -647,6 +1124,25 @@
         "size:XXL"
       ],
       "author": "Pratiyankkumar",
+      "body_excerpt": "Right now the content of the website is mostly in Chinese , Added an button to switch between Chinese and english language . [`Demo Video`](https://drive.google.com/file/d/15VYI0J1SoDRf27Zvprm1P-D4MO8hA7yE/view?usp=sharing)",
+      "comment_count": 2,
+      "review_comment_count": 0,
+      "recent_comments": [
+        {
+          "author": "Pratiyankkumar",
+          "created_at": "2026-03-10T18:14:16Z",
+          "updated_at": "2026-03-10T18:14:16Z",
+          "url": "https://github.com/666ghj/MiroFish/pull/119#issuecomment-4033470105",
+          "body_excerpt": "<img width=\"1470\" height=\"835\" alt=\"Screenshot 2026-03-10 at 11 42 33 PM\" src=\"https://github.com/user-attachments/assets/1483f8c1-da70-4d76-8058-6a5752204564\" /> **PR summary (last two prompts):** 1. **Error message i18n** – Added `errors…"
+        },
+        {
+          "author": "Pratiyankkumar",
+          "created_at": "2026-03-10T18:14:33Z",
+          "updated_at": "2026-03-10T18:14:33Z",
+          "url": "https://github.com/666ghj/MiroFish/pull/119#issuecomment-4033471655",
+          "body_excerpt": "@hzr1937 please review"
+        }
+      ],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-119"
     },
@@ -673,6 +1169,10 @@
         "size:XXL"
       ],
       "author": "pratyush618",
+      "body_excerpt": "…eline compliance - Add RagflowGraphBuilderService and RagflowEntityReader for self-hosted graph support - Add _get_entity_reader() helper in simulation.py to auto-select reader by graph_id prefix - Fix 4 simulation endpoints (get_graph_entities, get_entity_detail, get_entities_by_type, generate_profiles) to support ragflow_ graph IDs - Guard ZepGraphMemoryManager.create_updater() to skip for RAG…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-118"
     },
@@ -697,6 +1197,10 @@
         "size:XS"
       ],
       "author": "ailuntz",
+      "body_excerpt": "Fixes #92.\\n\\nBump checkout and build-push to latest major versions.",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-116"
     },
@@ -721,6 +1225,10 @@
         "size:XS"
       ],
       "author": "ailuntz",
+      "body_excerpt": "Fixes #46.\\n\\nSwitch project.license to SPDX string to avoid the deprecation warning.",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-115"
     },
@@ -745,6 +1253,10 @@
         "size:S"
       ],
       "author": "ailuntz",
+      "body_excerpt": "Fixes #93.\\n\\nUse VITE_API_BASE_URL when set; otherwise default to current origin.",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-114"
     },
@@ -770,6 +1282,10 @@
         "size:L"
       ],
       "author": "eltociear",
+      "body_excerpt": "I created Japanese translated README.",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-113"
     },
@@ -795,6 +1311,10 @@
         "size:L"
       ],
       "author": "waitle",
+      "body_excerpt": "AI translated Korean readme file",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-112"
     },
@@ -819,6 +1339,32 @@
         "size:S"
       ],
       "author": "MoeclubM",
+      "body_excerpt": "生成本体结构时部分模型（已测试minimax-m2.1 minimax-m2.5 glm-4.7 glm-5都有相同情况）似乎不遵守json_object的格式，会返回markdown包裹的json代码块 导致json.loads()解析错误 对md代码块标记进行了清理并额外增加了try except防止出错导致500 https://github.com/666ghj/MiroFish/issues/64 https://github.com/666ghj/MiroFish/issues/58 https://github.com/666ghj/MiroFish/issues/48 不确定是否都是这个原因导致的",
+      "comment_count": 3,
+      "review_comment_count": 3,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-03-05T16:07:48Z",
+          "updated_at": "2026-03-05T16:07:48Z",
+          "url": "https://github.com/666ghj/MiroFish/pull/72#issuecomment-4006153143",
+          "body_excerpt": "经过测试好像这样依旧会500，你调试的时候是可以解决问题的吗？"
+        },
+        {
+          "author": "666ghj",
+          "created_at": "2026-03-05T16:19:41Z",
+          "updated_at": "2026-03-05T16:19:41Z",
+          "url": "https://github.com/666ghj/MiroFish/pull/72#issuecomment-4006236547",
+          "body_excerpt": "我找到原因了， MiniMax M2.5 是推理模型，即使通过 OpenAI 兼容 API 调用，其 content 字段会包含 <think>...</think> 思维链内容。实际返回大致如下： ``` <think> 用户需要我生成一个本体结构...让我分析这些文档... </think> ```json {\"entity_types\": [...], \"edge_types\": [...]} ``` 而 `chat_json()` 直接对整个 `content` 做…"
+        },
+        {
+          "author": "Gresdy",
+          "created_at": "2026-03-10T02:58:06Z",
+          "updated_at": "2026-03-10T02:58:45Z",
+          "url": "https://github.com/666ghj/MiroFish/pull/72#issuecomment-4028265481",
+          "body_excerpt": "最新的代码，今天使用minimax2.5还是存在500错误 [backend] [02:52:07] INFO: 调用 LLM 生成本体定义... [backend] 192.168.65.1 - - [10/Mar/2026 02:52:09] \"POST /api/graph/ontology/generate HTTP/1.1\" 500 -"
+        }
+      ],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-72"
     },
@@ -844,6 +1390,10 @@
         "size:XL"
       ],
       "author": "JasonOA888",
+      "body_excerpt": "Implements #70 - Windows installation program packaging ## Features - PowerShell build script with embedded Python and PyInstaller modes - Inno Setup integration for professional installer - Portable version generation - API key configuration during installation - Desktop and Start Menu shortcuts ## Build Options ``` ./installer/build.ps1 # Default (embedded Python) ./installer/build.ps1 -PyInsta…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-108"
     },
@@ -869,6 +1419,10 @@
         "size:M"
       ],
       "author": "nil957",
+      "body_excerpt": "## Summary This PR addresses issue #93 - `frontend/src/api/index.js`中的`baseURL`不应该硬编码 ## Problem While `api/index.js` already supports `VITE_API_BASE_URL`, the vite dev server proxy in `vite.config.js` was still hardcoded to `http://localhost:5001`, causing issues when: - Deploying with Docker using custom port mappings - Running backend on a remote server - Using non-standard ports ## Changes 1.…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-104"
     },
@@ -894,6 +1448,10 @@
         "size:XS"
       ],
       "author": "nil957",
+      "body_excerpt": "## Summary This PR addresses two issues: - #92 - Upgrade GitHub Actions - #99 - Docker镜像没有arm版本 ## Changes 1. **Upgraded docker/build-push-action** from v5 to v6 2. **Added multi-platform build support** for both `linux/amd64` and `linux/arm64` 3. **Added GitHub Actions cache** (`cache-from` and `cache-to`) for faster subsequent builds ## Benefits - Users on ARM-based machines can now use the off…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-103"
     },
@@ -919,6 +1477,10 @@
         "size:XS"
       ],
       "author": "JasonOA888",
+      "body_excerpt": "## Problem ARM64 machines (e.g., Apple Silicon Macs, ARM servers) cannot deploy MiroFish via Docker: ``` no matching manifest for linux/arm64/v8 in the manifest list entries ``` ## Solution Add `platforms: linux/amd64,linux/arm64` to `docker/build-push-action`. The workflow already has QEMU and Buildx configured, just needed the platforms flag. ## Changes - Update `.github/workflows/docker-image.…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-102"
     },
@@ -944,6 +1506,10 @@
         "size:M"
       ],
       "author": "JasonOA888",
+      "body_excerpt": "## Problem Some LLM models don't respect `json_object` format and return markdown-wrapped JSON: ``` ```json {\"key\": \"value\"} ``` ``` This causes `json.loads()` to fail with JSONDecodeError. Affected models: MiniMax M2.5, GLM-4.7, GLM-5 Related issues: #72, #64, #58, #48 ## Solution Add `json_utils.py` module with: - `clean_llm_json_response()` - Strip markdown code blocks - `parse_llm_json()` - P…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-101"
     },
@@ -969,6 +1535,10 @@
         "size:S"
       ],
       "author": "JasonOA888",
+      "body_excerpt": "## Problem Frontend `baseURL` defaults to `http://localhost:5001` in all environments, causing: 1. Users can only access from the machine running MiroFish 2. Docker deployments with non-5001 ports fail 3. Server deployments require frontend rebuild to change URL ## Solution Make baseURL environment-aware: - **Production**: Use relative path (empty string) for same-origin deployment - **Developmen…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-100"
     },
@@ -993,6 +1563,10 @@
         "size:S"
       ],
       "author": "salmanmkc",
+      "body_excerpt": "## Summary Upgrade GitHub Actions to their latest versions for improved features, bug fixes, and security updates. ## Changes | Action | Old Version(s) | New Version | Release | Files | |--------|---------------|-------------|---------|-------| | `docker/build-push-action` | [`v5`](https://github.com/docker/build-push-action/releases/tag/v5) | [`v7`](https://github.com/docker/build-push-action/re…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-87"
     },
@@ -1017,6 +1591,10 @@
         "size:XS"
       ],
       "author": "salmanmkc",
+      "body_excerpt": "## Summary Upgrade GitHub Actions to their latest versions to ensure compatibility with Node 24, as Node 20 will reach end-of-life in April 2026. ## Changes | Action | Old Version(s) | New Version | Release | Files | |--------|---------------|-------------|---------|-------| | `actions/checkout` | [`v4`](https://github.com/actions/checkout/releases/tag/v4) | [`v6`](https://github.com/actions/chec…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-86"
     },
@@ -1041,6 +1619,10 @@
         "size:XS"
       ],
       "author": "orbisai0security",
+      "body_excerpt": "## Security Fix This PR addresses a **CRITICAL** severity vulnerability detected by our security scanner. ### Security Impact Assessment | Aspect | Rating | Rationale | |--------|--------|-----------| | Impact | Critical | In MiroFish's backend, which likely processes unstructured data including MSG files via the Unstructured library, exploitation could allow an attacker to write arbitrary files…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-82"
     },
@@ -1066,6 +1648,10 @@
         "size:XS"
       ],
       "author": "JasonOA888",
+      "body_excerpt": "## Summary Fixes #58 - 允许用户配置API超时时间以支持响应较慢的本地大模型（如Ollama）。 ## Changes - 添加 `VITE_API_TIMEOUT` 环境变量支持 - 默认保持300000ms（5分钟） - 用户可根据需要增加超时时间 ## Usage 在 `.env` 文件中添加： ```bash # 本地大模型响应较慢时增加超时时间 VITE_API_TIMEOUT=600000 # 10分钟 ``` ## Testing - 默认值300000ms正常工作 - 配置后使用配置的值 Fixes #58",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-81"
     },
@@ -1090,6 +1676,10 @@
         "size:XS"
       ],
       "author": "haosenwang1018",
+      "body_excerpt": "Bare `except:` → `except Exception:` in 3 backend files (4 sites).",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-74"
     },
@@ -1115,6 +1705,10 @@
         "size:S"
       ],
       "author": "calvinguo721",
+      "body_excerpt": "## Problem When LLM returns malformed JSON where `entity_types` or `edge_types` contain strings instead of dictionaries, the `_validate_and_process` method crashes with: ``` TypeError: 'str' object does not support item assignment ``` ## Solution Added type checking in `_validate_and_process`: - If entity/edge is a string, wrap it into proper dict format - Skip invalid (non-dict) entries to preve…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-73"
     },
@@ -1140,6 +1734,18 @@
         "size:XXL"
       ],
       "author": "Jonah-Wu23",
+      "body_excerpt": "### 我做的改动 - 将原项目打包为 **Windows 可安装程序（.exe）** - 安装过程中可直接 **填写 API Key（按提示输入）** - 安装完成后可 **双击主程序自动打开浏览器界面** - 实现 Windows 端 **一键安装与运行体验** ### 打包方法： 使用嵌入式 Python 模式打包（体积较小，适合大多数情况）： ```powershell .\\installer\\build.ps1 ``` 也可以使用PyInstaller 打包： ```powershell .\\installer\\build.ps1 -PyInstaller ``` > ⚠️ 注意：PyInstaller 模式打包时间长，输出文件可能超过 1GB 如果只需要部分步骤，可以使用参数跳过： ```powershell # 跳过前端构建（如果前端没有修改） .\\installer\\bu…",
+      "comment_count": 1,
+      "review_comment_count": 0,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-02-16T20:17:26Z",
+          "updated_at": "2026-02-16T20:17:26Z",
+          "url": "https://github.com/666ghj/MiroFish/pull/70#issuecomment-3910367836",
+          "body_excerpt": "👍👍"
+        }
+      ],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-70"
     },
@@ -1162,6 +1768,25 @@
       "mergeable_state": "dirty",
       "labels": [],
       "author": "SmartisanNaive",
+      "body_excerpt": "This PR introduces native support for the **Anthropic (Claude)** SDK to MiroFish! While the project already supports various models via the OpenAI-compatible interface, integrating the official Anthropic SDK allows us to better leverage the capabilities of models like Claude 4 Sonnet. It also ensures compatibility with providers that follow the Anthropic protocol (e.g., Zhipu AI's GLM-4.7 endpoin…",
+      "comment_count": 2,
+      "review_comment_count": 0,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-01-24T16:20:22Z",
+          "updated_at": "2026-01-24T16:20:22Z",
+          "url": "https://github.com/666ghj/MiroFish/pull/38#issuecomment-3794970052",
+          "body_excerpt": "I appreciate it, but considering that supporting an additional API format would bring unnecessary workload to the subsequent update plans, I will keep this PR to provide ideas for everyone, but it will not be merged before the release of v…"
+        },
+        {
+          "author": "SmartisanNaive",
+          "created_at": "2026-01-24T16:25:40Z",
+          "updated_at": "2026-01-24T16:25:40Z",
+          "url": "https://github.com/666ghj/MiroFish/pull/38#issuecomment-3794988321",
+          "body_excerpt": "Thanks for reading , this is a great project.Your project has brought a lot of inspiration to our researchers working on multi-agent applications, thanks again(●'◡'●) ---Original--- From: ***@***.***&gt; Date: Sun, Jan 25, 2026 00:20 AM To…"
+        }
+      ],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-38"
     },
@@ -1184,6 +1809,10 @@
       "mergeable_state": "dirty",
       "labels": [],
       "author": "Momoyeyu",
+      "body_excerpt": "实现以下了能力： 1. 基于[MiroFishOpt](https://github.com/jwc19890114/MiroFishOpt)，实现本地图谱构建 2. 参考Zep论文，实现记忆图谱的更新 3. 实现图谱节点的去重 存在不足： 1. 尚未实现Zep的时序能力，无法识别并标记过期的记忆 2. 图谱的丰富节点程度不如Zep 3. 使用大模型进行节点去重时的运行速度较慢",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-49"
     },
@@ -1206,6 +1835,10 @@
       "mergeable_state": "clean",
       "labels": [],
       "author": "tt-a1i",
+      "body_excerpt": "## Summary - Add check for `runner_status === 'failed'` in `fetchRunStatus()` to properly display error messages when simulation fails - Previously the UI would stay in \"running\" state indefinitely when simulation failed Closes #14 ## AI Assistance Disclosure I used Codex to review the changes, sanity-check the implementation against existing patterns, and help spot potential edge cases.",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
       "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-15"
     }
