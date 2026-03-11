@@ -116,6 +116,7 @@ cp .env.example .env
 
 ```env
 # LLM API 설정 (OpenAI SDK 형식을 지원하는 모든 LLM API 사용 가능)
+# 표준 OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_API_BASE_URL / OPENAI_MODEL 별칭도 지원합니다
 # 권장: 알리바바 Bailian Platform의 qwen-plus 모델
 # https://bailian.console.aliyun.com/
 # 비용 소모가 클 수 있으므로 처음에는 40라운드 미만으로 테스트를 권장합니다.
@@ -127,6 +128,22 @@ LLM_MODEL_NAME=qwen-plus
 # 간단한 사용에는 월간 무료 할당량으로 충분합니다.
 # https://app.getzep.com/
 ZEP_API_KEY=your_zep_api_key
+```
+
+백엔드는 프로젝트 전용 `LLM_*` 변수와 표준 `OPENAI_*` 별칭을 모두 인식하므로, OpenAI, Codex 호환 게이트웨이, LM Studio, Ollama, Alibaba DashScope Coding Plan 같은 OpenAI-compatible 백엔드에 추가 코드나 `LLM_PROVIDER` 플래그 없이 바로 연결할 수 있습니다.
+
+자주 쓰는 OpenAI-compatible 설정 예시:
+
+```env
+# OpenAI / Codex-compatible gateway
+OPENAI_API_KEY=your_api_key
+OPENAI_API_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-4.1-mini
+
+# Alibaba DashScope Coding Plan
+OPENAI_API_KEY=your_dashscope_key
+OPENAI_API_BASE_URL=https://coding.dashscope.aliyuncs.com/v1
+OPENAI_MODEL=qwen3.5-plus
 ```
 
 #### 2) 의존성 설치

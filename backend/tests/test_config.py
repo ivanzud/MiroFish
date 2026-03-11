@@ -72,7 +72,8 @@ def test_validate_comprehensive_reports_debug_warning_and_safe_summary(monkeypat
     assert summary["zep"]["configured"] is True
     assert summary["cors"]["allowed_origins"] == ["*"]
     assert summary["simulation"]["interview_timeouts"]["single_seconds"] == 120.0
-    assert "api_key" not in str(summary).lower()
+    assert "test-key" not in str(summary)
+    assert "zep-key" not in str(summary)
     assert config_module.validate_on_startup() is True
 
 
@@ -113,4 +114,26 @@ def test_config_parses_cors_csv_environment_variables(monkeypatch):
         ],
         "methods": ["GET", "POST"],
         "allow_headers": ["Content-Type", "X-Locale"],
+    }
+
+
+def test_config_summary_reports_openai_compatible_alias_sources(monkeypatch):
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    monkeypatch.delenv("LLM_BASE_URL", raising=False)
+    monkeypatch.delenv("LLM_MODEL_NAME", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "codex-key")
+    monkeypatch.setenv("OPENAI_API_BASE_URL", "https://codex.example.test/v1")
+    monkeypatch.setenv("OPENAI_MODEL", "gpt-4.1-mini")
+    monkeypatch.setenv("ZEP_API_KEY", "zep-key")
+
+    config_module = load_config_module()
+    summary = config_module.Config.get_config_summary()
+
+    assert summary["llm"]["backend_mode"] == "openai_compatible"
+    assert summary["llm"]["sources"] == {
+        "api_key_env": "OPENAI_API_KEY",
+        "base_url_env": "OPENAI_API_BASE_URL",
+        "model_env": "OPENAI_MODEL",
+        "uses_project_aliases": False,
+        "uses_openai_aliases": True,
     }

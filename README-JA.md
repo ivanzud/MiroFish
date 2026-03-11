@@ -116,6 +116,7 @@ cp .env.example .env
 
 ```env
 # LLM API設定（OpenAI SDK形式の任意のLLM APIに対応）
+# 標準の OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_API_BASE_URL / OPENAI_MODEL エイリアスも利用可能
 # 推奨：阿里雲百錬プラットフォーム経由のQwen-plusモデル: https://bailian.console.aliyun.com/
 # 消費量が多いため、まず40ラウンド未満のシミュレーションをお試しください
 LLM_API_KEY=your_api_key
@@ -125,6 +126,22 @@ LLM_MODEL_NAME=qwen-plus
 # Zep Cloud設定
 # 無料の月間クォータで簡単な利用には十分です: https://app.getzep.com/
 ZEP_API_KEY=your_zep_api_key
+```
+
+バックエンドはプロジェクト固有の `LLM_*` 変数と標準の `OPENAI_*` エイリアスの両方を受け付けるため、OpenAI、Codex互換ゲートウェイ、LM Studio、Ollama、Alibaba DashScope Coding Plan などの OpenAI-compatible バックエンドへ、追加コードや `LLM_PROVIDER` フラグなしで直接接続できます。
+
+よく使われる OpenAI-compatible 設定例:
+
+```env
+# OpenAI / Codex-compatible gateway
+OPENAI_API_KEY=your_api_key
+OPENAI_API_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-4.1-mini
+
+# Alibaba DashScope Coding Plan
+OPENAI_API_KEY=your_dashscope_key
+OPENAI_API_BASE_URL=https://coding.dashscope.aliyuncs.com/v1
+OPENAI_MODEL=qwen3.5-plus
 ```
 
 #### 2. 依存関係のインストール

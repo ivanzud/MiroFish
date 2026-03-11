@@ -35,6 +35,15 @@ def _env(*names, default=None):
     return default
 
 
+def _configured_env_name(*names):
+    """Return the first configured environment variable name from the provided aliases."""
+    for name in names:
+        value = os.environ.get(name)
+        if value not in (None, ''):
+            return name
+    return None
+
+
 def _int_env(name, default):
     """Parse integer environment variables without crashing module import."""
     raw_value = os.environ.get(name)
@@ -222,6 +231,14 @@ class Config:
     @classmethod
     def get_config_summary(cls):
         """Return a non-sensitive config snapshot for diagnostics."""
+        llm_api_key_source = _configured_env_name('LLM_API_KEY', 'OPENAI_API_KEY')
+        llm_base_url_source = _configured_env_name(
+            'LLM_BASE_URL',
+            'OPENAI_BASE_URL',
+            'OPENAI_API_BASE_URL',
+        )
+        llm_model_source = _configured_env_name('LLM_MODEL_NAME', 'OPENAI_MODEL')
+
         return {
             'cors': {
                 'allowed_origins': cls.CORS_ALLOWED_ORIGINS,
@@ -229,10 +246,24 @@ class Config:
                 'allow_headers': cls.CORS_ALLOW_HEADERS,
             },
             'llm': {
+                'backend_mode': 'openai_compatible',
                 'base_url': cls.LLM_BASE_URL,
                 'model': cls.LLM_MODEL_NAME,
                 'max_tokens': cls.LLM_MAX_TOKENS,
                 'configured': bool(cls.LLM_API_KEY),
+                'sources': {
+                    'api_key_env': llm_api_key_source,
+                    'base_url_env': llm_base_url_source,
+                    'model_env': llm_model_source,
+                    'uses_project_aliases': any(
+                        source and source.startswith('LLM_')
+                        for source in (llm_api_key_source, llm_base_url_source, llm_model_source)
+                    ),
+                    'uses_openai_aliases': any(
+                        source and source.startswith('OPENAI_')
+                        for source in (llm_api_key_source, llm_base_url_source, llm_model_source)
+                    ),
+                },
             },
             'zep': {
                 'configured': bool(cls.ZEP_API_KEY),
