@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const resolveBaseURL = () => {
+export const resolveBaseURL = () => {
   const envBaseURL = import.meta.env.VITE_API_BASE_URL
   if (envBaseURL && envBaseURL.trim()) {
     return envBaseURL
@@ -11,6 +11,19 @@ const resolveBaseURL = () => {
   }
 
   return ''
+}
+
+const getApiLocale = () => {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  try {
+    const locale = window.localStorage.getItem('mirofish-locale')
+    return locale === 'en' || locale === 'zh' ? locale : null
+  } catch {
+    return null
+  }
 }
 
 const resolveTimeout = () => {
@@ -30,6 +43,10 @@ const service = axios.create({
 // 请求拦截器
 service.interceptors.request.use(
   config => {
+    const locale = getApiLocale()
+    if (locale) {
+      config.headers['X-Locale'] = locale
+    }
     return config
   },
   error => {

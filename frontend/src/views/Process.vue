@@ -415,6 +415,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { generateOntology, getProject, buildGraph, getTaskStatus, getGraphData } from '../api/graph'
+import { resolveBaseURL } from '../api/index.js'
 import { getPendingUpload, clearPendingUpload } from '../store/pendingUpload'
 import * as d3 from 'd3'
 
@@ -572,7 +573,7 @@ const formatProjectInitError = (err) => {
   }
 
   if (err.message === 'Network Error') {
-    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'
+    const apiBase = resolveBaseURL() || window.location.origin
     return `无法连接后端服务（${apiBase}）。请检查后端是否已启动、跨域/反向代理配置及服务器网络连通性`
   }
 

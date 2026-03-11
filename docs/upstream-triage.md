@@ -31,14 +31,17 @@ Last refreshed: `2026-03-11`
 - `#84` Failed report generation can now be retried directly from `Step4Report`: the view polls the persisted report status, surfaces backend error text when generation fails, and offers a `force_regenerate` retry path instead of leaving the user stranded on a dead report page.
 - `#105` Safe subset landed locally: API JSON error responses now use a shared helper that hides traceback details unless `DEBUG` is enabled, while still logging full tracebacks server-side; file-parser encoding fallbacks now emit debug logs instead of silently swallowing detector failures.
 - `#126` Safe subset landed locally: backend config now exposes structured validation helpers and a non-sensitive config summary, while malformed numeric env vars no longer crash module import before validation can report them.
+- `#119` Safe subset landed locally: the frontend now has a persisted `中文` / `English` language toggle for the home shell, main workflow header, and history modal, while API calls include `X-Locale` for future backend localization without forcing the larger upstream backend/UI refactor onto this branch.
 - OpenAI-compatible backend aliases now work in the standalone simulation runners too, so `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` can be used directly outside the Flask app path.
 - Objective 7 verification status: backend config, standalone runners, and both READMEs now explicitly support direct OpenAI / Codex-compatible / OpenAI-compatible backends without requiring a project-specific raw-key-only setup.
 - Backend config now also accepts `OPENAI_API_BASE_URL`, matching the environment variable exported by the standalone simulation runners and some OpenAI-compatible tooling, with regression coverage in the lightweight backend test path.
 - `#114` Fix API base URL fallback is already superseded locally by the current frontend API client, which now falls back to the runtime origin and also supports `VITE_API_TIMEOUT`.
+- `#93` Hardcoded frontend API base URL is now fully addressed locally: `Process.vue` uses the shared frontend API resolver instead of embedding a separate `http://localhost:5001` fallback in network-error messages.
 
 ## Deferred for later review
 
 - `#105` Remaining risky subset: default `DEBUG=False`, non-static `SECRET_KEY` generation, and stricter CORS defaults/configuration are still deferred because they can change local/dev or deployed behavior and need a compatibility review before landing.
+- `#119` Remaining scope is still deferred: most step-level workflow components and backend-generated error text remain Chinese-first, so broader localization should be handled as a follow-up instead of continuing to splice a large, drifting upstream PR into this branch.
 - `#82` Dependency-only CVE patch cannot be landed as a real fix yet: a coordinated `uv lock --upgrade-package unstructured==0.18.18` attempt fails because `camel-oasis==0.2.5` transitively pins `unstructured==0.13.7`. The upstream PR also only edits `backend/requirements.txt`, so it would leave this repo's dependency state inconsistent even if cherry-picked.
 - `#87` and `#86` GitHub Actions-only PRs are superseded locally by the current Docker workflow: their diffs would either partially duplicate already-landed upgrades or regress this branch by removing the ARM64/cache changes that came from `#103`.
 - `#100` Relative frontend API base URL fallback is superseded locally by the current API client, which already falls back to the runtime origin and respects `VITE_API_BASE_URL`.

@@ -3,7 +3,13 @@
 </template>
 
 <script setup>
-// 使用 Vue Router 来管理页面
+import { onMounted } from 'vue'
+import { getStoredLocale } from './i18n'
+
+onMounted(() => {
+  const locale = getStoredLocale()
+  document.documentElement.lang = locale === 'en' ? 'en' : 'zh-CN'
+})
 </script>
 
 <style>

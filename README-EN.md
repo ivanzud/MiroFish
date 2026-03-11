@@ -20,11 +20,7 @@
 [![X](https://img.shields.io/badge/X-Follow-000000?style=flat-square&logo=x&logoColor=white)](https://x.com/mirofish_ai)
 [![Instagram](https://img.shields.io/badge/Instagram-Follow-E4405F?style=flat-square&logo=instagram&logoColor=white)](https://www.instagram.com/mirofish_ai/)
 
-<<<<<<< HEAD
 [English](./README-EN.md) | [中文文档](./README.md) | [한국어](./README-KO.md) | [日本語](./README-JA.md)
-=======
-[English](./README-EN.md) | [中文文档](./README.md) | [日本語](./README-JA.md)
->>>>>>> 0531fa6 (docs(readme): add Japanese README)
 
 </div>
 
@@ -226,7 +222,7 @@ cp .env.example .env
 **Required Environment Variables:**
 
 ```env
-# LLM API Configuration (supports any LLM API with OpenAI SDK format)
+# LLM API Configuration (supports OpenAI, Codex-compatible, and other OpenAI-SDK-compatible backends)
 # Standard OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_MODEL aliases also work
 # Recommended: Alibaba Qwen-plus model via Bailian Platform: https://bailian.console.aliyun.com/
 # High consumption, try simulations with fewer than 40 rounds first
