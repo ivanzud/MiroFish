@@ -91,6 +91,15 @@
       </div>
 
       <div class="action-controls">
+        <button
+          v-if="phase !== 1"
+          class="action-btn secondary"
+          :disabled="isStarting || isGeneratingReport"
+          @click="handleRestartSimulation"
+        >
+          <span v-if="isStarting" class="loading-spinner-small"></span>
+          {{ isStarting ? t('step3.starting') : t('step3.restartSimulation') }}
+        </button>
         <button 
           class="action-btn primary"
           :disabled="phase !== 2 || isGeneratingReport"
@@ -381,7 +390,7 @@ const resetAllState = () => {
 }
 
 // 启动模拟
-const doStartSimulation = async () => {
+const doStartSimulation = async ({ force = true } = {}) => {
   if (!props.simulationId) {
     addLog(t('step3.missingSimulationId'))
     return
@@ -399,7 +408,7 @@ const doStartSimulation = async () => {
     const params = {
       simulation_id: props.simulationId,
       platform: 'parallel',
-      force: true,  // 强制重新开始
+      force,
       enable_graph_memory_update: true  // 开启动态图谱更新
     }
     
@@ -490,6 +499,33 @@ const stopPolling = () => {
 const prevTwitterRound = ref(0)
 const prevRedditRound = ref(0)
 
+const applyRunStatus = (data) => {
+  runStatus.value = data
+  prevTwitterRound.value = data.twitter_current_round || 0
+  prevRedditRound.value = data.reddit_current_round || 0
+
+  if (data.runner_status === 'completed' || data.runner_status === 'stopped') {
+    phase.value = 2
+    emit('update-status', 'completed')
+    return
+  }
+
+  if (data.runner_status === 'failed') {
+    phase.value = 0
+    startError.value = data.error || t('process.unknownError')
+    emit('update-status', 'error')
+    return
+  }
+
+  if (data.runner_status === 'running' || data.runner_status === 'starting') {
+    phase.value = 1
+    emit('update-status', 'processing')
+    return
+  }
+
+  phase.value = 0
+}
+
 const fetchRunStatus = async () => {
   if (!props.simulationId) return
   
@@ -498,16 +534,17 @@ const fetchRunStatus = async () => {
     
     if (res.success && res.data) {
       const data = res.data
-      
-      runStatus.value = data
+      const previousTwitterRound = prevTwitterRound.value
+      const previousRedditRound = prevRedditRound.value
+      applyRunStatus(data)
       
       // 分别检测各平台的轮次变化并输出日志
-      if (data.twitter_current_round > prevTwitterRound.value) {
+      if (data.twitter_current_round > previousTwitterRound) {
         addLog(`[Plaza] R${data.twitter_current_round}/${data.total_rounds} | T:${data.twitter_simulated_hours || 0}h | A:${data.twitter_actions_count}`)
         prevTwitterRound.value = data.twitter_current_round
       }
       
-      if (data.reddit_current_round > prevRedditRound.value) {
+      if (data.reddit_current_round > previousRedditRound) {
         addLog(`[Community] R${data.reddit_current_round}/${data.total_rounds} | T:${data.reddit_simulated_hours || 0}h | A:${data.reddit_actions_count}`)
         prevRedditRound.value = data.reddit_current_round
       }
@@ -540,6 +577,46 @@ const fetchRunStatus = async () => {
   } catch (err) {
     console.warn('获取运行状态失败:', err)
   }
+}
+
+const loadExistingRun = async () => {
+  if (!props.simulationId) return false
+
+  try {
+    const res = await getRunStatus(props.simulationId)
+    if (!res.success || !res.data || res.data.runner_status === 'idle') {
+      return false
+    }
+
+    resetAllState()
+    applyRunStatus(res.data)
+    await fetchRunStatusDetail()
+
+    if (res.data.runner_status === 'running' || res.data.runner_status === 'starting') {
+      addLog(t('step3.resumeRunningSimulation'))
+      startStatusPolling()
+      startDetailPolling()
+      return true
+    }
+
+    if (res.data.runner_status === 'completed' || res.data.runner_status === 'stopped') {
+      addLog(t('step3.resumeCompletedSimulation'))
+      return true
+    }
+
+    if (res.data.runner_status === 'failed') {
+      addLog(t('step3.resumeFailedSimulation', { message: res.data.error || t('process.unknownError') }))
+      return true
+    }
+  } catch (err) {
+    console.warn('加载已有模拟运行状态失败:', err)
+  }
+
+  return false
+}
+
+const handleRestartSimulation = async () => {
+  await doStartSimulation({ force: true })
 }
 
 // 检查所有启用的平台是否已完成
@@ -703,7 +780,11 @@ watch(() => props.systemLogs?.length, () => {
 onMounted(() => {
   addLog(t('step3.initLog'))
   if (props.simulationId) {
-    doStartSimulation()
+    loadExistingRun().then(resumed => {
+      if (!resumed) {
+        doStartSimulation({ force: false })
+      }
+    })
   }
 })
 
@@ -905,8 +986,18 @@ onUnmounted(() => {
   color: #FFF;
 }
 
+.action-btn.secondary {
+  background: #FFF;
+  color: #1A1A1A;
+  border: 1px solid #D4D4D4;
+}
+
 .action-btn.primary:hover:not(:disabled) {
   background: #333;
+}
+
+.action-btn.secondary:hover:not(:disabled) {
+  background: #F7F7F7;
 }
 
 .action-btn:disabled {

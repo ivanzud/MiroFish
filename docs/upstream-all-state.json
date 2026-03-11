@@ -1,12 +1,12 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T10:59:29.299684+00:00",
-  "generated_at": "2026-03-11T10:59:29.299684+00:00",
+  "captured_at": "2026-03-11T11:20:20.428895+00:00",
+  "generated_at": "2026-03-11T11:20:20.428895+00:00",
   "counts": {
     "issues": {
-      "closed": 48,
-      "open": 34
+      "open": 36,
+      "closed": 48
     },
     "pull_requests": {
       "closed": 14,
@@ -18,6 +18,42 @@
     }
   },
   "issues": [
+    {
+      "number": 140,
+      "title": "让我想到了刘慈欣的一个小说，要是把真实世界放进去，得多大的算力啊",
+      "url": "https://github.com/666ghj/MiroFish/issues/140",
+      "state": "open",
+      "created_at": "2026-03-11T11:20:00Z",
+      "updated_at": "2026-03-11T11:20:00Z",
+      "closed_at": null,
+      "labels": [],
+      "author": "p20061",
+      "body_excerpt": "",
+      "comment_count": 0,
+      "recent_comments": []
+    },
+    {
+      "number": 139,
+      "title": "Graph build task failed  ：（",
+      "url": "https://github.com/666ghj/MiroFish/issues/139",
+      "state": "open",
+      "created_at": "2026-03-11T11:11:20Z",
+      "updated_at": "2026-03-11T11:13:35Z",
+      "closed_at": null,
+      "labels": [],
+      "author": "darfy22",
+      "body_excerpt": "Graph build task failed: Traceback (most recent call last): File \"/app/backend/.venv/lib/python3.11/site-packages/zep_cloud/graph/raw_client.py\", line 713, in create _response_json = _response.json() ^^^^^^^^^^^^^^^^ File \"/app/backend/.venv/lib/python3.11/site-packages/httpx/_models.py\", line 832, in json return jsonlib.loads(self.content, **kwargs) ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ File \"/u…",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "dosubot[bot]",
+          "created_at": "2026-03-11T11:13:35Z",
+          "updated_at": "2026-03-11T11:13:35Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/139#issuecomment-4038479566",
+          "body_excerpt": "<!-- Answer --> The `401 unauthorized` error indicates a Zep Cloud API authentication issue. Here are the most likely causes and solutions: **1. Version Bug** — If you're using MiroFish v0.1.0, there's a [known authentication bug](https://…"
+        }
+      ]
+    },
     {
       "number": 138,
       "title": "生成的报告让人看不懂",

@@ -2,13 +2,17 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T10:59:29.299684+00:00`
-- Issues: `82` total (`open=34`, `closed=48`)
+- Captured: `2026-03-11T11:20:20.428895+00:00`
+- Issues: `84` total (`open=36`, `closed=48`)
 - Pull requests: `47` total (`open=33`, `closed=14`)
 - Mirrored in `origin`: `34` of `47` PR refs
 
 ## Recently Updated Issues
 
+- #140 [open] 让我想到了刘慈欣的一个小说，要是把真实世界放进去，得多大的算力啊 (no labels)
+- #139 [open] Graph build task failed  ：（ (no labels)
+  - Graph build task failed: Traceback (most recent call last): File "/app/backend/.venv/lib/python3.11/site-packages/zep_cloud/graph/raw_client.py", line 713, in create _response_json = _response.json() ^^^^^^^^^^^^^^^^ File "/app/backend/.venv/lib/python3.11/site-packages/httpx/_models.py", line 832, in json return jsonlib.loads(self.content, **kwargs) ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ File "/u…
+  - latest comment by `dosubot[bot]`: <!-- Answer --> The `401 unauthorized` error indicates a Zep Cloud API authentication issue. Here are the most likely causes and solutions: **1. Version Bug** — If you're using MiroFish v0.1.0, there's a [known authentication bug](https://…
 - #138 [closed] 生成的报告让人看不懂 (question)
   - 生成的报告感觉有点太偏题了，看不懂😭 ，比如我写了一个游戏的设计方案，预测这个游戏的受众群体将会是什么，给我的报告题目是《未来受众群体生态的静默与解体：一项基于模拟的预测报告》
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @huamingjie0815! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 感谢反馈！这个问题我找到原因了 😊 **根本原因**：报告标题生成的 [Prompt 模板](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d6…
@@ -31,12 +35,6 @@
 - #64 [open] 一直卡在上传文件错误：Request failed with status code 500 (no labels)
   - <img width="1206" height="1234" alt="Image" src="https://github.com/user-attachments/assets/5befa186-6f0f-493a-a6fa-7fb33940f233" /> TXT、MD、PDF文件格式都试了，内容甚至精简到就几百字，但就是卡在上传文件错误，到底什么原因？
   - latest comment by `666ghj`: 以前的代码因为编码格式的缘故会报这样的错，最新代码已经修复了。 你是把他部署在服务器上吗，那好像会有一些问题。
-- #106 [open] 能否采用除了zep的别的知识图谱 (no labels)
-  - 如题所示，今天在跑的时候发现zep的免费额度被耗光了，能否添加使用本地部署的memv作为知识图谱
-  - latest comment by `addisjeams`: 对，一开始半天都是网络报错，后来才发现是这个问题。必须要申请zep
-- #109 [closed] 纯小白看到新闻后本机部署，但似乎Zep额度用完后不知道接下来咋办了 (question)
-  - <img width="1242" height="707" alt="Image" src="https://github.com/user-attachments/assets/c3322506-4644-4194-bf60-760ba929d415" /> 作者你好，看到你的新闻之后，怀着巨大的好奇心本地部署了一下。 用的 Google 反重力很快就部署成功，完全是代码小白。 我只是把自己公众号和 AI 对话的几个 MD 文件传上去，然后 Zep API 在第三轮开始模拟阶段很快就报错，如截图所示。 请问我是升级付费Zep呢，还是等3月底重置，不想再来一次呀，的确某个环节内存飙升在Win系统下，起初就是感兴趣想体验下投喂自己的资料后（写了十多年的公众号和AI对话后梳理的一些MD文档），预测下你的系统和我今年会做的事会不会有一些预测的重合，感觉值得一试，但是碰到这个问题，期待回复解决…
-  - latest comment by `xingjia10086`: 以下是 claude 给的方案： 立即恢复运行的方法 最快的方式是直接补充当前 API 的额度，或者在配置文件/环境变量里替换成另一个有余额的 Key，重启程序即可从中断处继续（前提是程序支持断点续跑）。 如果暂时没有额度，可以考虑的替代方案 换一个 Provider：如果你原来用的是 OpenAI，可以临时切到 Anthropic、Google Gemini、DeepSeek、阿里云百炼等，接口格式大多兼容 OpenAI SDK，改动量很小。 用本地模型顶上：用 Olla…
 
 ## Recently Updated Pull Requests
 
