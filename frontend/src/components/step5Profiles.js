@@ -97,3 +97,72 @@ export const formatAgentRole = (profile, fallbackRole) => {
 
   return platformLabel ? `${platformLabel} · ${role}` : role
 }
+
+const isTimeoutMessage = (message) => /timeout|timed out/i.test(message)
+
+export const summarizeInterviewEnvStatus = (envStatus, t) => {
+  if (!envStatus) {
+    return ''
+  }
+
+  const availablePlatforms = []
+  if (envStatus.reddit_available) {
+    availablePlatforms.push('Reddit')
+  }
+  if (envStatus.twitter_available) {
+    availablePlatforms.push('Twitter')
+  }
+
+  if (!envStatus.env_alive) {
+    return t('step5.interviewEnvClosedBanner')
+  }
+
+  if (availablePlatforms.length === 0) {
+    return t('step5.interviewEnvNoPlatformBanner')
+  }
+
+  return t('step5.interviewEnvReadyBanner', { platforms: availablePlatforms.join(' / ') })
+}
+
+export const getInterviewGuardMessage = (envStatus, profiles, t) => {
+  if (!envStatus?.env_alive) {
+    return t('step5.interviewEnvClosedError')
+  }
+
+  const unavailablePlatforms = new Set()
+  for (const profile of profiles || []) {
+    const platform = profile?.platform
+    if (!platform) {
+      continue
+    }
+
+    if (!envStatus[`${platform}_available`]) {
+      unavailablePlatforms.add(PLATFORM_LABELS[platform] || platform)
+    }
+  }
+
+  if (unavailablePlatforms.size > 0) {
+    return t('step5.interviewPlatformUnavailable', {
+      platforms: Array.from(unavailablePlatforms).join(' / '),
+    })
+  }
+
+  return ''
+}
+
+export const formatInterviewFailureMessage = (message, t) => {
+  const normalized = typeof message === 'string' ? message.trim() : ''
+  if (!normalized) {
+    return t('step5.requestFailed')
+  }
+
+  if (normalized.includes('模拟环境未运行或已关闭')) {
+    return t('step5.interviewEnvClosedError')
+  }
+
+  if (normalized.includes('等待Interview响应超时') || isTimeoutMessage(normalized)) {
+    return t('step5.interviewTimeoutError', { message: normalized })
+  }
+
+  return normalized
+}

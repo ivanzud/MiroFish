@@ -89,6 +89,13 @@
             <span class="action-bar-subtitle mono">{{ t('step5.agentsAvailable', { count: profiles.length }) }}</span>
           </div>
         </div>
+        <div
+          v-if="getInterviewStatusMessage()"
+          class="interview-status-banner"
+          :class="{ warning: !interviewEnvStatus?.env_alive }"
+        >
+          {{ getInterviewStatusMessage() }}
+        </div>
           <div class="action-bar-tabs">
             <button 
               class="tab-pill"
@@ -414,13 +421,16 @@
 import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { chatWithReport, getReport, getAgentLog } from '../api/report'
-import { interviewAgents, getSimulationProfilesRealtime } from '../api/simulation'
+import { interviewAgents, getEnvStatus, getSimulationProfilesRealtime } from '../api/simulation'
 import { deriveInterviewTimeoutSeconds, resolveTimeoutMs } from '../api/timeout'
 import {
   buildInterviewRequest,
   extractInterviewResponseContent,
+  formatInterviewFailureMessage,
   formatAgentRole,
+  getInterviewGuardMessage,
   mergeInteractionProfiles,
+  summarizeInterviewEnvStatus,
 } from './step5Profiles'
 
 const props = defineProps({
@@ -454,6 +464,7 @@ const surveyQuestion = ref('')
 const surveyResults = ref([])
 const isSurveying = ref(false)
 const configuredApiTimeoutMs = resolveTimeoutMs(import.meta.env.VITE_API_TIMEOUT)
+const interviewEnvStatus = ref(null)
 
 // Report Data
 const reportOutline = ref(null)
@@ -554,6 +565,30 @@ const selectAgent = (agent) => {
 }
 
 const describeAgentRole = (agent) => formatAgentRole(agent, t('step5.unknownProfession'))
+const getInterviewStatusMessage = () => summarizeInterviewEnvStatus(interviewEnvStatus.value, t)
+
+const refreshInterviewEnvStatus = async () => {
+  if (!props.simulationId) {
+    interviewEnvStatus.value = null
+    return null
+  }
+
+  const response = await getEnvStatus({ simulation_id: props.simulationId })
+  if (!response.success) {
+    throw new Error(response.error || t('step5.requestFailed'))
+  }
+
+  interviewEnvStatus.value = response.data || null
+  return interviewEnvStatus.value
+}
+
+const ensureInterviewReady = async (profilesToCheck = []) => {
+  const envStatus = await refreshInterviewEnvStatus()
+  const guardMessage = getInterviewGuardMessage(envStatus, profilesToCheck, t)
+  if (guardMessage) {
+    throw new Error(guardMessage)
+  }
+}
 
 const formatTime = (timestamp) => {
   if (!timestamp) return ''
@@ -679,10 +714,13 @@ const sendMessage = async () => {
       await sendToAgent(message)
     }
   } catch (err) {
-    addLog(t('step5.logs.sendFailed', { message: err.message }))
+    const formattedMessage = chatTarget.value === 'agent'
+      ? formatInterviewFailureMessage(err.message, t)
+      : (err.message || t('step5.requestFailed'))
+    addLog(t('step5.logs.sendFailed', { message: formattedMessage }))
     chatHistory.value.push({
       role: 'assistant',
-      content: t('step5.chatError', { message: err.message }),
+      content: t('step5.chatError', { message: formattedMessage }),
       timestamp: new Date().toISOString()
     })
   } finally {
@@ -727,6 +765,8 @@ const sendToAgent = async (message) => {
   if (!selectedAgent.value || !selectedAgentKey.value) {
     throw new Error(t('step5.selectAgentFirst'))
   }
+
+  await ensureInterviewReady([selectedAgent.value])
   
   addLog(t('step5.logs.sentToAgent', { name: selectedAgent.value.username, message: message.substring(0, 50) }))
   
@@ -804,6 +844,7 @@ const submitSurvey = async () => {
     const selectedProfiles = Array.from(selectedAgents.value)
       .map((idx) => profiles.value[idx])
       .filter(Boolean)
+    await ensureInterviewReady(selectedProfiles)
     const interviews = selectedProfiles.map((agent) => buildInterviewRequest(agent, surveyQuestion.value.trim()))
     
     const res = await interviewAgents({
@@ -834,7 +875,7 @@ const submitSurvey = async () => {
       throw new Error(res.error || t('step5.requestFailed'))
     }
   } catch (err) {
-    addLog(t('step5.logs.surveyFailed', { message: err.message }))
+    addLog(t('step5.logs.surveyFailed', { message: formatInterviewFailureMessage(err.message, t) }))
   } finally {
     isSurveying.value = false
   }
@@ -924,6 +965,9 @@ onMounted(() => {
   addLog(t('step5.logs.init'))
   loadReportData()
   loadProfiles()
+  refreshInterviewEnvStatus().catch((err) => {
+    addLog(t('step5.logs.envStatusFailed', { message: err.message }))
+  })
   document.addEventListener('click', handleClickOutside)
 })
 
@@ -940,6 +984,9 @@ watch(() => props.reportId, (newId) => {
 watch(() => props.simulationId, (newId) => {
   if (newId) {
     loadProfiles()
+    refreshInterviewEnvStatus().catch((err) => {
+      addLog(t('step5.logs.envStatusFailed', { message: err.message }))
+    })
   }
 }, { immediate: true })
 </script>
@@ -1299,6 +1346,7 @@ watch(() => props.simulationId, (newId) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   padding: 14px 20px;
   border-bottom: 1px solid #E5E7EB;
   background: linear-gradient(180deg, #FFFFFF 0%, #FAFBFC 100%);
@@ -1345,6 +1393,24 @@ watch(() => props.simulationId, (newId) => {
   gap: 6px;
   flex: 1;
   justify-content: flex-end;
+}
+
+.interview-status-banner {
+  flex-basis: 100%;
+  margin-top: -6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  color: #065F46;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.interview-status-banner.warning {
+  background: #FEF3C7;
+  border-color: #FCD34D;
+  color: #92400E;
 }
 
 .tab-pill {

@@ -4,9 +4,14 @@ import assert from 'node:assert/strict'
 import {
   buildInterviewRequest,
   extractInterviewResponseContent,
+  formatInterviewFailureMessage,
   formatAgentRole,
+  getInterviewGuardMessage,
   mergeInteractionProfiles,
+  summarizeInterviewEnvStatus,
 } from '../src/components/step5Profiles.js'
+
+const t = (key, params = {}) => `${key}:${JSON.stringify(params)}`
 
 test('mergeInteractionProfiles keeps both platforms and annotates ids', () => {
   const merged = mergeInteractionProfiles([
@@ -71,5 +76,59 @@ test('formatAgentRole includes platform label for mixed-platform lists', () => {
       'Unknown'
     ),
     'Reddit · Analyst'
+  )
+})
+
+test('summarizeInterviewEnvStatus reports ready platforms', () => {
+  assert.equal(
+    summarizeInterviewEnvStatus(
+      {
+        env_alive: true,
+        reddit_available: true,
+        twitter_available: false,
+      },
+      t
+    ),
+    'step5.interviewEnvReadyBanner:{"platforms":"Reddit"}'
+  )
+})
+
+test('getInterviewGuardMessage blocks closed environments and unavailable platforms', () => {
+  assert.equal(
+    getInterviewGuardMessage(
+      {
+        env_alive: false,
+        reddit_available: false,
+        twitter_available: false,
+      },
+      [{ platform: 'reddit' }],
+      t
+    ),
+    'step5.interviewEnvClosedError:{}'
+  )
+
+  assert.equal(
+    getInterviewGuardMessage(
+      {
+        env_alive: true,
+        reddit_available: true,
+        twitter_available: false,
+      },
+      [{ platform: 'twitter' }],
+      t
+    ),
+    'step5.interviewPlatformUnavailable:{"platforms":"Twitter"}'
+  )
+})
+
+test('formatInterviewFailureMessage normalizes timeout and env-closed backend errors', () => {
+  assert.equal(
+    formatInterviewFailureMessage('模拟环境未运行或已关闭。请确保模拟已完成并进入等待命令模式。', t),
+    'step5.interviewEnvClosedError:{}'
+  )
+
+  assert.equal(
+    formatInterviewFailureMessage('等待Interview响应超时: 300s', t),
+    'step5.interviewTimeoutError:{"message":"等待Interview响应超时: 300s"}'
   )
 })

@@ -575,6 +575,12 @@ export default {
     historyYou: '你',
     historyPrompt: '以下是我们之前的对话：\n{history}\n\n现在我的新问题是：{message}',
     noResponseData: '无响应数据',
+    interviewEnvReadyBanner: '采访环境已就绪，可用平台：{platforms}。',
+    interviewEnvClosedBanner: '模拟采访环境当前未运行。请先回到 Step 3 重新打开模拟，并等待环境进入可接收命令状态后再使用 Step 5。',
+    interviewEnvNoPlatformBanner: '模拟环境正在运行，但当前没有可用的采访平台。',
+    interviewEnvClosedError: '模拟采访环境已经停止。请返回 Step 3 重新打开模拟环境，并等待其进入等待命令状态后再重试。',
+    interviewPlatformUnavailable: '当前模拟环境无法采访这些平台：{platforms}。请先在 Step 3 重新开启对应平台。',
+    interviewTimeoutError: '采访请求在模拟环境返回结果前超时。请增大 Step 5 的超时设置或减少单次采访对象数量后重试。原始错误：{message}',
     tools: {
       insightForge: {
         name: 'InsightForge 深度归因',
@@ -609,6 +615,7 @@ export default {
       loadReportLogsFailed: '加载报告日志失败: {message}',
       loadedAgents: '加载了 {count} 个模拟个体',
       loadAgentsFailed: '加载模拟个体失败: {message}',
+      envStatusFailed: '刷新采访环境状态失败: {message}',
       init: 'Step5 深度互动初始化',
     },
   },

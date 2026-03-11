@@ -575,6 +575,12 @@ export default {
     historyYou: 'You',
     historyPrompt: 'Here is our previous conversation:\n{history}\n\nMy new question is: {message}',
     noResponseData: 'No response data',
+    interviewEnvReadyBanner: 'Interview environment ready. Available platforms: {platforms}.',
+    interviewEnvClosedBanner: 'The simulation interview environment is offline. Re-open Step 3 and let the run reach the waiting-for-command state before using Step 5 interviews.',
+    interviewEnvNoPlatformBanner: 'The simulation environment is running, but no interview platform is currently available.',
+    interviewEnvClosedError: 'The simulation interview environment is no longer running. Return to Step 3, reopen the simulation, and wait for the environment to enter command mode before retrying.',
+    interviewPlatformUnavailable: 'The current simulation environment cannot interview these platforms: {platforms}. Reopen the matching platform in Step 3 first.',
+    interviewTimeoutError: 'The interview timed out before the simulated environment replied. Increase the Step 5 timeout settings or reduce the interview batch size, then retry. Original error: {message}',
     tools: {
       insightForge: {
         name: 'InsightForge',
@@ -609,6 +615,7 @@ export default {
       loadReportLogsFailed: 'Failed to load report logs: {message}',
       loadedAgents: 'Loaded {count} simulated agents',
       loadAgentsFailed: 'Failed to load simulated agents: {message}',
+      envStatusFailed: 'Failed to refresh interview environment status: {message}',
       init: 'Step 5 deep interaction initialized',
     },
   },
