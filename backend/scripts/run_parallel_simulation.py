@@ -1366,9 +1366,10 @@ async def run_twitter_simulation(
         if _shutdown_event and _shutdown_event.is_set():
             if main_logger:
                 main_logger.info(
-                    _t(
-                        f"收到退出信号，在第 {round_num + 1} 轮停止模拟",
-                        f"Received shutdown signal; stopping simulation at round {round_num + 1}",
+                    script_message(
+                        "shutdown_round_stop",
+                        SCRIPT_LOCALE,
+                        round=round_num + 1,
                     )
                 )
             break
@@ -1427,9 +1428,11 @@ async def run_twitter_simulation(
     result.total_actions = total_actions
     elapsed = (datetime.now() - start_time).total_seconds()
     log_info(
-        _t(
-            f"模拟循环完成! 耗时: {elapsed:.1f}秒, 总动作: {total_actions}",
-            f"Simulation loop complete! Elapsed: {elapsed:.1f}s, total actions: {total_actions}",
+        script_message(
+            "simulation_loop_summary",
+            SCRIPT_LOCALE,
+            elapsed=elapsed,
+            total_actions=total_actions,
         )
     )
     
@@ -1590,9 +1593,10 @@ async def run_reddit_simulation(
         if _shutdown_event and _shutdown_event.is_set():
             if main_logger:
                 main_logger.info(
-                    _t(
-                        f"收到退出信号，在第 {round_num + 1} 轮停止模拟",
-                        f"Received shutdown signal; stopping simulation at round {round_num + 1}",
+                    script_message(
+                        "shutdown_round_stop",
+                        SCRIPT_LOCALE,
+                        round=round_num + 1,
                     )
                 )
             break
@@ -1651,9 +1655,11 @@ async def run_reddit_simulation(
     result.total_actions = total_actions
     elapsed = (datetime.now() - start_time).total_seconds()
     log_info(
-        _t(
-            f"模拟循环完成! 耗时: {elapsed:.1f}秒, 总动作: {total_actions}",
-            f"Simulation loop complete! Elapsed: {elapsed:.1f}s, total actions: {total_actions}",
+        script_message(
+            "simulation_loop_summary",
+            SCRIPT_LOCALE,
+            elapsed=elapsed,
+            total_actions=total_actions,
         )
     )
     
@@ -1746,9 +1752,10 @@ async def main():
         log_manager.info(script_message("max_rounds_limit", SCRIPT_LOCALE, max_rounds=args.max_rounds))
         if args.max_rounds < config_total_rounds:
             log_manager.info(
-                _t(
-                    f"  - 实际执行轮数: {args.max_rounds} (已截断)",
-                    f"  - Effective rounds: {args.max_rounds} (truncated)",
+                script_message(
+                    "effective_rounds",
+                    SCRIPT_LOCALE,
+                    rounds=args.max_rounds,
                 )
             )
     log_manager.info(

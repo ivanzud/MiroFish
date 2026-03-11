@@ -151,6 +151,9 @@ def test_script_message_supports_english_runtime_strings():
         "Config file: /tmp/config.json"
     )
     assert llm_env.script_message("simulation_params", "en") == "\nSimulation parameters:"
+    assert llm_env.script_message("effective_rounds", "en", rounds=12) == (
+        "  - Effective rounds: 12 (truncated)"
+    )
     assert llm_env.script_message(
         "round_progress",
         "en",
@@ -166,6 +169,15 @@ def test_script_message_supports_english_runtime_strings():
     assert llm_env.script_message("signal_received", "en", signal_name="SIGTERM") == (
         "\nReceived SIGTERM; shutting down..."
     )
+    assert llm_env.script_message("shutdown_round_stop", "en", round=7) == (
+        "Received shutdown signal; stopping simulation at round 7"
+    )
+    assert llm_env.script_message(
+        "simulation_loop_summary",
+        "en",
+        elapsed=15.2,
+        total_actions=42,
+    ) == "Simulation loop complete! Elapsed: 15.2s, total actions: 42"
     assert llm_env.script_message("llm_config", "en", model="gpt-4.1-mini", base_url="default") == (
         "LLM config: model=gpt-4.1-mini, base_url=default..."
     )
@@ -211,6 +223,7 @@ def test_script_message_defaults_to_chinese_runtime_strings():
     assert llm_env.script_message("config_path", path="/tmp/config.json") == "配置文件: /tmp/config.json"
     assert llm_env.script_message("supported_commands") == "支持的命令: interview, batch_interview, close_env"
     assert llm_env.script_message("wait_mode", state="启用") == "等待命令模式: 启用"
+    assert llm_env.script_message("effective_rounds", rounds=12) == "  - 实际执行轮数: 12 (已截断)"
     assert llm_env.script_message(
         "round_progress",
         day=2,
@@ -221,3 +234,9 @@ def test_script_message_defaults_to_chinese_runtime_strings():
         agent_count=7,
         elapsed=15.2,
     ) == "  [第2天, 09:00] 第 10/48 轮 (20.8%) - 活跃 Agent 7 个 - 已耗时: 15.2秒"
+    assert llm_env.script_message("shutdown_round_stop", round=7) == "收到退出信号，在第 7 轮停止模拟"
+    assert llm_env.script_message(
+        "simulation_loop_summary",
+        elapsed=15.2,
+        total_actions=42,
+    ) == "模拟循环完成! 耗时: 15.2秒, 总动作: 42"

@@ -213,6 +213,10 @@ SCRIPT_MESSAGES = {
         "zh": "  - 最大轮数限制: {max_rounds}",
         "en": "  - Max-round limit: {max_rounds}",
     },
+    "effective_rounds": {
+        "zh": "  - 实际执行轮数: {rounds} (已截断)",
+        "en": "  - Effective rounds: {rounds} (truncated)",
+    },
     "old_db_removed": {
         "zh": "已删除旧数据库: {path}",
         "en": "Removed previous database: {path}",
@@ -300,6 +304,14 @@ SCRIPT_MESSAGES = {
     "process_exited": {
         "zh": "模拟进程已退出",
         "en": "Simulation process exited",
+    },
+    "shutdown_round_stop": {
+        "zh": "收到退出信号，在第 {round} 轮停止模拟",
+        "en": "Received shutdown signal; stopping simulation at round {round}",
+    },
+    "simulation_loop_summary": {
+        "zh": "模拟循环完成! 耗时: {elapsed:.1f}秒, 总动作: {total_actions}",
+        "en": "Simulation loop complete! Elapsed: {elapsed:.1f}s, total actions: {total_actions}",
     },
 }
 
