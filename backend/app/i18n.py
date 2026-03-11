@@ -128,6 +128,10 @@ TRANSLATIONS = {
         "zh": "ZEP_API_KEY未配置",
         "en": "ZEP_API_KEY is not configured",
     },
+    "simulation.entity_not_found": {
+        "zh": "实体不存在: {entity_uuid}",
+        "en": "Entity not found: {entity_uuid}",
+    },
     "graph.graph_deleted": {
         "zh": "图谱已删除: {graph_id}",
         "en": "Graph deleted: {graph_id}",

@@ -14,6 +14,7 @@ from zep_cloud.client import Zep
 from zep_cloud import EpisodeData, EntityEdgeSourceTarget
 
 from ..config import Config
+from ..i18n import get_locale, tr
 from ..models.task import TaskManager, TaskStatus
 from ..utils.logger import get_logger
 from ..utils.zep_paging import fetch_all_nodes, fetch_all_edges
@@ -46,7 +47,7 @@ class GraphBuilderService:
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or Config.ZEP_API_KEY
         if not self.api_key:
-            raise ValueError("ZEP_API_KEY 未配置")
+            raise ValueError(tr("config.key_missing", get_locale(), name="ZEP_API_KEY"))
         
         self.client = Zep(api_key=self.api_key)
         self.task_manager = TaskManager()

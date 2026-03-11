@@ -77,10 +77,11 @@ def get_graph_entities(graph_id: str):
         enrich: 是否获取相关边信息（默认true）
     """
     try:
+        locale = get_locale()
         if not Config.ZEP_API_KEY:
             return jsonify({
                 "success": False,
-                "error": "ZEP_API_KEY未配置"
+                "error": tr("graph.zep_key_missing", locale)
             }), 500
         
         entity_types_str = request.args.get('entity_types', '')
@@ -109,10 +110,11 @@ def get_graph_entities(graph_id: str):
 def get_entity_detail(graph_id: str, entity_uuid: str):
     """获取单个实体的详细信息"""
     try:
+        locale = get_locale()
         if not Config.ZEP_API_KEY:
             return jsonify({
                 "success": False,
-                "error": "ZEP_API_KEY未配置"
+                "error": tr("graph.zep_key_missing", locale)
             }), 500
         
         reader = ZepEntityReader()
@@ -121,7 +123,7 @@ def get_entity_detail(graph_id: str, entity_uuid: str):
         if not entity:
             return jsonify({
                 "success": False,
-                "error": f"实体不存在: {entity_uuid}"
+                "error": tr("simulation.entity_not_found", locale, entity_uuid=entity_uuid)
             }), 404
         
         return jsonify({
@@ -137,10 +139,11 @@ def get_entity_detail(graph_id: str, entity_uuid: str):
 def get_entities_by_type(graph_id: str, entity_type: str):
     """获取指定类型的所有实体"""
     try:
+        locale = get_locale()
         if not Config.ZEP_API_KEY:
             return jsonify({
                 "success": False,
-                "error": "ZEP_API_KEY未配置"
+                "error": tr("graph.zep_key_missing", locale)
             }), 500
         
         enrich = request.args.get('enrich', 'true').lower() == 'true'

@@ -11,7 +11,11 @@ sys.modules.setdefault("zep_cloud", fake_zep_cloud)
 sys.modules.setdefault("zep_cloud.client", fake_zep_client)
 
 from app.services.oasis_profile_generator import OasisProfileGenerator
+from app.services.graph_builder import GraphBuilderService
 from app.services.simulation_config_generator import SimulationConfigGenerator
+from app.services.zep_entity_reader import ZepEntityReader
+from app.services.zep_graph_memory_updater import ZepGraphMemoryUpdater
+from app.services.zep_tools import ZepToolsService
 
 
 def _make_response(content, finish_reason="stop"):
@@ -149,3 +153,28 @@ def test_simulation_config_generator_english_prompts_switch_user_facing_language
     assert "poster_type must match one of the available entity types exactly" in event_system
     assert "Generate social-media activity configurations for each entity below." in agent_prompt
     assert "social-media behavior analyst" in agent_system
+
+
+def test_zep_services_missing_key_support_english_request_locale(monkeypatch):
+    monkeypatch.setattr("app.services.graph_builder.Config.ZEP_API_KEY", "")
+    monkeypatch.setattr("app.services.zep_entity_reader.Config.ZEP_API_KEY", "")
+    monkeypatch.setattr("app.services.zep_graph_memory_updater.Config.ZEP_API_KEY", "")
+    monkeypatch.setattr("app.services.zep_tools.Config.ZEP_API_KEY", "")
+
+    from flask import Flask
+
+    app = Flask(__name__)
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        constructors = (
+            (GraphBuilderService, (), {}),
+            (ZepEntityReader, (), {}),
+            (ZepGraphMemoryUpdater, ("graph_123",), {}),
+            (ZepToolsService, (), {}),
+        )
+        for service_type, args, kwargs in constructors:
+            try:
+                service_type(*args, **kwargs)
+            except ValueError as exc:
+                assert str(exc) == "ZEP_API_KEY is not configured"
+            else:
+                raise AssertionError(f"expected ValueError for {service_type.__name__}")
