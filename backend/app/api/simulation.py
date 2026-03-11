@@ -2024,6 +2024,7 @@ def get_simulation_posts(simulation_id: str):
     返回帖子列表（从SQLite数据库读取）
     """
     try:
+        locale = get_locale()
         platform = request.args.get('platform', 'reddit')
         limit = request.args.get('limit', 50, type=int)
         offset = request.args.get('offset', 0, type=int)
@@ -2043,7 +2044,7 @@ def get_simulation_posts(simulation_id: str):
                     "platform": platform,
                     "count": 0,
                     "posts": [],
-                    "message": "数据库不存在，模拟可能尚未运行"
+                    "message": tr("simulation.posts_db_missing", locale)
                 }
             })
         

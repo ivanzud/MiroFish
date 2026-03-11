@@ -608,6 +608,10 @@ TRANSLATIONS = {
         "zh": "服务器关闭，模拟被终止",
         "en": "The server is shutting down, so the simulation was stopped",
     },
+    "simulation.posts_db_missing": {
+        "zh": "数据库不存在，模拟可能尚未运行",
+        "en": "The simulation database does not exist yet. The simulation may not have run for this platform.",
+    },
 }
 
 

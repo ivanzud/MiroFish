@@ -259,3 +259,28 @@ def test_close_env_passes_locale_and_returns_localized_message(monkeypatch):
     assert response.status_code == 200
     payload = response.get_json()["data"]
     assert payload["message"] == "The environment is already closed"
+
+
+def test_posts_missing_database_message_is_localized(monkeypatch, tmp_path):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    uploads_root = tmp_path / "uploads"
+    simulations_root = uploads_root / "simulations"
+    simulations_root.mkdir(parents=True)
+
+    monkeypatch.setattr(simulation_api.os.path, "dirname", lambda _path: str(uploads_root / "placeholder"))
+
+    response = client.get(
+        "/api/simulation/sim_123/posts?platform=twitter",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()["data"]
+    assert payload["count"] == 0
+    assert payload["posts"] == []
+    assert payload["message"] == (
+        "The simulation database does not exist yet. "
+        "The simulation may not have run for this platform."
+    )
