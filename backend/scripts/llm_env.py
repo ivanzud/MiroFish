@@ -117,6 +117,14 @@ SCRIPT_MESSAGES = {
         "zh": "  读取Interview结果失败: {error}",
         "en": "  Failed to read interview result: {error}",
     },
+    "db_actions_read_failed": {
+        "zh": "读取数据库动作失败: {error}",
+        "en": "Failed to read database actions: {error}",
+    },
+    "action_context_enrich_failed": {
+        "zh": "补充动作上下文失败: {error}",
+        "en": "Failed to enrich action context: {error}",
+    },
     "ipc_command_received": {
         "zh": "\n收到IPC命令: {command_type}, id={command_id}",
         "en": "\nReceived IPC command: {command_type}, id={command_id}",

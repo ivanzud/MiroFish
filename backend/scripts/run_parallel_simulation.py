@@ -859,7 +859,7 @@ def fetch_new_actions_from_db(
         
         conn.close()
     except Exception as e:
-        print(_t(f"读取数据库动作失败: {e}", f"Failed to read database actions: {e}"))
+        print(script_message("db_actions_read_failed", SCRIPT_LOCALE, error=e))
     
     return actions, new_last_rowid
 
@@ -969,7 +969,7 @@ def _enrich_action_context(
     
     except Exception as e:
         # 补充上下文失败不影响主流程
-        print(_t(f"补充动作上下文失败: {e}", f"Failed to enrich action context: {e}"))
+        print(script_message("action_context_enrich_failed", SCRIPT_LOCALE, error=e))
 
 
 def _get_post_info(
