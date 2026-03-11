@@ -16,6 +16,18 @@
       ]
     },
     {
+      "number": 24,
+      "status": "covered",
+      "summary": "Report generation now tolerates empty LLM section responses by retrying, then falling back to a per-section placeholder instead of crashing the whole report flow with a `NoneType` subscript error.",
+      "local_refs": [
+        "backend/app/services/report_agent.py",
+        "backend/tests/test_report_agent.py"
+      ],
+      "validation": [
+        "backend/tests/test_report_agent.py::test_generate_report_survives_empty_llm_section_responses"
+      ]
+    },
+    {
       "number": 45,
       "status": "covered",
       "summary": "Step 5 now preserves platform metadata and targets Reddit/Twitter interviews against the matching backend instead of assuming a Reddit-only profile list.",

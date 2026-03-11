@@ -13,6 +13,7 @@ Last refreshed: `2026-03-11`
 
 ## Reviewed This Pass
 
+- Open upstream issue `#24` is now covered locally and regression-tested. The current report agent retries empty section responses and, if the model still returns nothing, writes a per-section placeholder instead of bubbling a `NoneType` crash through the whole report-generation task.
 - Open upstream issue `#106` still does not have a low-risk cherry-pickable fix in the reviewed PR queue. The remaining related branches are the stale local-graph work in `#49` and the broader RAGflow backend branch in `#118`, so this stays tracked locally as a backend-abstraction design task rather than a blind merge.
 - `#114` is already superseded locally. The current frontend base-url resolver still honors `VITE_API_BASE_URL`, falls back to the runtime origin for same-origin deployments, and keeps the repo-specific `3000 -> 5001` localhost fallback that the smaller upstream patch does not cover.
 - `#70` is not safe to cherry-pick. Like the later installer branch `#108`, it adds a Windows-specific launcher/build pipeline that assumes a packaging flow outside the repo's current `run.py` + built-frontend topology and would need a repo-native redesign instead of a blind merge.

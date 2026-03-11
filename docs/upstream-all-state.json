@@ -1759,7 +1759,19 @@
           "url": "https://github.com/666ghj/MiroFish/issues/24#issuecomment-3778142354",
           "body_excerpt": "碰上一样的情况了 ``` [21:11:54] INFO: 从 reddit_profiles.json 加载了 34 个人设 [21:11:54] INFO: 加载到 34 个Agent人设 [21:12:09] INFO: 选择了 5 个Agent进行采访: [1, 2, 3, 30, 6] [21:12:22] INFO: 生成了 5 个采访问题 [21:12:22] INFO: 调用批量采访API（双平台）: 5 个Agent [21:12:37] INFO: 采访…"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 24,
+        "status": "covered",
+        "summary": "Report generation now tolerates empty LLM section responses by retrying, then falling back to a per-section placeholder instead of crashing the whole report flow with a `NoneType` subscript error.",
+        "local_refs": [
+          "backend/app/services/report_agent.py",
+          "backend/tests/test_report_agent.py"
+        ],
+        "validation": [
+          "backend/tests/test_report_agent.py::test_generate_report_survives_empty_llm_section_responses"
+        ]
+      }
     },
     {
       "number": 45,

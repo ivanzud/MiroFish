@@ -10,6 +10,8 @@ sys.modules.setdefault("zep_cloud", fake_zep_cloud)
 sys.modules.setdefault("zep_cloud.client", fake_zep_client)
 
 from app.services.report_agent import ReportAgent
+from app.services.report_agent import ReportManager
+from app.services.report_agent import ReportStatus
 
 
 class FakeLLM:
@@ -47,6 +49,24 @@ class AbstractTitleLLM(FakeLLM):
 class FailingLLM(FakeLLM):
     def chat_json(self, messages, temperature):
         raise RuntimeError("provider offline")
+
+
+class EmptySectionLLM(FakeLLM):
+    def chat_json(self, messages, temperature):
+        self.messages = messages
+        self.temperature = temperature
+        return {
+            "title": "游戏受众分析与预测",
+            "summary": "核心玩家更偏向剧情驱动和策略投入并重的受众组合。",
+            "sections": [
+                {"title": "潜在人群画像"},
+            ],
+        }
+
+    def chat(self, messages, temperature, max_tokens, response_format=None):
+        self.messages = messages
+        self.temperature = temperature
+        return None
 
 
 class FakeZepTools:
@@ -199,3 +219,25 @@ def test_execute_tool_english_errors_are_localized():
     assert failing_agent._execute_tool("quick_search", {"query": "audience", "limit": 3}) == (
         "Tool execution failed: search backend unavailable"
     )
+
+
+def test_generate_report_survives_empty_llm_section_responses(tmp_path, monkeypatch):
+    monkeypatch.setattr(ReportManager, "REPORTS_DIR", str(tmp_path / "reports"))
+
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="预测这个游戏的受众群体会是什么样",
+        llm_client=EmptySectionLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    report = agent.generate_report(report_id="report_empty_llm")
+
+    assert report.status == ReportStatus.COMPLETED
+    assert "本章节生成失败：LLM 返回空响应，请稍后重试" in report.markdown_content
+
+    saved_progress = ReportManager.get_progress("report_empty_llm")
+    assert saved_progress is not None
+    assert saved_progress["status"] == "completed"
+    assert saved_progress["progress"] == 100
