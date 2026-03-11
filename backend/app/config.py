@@ -91,6 +91,18 @@ def _load_secret_key():
     return secrets.token_hex(32), True
 
 
+def _default_cors_origins():
+    """Keep default CORS permissive for local development without allowing every origin."""
+    return [
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'http://localhost:4173',
+        'http://127.0.0.1:4173',
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+    ]
+
+
 @dataclass
 class ConfigValidationResult:
     """Structured config validation output."""
@@ -129,7 +141,7 @@ class Config:
     # Flask配置
     SECRET_KEY, SECRET_KEY_IS_GENERATED = _load_secret_key()
     DEBUG = _bool_env('FLASK_DEBUG', default=False)
-    CORS_ALLOWED_ORIGINS = _csv_env('CORS_ALLOWED_ORIGINS', default=['*'])
+    CORS_ALLOWED_ORIGINS = _csv_env('CORS_ALLOWED_ORIGINS', default=_default_cors_origins())
     CORS_ALLOW_METHODS = _csv_env(
         'CORS_ALLOW_METHODS',
         default=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

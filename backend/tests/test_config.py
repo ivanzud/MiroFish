@@ -72,7 +72,14 @@ def test_validate_comprehensive_reports_debug_warning_and_safe_summary(monkeypat
     assert any("SECRET_KEY" in warning for warning in result.warnings)
     assert summary["llm"]["configured"] is True
     assert summary["zep"]["configured"] is True
-    assert summary["cors"]["allowed_origins"] == ["*"]
+    assert summary["cors"]["allowed_origins"] == [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:4173",
+        "http://127.0.0.1:4173",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
     assert summary["simulation"]["interview_timeouts"]["single_seconds"] == 120.0
     assert summary["security"]["secret_key_source"] == "generated"
     assert "test-key" not in str(summary)
@@ -131,6 +138,22 @@ def test_config_parses_cors_csv_environment_variables(monkeypatch):
         "methods": ["GET", "POST"],
         "allow_headers": ["Content-Type", "X-Locale"],
     }
+
+
+def test_config_defaults_cors_to_local_dev_origins(monkeypatch):
+    monkeypatch.delenv("CORS_ALLOWED_ORIGINS", raising=False)
+
+    config_module = load_config_module()
+
+    assert config_module.Config.CORS_ALLOWED_ORIGINS == [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:4173",
+        "http://127.0.0.1:4173",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+    assert "*" not in config_module.Config.CORS_ALLOWED_ORIGINS
 
 
 def test_config_summary_reports_openai_compatible_alias_sources(monkeypatch):

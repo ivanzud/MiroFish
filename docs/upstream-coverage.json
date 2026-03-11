@@ -427,8 +427,8 @@
     },
     {
       "number": 105,
-      "status": "partial",
-      "summary": "Local coverage now includes the error-handling hardening, env-driven CORS controls, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior; only the stricter default CORS-origin policy remains intentionally deferred for backward compatibility."
+      "status": "landed",
+      "summary": "Landed locally: backend security/config hardening now includes env-driven CORS controls with a localhost-only default allowlist, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior."
     },
     {
       "number": 108,
