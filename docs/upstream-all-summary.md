@@ -2,8 +2,8 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T16:58:54.496268+00:00`
-- Issues: `89` total (`open=40`, `closed=49`)
+- Captured: `2026-03-11T17:05:29.205228+00:00`
+- Issues: `89` total (`open=39`, `closed=50`)
 - Pull requests: `51` total (`open=37`, `closed=14`)
 - Mirrored in `origin`: `51` of `51` PR refs
 - Mirrored in `ivanzud/MiroFish`: `89` of `89` issues
@@ -11,13 +11,14 @@
 
 ## Recently Updated Issues
 
-- #149 [open, mirror=#90] 一直卡在 Waiting for agent actions (no labels)
-  - local coverage [covered]: Step 3 now reconciles stale persisted `running` states when the worker PID is gone, and the detailed status payload exposes compact simulation-log diagnostics while waiting for the first actions. That prevents indefinite "Waiting for agent actions" polling after a dead worker and makes true startup stalls visible in the UI.
-  - <img width="947" height="398" alt="Image" src="https://github.com/user-attachments/assets/09b45da5-150c-4d3b-82c0-6ba2204c1743" />
-- #148 [open, mirror=#89] Request failed with status code 504 (LLM API)
+- #148 [closed, mirror=#89] Request failed with status code 504 (LLM API)
   - local coverage [covered]: Interview env liveness now validates the persisted runner state and recorded process PID instead of trusting stale env_status.json alone, so Step 5 world-agent chat fails fast with the existing closed-environment guidance instead of hanging into a 504 when the simulation process has already exited.
   - 完成report后，进入深度对话，在Interactive Tools中，与Report agent对话是正常的，但是与世界中任意个体对话则报错：“抱歉，发生了错误: Request failed with status code 504“。
   - latest comment by `dosubot[bot]`: <!-- Answer --> 这个504错误是因为**与世界个体对话需要模拟环境保持运行状态**，而Report Agent对话则不需要。 具体原因： - **Report Agent对话**使用的是 `/api/report/chat` 端点，它[独立创建ReportAgent实例，不依赖模拟环境](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d680682c741a44eeebe/backe…
+- #149 [open, mirror=#90] 一直卡在 Waiting for agent actions (question)
+  - local coverage [covered]: Step 3 now reconciles stale persisted `running` states when the worker PID is gone, and the detailed status payload exposes compact simulation-log diagnostics while waiting for the first actions. That prevents indefinite "Waiting for agent actions" polling after a dead worker and makes true startup stalls visible in the UI.
+  - <img width="947" height="398" alt="Image" src="https://github.com/user-attachments/assets/09b45da5-150c-4d3b-82c0-6ba2204c1743" />
+  - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @jidancong! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这个问题通常是因为后端的 agent 动作数据没有正确生成或传递到前端。以下是几个常见原因和排查建议： **1. 检查 LLM API 配置** 最常见的原因是 [API URL 格式不正确](https://github.com…
 - #146 [open, mirror=#88] [Feature Request] Add Husky for Git Hook Automated Checks (enhancement)
   - local coverage [covered]: The repo now ships an opt-in, repo-native git hook workflow: `.githooks/pre-commit` runs the shared fast validation bundle, `.githooks/pre-push` runs the full validation bundle, and `npm run hooks:install` enables them without introducing a mandatory Husky/Node-only hook dependency.
   - Background The current project lacks automated validation before code commits, which may lead to the following issues: 1. Committing non-compliant code (e.g., syntax errors, messy formatting); 2. Inconsistent commit messages, which is not conducive to subsequent maintenance and version tracking; 3. Inefficiency in team collaboration due to the need for manual reminders of specifications. Solution…

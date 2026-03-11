@@ -2,22 +2,19 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T16:58:32.801738+00:00`
-- Issues: `40` total (`open=40`, `closed=0`)
+- Captured: `2026-03-11T17:05:16.672269+00:00`
+- Issues: `39` total (`open=39`, `closed=0`)
 - Pull requests: `37` total (`open=37`, `closed=0`)
 - Mirrored in `origin`: `37` of `37` PR refs
-- Mirrored in `ivanzud/MiroFish`: `40` of `40` issues
+- Mirrored in `ivanzud/MiroFish`: `39` of `39` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
-- #149 [open, mirror=#90] 一直卡在 Waiting for agent actions (no labels)
-  - local coverage [tracked]: Tracked under beads issue `mirofish-nja`: the new Step 3 stall report currently includes only a screenshot of "Waiting for agent actions", so the next pass should reproduce it and map it against existing simulation-stall/env-liveness fixes before landing a targeted change.
+- #149 [open, mirror=#90] 一直卡在 Waiting for agent actions (question)
+  - local coverage [covered]: Step 3 now reconciles stale persisted `running` states when the worker PID is gone, and the detailed status payload exposes compact simulation-log diagnostics while waiting for the first actions. That prevents indefinite "Waiting for agent actions" polling after a dead worker and makes true startup stalls visible in the UI.
   - <img width="947" height="398" alt="Image" src="https://github.com/user-attachments/assets/09b45da5-150c-4d3b-82c0-6ba2204c1743" />
-- #148 [open, mirror=#89] Request failed with status code 504 (LLM API)
-  - local coverage [covered]: Interview env liveness now validates the persisted runner state and recorded process PID instead of trusting stale env_status.json alone, so Step 5 world-agent chat fails fast with the existing closed-environment guidance instead of hanging into a 504 when the simulation process has already exited.
-  - 完成report后，进入深度对话，在Interactive Tools中，与Report agent对话是正常的，但是与世界中任意个体对话则报错：“抱歉，发生了错误: Request failed with status code 504“。
-  - latest comment by `dosubot[bot]`: <!-- Answer --> 这个504错误是因为**与世界个体对话需要模拟环境保持运行状态**，而Report Agent对话则不需要。 具体原因： - **Report Agent对话**使用的是 `/api/report/chat` 端点，它[独立创建ReportAgent实例，不依赖模拟环境](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d680682c741a44eeebe/backe…
+  - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @jidancong! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这个问题通常是因为后端的 agent 动作数据没有正确生成或传递到前端。以下是几个常见原因和排查建议： **1. 检查 LLM API 配置** 最常见的原因是 [API URL 格式不正确](https://github.com…
 - #146 [open, mirror=#88] [Feature Request] Add Husky for Git Hook Automated Checks (enhancement)
   - local coverage [covered]: The repo now ships an opt-in, repo-native git hook workflow: `.githooks/pre-commit` runs the shared fast validation bundle, `.githooks/pre-push` runs the full validation bundle, and `npm run hooks:install` enables them without introducing a mandatory Husky/Node-only hook dependency.
   - Background The current project lacks automated validation before code commits, which may lead to the following issues: 1. Committing non-compliant code (e.g., syntax errors, messy formatting); 2. Inconsistent commit messages, which is not conducive to subsequent maintenance and version tracking; 3. Inefficiency in team collaboration due to the need for manual reminders of specifications. Solution…
@@ -43,6 +40,10 @@
 - #117 [open, mirror=#8] ### Feature Request: English Language Support (enhancement)
   - local coverage [covered]: The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, report/interview parsing, and Step 5 interview fallbacks: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, Step 4 tool-output parsers accept both Chinese and English markers, and zep_tools now localizes deterministic interview-selection/question/summary fallback copy in English mode.
   - Hi, First of all, thank you for creating and open-sourcing this amazing project. MiroFish is a very interesting and powerful multi-agent prediction engine. Currently, a large portion of the documentation, UI text, and comments appear to be primarily in Chinese. This makes it difficult for international developers to fully understand and use the project. ### Request It would be very helpful if the…
+- #110 [open, mirror=#9] 阿里云百炼 API 调用异常：付费计划（Coding Plan）非千文模型及大模型API中转站的API均失效，仅免费额度模型或coding plan的千文模型可用 (LLM API)
+  - local coverage [covered]: The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.
+  - 阿里云百炼 API 调用异常：付费计划（Coding Plan）非千文模型及大模型API中转站的API均失效，仅免费额度模型或coding plan的千文模型可用
+  - latest comment by `lukeliu95`: 使用以下方式调用Coding Plan LLM_BASE_URL=https://coding.dashscope.aliyuncs.com/v1 LLM_MODEL_NAME=qwen3.5-plus
 
 ## Recently Updated Pull Requests
 
