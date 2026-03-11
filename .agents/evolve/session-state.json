@@ -1,12 +1,12 @@
 {
-  "cycle": 7,
+  "cycle": 8,
   "mode": "standard",
   "test_first": true,
   "repo_profile_path": null,
   "generator_empty_streak": 0,
   "last_selected_source": "beads",
   "claimed_work": null,
-  "queue_refresh_count": 7,
+  "queue_refresh_count": 8,
   "pinned_queue": null,
   "pinned_queue_file": null,
   "pinned_queue_index": 0,
@@ -15,12 +15,12 @@
   "unblock_depth": 0,
   "unblock_failures": 0,
   "unblock_chain": [],
-  "last_completed_issue": "mirofish-pft7",
+  "last_completed_issue": "upstream-intake-refresh",
   "last_validation_commands": [
     "cd backend && uv run pytest -q tests/test_llm_env.py",
     "bash ./scripts/test_backend_lite.sh"
   ],
   "last_upstream_snapshot": "docs/upstream-all-state.json",
-  "last_cycle_timestamp": "2026-03-11T18:50:04Z",
-  "last_cycle_head": "2ca7b5f09a9f4da3ced37c787c63a9ba9fb6e873"
+  "last_cycle_timestamp": "2026-03-11T21:58:57Z",
+  "last_cycle_head": "fa25d0fbbda774a14419e991460c420840fae6d9"
 }
