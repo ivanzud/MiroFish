@@ -102,6 +102,34 @@ def test_generate_profiles_requires_graph_id_in_english():
     assert response.get_json()["error"] == "Please provide graph_id"
 
 
+def test_start_requires_simulation_id_in_english():
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    response = client.post(
+        "/api/simulation/start",
+        json={},
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "Please provide simulation_id"
+
+
+def test_stop_requires_simulation_id_in_english():
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    response = client.post(
+        "/api/simulation/stop",
+        json={},
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "Please provide simulation_id"
+
+
 def test_prepare_status_not_started_is_localized(tmp_path, monkeypatch):
     app = create_simulation_test_app()
     client = app.test_client()

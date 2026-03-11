@@ -1539,6 +1539,7 @@ def start_simulation():
     """
     try:
         data = request.get_json() or {}
+        locale = get_locale()
 
         simulation_id = data.get('simulation_id')
         if not simulation_id:
@@ -1707,12 +1708,13 @@ def stop_simulation():
     """
     try:
         data = request.get_json() or {}
+        locale = get_locale()
         
         simulation_id = data.get('simulation_id')
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": tr("simulation.simulation_id_required", locale)
             }), 400
         
         run_state = SimulationRunner.stop_simulation(simulation_id)
