@@ -280,7 +280,9 @@ npm run setup:backend
 npm run setup:backend:simulation
 ```
 
-默认的 `setup:backend` 现在只安装图谱构建、报告生成和 OpenAI 兼容后端所需的核心依赖，用于避免 `camel-oasis -> unstructured==0.13.7` 的高风险传递依赖。只有在需要实际运行 Step 3 仿真脚本时，才需要额外安装可选仿真依赖。
+默认的 `setup:backend` 现在只安装图谱构建、报告生成和 OpenAI 兼容后端所需的核心依赖。Step 3 / Step 5 使用的上游 `oasis` 运行时代码现在直接随仓库 vendoring 到 `backend/oasis`，而可选仿真依赖只保留运行所需的显式包，因此不再通过 `camel-oasis -> unstructured==0.13.7` 这条高风险传递依赖链安装。
+
+已知限制：在当前 Python 3.13 环境里，`npm run setup:backend:simulation` 仍可能因为 `camel-ai -> tiktoken==0.7.0` 触发源码构建并要求 Rust 编译器而失败。若只需要核心后端，可继续使用默认安装；若要实际运行 Step 3 / Step 5 仿真，当前更稳妥的是使用 Python 3.11/3.12 或预先安装 Rust。
 
 #### 3. 启动服务
 

@@ -32,8 +32,11 @@ dependencies = [
 
 [project.optional-dependencies]
 simulation = [
-    "camel-oasis==0.2.5",
     "camel-ai==0.2.78",
+    "igraph==0.11.6",
+    "neo4j==5.23.0",
+    "pandas==2.2.2",
+    "sentence-transformers==3.0.0",
 ]
 dev = [
     "pytest>=8.0.0",
@@ -52,4 +55,4 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["app"]
+packages = ["app", "oasis"]

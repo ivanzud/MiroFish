@@ -2,6 +2,7 @@ import importlib
 import json
 import sys
 import types
+from pathlib import Path
 from unittest import mock
 
 
@@ -117,3 +118,14 @@ def test_start_simulation_fails_fast_when_optional_runtime_is_missing(tmp_path):
     finally:
         runner.RUN_STATE_DIR = original_run_state_dir
         runner.SCRIPTS_DIR = original_scripts_dir
+
+
+def test_simulation_runtime_manifests_do_not_depend_on_camel_oasis():
+    backend_dir = Path(__file__).resolve().parents[1]
+    pyproject = (backend_dir / "pyproject.toml").read_text(encoding="utf-8")
+    requirements = (backend_dir / "requirements-simulation.txt").read_text(encoding="utf-8")
+
+    assert "camel-oasis" not in pyproject
+    assert "camel-oasis" not in requirements
+    assert "unstructured" not in requirements
+    assert (backend_dir / "oasis" / "__init__.py").exists()
