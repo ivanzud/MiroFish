@@ -337,9 +337,11 @@ def test_interview_agents_localizes_live_api_prompt_prefix_in_english(monkeypatc
     service._select_agents_for_interview = lambda **kwargs: ([{"username": "alice", "bio": ""}], [0], "")
     service._generate_interview_questions = lambda **kwargs: ["What happened?"]
     captured = {}
+    monkeypatch.setattr(zep_tools_module.Config, "INTERVIEW_BATCH_TIMEOUT_SECONDS", 321.0)
 
     def fake_batch(**kwargs):
         captured["prompt"] = kwargs["interviews"][0]["prompt"]
+        captured["timeout"] = kwargs["timeout"]
         return {
             "success": True,
             "interviews_count": 1,
@@ -359,6 +361,7 @@ def test_interview_agents_localizes_live_api_prompt_prefix_in_english(monkeypatc
     assert "Response requirements:" in captured["prompt"]
     assert "\"Question X:\"" in captured["prompt"]
     assert "What happened?" in captured["prompt"]
+    assert captured["timeout"] == 321.0
 
 
 def test_tool_result_renderers_localize_deterministic_wrappers_in_english():

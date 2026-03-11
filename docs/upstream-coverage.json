@@ -190,19 +190,22 @@
     {
       "number": 62,
       "status": "partial",
-      "summary": "The Step 5 timeout complaint now has an explicit local mitigation: interviews derive adaptive timeout budgets from the frontend request window, the UI shows the effective single-agent and current survey-batch budget, and the docs/env template expose timeout knobs for slower local models. The broader issue's remaining workflow requests are now tracked separately in beads as `mirofish-as6`.",
+      "summary": "The Step 5 timeout complaint now has explicit local mitigations across both UI-driven and report-agent-driven interviews: frontend Step 5 requests derive adaptive timeout budgets from the request window, the UI shows the effective single-agent and current survey-batch budget, the docs/env template expose timeout knobs for slower local models, and backend/app/services/zep_tools.py now honors INTERVIEW_BATCH_TIMEOUT_SECONDS instead of forcing a fixed 180-second timeout for live report-agent batch interviews. The broader issue's remaining workflow requests are now tracked separately in beads as `mirofish-as6`.",
       "local_refs": [
         ".beads/issues.jsonl",
         "frontend/src/api/timeout.js",
         "frontend/src/components/Step5Interaction.vue",
         "frontend/src/components/step5Profiles.js",
+        "backend/app/services/zep_tools.py",
+        "backend/tests/test_zep_tools_i18n.py",
         ".env.example",
         "README.md",
         "README-EN.md"
       ],
       "validation": [
         "frontend: npm test",
-        "frontend: npm run build"
+        "frontend: npm run build",
+        "backend: uv run pytest -q tests/test_zep_tools_i18n.py"
       ]
     },
     {

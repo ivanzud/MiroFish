@@ -2178,7 +2178,7 @@ Requirements:
                 simulation_id=simulation_id,
                 interviews=interviews_request,
                 platform=None,  # 不指定platform，双平台采访
-                timeout=180.0   # 双平台需要更长超时
+                timeout=float(Config.INTERVIEW_BATCH_TIMEOUT_SECONDS),
             )
             
             self._log(
