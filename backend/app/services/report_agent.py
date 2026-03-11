@@ -19,6 +19,7 @@ from datetime import datetime
 from enum import Enum
 
 from ..config import Config
+from ..i18n import tr
 from ..utils.llm_client import LLMClient
 from ..utils.logger import get_logger
 from .zep_tools import (
@@ -40,7 +41,7 @@ class ReportLogger:
     每行是一个完整的 JSON 对象，包含时间戳、动作类型、详细内容等。
     """
     
-    def __init__(self, report_id: str):
+    def __init__(self, report_id: str, locale: str = "zh"):
         """
         初始化日志记录器
         
@@ -48,11 +49,15 @@ class ReportLogger:
             report_id: 报告ID，用于确定日志文件路径
         """
         self.report_id = report_id
+        self.locale = "en" if locale == "en" else "zh"
         self.log_file_path = os.path.join(
             Config.UPLOAD_FOLDER, 'reports', report_id, 'agent_log.jsonl'
         )
         self.start_time = datetime.now()
         self._ensure_log_file()
+
+    def _tr(self, key: str, **kwargs: Any) -> str:
+        return tr(key, self.locale, **kwargs)
     
     def _ensure_log_file(self):
         """确保日志文件所在目录存在"""
@@ -105,7 +110,7 @@ class ReportLogger:
                 "simulation_id": simulation_id,
                 "graph_id": graph_id,
                 "simulation_requirement": simulation_requirement,
-                "message": "报告生成任务开始"
+                "message": self._tr("report.log_started"),
             }
         )
     
@@ -114,7 +119,7 @@ class ReportLogger:
         self.log(
             action="planning_start",
             stage="planning",
-            details={"message": "开始规划报告大纲"}
+            details={"message": self._tr("report.log_planning_started")}
         )
     
     def log_planning_context(self, context: Dict[str, Any]):
@@ -123,7 +128,7 @@ class ReportLogger:
             action="planning_context",
             stage="planning",
             details={
-                "message": "获取模拟上下文信息",
+                "message": self._tr("report.log_planning_context_loaded"),
                 "context": context
             }
         )
@@ -134,7 +139,7 @@ class ReportLogger:
             action="planning_complete",
             stage="planning",
             details={
-                "message": "大纲规划完成",
+                "message": self._tr("report.log_planning_completed"),
                 "outline": outline_dict
             }
         )
@@ -146,7 +151,12 @@ class ReportLogger:
             stage="generating",
             section_title=section_title,
             section_index=section_index,
-            details={"message": f"开始生成章节: {section_title}"}
+            details={
+                "message": self._tr(
+                    "report.log_section_started",
+                    section_title=section_title,
+                )
+            }
         )
     
     def log_react_thought(self, section_title: str, section_index: int, iteration: int, thought: str):
@@ -159,7 +169,7 @@ class ReportLogger:
             details={
                 "iteration": iteration,
                 "thought": thought,
-                "message": f"ReACT 第{iteration}轮思考"
+                "message": self._tr("report.log_react_iteration", iteration=iteration),
             }
         )
     
@@ -181,7 +191,7 @@ class ReportLogger:
                 "iteration": iteration,
                 "tool_name": tool_name,
                 "parameters": parameters,
-                "message": f"调用工具: {tool_name}"
+                "message": self._tr("report.log_tool_call", tool_name=tool_name),
             }
         )
     
@@ -204,7 +214,7 @@ class ReportLogger:
                 "tool_name": tool_name,
                 "result": result,  # 完整结果，不截断
                 "result_length": len(result),
-                "message": f"工具 {tool_name} 返回结果"
+                "message": self._tr("report.log_tool_result", tool_name=tool_name),
             }
         )
     
@@ -229,7 +239,11 @@ class ReportLogger:
                 "response_length": len(response),
                 "has_tool_calls": has_tool_calls,
                 "has_final_answer": has_final_answer,
-                "message": f"LLM 响应 (工具调用: {has_tool_calls}, 最终答案: {has_final_answer})"
+                "message": self._tr(
+                    "report.log_llm_response",
+                    has_tool_calls=has_tool_calls,
+                    has_final_answer=has_final_answer,
+                ),
             }
         )
     
@@ -250,7 +264,10 @@ class ReportLogger:
                 "content": content,  # 完整内容，不截断
                 "content_length": len(content),
                 "tool_calls_count": tool_calls_count,
-                "message": f"章节 {section_title} 内容生成完成"
+                "message": self._tr(
+                    "report.log_section_content_completed",
+                    section_title=section_title,
+                ),
             }
         )
     
@@ -273,7 +290,10 @@ class ReportLogger:
             details={
                 "content": full_content,
                 "content_length": len(full_content),
-                "message": f"章节 {section_title} 生成完成"
+                "message": self._tr(
+                    "report.log_section_completed",
+                    section_title=section_title,
+                ),
             }
         )
     
@@ -285,7 +305,7 @@ class ReportLogger:
             details={
                 "total_sections": total_sections,
                 "total_time_seconds": round(total_time_seconds, 2),
-                "message": "报告生成完成"
+                "message": self._tr("report.log_completed"),
             }
         )
     
@@ -298,7 +318,7 @@ class ReportLogger:
             section_index=None,
             details={
                 "error": error_message,
-                "message": f"发生错误: {error_message}"
+                "message": self._tr("report.log_error", error=error_message),
             }
         )
 
@@ -1757,7 +1777,7 @@ class ReportAgent:
             ReportManager._ensure_report_folder(report_id)
             
             # 初始化日志记录器（结构化日志 agent_log.jsonl）
-            self.report_logger = ReportLogger(report_id)
+            self.report_logger = ReportLogger(report_id, locale=self.locale)
             self.report_logger.log_start(
                 simulation_id=self.simulation_id,
                 graph_id=self.graph_id,

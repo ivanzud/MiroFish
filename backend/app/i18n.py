@@ -260,6 +260,58 @@ TRANSLATIONS = {
         "zh": "报告生成失败",
         "en": "Report generation failed",
     },
+    "report.log_started": {
+        "zh": "报告生成任务开始",
+        "en": "Report generation task started",
+    },
+    "report.log_planning_started": {
+        "zh": "开始规划报告大纲",
+        "en": "Starting report outline planning",
+    },
+    "report.log_planning_context_loaded": {
+        "zh": "获取模拟上下文信息",
+        "en": "Loaded simulation context",
+    },
+    "report.log_planning_completed": {
+        "zh": "大纲规划完成",
+        "en": "Outline planning completed",
+    },
+    "report.log_section_started": {
+        "zh": "开始生成章节: {section_title}",
+        "en": "Starting section generation: {section_title}",
+    },
+    "report.log_react_iteration": {
+        "zh": "ReACT 第{iteration}轮思考",
+        "en": "ReACT iteration {iteration}",
+    },
+    "report.log_tool_call": {
+        "zh": "调用工具: {tool_name}",
+        "en": "Calling tool: {tool_name}",
+    },
+    "report.log_tool_result": {
+        "zh": "工具 {tool_name} 返回结果",
+        "en": "Tool {tool_name} returned a result",
+    },
+    "report.log_llm_response": {
+        "zh": "LLM 响应 (工具调用: {has_tool_calls}, 最终答案: {has_final_answer})",
+        "en": "LLM response (tool calls: {has_tool_calls}, final answer: {has_final_answer})",
+    },
+    "report.log_section_content_completed": {
+        "zh": "章节 {section_title} 内容生成完成",
+        "en": "Section content generated: {section_title}",
+    },
+    "report.log_section_completed": {
+        "zh": "章节 {section_title} 生成完成",
+        "en": "Section generation completed: {section_title}",
+    },
+    "report.log_completed": {
+        "zh": "报告生成完成",
+        "en": "Report generation completed",
+    },
+    "report.log_error": {
+        "zh": "发生错误: {error}",
+        "en": "Error occurred: {error}",
+    },
     "report.not_found": {
         "zh": "报告不存在: {report_id}",
         "en": "Report not found: {report_id}",

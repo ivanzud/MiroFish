@@ -1,3 +1,4 @@
+import json
 import sys
 from types import ModuleType
 
@@ -241,3 +242,37 @@ def test_generate_report_survives_empty_llm_section_responses(tmp_path, monkeypa
     assert saved_progress is not None
     assert saved_progress["status"] == "completed"
     assert saved_progress["progress"] == 100
+
+
+def test_generate_report_localizes_persisted_agent_log_messages_in_english(tmp_path, monkeypatch):
+    monkeypatch.setattr(ReportManager, "REPORTS_DIR", str(tmp_path / "reports"))
+    monkeypatch.setattr("app.services.report_agent.Config.UPLOAD_FOLDER", str(tmp_path))
+
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=EmptySectionLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    report = agent.generate_report(report_id="report_en_logs")
+
+    assert report.status == ReportStatus.COMPLETED
+
+    assert agent.report_logger is not None
+    log_path = agent.report_logger.log_file_path
+    entries = [
+        json.loads(line)
+        for line in open(log_path, encoding="utf-8").read().splitlines()
+        if line.strip()
+    ]
+    messages = [entry["details"].get("message") for entry in entries]
+
+    assert "Report generation task started" in messages
+    assert "Starting report outline planning" in messages
+    assert "Outline planning completed" in messages
+    assert "Starting section generation: 潜在人群画像" in messages
+    assert "Section generation completed: 潜在人群画像" in messages
+    assert "Report generation completed" in messages
