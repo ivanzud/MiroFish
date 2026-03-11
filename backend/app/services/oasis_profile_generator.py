@@ -191,6 +191,9 @@ class OasisProfileGenerator:
         "mediaoutlet", "company", "institution", "group", "community"
     ]
 
+    def _text(self, en_text: str, zh_text: str) -> str:
+        return en_text if getattr(self, "locale", "zh") == "en" else zh_text
+
     def _default_country(self) -> str:
         return "China" if getattr(self, "locale", "zh") == "en" else "中国"
     
@@ -365,7 +368,7 @@ class OasisProfileGenerator:
         
         # 必须有graph_id才能进行搜索
         if not self.graph_id:
-            logger.debug(f"跳过Zep检索：未设置graph_id")
+            logger.debug(self._text("Skipping Zep lookup: graph_id is not set", "跳过Zep检索：未设置graph_id"))
             return results
         
         comprehensive_query = f"关于{entity_name}的所有信息、活动、事件、关系和背景"
@@ -388,11 +391,21 @@ class OasisProfileGenerator:
                 except Exception as e:
                     last_exception = e
                     if attempt < max_retries - 1:
-                        logger.debug(f"Zep边搜索第 {attempt + 1} 次失败: {str(e)[:80]}, 重试中...")
+                        logger.debug(
+                            self._text(
+                                f"Zep edge search attempt {attempt + 1} failed: {str(e)[:80]}, retrying...",
+                                f"Zep边搜索第 {attempt + 1} 次失败: {str(e)[:80]}, 重试中...",
+                            )
+                        )
                         time.sleep(delay)
                         delay *= 2
                     else:
-                        logger.debug(f"Zep边搜索在 {max_retries} 次尝试后仍失败: {e}")
+                        logger.debug(
+                            self._text(
+                                f"Zep edge search still failed after {max_retries} attempts: {e}",
+                                f"Zep边搜索在 {max_retries} 次尝试后仍失败: {e}",
+                            )
+                        )
             return None
         
         def search_nodes():
@@ -413,11 +426,21 @@ class OasisProfileGenerator:
                 except Exception as e:
                     last_exception = e
                     if attempt < max_retries - 1:
-                        logger.debug(f"Zep节点搜索第 {attempt + 1} 次失败: {str(e)[:80]}, 重试中...")
+                        logger.debug(
+                            self._text(
+                                f"Zep node search attempt {attempt + 1} failed: {str(e)[:80]}, retrying...",
+                                f"Zep节点搜索第 {attempt + 1} 次失败: {str(e)[:80]}, 重试中...",
+                            )
+                        )
                         time.sleep(delay)
                         delay *= 2
                     else:
-                        logger.debug(f"Zep节点搜索在 {max_retries} 次尝试后仍失败: {e}")
+                        logger.debug(
+                            self._text(
+                                f"Zep node search still failed after {max_retries} attempts: {e}",
+                                f"Zep节点搜索在 {max_retries} 次尝试后仍失败: {e}",
+                            )
+                        )
             return None
         
         try:
@@ -456,7 +479,12 @@ class OasisProfileGenerator:
                 context_parts.append("相关实体:\n" + "\n".join(f"- {s}" for s in results["node_summaries"][:10]))
             results["context"] = "\n\n".join(context_parts)
             
-            logger.info(f"Zep混合检索完成: {entity_name}, 获取 {len(results['facts'])} 条事实, {len(results['node_summaries'])} 个相关节点")
+            logger.info(
+                self._text(
+                    f"Completed Zep hybrid retrieval: {entity_name}, fetched {len(results['facts'])} facts and {len(results['node_summaries'])} related nodes",
+                    f"Zep混合检索完成: {entity_name}, 获取 {len(results['facts'])} 条事实, {len(results['node_summaries'])} 个相关节点",
+                )
+            )
             
         except concurrent.futures.TimeoutError:
             logger.warning(f"Zep检索超时 ({entity_name})")
@@ -603,7 +631,12 @@ class OasisProfileGenerator:
                     return result
                     
                 except json.JSONDecodeError as je:
-                    logger.warning(f"JSON解析失败 (attempt {attempt+1}): {str(je)[:80]}")
+                    logger.warning(
+                        self._text(
+                            f"JSON parsing failed (attempt {attempt+1}): {str(je)[:80]}",
+                            f"JSON解析失败 (attempt {attempt+1}): {str(je)[:80]}",
+                        )
+                    )
                     
                     # 尝试修复JSON
                     result = self._try_fix_json(content, entity_name, entity_type, entity_summary)
@@ -614,12 +647,22 @@ class OasisProfileGenerator:
                     last_error = je
                     
             except Exception as e:
-                logger.warning(f"LLM调用失败 (attempt {attempt+1}): {str(e)[:80]}")
+                logger.warning(
+                    self._text(
+                        f"LLM call failed (attempt {attempt+1}): {str(e)[:80]}",
+                        f"LLM调用失败 (attempt {attempt+1}): {str(e)[:80]}",
+                    )
+                )
                 last_error = e
                 import time
                 time.sleep(1 * (attempt + 1))  # 指数退避
         
-        logger.warning(f"LLM生成人设失败（{max_attempts}次尝试）: {last_error}, 使用规则生成")
+        logger.warning(
+            self._text(
+                f"LLM profile generation failed after {max_attempts} attempts: {last_error}; falling back to rule-based generation",
+                f"LLM生成人设失败（{max_attempts}次尝试）: {last_error}, 使用规则生成",
+            )
+        )
         return self._generate_profile_rule_based(
             entity_name, entity_type, entity_summary, entity_attributes
         )
@@ -1022,7 +1065,12 @@ Important:
                                 writer.writeheader()
                                 writer.writerows(profiles_data)
                 except Exception as e:
-                    logger.warning(f"实时保存 profiles 失败: {e}")
+                    logger.warning(
+                        self._text(
+                            f"Failed to save profiles incrementally: {e}",
+                            f"实时保存 profiles 失败: {e}",
+                        )
+                    )
         
         def generate_single_profile(idx: int, entity: EntityNode) -> tuple:
             """生成单个profile的工作函数"""
@@ -1041,7 +1089,12 @@ Important:
                 return idx, profile, None
                 
             except Exception as e:
-                logger.error(f"生成实体 {entity.name} 的人设失败: {str(e)}")
+                logger.error(
+                    self._text(
+                        f"Failed to generate a profile for entity {entity.name}: {str(e)}",
+                        f"生成实体 {entity.name} 的人设失败: {str(e)}",
+                    )
+                )
                 # 创建一个基础profile
                 fallback_profile = OasisAgentProfile(
                     user_id=idx,
@@ -1054,9 +1107,19 @@ Important:
                 )
                 return idx, fallback_profile, str(e)
         
-        logger.info(f"开始并行生成 {total} 个Agent人设（并行数: {parallel_count}）...")
+        logger.info(
+            self._text(
+                f"Starting parallel generation for {total} agent profiles (parallelism: {parallel_count})...",
+                f"开始并行生成 {total} 个Agent人设（并行数: {parallel_count}）...",
+            )
+        )
         print(f"\n{'='*60}")
-        print(f"开始生成Agent人设 - 共 {total} 个实体，并行数: {parallel_count}")
+        print(
+            self._text(
+                f"Starting agent-profile generation for {total} entities (parallelism: {parallel_count})",
+                f"开始生成Agent人设 - 共 {total} 个实体，并行数: {parallel_count}",
+            )
+        )
         print(f"{'='*60}\n")
         
         # 使用线程池并行执行
@@ -1087,16 +1150,34 @@ Important:
                         progress_callback(
                             current, 
                             total, 
-                            f"已完成 {current}/{total}: {entity.name}（{entity_type}）"
+                            self._text(
+                                f"Completed {current}/{total}: {entity.name} ({entity_type})",
+                                f"已完成 {current}/{total}: {entity.name}（{entity_type}）",
+                            )
                         )
                     
                     if error:
-                        logger.warning(f"[{current}/{total}] {entity.name} 使用备用人设: {error}")
+                        logger.warning(
+                            self._text(
+                                f"[{current}/{total}] {entity.name} used a fallback profile: {error}",
+                                f"[{current}/{total}] {entity.name} 使用备用人设: {error}",
+                            )
+                        )
                     else:
-                        logger.info(f"[{current}/{total}] 成功生成人设: {entity.name} ({entity_type})")
+                        logger.info(
+                            self._text(
+                                f"[{current}/{total}] Successfully generated a profile: {entity.name} ({entity_type})",
+                                f"[{current}/{total}] 成功生成人设: {entity.name} ({entity_type})",
+                            )
+                        )
                         
                 except Exception as e:
-                    logger.error(f"处理实体 {entity.name} 时发生异常: {str(e)}")
+                    logger.error(
+                        self._text(
+                            f"Unexpected error while processing entity {entity.name}: {str(e)}",
+                            f"处理实体 {entity.name} 时发生异常: {str(e)}",
+                        )
+                    )
                     with lock:
                         completed_count[0] += 1
                     profiles[idx] = OasisAgentProfile(
@@ -1112,7 +1193,12 @@ Important:
                     save_profiles_realtime()
         
         print(f"\n{'='*60}")
-        print(f"人设生成完成！共生成 {len([p for p in profiles if p])} 个Agent")
+        print(
+            self._text(
+                f"Profile generation completed. Generated {len([p for p in profiles if p])} agents in total",
+                f"人设生成完成！共生成 {len([p for p in profiles if p])} 个Agent",
+            )
+        )
         print(f"{'='*60}\n")
         
         return profiles
@@ -1122,24 +1208,30 @@ Important:
         separator = "-" * 70
         
         # 构建完整输出内容（不截断）
-        topics_str = ', '.join(profile.interested_topics) if profile.interested_topics else '无'
+        topics_str = ', '.join(profile.interested_topics) if profile.interested_topics else self._text('none', '无')
         
         output_lines = [
             f"\n{separator}",
-            f"[已生成] {entity_name} ({entity_type})",
+            self._text(f"[Generated] {entity_name} ({entity_type})", f"[已生成] {entity_name} ({entity_type})"),
             f"{separator}",
-            f"用户名: {profile.user_name}",
+            self._text(f"Username: {profile.user_name}", f"用户名: {profile.user_name}"),
             f"",
-            f"【简介】",
+            self._text("Bio", "【简介】"),
             f"{profile.bio}",
             f"",
-            f"【详细人设】",
+            self._text("Detailed Persona", "【详细人设】"),
             f"{profile.persona}",
             f"",
-            f"【基本属性】",
-            f"年龄: {profile.age} | 性别: {profile.gender} | MBTI: {profile.mbti}",
-            f"职业: {profile.profession} | 国家: {profile.country}",
-            f"兴趣话题: {topics_str}",
+            self._text("Core Attributes", "【基本属性】"),
+            self._text(
+                f"Age: {profile.age} | Gender: {profile.gender} | MBTI: {profile.mbti}",
+                f"年龄: {profile.age} | 性别: {profile.gender} | MBTI: {profile.mbti}",
+            ),
+            self._text(
+                f"Profession: {profile.profession} | Country: {profile.country}",
+                f"职业: {profile.profession} | 国家: {profile.country}",
+            ),
+            self._text(f"Interested Topics: {topics_str}", f"兴趣话题: {topics_str}"),
             separator
         ]
         
@@ -1220,7 +1312,12 @@ Important:
                 ]
                 writer.writerow(row)
         
-        logger.info(f"已保存 {len(profiles)} 个Twitter Profile到 {file_path} (OASIS CSV格式)")
+        logger.info(
+            self._text(
+                f"Saved {len(profiles)} Twitter profiles to {file_path} (OASIS CSV format)",
+                f"已保存 {len(profiles)} 个Twitter Profile到 {file_path} (OASIS CSV格式)",
+            )
+        )
     
     def _normalize_gender(self, gender: Optional[str]) -> str:
         """
@@ -1294,7 +1391,12 @@ Important:
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         
-        logger.info(f"已保存 {len(profiles)} 个Reddit Profile到 {file_path} (JSON格式，包含user_id字段)")
+        logger.info(
+            self._text(
+                f"Saved {len(profiles)} Reddit profiles to {file_path} (JSON format with user_id)",
+                f"已保存 {len(profiles)} 个Reddit Profile到 {file_path} (JSON格式，包含user_id字段)",
+            )
+        )
     
     # 保留旧方法名作为别名，保持向后兼容
     def save_profiles_to_json(
@@ -1304,5 +1406,10 @@ Important:
         platform: str = "reddit"
     ):
         """[已废弃] 请使用 save_profiles() 方法"""
-        logger.warning("save_profiles_to_json已废弃，请使用save_profiles方法")
+        logger.warning(
+            self._text(
+                "save_profiles_to_json is deprecated; use save_profiles instead",
+                "save_profiles_to_json已废弃，请使用save_profiles方法",
+            )
+        )
         self.save_profiles(profiles, file_path, platform)

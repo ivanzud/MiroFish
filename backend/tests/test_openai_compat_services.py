@@ -160,6 +160,88 @@ def test_oasis_profile_generator_default_country_tolerates_uninitialized_locale(
     assert generator._default_country() == "中国"
 
 
+def test_oasis_profile_generator_english_progress_messages(monkeypatch):
+    info_messages = []
+    warning_messages = []
+    error_messages = []
+    fake_logger = SimpleNamespace(
+        info=info_messages.append,
+        warning=warning_messages.append,
+        error=error_messages.append,
+        debug=lambda *_: None,
+    )
+    monkeypatch.setattr("app.services.oasis_profile_generator.logger", fake_logger)
+
+    generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+    generator.locale = "en"
+    generator._generate_username = lambda name: name.lower()
+    generator._print_generated_profile = lambda *args, **kwargs: None
+    generator.generate_profile_from_entity = lambda entity, user_id, use_llm: OasisAgentProfile(
+        user_id=user_id,
+        name=entity.name,
+        user_name=entity.name.lower(),
+        bio=f"{entity.get_entity_type()}: {entity.name}",
+        persona="A participant in social discussions.",
+    )
+
+    entity = SimpleNamespace(
+        name="Alice",
+        summary="Strategy gamer",
+        uuid="uuid-1",
+        get_entity_type=lambda: "Person",
+    )
+    progress_messages = []
+
+    profiles = generator.generate_profiles_from_entities(
+        entities=[entity],
+        use_llm=False,
+        parallel_count=1,
+        progress_callback=lambda current, total, message: progress_messages.append((current, total, message)),
+    )
+
+    assert len(profiles) == 1
+    assert progress_messages == [(1, 1, "Completed 1/1: Alice (Person)")]
+    assert info_messages[0] == "Starting parallel generation for 1 agent profiles (parallelism: 1)..."
+    assert info_messages[-1] == "[1/1] Successfully generated a profile: Alice (Person)"
+    assert warning_messages == []
+    assert error_messages == []
+
+
+def test_oasis_profile_generator_english_console_profile_output(monkeypatch):
+    generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+    generator.locale = "en"
+
+    printed = []
+    monkeypatch.setattr("builtins.print", lambda *args, **kwargs: printed.append(" ".join(str(arg) for arg in args)))
+
+    generator._print_generated_profile(
+        "Alice",
+        "Person",
+        OasisAgentProfile(
+            user_id=1,
+            name="Alice",
+            user_name="alice",
+            bio="Bio",
+            persona="Persona",
+            age=30,
+            gender="female",
+            mbti="INTJ",
+            country="China",
+            profession="Engineer",
+            interested_topics=["Games", "Policy"],
+        ),
+    )
+
+    output = "\n".join(printed)
+    assert "[Generated] Alice (Person)" in output
+    assert "Username: alice" in output
+    assert "Bio" in output
+    assert "Detailed Persona" in output
+    assert "Core Attributes" in output
+    assert "Profession: Engineer | Country: China" in output
+    assert "Interested Topics: Games, Policy" in output
+
+
 def test_simulation_config_generator_missing_api_key_mentions_openai_alias(monkeypatch):
     monkeypatch.setattr("app.services.simulation_config_generator.Config.LLM_API_KEY", "")
 
