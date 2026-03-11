@@ -497,6 +497,17 @@
       ]
     },
     {
+      "number": 142,
+      "status": "no_action",
+      "summary": "Upstream issue #142 asks about long-term commercialization direction rather than reporting a reproducible bug or scoped feature request, so there is no local implementation task attached to it.",
+      "local_refs": [
+        "docs/upstream-open-state.json"
+      ],
+      "validation": [
+        "triage only"
+      ]
+    },
+    {
       "number": 69,
       "status": "covered",
       "summary": "Both READMEs now explicitly document direct OpenAI-compatible usage through either `LLM_*` or `OPENAI_*` environment variables, with examples for Codex/OpenAI-compatible gateways, DashScope, LM Studio, and Ollama.",

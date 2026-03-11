@@ -2,14 +2,16 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T13:58:34.038850+00:00`
-- Issues: `35` total (`open=35`, `closed=0`)
+- Captured: `2026-03-11T14:02:33.690272+00:00`
+- Issues: `36` total (`open=36`, `closed=0`)
 - Pull requests: `34` total (`open=34`, `closed=0`)
 - Mirrored in `origin`: `34` of `34` PR refs
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
+- #142 [open] 这个方向最后商业化落地应用的点是什么呢 (no labels)
+  - local coverage [no_action]: Upstream issue #142 asks about long-term commercialization direction rather than reporting a reproducible bug or scoped feature request, so there is no local implementation task attached to it.
 - #64 [open] 一直卡在上传文件错误：Request failed with status code 500 (no labels)
   - local coverage [covered]: Upload and graph-build failures now surface structured per-file parser/config validation errors instead of collapsing common deployment or document-ingest problems into a generic 500.
   - <img width="1206" height="1234" alt="Image" src="https://github.com/user-attachments/assets/5befa186-6f0f-493a-a6fa-7fb33940f233" /> TXT、MD、PDF文件格式都试了，内容甚至精简到就几百字，但就是卡在上传文件错误，到底什么原因？
@@ -43,9 +45,6 @@
   - local coverage [covered]: Failed report generation can now be retried directly from Step 4 with persisted status polling, backend error text, and a `force_regenerate` retry path.
   - <img width="2538" height="1213" alt="Image" src="https://github.com/user-attachments/assets/e3d01822-aa09-45b7-9210-2ce8e23bca8f" /> 好像是Zep超出调用限额导致报告生成失败，但是即使我充值了Zep，似乎也没有办法重新生成报告，难道只能重新走一轮？
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @luchenwei9266! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 目前 MiroFish **不支持通过界面重试报告生成**，这是一个[已知问题](https://github.com/666ghj/MiroFish/issues/30)。系统虽然有 `force_regenerate`…
-- #107 [open] 镜像问题 (no labels)
-  - local coverage [covered]: Docker deployment now reads `MIROFISH_IMAGE` from `.env` or the shell, so GHCR pull failures can be worked around with a mirror/private registry override instead of editing `docker-compose.yml`.
-  - ✘ Image ghcr.io/666ghj/mirofish:latest Error Get "https://ghcr.io/v2/": EOF 7.9s Error response from daemon: Get "https://ghcr.io/v2/": EOF
 
 ## Recently Updated Pull Requests
 

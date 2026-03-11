@@ -1,12 +1,12 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T13:58:45.341030+00:00",
-  "generated_at": "2026-03-11T13:58:45.341030+00:00",
+  "captured_at": "2026-03-11T14:02:48.031238+00:00",
+  "generated_at": "2026-03-11T14:02:48.031238+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
-      "open": 35,
+      "open": 36,
       "closed": 49
     },
     "pull_requests": {
@@ -14,11 +14,36 @@
       "closed": 14
     },
     "mirrored_pull_requests": {
-      "mirrored": 35,
-      "not_mirrored": 13
+      "mirrored": 48,
+      "not_mirrored": 0
     }
   },
   "issues": [
+    {
+      "number": 142,
+      "title": "这个方向最后商业化落地应用的点是什么呢",
+      "url": "https://github.com/666ghj/MiroFish/issues/142",
+      "state": "open",
+      "created_at": "2026-03-11T14:01:19Z",
+      "updated_at": "2026-03-11T14:01:19Z",
+      "closed_at": null,
+      "labels": [],
+      "author": "jack1234-byte",
+      "body_excerpt": "",
+      "comment_count": 0,
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 142,
+        "status": "no_action",
+        "summary": "Upstream issue #142 asks about long-term commercialization direction rather than reporting a reproducible bug or scoped feature request, so there is no local implementation task attached to it.",
+        "local_refs": [
+          "docs/upstream-open-state.json"
+        ],
+        "validation": [
+          "triage only"
+        ]
+      }
+    },
     {
       "number": 64,
       "title": "一直卡在上传文件错误：Request failed with status code 500",
@@ -2711,7 +2736,7 @@
       "comment_count": 0,
       "review_comment_count": 0,
       "recent_comments": [],
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-120"
     },
     {
@@ -3118,7 +3143,7 @@
           "body_excerpt": "## 代码审查反馈 这是一个非常有价值的大型重构！从D3.js SVG迁移到Sigma.js WebGL是正确的技术决策，特别是对于大规模知识图谱渲染。 ### 优点 1. **性能提升** - WebGL渲染相比SVG在节点数>500时会有显著性能优势 2. **代码结构改进** - `prepareGraphData`函数抽取使逻辑更清晰 3. **交互优化** - `suppressNextClick`和`DRAG_THRESHOLD_PX`解决了拖拽/点击冲突的经典…"
         }
       ],
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-89"
     },
     {
@@ -3513,7 +3538,7 @@
           "body_excerpt": "我用这个挺久了,速度快稳定不贵,官网 [https://cloud.yuncataff.top](https://cloud.yuncataff.top/aff/github-com/666ghj/MiroFish/pull/91/#/register?code=ryEEDL2F)"
         }
       ],
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-91"
     },
     {
@@ -3652,7 +3677,7 @@
           "body_excerpt": "Sorry, I intended to PR to my own forked repository but accidentally submitted it here. I'll close this PR now. Apologies for the noise!"
         }
       ],
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-97"
     },
     {
@@ -3819,7 +3844,7 @@
           "body_excerpt": "<img width=\"2204\" height=\"1348\" alt=\"image\" src=\"https://github.com/user-attachments/assets/3c5349c2-cec7-4f51-901c-b1006b1199cc\" /> 现在通过这种卡片展开的方式提供了history查看，Interview环境的恢复可能需要从算法层面好好做优化，还需要一些时间"
         }
       ],
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-13"
     },
     {
@@ -3954,7 +3979,7 @@
       "comment_count": 0,
       "review_comment_count": 0,
       "recent_comments": [],
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-33"
     },
     {
@@ -4034,7 +4059,7 @@
           "body_excerpt": "今天上了docker，现在可以看一下，感谢pr以及对mirofish对支持呀～"
         }
       ],
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-25"
     },
     {
@@ -4060,7 +4085,7 @@
       "comment_count": 0,
       "review_comment_count": 0,
       "recent_comments": [],
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-44"
     },
     {
@@ -4125,7 +4150,7 @@
           "body_excerpt": "心有灵犀，这个也是我最近在写的东西，我来具体看一下你的代码，不过可能不会合并，因为这个项目可能暂时Contributors保持在一个人，感谢老哥的贡献，没有找到你的联系方式，方便留一个邮箱吗"
         }
       ],
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-6"
     },
     {
@@ -4196,7 +4221,7 @@
           "body_excerpt": "Cursor Agent can help with this pull request. Just `@cursor` in comments and I'll start working on changes in this branch. <sub>[Learn more](https://cursor.com/docs/background-agent/web-and-mobile) about Cursor Agents</sub>"
         }
       ],
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-12"
     },
     {
@@ -4230,7 +4255,7 @@
           "body_excerpt": "Cursor Agent can help with this pull request. Just `@cursor` in comments and I'll start working on changes in this branch. <sub>[Learn more](https://cursor.com/docs/background-agent/web-and-mobile) about Cursor Agents</sub>"
         }
       ],
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-10"
     },
     {
@@ -4271,7 +4296,7 @@
           "body_excerpt": "新版本修复完成了，可以拉一下最新代码看一下"
         }
       ],
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-1"
     },
     {
@@ -4297,7 +4322,7 @@
       "comment_count": 0,
       "review_comment_count": 0,
       "recent_comments": [],
-      "fork_mirrored": false,
+      "fork_mirrored": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-2"
     }
   ],
