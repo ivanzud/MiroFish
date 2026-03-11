@@ -853,6 +853,20 @@ class ZepToolsService:
             locale,
         )
 
+        raw_nodes = self._fetch_raw_node_infos(graph_id)
+
+        result, _ = self._deduplicate_nodes(raw_nodes, "raw graph node introspection")
+
+        self._log(
+            "info",
+            f"获取到 {len(result)} 个节点",
+            f"Fetched {len(result)} nodes",
+            locale,
+        )
+        return result
+
+    def _fetch_raw_node_infos(self, graph_id: str) -> List[NodeInfo]:
+        locale = self._locale()
         nodes = _fetch_with_optional_locale(fetch_all_nodes, self.client, graph_id, locale)
 
         raw_nodes = []
@@ -866,16 +880,7 @@ class ZepToolsService:
                 attributes=node.attributes or {},
                 locale=self._locale(),
             ))
-
-        result, _ = self._deduplicate_nodes(raw_nodes, "raw graph node introspection")
-
-        self._log(
-            "info",
-            f"获取到 {len(result)} 个节点",
-            f"Fetched {len(result)} nodes",
-            locale,
-        )
-        return result
+        return raw_nodes
 
     @staticmethod
     def _node_to_entity(node: NodeInfo) -> EntityNode:
@@ -1111,21 +1116,8 @@ class ZepToolsService:
             locale,
         )
 
-        nodes = _fetch_with_optional_locale(fetch_all_nodes, self.client, graph_id, locale)
-        raw_nodes = []
-        for node in nodes:
-            node_uuid = getattr(node, 'uuid_', None) or getattr(node, 'uuid', None) or ""
-            raw_nodes.append(NodeInfo(
-                uuid=str(node_uuid) if node_uuid else "",
-                name=node.name or "",
-                labels=node.labels or [],
-                summary=node.summary or "",
-                attributes=node.attributes or {},
-                locale=self._locale(),
-            ))
-
         deduplicated_nodes, uuid_remap = self._deduplicate_nodes(
-            raw_nodes,
+            self._fetch_raw_node_infos(graph_id),
             "raw graph edge introspection",
         )
         node_map = {node.uuid: node for node in deduplicated_nodes}
@@ -1162,12 +1154,13 @@ class ZepToolsService:
         )
         return result
     
-    def get_node_detail(self, node_uuid: str) -> Optional[NodeInfo]:
+    def get_node_detail(self, node_uuid: str, graph_id: Optional[str] = None) -> Optional[NodeInfo]:
         """
         获取单个节点的详细信息
         
         Args:
             node_uuid: 节点UUID
+            graph_id: 图谱ID（可选；提供时会对明显别名执行保守折叠）
             
         Returns:
             节点信息或None
@@ -1193,7 +1186,7 @@ class ZepToolsService:
             if not node:
                 return None
             
-            return NodeInfo(
+            result = NodeInfo(
                 uuid=getattr(node, 'uuid_', None) or getattr(node, 'uuid', ''),
                 name=node.name or "",
                 labels=node.labels or [],
@@ -1201,6 +1194,27 @@ class ZepToolsService:
                 attributes=node.attributes or {},
                 locale=self._locale(),
             )
+            if not graph_id:
+                return result
+
+            raw_nodes = self._fetch_raw_node_infos(graph_id)
+            alias_candidates = [
+                candidate
+                for candidate in raw_nodes
+                if candidate.uuid == result.uuid
+                or ZepEntityReader._are_duplicate_entities(
+                    self._node_to_entity(result),
+                    self._node_to_entity(candidate),
+                )
+            ]
+            if not alias_candidates:
+                return result
+
+            deduplicated_nodes, _ = self._deduplicate_nodes(
+                alias_candidates,
+                "node detail lookup",
+            )
+            return deduplicated_nodes[0] if deduplicated_nodes else result
         except Exception as e:
             self._log(
                 "error",
@@ -1633,7 +1647,7 @@ class ZepToolsService:
                 continue
             try:
                 # 单独获取每个相关节点的信息
-                node = self.get_node_detail(uuid)
+                node = self.get_node_detail(uuid, graph_id=graph_id)
                 if node:
                     raw_nodes.append(node)
             except Exception as e:

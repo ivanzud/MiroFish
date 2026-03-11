@@ -206,7 +206,7 @@ def test_insight_forge_collapses_duplicate_aliases_in_entities_and_relationships
             locale="en",
         ),
     }
-    service.get_node_detail = lambda uuid: node_lookup[uuid]
+    service.get_node_detail = lambda uuid, graph_id=None: node_lookup[uuid]
 
     with app.test_request_context(headers={"X-Locale": "en"}):
         result = service.insight_forge("graph-1", "How did Trump react?", "Political crisis")
@@ -673,6 +673,79 @@ def test_get_all_nodes_collapses_obvious_alias_duplicates(monkeypatch):
     assert result[0].uuid == "node-short"
     assert result[0].summary == "Former president and recurring political actor."
     assert result[0].attributes == {"country": "US"}
+
+
+def test_get_node_detail_canonicalizes_alias_uuid_when_graph_id_is_provided(monkeypatch):
+    service = _make_service()
+    service._locale = lambda: "en"
+    service._call_with_retry = lambda func, operation_name: func()
+    service.client = type(
+        "FakeClient",
+        (),
+        {
+            "graph": type(
+                "FakeGraph",
+                (),
+                {
+                    "node": type(
+                        "FakeNodeApi",
+                        (),
+                        {
+                            "get": staticmethod(
+                                lambda uuid_: type(
+                                    "Node",
+                                    (),
+                                    {
+                                        "uuid": "node-long",
+                                        "name": "美国总统特朗普",
+                                        "labels": ["Entity", "PublicFigure"],
+                                        "summary": "",
+                                        "attributes": {},
+                                    },
+                                )()
+                            )
+                        },
+                    )()
+                },
+            )()
+        },
+    )()
+
+    monkeypatch.setattr(
+        "app.services.zep_tools.fetch_all_nodes",
+        lambda client, graph_id, locale=None: [
+            type(
+                "Node",
+                (),
+                {
+                    "uuid": "node-short",
+                    "name": "特朗普",
+                    "labels": ["Entity", "PublicFigure"],
+                    "summary": "Former president and recurring political actor.",
+                    "attributes": {"country": "US"},
+                },
+            )(),
+            type(
+                "Node",
+                (),
+                {
+                    "uuid": "node-long",
+                    "name": "美国总统特朗普",
+                    "labels": ["Entity", "PublicFigure"],
+                    "summary": "",
+                    "attributes": {},
+                },
+            )(),
+        ],
+    )
+
+    result = service.get_node_detail("node-long", graph_id="graph-1")
+
+    assert result is not None
+    assert result.uuid == "node-short"
+    assert result.name == "特朗普"
+    assert result.summary == "Former president and recurring political actor."
+    assert result.attributes == {"country": "US"}
 
 
 def test_get_all_edges_collapses_alias_linked_duplicates(monkeypatch):
