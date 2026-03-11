@@ -11,7 +11,12 @@
     "backend": "cd backend && uv run python run.py",
     "frontend": "cd frontend && npm run dev",
     "build": "cd frontend && npm run build",
-    "test:backend:lite": "bash ./scripts/test_backend_lite.sh"
+    "test:backend:lite": "bash ./scripts/test_backend_lite.sh",
+    "test:frontend": "npm --prefix frontend test",
+    "build:frontend": "npm --prefix frontend run build",
+    "validate": "bash ./scripts/validate_repo.sh",
+    "validate:fast": "bash ./scripts/validate_repo.sh --skip-frontend-build",
+    "hooks:install": "bash ./scripts/install_git_hooks.sh"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T15:33:28.259572+00:00`
+- Captured: `2026-03-11T15:39:38.999394+00:00`
 - Issues: `87` total (`open=38`, `closed=49`)
 - Pull requests: `50` total (`open=36`, `closed=14`)
 - Mirrored in `origin`: `50` of `50` PR refs
@@ -12,7 +12,7 @@
 ## Recently Updated Issues
 
 - #146 [open, mirror=#88] [Feature Request] Add Husky for Git Hook Automated Checks (enhancement)
-  - local coverage [tracked]: Tracked under beads issue `mirofish-2uk`: upstream issue #146 requests automated pre-commit validation, but the local follow-up is to evaluate a repo-native hooks workflow instead of assuming Husky is the right fit for this mixed Python/Vue/beads repository.
+  - local coverage [covered]: The repo now ships an opt-in, repo-native git hook workflow: `.githooks/pre-commit` runs the shared fast validation bundle, `.githooks/pre-push` runs the full validation bundle, and `npm run hooks:install` enables them without introducing a mandatory Husky/Node-only hook dependency.
   - Background The current project lacks automated validation before code commits, which may lead to the following issues: 1. Committing non-compliant code (e.g., syntax errors, messy formatting); 2. Inconsistent commit messages, which is not conducive to subsequent maintenance and version tracking; 3. Inefficiency in team collaboration due to the need for manual reminders of specifications. Solution…
 - #145 [open, mirror=#2] 知识图谱中存在重复实体节点 (no labels)
   - local coverage [tracked]: Tracked under beads issue `mirofish-975`: upstream issue #145 confirms the duplicate-entity-node problem behind PR #141, but the only related upstream implementation is still not safe to cherry-pick wholesale on top of the current branch.

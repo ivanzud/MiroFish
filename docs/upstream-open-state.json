@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T15:33:15.745511+00:00",
-  "generated_at": "2026-03-11T15:33:15.745511+00:00",
+  "captured_at": "2026-03-11T15:39:46.104016+00:00",
+  "generated_at": "2026-03-11T15:39:46.104016+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -38,18 +38,23 @@
       "recent_comments": [],
       "local_coverage": {
         "number": 146,
-        "status": "tracked",
-        "summary": "Tracked under beads issue `mirofish-2uk`: upstream issue #146 requests automated pre-commit validation, but the local follow-up is to evaluate a repo-native hooks workflow instead of assuming Husky is the right fit for this mixed Python/Vue/beads repository.",
+        "status": "covered",
+        "summary": "The repo now ships an opt-in, repo-native git hook workflow: `.githooks/pre-commit` runs the shared fast validation bundle, `.githooks/pre-push` runs the full validation bundle, and `npm run hooks:install` enables them without introducing a mandatory Husky/Node-only hook dependency.",
         "local_refs": [
-          ".beads/issues.jsonl",
-          "docs/upstream-triage.md",
+          ".githooks/pre-commit",
+          ".githooks/pre-push",
+          "scripts/validate_repo.sh",
+          "scripts/install_git_hooks.sh",
+          "CONTRIBUTING.md",
+          "package.json",
           "https://github.com/ivanzud/MiroFish/issues/88"
         ],
         "validation": [
-          "tracking only",
-          "fork issue mirror review"
+          "bash ./scripts/validate_repo.sh --backend-only",
+          "bash ./scripts/validate_repo.sh --frontend-only",
+          "bash ./scripts/install_git_hooks.sh --help"
         ],
-        "notes": "Mirrored into fork issue #88 on March 11, 2026."
+        "notes": "Mirrored into fork issue #88 on March 11, 2026. The workflow is intentionally opt-in and uses git core.hooksPath instead of requiring Husky."
       },
       "fork_issue_mirrored": true,
       "fork_issue_number": 88,
