@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T13:20:18.126229+00:00",
-  "generated_at": "2026-03-11T13:20:18.126229+00:00",
+  "captured_at": "2026-03-11T13:25:19.728660+00:00",
+  "generated_at": "2026-03-11T13:25:19.728660+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -1182,13 +1182,16 @@
       "local_coverage": {
         "number": 9,
         "status": "partial",
-        "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, but true mid-run checkpoint/resume is still deferred.",
+        "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, and the history modal now exposes a replay-only Step 3 route that loads an existing timeline without accidentally auto-starting a fresh run. True mid-run checkpoint/resume is still deferred.",
         "local_refs": [
+          "frontend/src/components/HistoryDatabase.vue",
           "frontend/src/views/SimulationRunView.vue",
-          "frontend/src/components/Step3Simulation.vue"
+          "frontend/src/components/Step3Simulation.vue",
+          "frontend/src/components/historyPlayback.js",
+          "frontend/src/components/simulationReplay.js"
         ],
         "validation": [
-          "frontend/tests/simulationTimeline.test.mjs",
+          "frontend: npm test",
           "frontend: npm run build"
         ]
       }

@@ -305,6 +305,7 @@ import {
   getTimelineAvailableActions,
   getTimelinePlatformName,
 } from './simulationTimeline'
+import { shouldAutoStartSimulation } from './simulationReplay'
 
 const props = defineProps({
   simulationId: String,
@@ -312,6 +313,10 @@ const props = defineProps({
   minutesPerRound: {
     type: Number,
     default: 30 // 默认每轮30分钟
+  },
+  replayOnly: {
+    type: Boolean,
+    default: false
   },
   projectData: Object,
   graphData: Object,
@@ -769,8 +774,13 @@ onMounted(() => {
   addLog(t('step3.initLog'))
   if (props.simulationId) {
     loadExistingRun().then(resumed => {
-      if (!resumed) {
+      if (shouldAutoStartSimulation({ replayOnly: props.replayOnly, resumed })) {
         doStartSimulation({ force: false })
+        return
+      }
+
+      if (props.replayOnly && !resumed) {
+        addLog(t('step3.replayOnlyNoRun'))
       }
     })
   }

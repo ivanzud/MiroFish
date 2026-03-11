@@ -53,6 +53,7 @@
           :simulationId="currentSimulationId"
           :maxRounds="maxRounds"
           :minutesPerRound="minutesPerRound"
+          :replayOnly="replayOnly"
           :projectData="projectData"
           :graphData="graphData"
           :systemLogs="systemLogs"
@@ -89,6 +90,7 @@ const viewMode = ref('split')
 
 // Data State
 const currentSimulationId = ref(route.params.simulationId)
+const replayOnly = computed(() => route.query.replay === '1' || route.query.replay === 'true')
 // 直接在初始化时从 query 参数获取 maxRounds，确保子组件能立即获取到值
 const maxRounds = ref(route.query.maxRounds ? parseInt(route.query.maxRounds) : null)
 const minutesPerRound = ref(30) // 默认每轮30分钟

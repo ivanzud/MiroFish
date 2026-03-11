@@ -170,6 +170,15 @@
                 <span class="btn-text">{{ t('history.envSetupBtn') }}</span>
               </button>
               <button 
+                class="modal-btn btn-simulation-run" 
+                @click="goToSimulationReplay"
+                :disabled="!canReplaySimulation(selectedProject)"
+              >
+                <span class="btn-step">Step3</span>
+                <span class="btn-icon">◎</span>
+                <span class="btn-text">{{ t('history.simulationRunBtn') }}</span>
+              </button>
+              <button 
                 class="modal-btn btn-report" 
                 @click="goToReport"
                 :disabled="!selectedProject.report_id"
@@ -195,6 +204,7 @@ import { ref, computed, onMounted, onUnmounted, onActivated, watch, nextTick } f
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { getSimulationHistory } from '../api/simulation'
+import { buildSimulationReplayRoute, hasReplayableSimulationState } from './historyPlayback'
 
 const router = useRouter()
 const route = useRoute()
@@ -421,6 +431,15 @@ const goToSimulation = () => {
       name: 'Simulation',
       params: { simulationId: selectedProject.value.simulation_id }
     })
+    closeModal()
+  }
+}
+
+const canReplaySimulation = (simulation) => hasReplayableSimulationState(simulation)
+
+const goToSimulationReplay = () => {
+  if (selectedProject.value?.simulation_id && canReplaySimulation(selectedProject.value)) {
+    router.push(buildSimulationReplayRoute(selectedProject.value.simulation_id))
     closeModal()
   }
 }
@@ -1258,6 +1277,7 @@ onUnmounted(() => {
 /* 导航按钮 */
 .modal-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   padding: 20px 32px;
   background: #FFFFFF;
@@ -1316,6 +1336,7 @@ onUnmounted(() => {
 
 .modal-btn.btn-project .btn-icon { color: #3B82F6; }
 .modal-btn.btn-simulation .btn-icon { color: #F59E0B; }
+.modal-btn.btn-simulation-run .btn-icon { color: #EF4444; }
 .modal-btn.btn-report .btn-icon { color: #10B981; }
 
 .modal-btn:hover:not(:disabled) .btn-text {
