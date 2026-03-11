@@ -2,6 +2,7 @@ import unittest
 import io
 import json
 import tempfile
+from contextlib import nullcontext
 from pathlib import Path
 from unittest.mock import patch
 import importlib.util
@@ -391,6 +392,45 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(RuntimeError, "log into gh"):
                 sync_upstream_github.fetch_json("https://api.github.com/repos/test/repo/issues")
+
+    def test_fetch_json_http_retry_recovers_from_transient_500(self):
+        transient_error = HTTPError(
+            url="https://api.github.com/repos/test/repo/issues",
+            code=500,
+            msg="Internal Server Error",
+            hdrs=None,
+            fp=None,
+        )
+        payload = io.BytesIO(b'{"ok": true}')
+
+        with (
+            patch.object(sync_upstream_github, "has_github_token", return_value=True),
+            patch("urllib.request.urlopen", side_effect=[transient_error, nullcontext(payload)]),
+            patch.object(sync_upstream_github.time, "sleep") as mocked_sleep,
+        ):
+            result = sync_upstream_github.fetch_json("https://api.github.com/repos/test/repo/issues")
+
+        self.assertEqual(result, {"ok": True})
+        mocked_sleep.assert_called_once_with(1)
+
+    def test_fetch_json_http_retry_raises_runtime_error_after_repeated_5xx(self):
+        transient_error = HTTPError(
+            url="https://api.github.com/repos/test/repo/issues",
+            code=503,
+            msg="Service Unavailable",
+            hdrs=None,
+            fp=None,
+        )
+
+        with (
+            patch.object(sync_upstream_github, "has_github_token", return_value=True),
+            patch("urllib.request.urlopen", side_effect=[transient_error] * sync_upstream_github.GH_API_MAX_ATTEMPTS),
+            patch.object(sync_upstream_github.time, "sleep") as mocked_sleep,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "HTTP 503"):
+                sync_upstream_github.fetch_json("https://api.github.com/repos/test/repo/issues")
+
+        self.assertEqual(mocked_sleep.call_count, sync_upstream_github.GH_API_MAX_ATTEMPTS - 1)
 
     def test_main_reuses_recent_cached_snapshot_on_rate_limit(self):
         with tempfile.TemporaryDirectory() as tmpdir:

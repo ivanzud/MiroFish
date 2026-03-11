@@ -17,7 +17,7 @@ import sys
 import time
 import urllib.parse
 import urllib.request
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -88,6 +88,10 @@ def _is_retryable_gh_error(message: str) -> bool:
     return any(marker in lowered for marker in markers)
 
 
+def _is_retryable_http_status(code: int) -> bool:
+    return code in {500, 502, 503, 504}
+
+
 def fetch_json_via_gh(url: str) -> object:
     parsed = urllib.parse.urlparse(url)
     endpoint = parsed.path
@@ -130,19 +134,37 @@ def _fetch_json_via_http(url: str) -> object:
         headers["Authorization"] = f"Bearer {token}"
 
     request = urllib.request.Request(url, headers=headers)
-    try:
-        with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT) as response:
-            return json.load(response)
-    except TimeoutError as exc:
-        raise RuntimeError(
-            f"GitHub API request timed out after {REQUEST_TIMEOUT}s for {url}"
-        ) from exc
-    except HTTPError as exc:
-        if exc.code == 403 and "rate limit" in str(exc).lower():
-            raise RuntimeError(
-                "GitHub API rate limit exceeded. Set GITHUB_TOKEN or GH_TOKEN, or log into gh before running sync."
-            ) from exc
-        raise
+    last_error: RuntimeError | None = None
+    for attempt in range(1, GH_API_MAX_ATTEMPTS + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT) as response:
+                return json.load(response)
+        except TimeoutError as exc:
+            last_error = RuntimeError(
+                f"GitHub API request timed out after {REQUEST_TIMEOUT}s for {url}"
+            )
+            if attempt >= GH_API_MAX_ATTEMPTS:
+                raise last_error from exc
+            time.sleep(attempt)
+        except HTTPError as exc:
+            if exc.code == 403 and "rate limit" in str(exc).lower():
+                raise RuntimeError(
+                    "GitHub API rate limit exceeded. Set GITHUB_TOKEN or GH_TOKEN, or log into gh before running sync."
+                ) from exc
+
+            last_error = RuntimeError(f"GitHub API request failed for {url}: HTTP {exc.code}")
+            if attempt >= GH_API_MAX_ATTEMPTS or not _is_retryable_http_status(exc.code):
+                raise last_error from exc
+            time.sleep(attempt)
+        except URLError as exc:
+            details = str(getattr(exc, "reason", exc)).strip() or str(exc)
+            last_error = RuntimeError(f"GitHub API request failed for {url}: {details}")
+            if attempt >= GH_API_MAX_ATTEMPTS or not _is_retryable_gh_error(details):
+                raise last_error from exc
+            time.sleep(attempt)
+
+    assert last_error is not None
+    raise last_error
 
 
 def fetch_json(url: str) -> object:
