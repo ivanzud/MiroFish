@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T13:48:28.268154+00:00",
-  "generated_at": "2026-03-11T13:48:28.268154+00:00",
+  "captured_at": "2026-03-11T13:51:51.260678+00:00",
+  "generated_at": "2026-03-11T13:51:51.260678+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -17,6 +17,58 @@
     }
   },
   "issues": [
+    {
+      "number": 64,
+      "title": "一直卡在上传文件错误：Request failed with status code 500",
+      "url": "https://github.com/666ghj/MiroFish/issues/64",
+      "state": "open",
+      "created_at": "2026-01-31T13:10:06Z",
+      "updated_at": "2026-03-11T13:50:29Z",
+      "closed_at": null,
+      "labels": [],
+      "author": "G-LJDS2022",
+      "body_excerpt": "<img width=\"1206\" height=\"1234\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/5befa186-6f0f-493a-a6fa-7fb33940f233\" /> TXT、MD、PDF文件格式都试了，内容甚至精简到就几百字，但就是卡在上传文件错误，到底什么原因？",
+      "comment_count": 15,
+      "recent_comments": [
+        {
+          "author": "666ghj",
+          "created_at": "2026-02-02T07:16:30Z",
+          "updated_at": "2026-02-02T07:16:30Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/64#issuecomment-3833393441",
+          "body_excerpt": "以前的代码因为编码格式的缘故会报这样的错，最新代码已经修复了。 你是把他部署在服务器上吗，那好像会有一些问题。"
+        },
+        {
+          "author": "wjh-w",
+          "created_at": "2026-02-05T07:52:32Z",
+          "updated_at": "2026-02-05T07:52:32Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/64#issuecomment-3851616788",
+          "body_excerpt": "我也遇到这样的问题上传文件 的时候一直处于 500的问题 <img width=\"1051\" height=\"356\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/536df0ba-f13a-4dcf-a588-455f9c4f1084\" />"
+        },
+        {
+          "author": "HAN-GITWarehouse",
+          "created_at": "2026-02-07T03:21:04Z",
+          "updated_at": "2026-02-07T03:21:04Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/64#issuecomment-3863455964",
+          "body_excerpt": "这个 500的报错 你要看下你前端界面 调用generate 这个接口的反馈 结果反馈是什么吧 我之前也是500的 报错 原因在调用这个接口的时候 发现 因为zep cloude 只提供 秘钥 但是不提供模型 而 项目中的模型 你要需要去申请一个没药来使用 很多模型也并不是免费的 但是一般 新用户注册 都有免费额度"
+        }
+      ],
+      "local_coverage": {
+        "number": 64,
+        "status": "covered",
+        "summary": "Upload and graph-build failures now surface structured per-file parser/config validation errors instead of collapsing common deployment or document-ingest problems into a generic 500.",
+        "local_refs": [
+          "backend/app/api/graph.py",
+          "backend/app/config.py",
+          "frontend/src/views/Process.vue",
+          "backend/tests/test_graph_upload_api.py"
+        ],
+        "validation": [
+          "scripts/test_backend_lite.sh",
+          "frontend: npm test",
+          "frontend: npm run build"
+        ]
+      }
+    },
     {
       "number": 140,
       "title": "让我想到了刘慈欣的一个小说，要是把真实世界放进去，得多大的算力啊",
@@ -193,58 +245,6 @@
           "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_english_message"
         ],
         "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
-      }
-    },
-    {
-      "number": 64,
-      "title": "一直卡在上传文件错误：Request failed with status code 500",
-      "url": "https://github.com/666ghj/MiroFish/issues/64",
-      "state": "open",
-      "created_at": "2026-01-31T13:10:06Z",
-      "updated_at": "2026-03-10T05:40:36Z",
-      "closed_at": null,
-      "labels": [],
-      "author": "G-LJDS2022",
-      "body_excerpt": "<img width=\"1206\" height=\"1234\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/5befa186-6f0f-493a-a6fa-7fb33940f233\" /> TXT、MD、PDF文件格式都试了，内容甚至精简到就几百字，但就是卡在上传文件错误，到底什么原因？",
-      "comment_count": 14,
-      "recent_comments": [
-        {
-          "author": "666ghj",
-          "created_at": "2026-02-02T07:16:30Z",
-          "updated_at": "2026-02-02T07:16:30Z",
-          "url": "https://github.com/666ghj/MiroFish/issues/64#issuecomment-3833393441",
-          "body_excerpt": "以前的代码因为编码格式的缘故会报这样的错，最新代码已经修复了。 你是把他部署在服务器上吗，那好像会有一些问题。"
-        },
-        {
-          "author": "wjh-w",
-          "created_at": "2026-02-05T07:52:32Z",
-          "updated_at": "2026-02-05T07:52:32Z",
-          "url": "https://github.com/666ghj/MiroFish/issues/64#issuecomment-3851616788",
-          "body_excerpt": "我也遇到这样的问题上传文件 的时候一直处于 500的问题 <img width=\"1051\" height=\"356\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/536df0ba-f13a-4dcf-a588-455f9c4f1084\" />"
-        },
-        {
-          "author": "HAN-GITWarehouse",
-          "created_at": "2026-02-07T03:21:04Z",
-          "updated_at": "2026-02-07T03:21:04Z",
-          "url": "https://github.com/666ghj/MiroFish/issues/64#issuecomment-3863455964",
-          "body_excerpt": "这个 500的报错 你要看下你前端界面 调用generate 这个接口的反馈 结果反馈是什么吧 我之前也是500的 报错 原因在调用这个接口的时候 发现 因为zep cloude 只提供 秘钥 但是不提供模型 而 项目中的模型 你要需要去申请一个没药来使用 很多模型也并不是免费的 但是一般 新用户注册 都有免费额度"
-        }
-      ],
-      "local_coverage": {
-        "number": 64,
-        "status": "covered",
-        "summary": "Upload and graph-build failures now surface structured per-file parser/config validation errors instead of collapsing common deployment or document-ingest problems into a generic 500.",
-        "local_refs": [
-          "backend/app/api/graph.py",
-          "backend/app/config.py",
-          "frontend/src/views/Process.vue",
-          "backend/tests/test_graph_upload_api.py"
-        ],
-        "validation": [
-          "scripts/test_backend_lite.sh",
-          "frontend: npm test",
-          "frontend: npm run build"
-        ]
       }
     },
     {

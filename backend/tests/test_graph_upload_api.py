@@ -324,6 +324,49 @@ def test_get_backend_config_status_reports_openai_compatible_alias_sources(monke
     }
 
 
+def test_get_backend_config_status_reports_openai_base_url_source(monkeypatch, tmp_path):
+    client, graph_module = create_graph_test_client(monkeypatch, tmp_path)
+    validation = FakeValidationResult()
+    monkeypatch.setattr(
+        graph_module.Config,
+        "validate_comprehensive",
+        lambda locale="zh": validation,
+    )
+    monkeypatch.setattr(
+        graph_module.Config,
+        "get_config_summary",
+        lambda: {
+            "llm": {
+                "backend_mode": "openai_compatible",
+                "configured": True,
+                "base_url": "https://api.openai.com/v1",
+                "model": "gpt-4.1-mini",
+                "sources": {
+                    "api_key_env": "OPENAI_API_KEY",
+                    "base_url_env": "OPENAI_BASE_URL",
+                    "model_env": "OPENAI_MODEL",
+                    "uses_project_aliases": False,
+                    "uses_openai_aliases": True,
+                },
+            },
+            "zep": {"configured": True},
+        },
+    )
+
+    response = client.get("/api/graph/config/status", headers={"X-Locale": "en"})
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["data"]["summary"]["llm"]["sources"] == {
+        "api_key_env": "OPENAI_API_KEY",
+        "base_url_env": "OPENAI_BASE_URL",
+        "model_env": "OPENAI_MODEL",
+        "uses_project_aliases": False,
+        "uses_openai_aliases": True,
+    }
+
+
 def test_build_graph_task_persists_sanitized_zep_auth_error(monkeypatch, tmp_path):
     client, graph_module = create_graph_build_test_client(monkeypatch, tmp_path)
 

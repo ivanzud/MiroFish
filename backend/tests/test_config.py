@@ -26,6 +26,16 @@ def test_config_accepts_openai_api_base_url_alias(monkeypatch):
     assert config_module.Config.LLM_BASE_URL == "https://codex.example.test/v1"
 
 
+def test_config_accepts_openai_base_url_alias(monkeypatch):
+    monkeypatch.delenv("LLM_BASE_URL", raising=False)
+    monkeypatch.delenv("OPENAI_API_BASE_URL", raising=False)
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+
+    config_module = load_config_module()
+
+    assert config_module.Config.LLM_BASE_URL == "https://api.openai.com/v1"
+
+
 def test_validate_returns_structured_errors_for_missing_keys(monkeypatch):
     monkeypatch.delenv("LLM_API_KEY", raising=False)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
@@ -172,6 +182,29 @@ def test_config_summary_reports_openai_compatible_alias_sources(monkeypatch):
     assert summary["llm"]["sources"] == {
         "api_key_env": "OPENAI_API_KEY",
         "base_url_env": "OPENAI_API_BASE_URL",
+        "model_env": "OPENAI_MODEL",
+        "uses_project_aliases": False,
+        "uses_openai_aliases": True,
+    }
+
+
+def test_config_summary_reports_openai_base_url_source(monkeypatch):
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    monkeypatch.delenv("LLM_BASE_URL", raising=False)
+    monkeypatch.delenv("LLM_MODEL_NAME", raising=False)
+    monkeypatch.delenv("OPENAI_API_BASE_URL", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "codex-key")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+    monkeypatch.setenv("OPENAI_MODEL", "gpt-4.1-mini")
+    monkeypatch.setenv("ZEP_API_KEY", "zep-key")
+
+    config_module = load_config_module()
+    summary = config_module.Config.get_config_summary()
+
+    assert summary["llm"]["backend_mode"] == "openai_compatible"
+    assert summary["llm"]["sources"] == {
+        "api_key_env": "OPENAI_API_KEY",
+        "base_url_env": "OPENAI_BASE_URL",
         "model_env": "OPENAI_MODEL",
         "uses_project_aliases": False,
         "uses_openai_aliases": True,
