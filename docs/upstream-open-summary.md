@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T11:39:25.726371+00:00`
+- Captured: `2026-03-11T11:41:26.615137+00:00`
 - Issues: `36` total (`open=36`, `closed=0`)
 - Pull requests: `33` total (`open=33`, `closed=0`)
 - Mirrored in `origin`: `33` of `33` PR refs
