@@ -220,6 +220,10 @@ TRANSLATIONS = {
         "zh": "图谱构建任务已启动，请通过 /task/{task_id} 查询进度",
         "en": "The graph build task has started. Query /task/{task_id} for progress.",
     },
+    "graph.build_task_type": {
+        "zh": "构建图谱: {graph_name}",
+        "en": "Build graph: {graph_name}",
+    },
     "graph.build_service_initializing": {
         "zh": "初始化图谱构建服务...",
         "en": "Initializing the graph build service...",

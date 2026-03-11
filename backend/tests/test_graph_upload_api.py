@@ -534,6 +534,7 @@ def test_build_graph_response_and_task_messages_are_localized_in_english(monkeyp
 
     assert task_response.status_code == 200
     assert task_payload["data"]["status"] == "completed"
+    assert task_payload["data"]["task_type"] == "Build graph: English graph"
     assert task_payload["data"]["message"] == "Graph build completed"
 
 
@@ -591,6 +592,8 @@ def test_failed_graph_task_message_is_localized_in_english(monkeypatch, tmp_path
 def test_graph_task_payload_translates_worker_progress_messages_in_english(monkeypatch, tmp_path):
     _, graph_module = create_graph_build_test_client(monkeypatch, tmp_path)
 
+    assert graph_module._translate_graph_task_type("en", "构建图谱: Example graph") == "Build graph: Example graph"
+    assert graph_module._translate_graph_task_type("zh", "Build graph: Example graph") == "构建图谱: Example graph"
     assert graph_module._translate_graph_task_message("en", "开始构建图谱...") == "Starting graph build..."
     assert graph_module._translate_graph_task_message("en", "图谱已创建: graph_en_123") == "Graph created: graph_en_123"
     assert graph_module._translate_graph_task_message("en", "本体已设置") == "Ontology configured"

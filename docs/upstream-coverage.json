@@ -849,6 +849,22 @@
       ]
     },
     {
+      "number": 151,
+      "status": "landed",
+      "summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.",
+      "local_refs": [
+        "backend/app/api/simulation.py",
+        "backend/app/services/simulation_manager.py",
+        "backend/tests/test_simulation_service_i18n.py",
+        "backend/tests/test_simulation_api_i18n.py",
+        "origin/mirror/upstream-pr-151"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_simulation_service_i18n.py tests/test_simulation_api_i18n.py",
+        "python3 -m compileall backend/app/services/simulation_manager.py backend/app/api/simulation.py"
+      ]
+    },
+    {
       "number": 147,
       "status": "partial",
       "summary": "Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets.",

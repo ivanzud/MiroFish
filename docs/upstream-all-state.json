@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T17:48:27.248443+00:00",
-  "generated_at": "2026-03-11T17:48:27.248443+00:00",
+  "captured_at": "2026-03-11T17:52:45.683020+00:00",
+  "generated_at": "2026-03-11T17:52:45.683020+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -10,11 +10,11 @@
       "closed": 50
     },
     "pull_requests": {
-      "open": 37,
+      "open": 38,
       "closed": 14
     },
     "mirrored_pull_requests": {
-      "mirrored": 51,
+      "mirrored": 52,
       "not_mirrored": 0
     },
     "mirrored_issues": {
@@ -29,7 +29,7 @@
       "url": "https://github.com/666ghj/MiroFish/issues/150",
       "state": "open",
       "created_at": "2026-03-11T17:36:38Z",
-      "updated_at": "2026-03-11T17:41:52Z",
+      "updated_at": "2026-03-11T17:49:29Z",
       "closed_at": null,
       "labels": [],
       "author": "karesansui-u",
@@ -3179,6 +3179,52 @@
     }
   ],
   "pull_requests": [
+    {
+      "number": 151,
+      "title": "Fix silent data loss when platform defaults to reddit for Twitter-only simulations",
+      "url": "https://github.com/666ghj/MiroFish/pull/151",
+      "state": "open",
+      "created_at": "2026-03-11T17:49:51Z",
+      "updated_at": "2026-03-11T17:49:59Z",
+      "closed_at": null,
+      "merged_at": null,
+      "head": "fix/platform-default-reddit-silent-failure",
+      "head_sha": "18ba979c8da4cbbd25c2ce9615d5ad65f242b718",
+      "head_repo": "karesansui-u/MiroFish",
+      "head_clone_url": "https://github.com/karesansui-u/MiroFish.git",
+      "base": "main",
+      "base_repo": "666ghj/MiroFish",
+      "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:M"
+      ],
+      "author": "karesansui-u",
+      "body_excerpt": "## Summary - API retrieval endpoints (`/profiles`, `/profiles/realtime`, `/posts`, `/comments`) hardcoded `'reddit'` as the default platform - When a Twitter-only simulation was run (`enable_reddit=false`), these APIs silently returned empty results because they looked for `reddit_simulation.db` / `reddit_profiles.json` which did not exist - Frontend also hardcoded `'reddit'` in Vue components an…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-151",
+      "local_coverage": {
+        "number": 151,
+        "status": "landed",
+        "summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.",
+        "local_refs": [
+          "backend/app/api/simulation.py",
+          "backend/app/services/simulation_manager.py",
+          "backend/tests/test_simulation_service_i18n.py",
+          "backend/tests/test_simulation_api_i18n.py",
+          "origin/mirror/upstream-pr-151"
+        ],
+        "validation": [
+          "cd backend && uv run pytest -q tests/test_simulation_service_i18n.py tests/test_simulation_api_i18n.py",
+          "python3 -m compileall backend/app/services/simulation_manager.py backend/app/api/simulation.py"
+        ]
+      },
+      "local_status": "landed",
+      "local_summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151."
+    },
     {
       "number": 147,
       "title": "feat: Russian localization (Русская локализация)",

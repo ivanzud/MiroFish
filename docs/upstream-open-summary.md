@@ -2,10 +2,10 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T17:48:16.521783+00:00`
+- Captured: `2026-03-11T17:52:35.103721+00:00`
 - Issues: `40` total (`open=40`, `closed=0`)
-- Pull requests: `37` total (`open=37`, `closed=0`)
-- Mirrored in `origin`: `37` of `37` PR refs
+- Pull requests: `38` total (`open=38`, `closed=0`)
+- Mirrored in `origin`: `38` of `38` PR refs
 - Mirrored in `ivanzud/MiroFish`: `40` of `40` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
@@ -46,6 +46,9 @@
 
 ## Recently Updated Pull Requests
 
+- #151 [open, mergeable=clean, mirrored=yes] Fix silent data loss when platform defaults to reddit for Twitter-only simulations (`fix/platform-default-reddit-silent-failure` -> `main`)
+  - local coverage [landed]: Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.
+  - ## Summary - API retrieval endpoints (`/profiles`, `/profiles/realtime`, `/posts`, `/comments`) hardcoded `'reddit'` as the default platform - When a Twitter-only simulation was run (`enable_reddit=false`), these APIs silently returned empty results because they looked for `reddit_simulation.db` / `reddit_profiles.json` which did not exist - Frontend also hardcoded `'reddit'` in Vue components an…
 - #147 [open, mergeable=clean, mirrored=yes] feat: Russian localization (Русская локализация) (`russian-localization` -> `main`)
   - local coverage [partial]: Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets.
   - ## 🇷🇺 Russian Localization This PR adds a complete Russian translation of MiroFish: ### Changes: - **15 Vue components** — all UI labels, buttons, placeholders, error messages, and tooltips translated from Chinese to Russian - **README-RU.md** — full Russian documentation with quick start guide - Translation files are in `frontend-ru/src/` (ready to merge into `frontend/src/` when approved) - LLM…
@@ -73,6 +76,3 @@
 - #129 [open, mergeable=clean, mirrored=yes] fix(report_agent): handle API token overflow crash with context lengt… (`fix/fix-priority-issues-mNNjT` -> `main`)
   - local coverage [landed]: Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning.
   - Add error handling in LLMClient for context_length_exceeded errors with automatic message trimming and retry (fixes https://github.com/666ghj/MiroFish/issues/52) Add configurable LLM_MAX_TOKENS env variable (default 4096) so users with different models can set appropriate limits Add message history pruning in report agent ReACT loop to prevent unbounded context growth that causes token overflow I…
-- #126 [open, mergeable=clean, mirrored=yes] feat: Add custom exceptions and enhanced config validation (`feature/custom-exceptions-and-config-validation` -> `main`)
-  - local coverage [landed]: Safe subset landed locally for structured config validation and non-sensitive config summaries.
-  - ## Summary This PR improves the robustness of the MiroFish backend by implementing two key architectural improvements: ### 1. Custom Exception Hierarchy - Created a `MiroFishError` base class with error codes, severity levels, and HTTP status codes. - Added domain-specific exceptions for Configuration, Graphs, Simulations, and External APIs to replace generic Exception catches. ### 2. Enhanced Co…

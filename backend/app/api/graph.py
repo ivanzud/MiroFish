@@ -45,6 +45,25 @@ GRAPH_ERROR_CONTEXTS_EN = {
 }
 
 
+def _graph_task_type(locale: str, graph_name: str) -> str:
+    return tr("graph.build_task_type", locale, graph_name=graph_name)
+
+
+def _translate_graph_task_type(locale: str, task_type: str | None) -> str | None:
+    if not task_type:
+        return task_type
+
+    zh_match = re.match(r"^构建图谱: (?P<graph_name>.+)$", task_type)
+    if zh_match:
+        return _graph_task_type(locale, zh_match.group("graph_name"))
+
+    en_match = re.match(r"^Build graph: (?P<graph_name>.+)$", task_type)
+    if en_match:
+        return _graph_task_type(locale, en_match.group("graph_name"))
+
+    return task_type
+
+
 def allowed_file(filename: str) -> bool:
     """检查文件扩展名是否允许"""
     if not filename or '.' not in filename:
@@ -127,6 +146,7 @@ def _translate_graph_task_payload(locale: str, payload: dict | None) -> dict | N
         return payload
 
     translated = dict(payload)
+    translated["task_type"] = _translate_graph_task_type(locale, payload.get("task_type"))
     translated["message"] = _translate_graph_task_message(locale, payload.get("message"))
     return translated
 
@@ -534,7 +554,7 @@ def build_graph():
         
         # 创建异步任务
         task_manager = TaskManager()
-        task_id = task_manager.create_task(f"构建图谱: {graph_name}")
+        task_id = task_manager.create_task(_graph_task_type(locale, graph_name))
         logger.info(f"创建图谱构建任务: task_id={task_id}, project_id={project_id}")
         
         # 更新项目状态
