@@ -158,6 +158,9 @@ OpenAI-compatible 설정이 실제로 인식됐는지 확인하려면:
 ```bash
 # 모든 의존성 한 번에 설치 (루트 + 프런트엔드 + 백엔드)
 npm run setup:all
+
+# Step 3 / Step 5 시뮬레이션이 필요할 때만 선택적 OASIS 런타임 설치
+npm run setup:backend:simulation
 ```
 
 또는 단계별 설치:
@@ -166,9 +169,16 @@ npm run setup:all
 # Node 의존성 설치 (루트 + 프런트엔드)
 npm run setup
 
-# Python 의존성 설치 (백엔드, 가상환경 자동 생성)
+# Python 핵심 의존성 설치 (백엔드, 가상환경 자동 생성)
 npm run setup:backend
+
+# OASIS 시뮬레이션 런타임용 선택 의존성 설치
+npm run setup:backend:simulation
 ```
+
+`setup:backend` 는 이제 그래프 구축, 보고서 생성, OpenAI-compatible 백엔드 연결에 필요한 핵심 의존성만 설치합니다. Step 3 / Step 5 에서 사용하는 `oasis` 런타임 코드는 `backend/oasis` 에 vendoring 되어 있고, 선택적 시뮬레이션 설치는 실제 런타임에 필요한 명시적 패키지만 추가합니다.
+
+알려진 제한: `npm run setup:backend:simulation` 은 Python 3.13+ 환경에서 Rust 가 없으면 실패할 수 있습니다. 현재 `camel-ai -> tiktoken==0.7.0` 체인이 소스 빌드를 요구하기 때문입니다. 코어 백엔드만 필요하다면 기본 설치 경로를 사용하고, 실제 Step 3 / Step 5 시뮬레이션이 필요하면 Python 3.11/3.12 또는 Rust 설치를 권장합니다.
 
 #### 3) 서비스 실행
 
@@ -182,6 +192,12 @@ npm run dev
 - 백엔드 API: `http://localhost:5001`
 
 기본 2포트 구성에서는 프런트엔드가 같은 호스트의 백엔드 `5001` 포트를 자동으로 사용합니다. 백엔드 루트는 API 전용이므로 상태 확인은 `http://localhost:5001/health` 를 사용하세요.
+
+**브라우저를 새로고침하거나 닫으면 어떻게 되나요?**
+
+- 새로고침하거나 탭을 닫아도 이미 백엔드에서 실행 중인 그래프 구축, 시뮬레이션, 보고서 작업이 자동으로 중단되지는 않습니다.
+- 저장된 데이터는 `backend/uploads/` 아래에 남아 있으며, 홈 화면의 히스토리에서 Step 1 / Step 2 / Step 4 를 다시 열 수 있습니다.
+- 다만 Step 3 / Step 5 는 라이브 런타임 세션이 필요하므로, 해당 환경이 종료된 뒤에는 히스토리만으로 완전한 재생이나 체크포인트 재개까지 지원되지는 않습니다.
 
 **개별 실행**
 
