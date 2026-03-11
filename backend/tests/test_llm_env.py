@@ -46,13 +46,34 @@ def test_apply_openai_compat_env_sets_expected_aliases(monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
     monkeypatch.delenv("OPENAI_API_BASE_URL", raising=False)
+    monkeypatch.delenv("OPENAI_MODEL", raising=False)
 
     llm_env = load_llm_env_module()
-    llm_env.apply_openai_compat_env("test-key", "https://gateway.example.test/v1")
+    llm_env.apply_openai_compat_env(
+        "test-key",
+        "https://gateway.example.test/v1",
+        "gpt-4.1-mini",
+    )
 
     assert llm_env.os.environ["OPENAI_API_KEY"] == "test-key"
     assert llm_env.os.environ["OPENAI_BASE_URL"] == "https://gateway.example.test/v1"
     assert llm_env.os.environ["OPENAI_API_BASE_URL"] == "https://gateway.example.test/v1"
+    assert llm_env.os.environ["OPENAI_MODEL"] == "gpt-4.1-mini"
+
+
+def test_apply_openai_compat_env_clears_stale_aliases(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "stale-key")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://stale.example.test/v1")
+    monkeypatch.setenv("OPENAI_API_BASE_URL", "https://stale.example.test/v1")
+    monkeypatch.setenv("OPENAI_MODEL", "stale-model")
+
+    llm_env = load_llm_env_module()
+    llm_env.apply_openai_compat_env("", "", "")
+
+    assert "OPENAI_API_KEY" not in llm_env.os.environ
+    assert "OPENAI_BASE_URL" not in llm_env.os.environ
+    assert "OPENAI_API_BASE_URL" not in llm_env.os.environ
+    assert "OPENAI_MODEL" not in llm_env.os.environ
 
 
 def test_missing_api_key_message_mentions_openai_alias(monkeypatch):

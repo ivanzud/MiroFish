@@ -27,13 +27,19 @@ def resolve_standard_llm_env() -> tuple[str, str, str]:
     )
 
 
-def apply_openai_compat_env(api_key: str, base_url: str) -> None:
-    """Populate camel-ai's OpenAI-compatible environment variables."""
-    if api_key:
-        os.environ["OPENAI_API_KEY"] = api_key
-    if base_url:
-        os.environ["OPENAI_BASE_URL"] = base_url
-        os.environ["OPENAI_API_BASE_URL"] = base_url
+def _set_or_clear_env(name: str, value: str) -> None:
+    if value:
+        os.environ[name] = value
+        return
+    os.environ.pop(name, None)
+
+
+def apply_openai_compat_env(api_key: str, base_url: str, model_name: str = "") -> None:
+    """Populate a deterministic OpenAI-compatible environment snapshot."""
+    _set_or_clear_env("OPENAI_API_KEY", api_key)
+    _set_or_clear_env("OPENAI_BASE_URL", base_url)
+    _set_or_clear_env("OPENAI_API_BASE_URL", base_url)
+    _set_or_clear_env("OPENAI_MODEL", model_name)
 
 
 def missing_api_key_message(locale: str = "zh") -> str:

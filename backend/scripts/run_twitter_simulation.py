@@ -467,7 +467,7 @@ class TwitterSimulationRunner:
             llm_model = self.config.get("llm_model", "gpt-4o-mini")
         
         # 设置 camel-ai 所需的环境变量
-        apply_openai_compat_env(llm_api_key, llm_base_url)
+        apply_openai_compat_env(llm_api_key, llm_base_url, llm_model)
         
         if not os.environ.get("OPENAI_API_KEY"):
             raise ValueError(missing_api_key_message())
