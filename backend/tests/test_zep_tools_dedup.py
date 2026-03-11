@@ -621,3 +621,143 @@ def test_get_node_edges_includes_alias_linked_edges_and_remaps_duplicates():
     assert result[0].source_node_name == "特朗普"
     assert result[0].target_node_uuid == "node-wh"
     assert result[0].target_node_name == "白宫"
+
+
+def test_get_all_nodes_collapses_obvious_alias_duplicates(monkeypatch):
+    service = _make_service()
+    service._locale = lambda: "en"
+    service.client = object()
+
+    monkeypatch.setattr(
+        "app.services.zep_tools.fetch_all_nodes",
+        lambda client, graph_id, locale=None: [
+            type(
+                "Node",
+                (),
+                {
+                    "uuid": "node-short",
+                    "name": "特朗普",
+                    "labels": ["Entity", "PublicFigure"],
+                    "summary": "",
+                    "attributes": {},
+                },
+            )(),
+            type(
+                "Node",
+                (),
+                {
+                    "uuid": "node-long",
+                    "name": "美国总统特朗普",
+                    "labels": ["Entity", "PublicFigure"],
+                    "summary": "Former president and recurring political actor.",
+                    "attributes": {"country": "US"},
+                },
+            )(),
+            type(
+                "Node",
+                (),
+                {
+                    "uuid": "node-wh",
+                    "name": "白宫",
+                    "labels": ["Entity", "Organization"],
+                    "summary": "Executive residence and workplace.",
+                    "attributes": {},
+                },
+            )(),
+        ],
+    )
+
+    result = service.get_all_nodes("graph-1")
+
+    assert [node.name for node in result] == ["特朗普", "白宫"]
+    assert result[0].uuid == "node-short"
+    assert result[0].summary == "Former president and recurring political actor."
+    assert result[0].attributes == {"country": "US"}
+
+
+def test_get_all_edges_collapses_alias_linked_duplicates(monkeypatch):
+    service = _make_service()
+    service._locale = lambda: "en"
+    service.client = object()
+
+    monkeypatch.setattr(
+        "app.services.zep_tools.fetch_all_nodes",
+        lambda client, graph_id, locale=None: [
+            type(
+                "Node",
+                (),
+                {
+                    "uuid": "node-short",
+                    "name": "特朗普",
+                    "labels": ["Entity", "PublicFigure"],
+                    "summary": "",
+                    "attributes": {},
+                },
+            )(),
+            type(
+                "Node",
+                (),
+                {
+                    "uuid": "node-long",
+                    "name": "美国总统特朗普",
+                    "labels": ["Entity", "PublicFigure"],
+                    "summary": "Former president and recurring political actor.",
+                    "attributes": {"country": "US"},
+                },
+            )(),
+            type(
+                "Node",
+                (),
+                {
+                    "uuid": "node-wh",
+                    "name": "白宫",
+                    "labels": ["Entity", "Organization"],
+                    "summary": "Executive residence and workplace.",
+                    "attributes": {},
+                },
+            )(),
+        ],
+    )
+    monkeypatch.setattr(
+        "app.services.zep_tools.fetch_all_edges",
+        lambda client, graph_id, locale=None: [
+            type(
+                "Edge",
+                (),
+                {
+                    "uuid": "edge-1",
+                    "name": "MENTIONS",
+                    "fact": "特朗普 criticized the proposal.",
+                    "source_node_uuid": "node-short",
+                    "target_node_uuid": "node-wh",
+                    "created_at": None,
+                    "valid_at": None,
+                    "invalid_at": None,
+                    "expired_at": None,
+                },
+            )(),
+            type(
+                "Edge",
+                (),
+                {
+                    "uuid": "edge-2",
+                    "name": "MENTIONS",
+                    "fact": "特朗普 criticized the proposal.",
+                    "source_node_uuid": "node-long",
+                    "target_node_uuid": "node-wh",
+                    "created_at": None,
+                    "valid_at": None,
+                    "invalid_at": None,
+                    "expired_at": None,
+                },
+            )(),
+        ],
+    )
+
+    result = service.get_all_edges("graph-1")
+
+    assert len(result) == 1
+    assert result[0].source_node_uuid == "node-short"
+    assert result[0].source_node_name == "特朗普"
+    assert result[0].target_node_uuid == "node-wh"
+    assert result[0].target_node_name == "白宫"

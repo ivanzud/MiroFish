@@ -846,10 +846,10 @@ class ZepToolsService:
 
         nodes = _fetch_with_optional_locale(fetch_all_nodes, self.client, graph_id, locale)
 
-        result = []
+        raw_nodes = []
         for node in nodes:
             node_uuid = getattr(node, 'uuid_', None) or getattr(node, 'uuid', None) or ""
-            result.append(NodeInfo(
+            raw_nodes.append(NodeInfo(
                 uuid=str(node_uuid) if node_uuid else "",
                 name=node.name or "",
                 labels=node.labels or [],
@@ -857,6 +857,8 @@ class ZepToolsService:
                 attributes=node.attributes or {},
                 locale=self._locale(),
             ))
+
+        result, _ = self._deduplicate_nodes(raw_nodes, "raw graph node introspection")
 
         self._log(
             "info",
@@ -1100,9 +1102,27 @@ class ZepToolsService:
             locale,
         )
 
+        nodes = _fetch_with_optional_locale(fetch_all_nodes, self.client, graph_id, locale)
+        raw_nodes = []
+        for node in nodes:
+            node_uuid = getattr(node, 'uuid_', None) or getattr(node, 'uuid', None) or ""
+            raw_nodes.append(NodeInfo(
+                uuid=str(node_uuid) if node_uuid else "",
+                name=node.name or "",
+                labels=node.labels or [],
+                summary=node.summary or "",
+                attributes=node.attributes or {},
+                locale=self._locale(),
+            ))
+
+        deduplicated_nodes, uuid_remap = self._deduplicate_nodes(
+            raw_nodes,
+            "raw graph edge introspection",
+        )
+        node_map = {node.uuid: node for node in deduplicated_nodes}
         edges = _fetch_with_optional_locale(fetch_all_edges, self.client, graph_id, locale)
 
-        result = []
+        raw_edges = []
         for edge in edges:
             edge_uuid = getattr(edge, 'uuid_', None) or getattr(edge, 'uuid', None) or ""
             edge_info = EdgeInfo(
@@ -1121,7 +1141,9 @@ class ZepToolsService:
                 edge_info.invalid_at = getattr(edge, 'invalid_at', None)
                 edge_info.expired_at = getattr(edge, 'expired_at', None)
 
-            result.append(edge_info)
+            raw_edges.append(edge_info)
+
+        result = self._deduplicate_edge_infos(raw_edges, uuid_remap, node_map)
 
         self._log(
             "info",
