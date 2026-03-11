@@ -195,6 +195,10 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(compacted["local_summary"], "Diagnostics landed locally")
         self.assertEqual(compacted["triage_status"], "landed")
         self.assertEqual(compacted["summary"], "Diagnostics landed locally")
+        self.assertEqual(compacted["head_ref_name"], "fix/issue-121")
+        self.assertEqual(compacted["base_ref_name"], "main")
+        self.assertTrue(compacted["mirrored_to_origin"])
+        self.assertEqual(compacted["mirror_ref"], "origin/mirror/upstream-pr-125")
         self.assertEqual(compacted["fork_mirror_ref"], "origin/mirror/upstream-pr-125")
 
     def test_attach_local_coverage_promotes_status_fields(self):

@@ -707,10 +707,12 @@ def compact_pr(
         "closed_at": pr.get("closed_at"),
         "merged_at": pr.get("merged_at"),
         "head": head.get("ref"),
+        "head_ref_name": head.get("ref"),
         "head_sha": head.get("sha"),
         "head_repo": head_repo.get("full_name"),
         "head_clone_url": head_repo.get("clone_url"),
         "base": base.get("ref"),
+        "base_ref_name": base.get("ref"),
         "base_repo": base_repo.get("full_name"),
         "draft": pr.get("draft", False),
         "mergeable_state": pr.get("mergeable_state"),
@@ -721,7 +723,9 @@ def compact_pr(
         "review_comment_count": review_comment_count,
         "recent_comments": fetch_recent_comments(pr.get("comments_url")) if comment_count else [],
         "fork_mirrored": fork_mirrored,
+        "mirrored_to_origin": fork_mirrored,
         "fork_mirror_ref": fork_mirror_ref,
+        "mirror_ref": fork_mirror_ref,
     }
     local_coverage = (coverage_map or {}).get(number)
     return attach_local_coverage_fields(compacted, local_coverage)
