@@ -38,6 +38,7 @@ Last refreshed: `2026-03-11`
 - `#125` Improve new-project network error diagnostics: safe single-file frontend error-message improvement.
 - `#122` Remove `response_format={"type":"json_object"}` from `chat_json()`: improves compatibility with LM Studio and Ollama-style backends.
 - `#124` Robust JSON payload extraction: safe parsing hardening plus regression tests.
+- Shared JSON payload extraction now also recovers wrapped top-level arrays from mixed model output, not just wrapped objects, which closes another low-risk OpenAI-compatible parsing edge case without changing provider contracts.
 - `#127` Handle `None` response content: safe guard against provider edge cases.
 - `#129` Safe subset landed locally: configurable `LLM_MAX_TOKENS`, automatic retry after context-length failures, and report-agent message pruning to reduce overflow crashes.
 - `#131` Safe subset landed locally: Zep graph creation, ontology setup, and batch uploads now retry only transient failures (429/timeout/5xx-style cases) with bounded backoff, plus targeted regression tests.
@@ -156,6 +157,7 @@ Last refreshed: `2026-03-11`
 - `npm --prefix frontend test` and `npm --prefix frontend run build` both pass after adding Step 5 interview-environment preflight/error normalization for the remaining interaction issues `#37` and `#43`.
 - `bash ./scripts/test_backend_lite.sh` now also covers `backend/tests/test_llm_env.py` and the OpenAI-compatible service constructor error paths; it passes after the latest alias cleanup, confirming `OPENAI_MODEL` fallback and alias-aware missing-key messaging in the direct OpenAI/Codex-compatible backend flow.
 - `bash ./scripts/test_backend_lite.sh` passes after exporting both OpenAI base-url aliases from `backend/scripts/llm_env.py`, confirming the standalone runner helper keeps `OPENAI_BASE_URL` and `OPENAI_API_BASE_URL` in sync for direct Codex/OpenAI-compatible backend setups.
+- `uv run --project backend pytest -q backend/tests/test_llm_client.py backend/tests/test_openai_compat_services.py` and `bash ./scripts/test_backend_lite.sh` pass after hardening `LLMClient._extract_json_payload()` to recover wrapped top-level JSON arrays from mixed model output.
 - `bash ./scripts/test_backend_lite.sh` passes after adding backend route coverage for `/`, `/health`, and `/healthz`, confirming the new deployment-diagnostics endpoint stays available in the lightweight backend path without dragging in the optional runtime stack.
 - `bash ./scripts/test_backend_lite.sh` passes after adding upload-diagnostic regression coverage for `/api/graph/ontology/generate`, confirming the lightweight backend path now surfaces structured per-file upload errors instead of a generic 500 for parse/validation failures.
 - `./.tmp-test-venv/bin/python -m pytest backend/tests/test_graph_upload_api.py backend/tests/test_config.py` passes after hardening the direct graph API config-validation path, confirming the new 503 diagnostics and the existing upload-validation cases still behave as expected.

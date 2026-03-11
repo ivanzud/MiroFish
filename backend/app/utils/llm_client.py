@@ -135,11 +135,14 @@ class LLMClient:
         except json.JSONDecodeError:
             pass
 
-        start = text.find('{')
-        end = text.rfind('}')
-        if start != -1 and end != -1 and end > start:
-            candidate = text[start:end + 1].strip()
+        decoder = json.JSONDecoder()
+        for index, char in enumerate(text):
+            if char not in '{[':
+                continue
+
             try:
+                _, end = decoder.raw_decode(text[index:])
+                candidate = text[index:index + end].strip()
                 json.loads(candidate)
                 return candidate
             except json.JSONDecodeError:

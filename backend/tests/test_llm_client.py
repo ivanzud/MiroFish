@@ -21,6 +21,24 @@ def test_extract_json_payload_with_prefixed_reasoning_text():
     assert LLMClient._extract_json_payload(raw) == '{"entity_types": [], "edge_types": []}'
 
 
+def test_extract_json_payload_with_prefixed_reasoning_text_and_array():
+    raw = """Answer:
+The best matching items are:
+[
+  {"name": "Alice"},
+  {"name": "Bob"}
+]
+"""
+
+    assert LLMClient._extract_json_payload(raw) == '[\n  {"name": "Alice"},\n  {"name": "Bob"}\n]'
+
+
+def test_extract_json_payload_with_bom_and_markdown_array_fence():
+    raw = "\ufeff```json\n[\n  1,\n  2,\n  3\n]\n```"
+
+    assert LLMClient._extract_json_payload(raw) == '[\n  1,\n  2,\n  3\n]'
+
+
 def test_chat_returns_empty_string_when_content_is_none(monkeypatch):
     create_calls = []
 
