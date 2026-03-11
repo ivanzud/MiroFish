@@ -7,6 +7,7 @@
     "setup:backend": "cd backend && uv sync",
     "setup:backend:simulation": "python3 ./scripts/setup_backend_simulation.py",
     "setup:all": "npm run setup && npm run setup:backend",
+    "sync:upstream": "bash ./scripts/refresh_upstream_snapshots.sh",
     "dev": "concurrently --kill-others -n \"backend,frontend\" -c \"green,cyan\" \"npm run backend\" \"npm run frontend\"",
     "backend": "cd backend && uv run python run.py",
     "check:backend-config": "cd backend && uv run python scripts/print_config_status.py --locale en",
