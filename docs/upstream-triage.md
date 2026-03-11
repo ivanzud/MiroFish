@@ -456,6 +456,9 @@ Last refreshed: `2026-03-11`
 - The sync script again accepts the legacy `--json-out` / `--md-out` flag names as aliases for `--output` / `--summary`, which keeps older evolve notes and wrapper commands working while the newer CLI names remain primary.
 - The sync script now also accepts `--timeout` (or `MIROFISH_GITHUB_SYNC_TIMEOUT`) so evolve passes can bound each GitHub request instead of risking a stuck upstream-ingest cycle.
 - The sync script now also accepts `--max-workers` (or `MIROFISH_GITHUB_SYNC_MAX_WORKERS`) so full-history syncs can bound total wall-clock time by hydrating per-item GitHub detail/comment requests concurrently instead of serially.
+- The latest open-only snapshot refreshed again on March 11, 2026 at `2026-03-11T23:35:03.722605+00:00`, and the latest full-state snapshot refreshed again at `2026-03-11T23:35:13.535197+00:00`; intake remains current at `41` open issues / `39` open PRs and `91` total issues / `53` total PRs, with all mirrored issue and PR visibility artifacts still current in the fork.
+- That pass re-verified the repo-native direct OpenAI/Codex-compatible backend path through the current config diagnostics and validation bundle: `README*`, `.env.example`, `backend/scripts/print_config_status.py`, the frontend diagnostics model, and `bash ./scripts/test_backend_lite.sh` plus `npm --prefix frontend test -- --runInBand frontend/tests/apiConfigDiagnostics.test.mjs` all remain aligned on `LLM_*` and `OPENAI_*` alias support, so no extra raw-provider-only setup work is currently required.
+- No new safe upstream PR emerged in the refreshed queue; every still-open PR remains either already landed locally, mirrored only for visibility, or intentionally deferred to a repo-native follow-up such as `mirofish-8eg`, `mirofish-3j8`, or `mirofish-hj9`.
 
 ## Practical mirror strategy for the fork
 
