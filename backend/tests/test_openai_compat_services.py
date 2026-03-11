@@ -113,6 +113,33 @@ def test_oasis_profile_generator_english_prompts_switch_user_facing_language():
     assert "country name in English" in user_prompt
 
 
+def test_oasis_profile_generator_english_prompts_localize_empty_fallbacks():
+    generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+    generator.locale = "en"
+
+    individual_prompt = generator._build_individual_persona_prompt(
+        entity_name="Alice",
+        entity_type="Player",
+        entity_summary="A strategy-game enthusiast.",
+        entity_attributes={},
+        context="",
+    )
+    group_prompt = generator._build_group_persona_prompt(
+        entity_name="Example University",
+        entity_type="University",
+        entity_summary="A research university.",
+        entity_attributes={},
+        context="",
+    )
+
+    assert "Entity attributes: None" in individual_prompt
+    assert "No additional context provided" in individual_prompt
+    assert "无额外上下文" not in individual_prompt
+    assert "Entity attributes: None" in group_prompt
+    assert "No additional context provided" in group_prompt
+    assert "无额外上下文" not in group_prompt
+
+
 def test_oasis_profile_generator_english_rule_based_group_profile_uses_english_country():
     generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
     generator.locale = "en"

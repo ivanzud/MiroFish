@@ -863,9 +863,13 @@ class OasisProfileGenerator:
         context: str
     ) -> str:
         """构建个人实体的详细人设提示词"""
-        
-        attrs_str = json.dumps(entity_attributes, ensure_ascii=False) if entity_attributes else "无"
-        context_str = context[:3000] if context else "无额外上下文"
+
+        if self.locale == "en":
+            attrs_str = json.dumps(entity_attributes, ensure_ascii=False) if entity_attributes else "None"
+            context_str = context[:3000] if context else "No additional context provided"
+        else:
+            attrs_str = json.dumps(entity_attributes, ensure_ascii=False) if entity_attributes else "无"
+            context_str = context[:3000] if context else "无额外上下文"
         
         if self.locale == "en":
             return f"""Generate a detailed social-media persona for this entity and stay as faithful as possible to the available context.
@@ -941,9 +945,13 @@ Important:
         context: str
     ) -> str:
         """构建群体/机构实体的详细人设提示词"""
-        
-        attrs_str = json.dumps(entity_attributes, ensure_ascii=False) if entity_attributes else "无"
-        context_str = context[:3000] if context else "无额外上下文"
+
+        if self.locale == "en":
+            attrs_str = json.dumps(entity_attributes, ensure_ascii=False) if entity_attributes else "None"
+            context_str = context[:3000] if context else "No additional context provided"
+        else:
+            attrs_str = json.dumps(entity_attributes, ensure_ascii=False) if entity_attributes else "无"
+            context_str = context[:3000] if context else "无额外上下文"
         
         if self.locale == "en":
             return f"""Generate a detailed social-media account persona for this organization or group, staying faithful to the available context.
