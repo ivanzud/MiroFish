@@ -81,6 +81,80 @@ def test_create_graph_retries_transient_zep_errors(graph_builder_module, monkeyp
     assert sleep_calls == [2.0, 4.0]
 
 
+def test_create_graph_respects_retry_after_header(graph_builder_module, monkeypatch):
+    service = build_service(graph_builder_module)
+    sleep_calls = []
+    create_calls = []
+
+    class FakeRateLimitError(RuntimeError):
+        status_code = 429
+
+        def __init__(self):
+            super().__init__("429 Too Many Requests")
+            self.headers = {"Retry-After": "7"}
+
+    def fake_create(**kwargs):
+        create_calls.append(kwargs)
+        if len(create_calls) == 1:
+            raise FakeRateLimitError()
+
+    service.client.graph.create = fake_create
+    monkeypatch.setattr(graph_builder_module.time, "sleep", sleep_calls.append)
+
+    graph_id = service.create_graph("retry-after", max_retries=3)
+
+    assert graph_id.startswith("mirofish_")
+    assert len(create_calls) == 2
+    assert sleep_calls == [7.0]
+
+
+def test_create_graph_respects_retry_after_text_hint(graph_builder_module, monkeypatch):
+    service = build_service(graph_builder_module)
+    sleep_calls = []
+    create_calls = []
+
+    def fake_create(**kwargs):
+        create_calls.append(kwargs)
+        if len(create_calls) == 1:
+            raise RuntimeError("429 Too Many Requests; retry after 9 seconds")
+
+    service.client.graph.create = fake_create
+    monkeypatch.setattr(graph_builder_module.time, "sleep", sleep_calls.append)
+
+    graph_id = service.create_graph("retry-after-text", max_retries=3)
+
+    assert graph_id.startswith("mirofish_")
+    assert len(create_calls) == 2
+    assert sleep_calls == [9.0]
+
+
+def test_create_graph_caps_retry_after_delay(graph_builder_module, monkeypatch):
+    service = build_service(graph_builder_module)
+    sleep_calls = []
+    create_calls = []
+
+    class FakeRateLimitError(RuntimeError):
+        status_code = 429
+
+        def __init__(self):
+            super().__init__("429 Too Many Requests")
+            self.headers = {"Retry-After": "600"}
+
+    def fake_create(**kwargs):
+        create_calls.append(kwargs)
+        if len(create_calls) == 1:
+            raise FakeRateLimitError()
+
+    service.client.graph.create = fake_create
+    monkeypatch.setattr(graph_builder_module.time, "sleep", sleep_calls.append)
+
+    graph_id = service.create_graph("retry-after-cap", max_retries=3)
+
+    assert graph_id.startswith("mirofish_")
+    assert len(create_calls) == 2
+    assert sleep_calls == [60.0]
+
+
 def test_create_graph_does_not_retry_non_transient_errors(graph_builder_module, monkeypatch):
     service = build_service(graph_builder_module)
     sleep_calls = []

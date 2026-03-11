@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T12:41:52.219076+00:00",
-  "generated_at": "2026-03-11T12:41:52.219076+00:00",
+  "captured_at": "2026-03-11T12:48:40.013131+00:00",
+  "generated_at": "2026-03-11T12:48:40.013131+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -571,7 +571,24 @@
           "url": "https://github.com/666ghj/MiroFish/issues/75#issuecomment-3976645572",
           "body_excerpt": "现在主页挂了一个在线演示demo，老哥感兴趣可以玩一下：https://666ghj.github.io/mirofish-demo/"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 75,
+        "status": "covered",
+        "summary": "Graph-builder retries now honor bounded Zep `Retry-After` guidance from `429` responses instead of always using the default backoff schedule, reducing the stuck-at-99% failure mode when Zep free-plan throttling delays graph processing.",
+        "local_refs": [
+          "backend/app/config.py",
+          "backend/app/services/graph_builder.py",
+          "backend/tests/test_graph_builder.py"
+        ],
+        "validation": [
+          "backend/tests/test_graph_builder.py::test_create_graph_respects_retry_after_header",
+          "backend/tests/test_graph_builder.py::test_create_graph_respects_retry_after_text_hint",
+          "backend/tests/test_graph_builder.py::test_create_graph_caps_retry_after_delay",
+          "scripts/test_backend_lite.sh"
+        ],
+        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+      }
     },
     {
       "number": 76,
@@ -752,7 +769,24 @@
           "url": "https://github.com/666ghj/MiroFish/issues/60#issuecomment-3806536285",
           "body_excerpt": "免费版本只有1000个额度，基本跑一两个实验性的就没了。充值吧，要么考虑自己本地搞。"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 60,
+        "status": "covered",
+        "summary": "Graph-builder retries now honor bounded Zep `Retry-After` guidance from `429` responses instead of always using the default backoff schedule, reducing premature failures when Zep throttles graph creation or uploads.",
+        "local_refs": [
+          "backend/app/config.py",
+          "backend/app/services/graph_builder.py",
+          "backend/tests/test_graph_builder.py"
+        ],
+        "validation": [
+          "backend/tests/test_graph_builder.py::test_create_graph_respects_retry_after_header",
+          "backend/tests/test_graph_builder.py::test_create_graph_respects_retry_after_text_hint",
+          "backend/tests/test_graph_builder.py::test_create_graph_caps_retry_after_delay",
+          "scripts/test_backend_lite.sh"
+        ],
+        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+      }
     },
     {
       "number": 61,

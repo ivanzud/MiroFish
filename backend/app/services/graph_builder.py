@@ -7,8 +7,10 @@ import os
 import uuid
 import time
 import threading
+import re
 from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass
+from email.utils import parsedate_to_datetime
 
 from zep_cloud.client import Zep
 from zep_cloud import EpisodeData, EntityEdgeSourceTarget
@@ -101,7 +103,7 @@ class GraphBuilderService:
                 if not should_retry:
                     raise
 
-                wait_time = base_delay * (2 ** attempt)
+                wait_time = self._get_retry_wait_time(error, attempt, base_delay)
                 self.logger.warning(
                     "%s failed on attempt %s/%s, retrying in %.1fs: %s",
                     operation_name,
@@ -113,6 +115,67 @@ class GraphBuilderService:
                 if progress_callback and progress_message:
                     progress_callback(progress_message(attempt + 1, max_attempts, wait_time), progress_value)
                 time.sleep(wait_time)
+
+    @staticmethod
+    def _extract_retry_after_seconds(error: Exception) -> Optional[float]:
+        """Extract Retry-After delay hints from common SDK error shapes."""
+        candidates: List[Any] = []
+        headers = getattr(error, "headers", None)
+        if headers:
+            candidates.append(headers)
+
+        response = getattr(error, "response", None)
+        response_headers = getattr(response, "headers", None)
+        if response_headers:
+            candidates.append(response_headers)
+
+        for header_map in candidates:
+            for key in ("retry-after", "Retry-After", "retry_after"):
+                raw_value = header_map.get(key) if hasattr(header_map, "get") else None
+                if raw_value not in (None, ""):
+                    parsed = GraphBuilderService._parse_retry_after_value(raw_value)
+                    if parsed is not None:
+                        return parsed
+
+        error_text = str(error)
+        patterns = (
+            r"retry-after['\"]?\s*[:=]\s*['\"]?([0-9]+(?:\.[0-9]+)?)",
+            r"retry after\s+([0-9]+(?:\.[0-9]+)?)\s*(?:seconds?|secs?|s)\b",
+        )
+        for pattern in patterns:
+            match = re.search(pattern, error_text, re.IGNORECASE)
+            if match:
+                return float(match.group(1))
+
+        return None
+
+    @staticmethod
+    def _parse_retry_after_value(value: Any) -> Optional[float]:
+        raw_value = str(value).strip()
+        if not raw_value:
+            return None
+
+        try:
+            return max(0.0, float(raw_value))
+        except ValueError:
+            pass
+
+        try:
+            retry_at = parsedate_to_datetime(raw_value)
+        except (TypeError, ValueError, IndexError, OverflowError):
+            return None
+
+        if retry_at.tzinfo is None:
+            retry_at = retry_at.astimezone()
+        return max(0.0, retry_at.timestamp() - time.time())
+
+    def _get_retry_wait_time(self, error: Exception, attempt: int, base_delay: float) -> float:
+        """Respect bounded Retry-After hints before falling back to exponential backoff."""
+        retry_after = self._extract_retry_after_seconds(error)
+        max_delay = max(base_delay, Config.ZEP_RETRY_MAX_DELAY_SECONDS)
+        if retry_after is not None:
+            return min(max(base_delay, retry_after), max_delay)
+        return min(base_delay * (2 ** attempt), max_delay)
 
     def format_user_facing_error(self, error: Exception) -> str:
         """Collapse noisy provider exceptions into actionable graph-build messages."""

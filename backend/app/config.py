@@ -169,6 +169,7 @@ class Config:
     ZEP_API_KEY = os.environ.get('ZEP_API_KEY')
     ZEP_RETRY_MAX_ATTEMPTS = _int_env('ZEP_RETRY_MAX_ATTEMPTS', 3)
     ZEP_RETRY_BASE_DELAY_SECONDS = _float_env('ZEP_RETRY_BASE_DELAY_SECONDS', 2.0)
+    ZEP_RETRY_MAX_DELAY_SECONDS = _float_env('ZEP_RETRY_MAX_DELAY_SECONDS', 60.0)
     
     # 文件上传配置
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB
@@ -241,6 +242,13 @@ class Config:
         cls._validate_numeric_env(
             result,
             "ZEP_RETRY_BASE_DELAY_SECONDS",
+            minimum=0,
+            parser=float,
+            locale=locale,
+        )
+        cls._validate_numeric_env(
+            result,
+            "ZEP_RETRY_MAX_DELAY_SECONDS",
             minimum=0,
             parser=float,
             locale=locale,

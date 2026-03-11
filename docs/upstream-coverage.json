@@ -246,6 +246,40 @@
       ]
     },
     {
+      "number": 60,
+      "status": "covered",
+      "summary": "Graph-builder retries now honor bounded Zep `Retry-After` guidance from `429` responses instead of always using the default backoff schedule, reducing premature failures when Zep throttles graph creation or uploads.",
+      "local_refs": [
+        "backend/app/config.py",
+        "backend/app/services/graph_builder.py",
+        "backend/tests/test_graph_builder.py"
+      ],
+      "validation": [
+        "backend/tests/test_graph_builder.py::test_create_graph_respects_retry_after_header",
+        "backend/tests/test_graph_builder.py::test_create_graph_respects_retry_after_text_hint",
+        "backend/tests/test_graph_builder.py::test_create_graph_caps_retry_after_delay",
+        "scripts/test_backend_lite.sh"
+      ],
+      "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+    },
+    {
+      "number": 75,
+      "status": "covered",
+      "summary": "Graph-builder retries now honor bounded Zep `Retry-After` guidance from `429` responses instead of always using the default backoff schedule, reducing the stuck-at-99% failure mode when Zep free-plan throttling delays graph processing.",
+      "local_refs": [
+        "backend/app/config.py",
+        "backend/app/services/graph_builder.py",
+        "backend/tests/test_graph_builder.py"
+      ],
+      "validation": [
+        "backend/tests/test_graph_builder.py::test_create_graph_respects_retry_after_header",
+        "backend/tests/test_graph_builder.py::test_create_graph_respects_retry_after_text_hint",
+        "backend/tests/test_graph_builder.py::test_create_graph_caps_retry_after_delay",
+        "scripts/test_backend_lite.sh"
+      ],
+      "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+    },
+    {
       "number": 110,
       "status": "covered",
       "summary": "The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.",
