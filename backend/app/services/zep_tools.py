@@ -545,6 +545,10 @@ class ZepToolsService:
     @classmethod
     def _log(cls, level: str, zh: str, en: str, locale: Optional[str] = None) -> None:
         getattr(logger, level)(cls._text(zh, en, locale))
+
+    @classmethod
+    def _unknown_profession(cls, locale: Optional[str] = None) -> str:
+        return cls._text("未知", "Unknown", locale)
     
     @property
     def llm(self) -> LLMClient:
@@ -1915,7 +1919,7 @@ class ZepToolsService:
                             "username": row.get("username", ""),
                             "bio": row.get("description", ""),
                             "persona": row.get("user_char", ""),
-                            "profession": "未知"
+                            "profession": self._unknown_profession()
                         })
                 self._log(
                     "info",
@@ -2150,7 +2154,13 @@ Generate 3-5 interview questions."""
         # 收集所有采访内容
         interview_texts = []
         for interview in interviews:
-            interview_texts.append(f"【{interview.agent_name}（{interview.agent_role}）】\n{interview.response[:500]}")
+            interview_texts.append(
+                self._text(
+                    f"【{interview.agent_name}（{interview.agent_role}）】\n{interview.response[:500]}",
+                    f"[{interview.agent_name} ({interview.agent_role})]\n{interview.response[:500]}",
+                    locale,
+                )
+            )
 
         if locale == "en":
             system_prompt = """You are a professional news editor. Summarize the interview responses from multiple participants.

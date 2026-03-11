@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 from types import ModuleType
 
 from flask import Flask
@@ -401,3 +402,57 @@ def test_generate_interview_summary_localizes_empty_fallback_copy_and_logs_in_en
         "Failed to generate the interview summary: summary generator unavailable" in message
         for _, message in fake_logger.messages
     )
+
+
+def test_load_agent_profiles_localizes_twitter_csv_unknown_profession_in_english():
+    app = Flask(__name__)
+    service = _make_service()
+    simulation_id = "sim_csv_en"
+    sim_dir = Path(__file__).resolve().parents[1] / "uploads" / "simulations" / simulation_id
+    sim_dir.mkdir(parents=True)
+    try:
+        (sim_dir / "twitter_profiles.csv").write_text(
+            "name,username,description,user_char\nAlice,alice,Tracks sentiment shifts.,Detailed persona\n",
+            encoding="utf-8",
+        )
+
+        with app.test_request_context(headers={"X-Locale": "en"}):
+            profiles = service._load_agent_profiles(simulation_id)
+
+        assert profiles[0]["profession"] == "Unknown"
+    finally:
+        csv_path = sim_dir / "twitter_profiles.csv"
+        if csv_path.exists():
+            csv_path.unlink()
+        if sim_dir.exists():
+            sim_dir.rmdir()
+
+
+def test_generate_interview_summary_uses_english_wrappers_in_english_mode():
+    app = Flask(__name__)
+    service = _make_service()
+    captured = {}
+
+    class FakeLLM:
+        def chat(self, messages, temperature, max_tokens):
+            captured["messages"] = messages
+            return "Summary complete."
+
+    service._llm_client = FakeLLM()
+    interviews = [
+        AgentInterview(
+            agent_name="Alice",
+            agent_role="Unknown",
+            agent_bio="Tracks sentiment shifts.",
+            question="What changed?",
+            response="People became more cautious after the update.",
+            locale="en",
+        )
+    ]
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        summary = service._generate_interview_summary(interviews, "Understand the reaction")
+
+    assert summary == "Summary complete."
+    assert "[Alice (Unknown)]" in captured["messages"][1]["content"]
+    assert "【Alice（Unknown）】" not in captured["messages"][1]["content"]
