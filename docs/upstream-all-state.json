@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T15:15:16.624729+00:00",
-  "generated_at": "2026-03-11T15:15:16.624729+00:00",
+  "captured_at": "2026-03-11T15:27:34.468205+00:00",
+  "generated_at": "2026-03-11T15:27:34.468205+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -16,6 +16,10 @@
     "mirrored_pull_requests": {
       "mirrored": 50,
       "not_mirrored": 0
+    },
+    "mirrored_issues": {
+      "mirrored": 87,
+      "not_mirrored": 0
     }
   },
   "issues": [
@@ -25,13 +29,33 @@
       "url": "https://github.com/666ghj/MiroFish/issues/146",
       "state": "open",
       "created_at": "2026-03-11T15:12:43Z",
-      "updated_at": "2026-03-11T15:12:43Z",
+      "updated_at": "2026-03-11T15:16:25Z",
       "closed_at": null,
-      "labels": [],
+      "labels": [
+        "enhancement"
+      ],
       "author": "fishwww-ww",
       "body_excerpt": "Background The current project lacks automated validation before code commits, which may lead to the following issues: 1. Committing non-compliant code (e.g., syntax errors, messy formatting); 2. Inconsistent commit messages, which is not conducive to subsequent maintenance and version tracking; 3. Inefficiency in team collaboration due to the need for manual reminders of specifications. Solution…",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 146,
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-2uk`: upstream issue #146 requests automated pre-commit validation, but the local follow-up is to evaluate a repo-native hooks workflow instead of assuming Husky is the right fit for this mixed Python/Vue/beads repository.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "docs/upstream-triage.md",
+          "https://github.com/ivanzud/MiroFish/issues/88"
+        ],
+        "validation": [
+          "tracking only",
+          "fork issue mirror review"
+        ],
+        "notes": "Mirrored into fork issue #88 on March 11, 2026."
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 88,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/88"
     },
     {
       "number": 145,
@@ -60,7 +84,10 @@
           "triage diff review"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 2,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/2"
     },
     {
       "number": 142,
@@ -87,7 +114,10 @@
         "validation": [
           "triage only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 3,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/3"
     },
     {
       "number": 64,
@@ -139,7 +169,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 4,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/4"
     },
     {
       "number": 139,
@@ -183,7 +216,10 @@
           "backend/tests/test_graph_upload_api.py::test_build_graph_task_persists_sanitized_zep_auth_error"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 39,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/39"
     },
     {
       "number": 140,
@@ -208,7 +244,10 @@
         "validation": [
           "triage only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 5,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/5"
     },
     {
       "number": 138,
@@ -232,7 +271,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/138#issuecomment-4037933291",
           "body_excerpt": "<!-- Greeting --> Hi @huamingjie0815! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 感谢反馈！这个问题我找到原因了 😊 **根本原因**：报告标题生成的 [Prompt 模板](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d6…"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 40,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/40"
     },
     {
       "number": 135,
@@ -267,7 +309,10 @@
           "backend/tests/test_graph_builder.py::test_set_ontology_accepts_string_attribute_definitions"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 6,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/6"
     },
     {
       "number": 133,
@@ -304,7 +349,10 @@
           "backend/tests/test_app_routes.py::test_root_and_health_endpoints_expose_backend_status"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 7,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/7"
     },
     {
       "number": 121,
@@ -342,7 +390,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/121#issuecomment-4035711587",
           "body_excerpt": "## ✅ 已解决 感谢Dosu的帮助和启发 ### 问题描述 使用 Docker 部署时，前端调用 `/api/graph/ontology/generate` 接口报 `Network Error`，后端日志中完全没有收到任何请求。 ### 根本原因 前端代码默认将后端地址写死为 `http://localhost:5001`。在 Docker 容器内部这没有问题，但当你通过 NAS 或服务器的 IP 地址（如 `http://192.168.x.x:3000`）访问前端…"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 41,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/41"
     },
     {
       "number": 123,
@@ -356,7 +407,10 @@
       "author": "minicoohei",
       "body_excerpt": "## 概要 シミュレーションのエージェント生成時に、キュレーション済みの業界知識・ドメイン知識をLLMプロンプトに注入する仕組みを構築する。 ## 背景 - 現状、Topプレイヤー生成・転職先企業推定・キャリア評価はすべてLLMの内部知識のみに依存 - Web検索APIの導入はプロンプトインジェクションリスクがある - Zepグラフに業界知識を入れるとグラフ可視化が汚れる ## 方針（方式3: ローカルファイル注入） - キュレーション済みMarkdownファイルとして業界知識を保持 - 候補者の職種・業界をLLM判定した時点で、該当ファイルのみを読み込みプロンプトに注入 - Zepグラフは候補者データ専用のまま維持 ## ファイル構成案 ``` preset_knowledge/ ├── industries/ │ ├── it_software.md │ ├── consulting…",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 42,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/42"
     },
     {
       "number": 117,
@@ -399,7 +453,10 @@
           "frontend: npm run build"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 8,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/8"
     },
     {
       "number": 110,
@@ -441,7 +498,10 @@
           "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_english_message"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 9,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/9"
     },
     {
       "number": 106,
@@ -482,7 +542,10 @@
         "validation": [
           "tracking only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 10,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/10"
     },
     {
       "number": 109,
@@ -520,7 +583,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/109#issuecomment-4028178070",
           "body_excerpt": "重新修改新的API泡一下 谢谢"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 43,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/43"
     },
     {
       "number": 42,
@@ -564,7 +630,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 11,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/11"
     },
     {
       "number": 84,
@@ -607,7 +676,10 @@
         "validation": [
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 12,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/12"
     },
     {
       "number": 107,
@@ -638,7 +710,10 @@
           "docker compose config"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 13,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/13"
     },
     {
       "number": 96,
@@ -676,7 +751,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/96#issuecomment-4023193329",
           "body_excerpt": "收到感谢 On Mon, Mar 9, 2026 at 1:21 PM BaiFu ***@***.***> wrote: > Closed #96 <https://github.com/666ghj/MiroFish/issues/96> as completed. > > — > Reply to this email directly, view it on GitHub > <https://github.com/666ghj/MiroFish/issues/96…"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 44,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/44"
     },
     {
       "number": 99,
@@ -711,7 +789,10 @@
         "validation": [
           "workflow review only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 14,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/14"
     },
     {
       "number": 98,
@@ -725,7 +806,10 @@
       "author": "leon-x-labs",
       "body_excerpt": "",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 45,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/45"
     },
     {
       "number": 93,
@@ -762,7 +846,10 @@
           "frontend/tests/baseUrl.test.mjs",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 15,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/15"
     },
     {
       "number": 95,
@@ -786,7 +873,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/95#issuecomment-4020483535",
           "body_excerpt": "<!-- Answer --> 这是**预期行为，不是bug**。 [在线Demo是一个静态页面](https://github.com/666ghj/MiroFish/issues/88)，**不与任何LLM集成**。它使用预先准备的静态模板响应，仅用于让用户体验系统界面，因此无论问什么问题，回答都是一样的。 如果想获得真正的动态AI回答，需要**本地部署MiroFish系统**并配置真实的LLM API（如deepseek-chat、gemini-2.5-pro、qwe…"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 46,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/46"
     },
     {
       "number": 94,
@@ -800,7 +890,10 @@
       "author": "breadbot86",
       "body_excerpt": "这是一个测试issue，用来验证gh cli是否可以给非自己项目提issue。",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 47,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/47"
     },
     {
       "number": 92,
@@ -827,7 +920,10 @@
         "validation": [
           "workflow review only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 16,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/16"
     },
     {
       "number": 90,
@@ -849,7 +945,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/90#issuecomment-4018961124",
           "body_excerpt": "这是演示demo，静态页面，没有接入LLM，agent的回答是准备好的静态模版，只是供大家体验一下这个系统，如果你想要深度体验需要自己部署。 另外就算是你自己部署的，这个传入资料也是武汉大学的分析资料吧，你让他预测什么战争也不行的。 我们的网站写了，体验一次静态演示demo"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 48,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/48"
     },
     {
       "number": 88,
@@ -873,7 +972,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/88#issuecomment-4018930177",
           "body_excerpt": "这是演示demo，静态页面，没有接入LLM，只是供大家体验一下这个系统，如果你想要深度体验需要自己部署。 > AI的回答讲空话，一点实质的内容都没有 > > <img alt=\"Image\" width=\"1552\" height=\"1630\" src=\"https://private-user-images.githubusercontent.com/1725060/559907615-8151b035-c2f4-450a-b9d4-66517dfa940c.png?jw…"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 49,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/49"
     },
     {
       "number": 80,
@@ -887,7 +989,10 @@
       "author": "cristian9777",
       "body_excerpt": "",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 50,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/50"
     },
     {
       "number": 83,
@@ -916,7 +1021,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/83#issuecomment-4018225059",
           "body_excerpt": "This demo consists of static pages for demonstration purposes only and is not integrated with an LLM. For a full experience, local deployment is recommended."
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 51,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/51"
     },
     {
       "number": 78,
@@ -940,7 +1048,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/78#issuecomment-4015386647",
           "body_excerpt": "<!-- Greeting --> Hi @flappy5812! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 感谢关注！MiroFish 和 BettaFish 是**互补关系**而非替代关系，维护者用一个比喻形容：[**\"BettaFish 是后视镜，MiroFish 是望远镜\"**](https://github.com/666gh…"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 52,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/52"
     },
     {
       "number": 56,
@@ -988,7 +1099,10 @@
         "validation": [
           "triage only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 17,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/17"
     },
     {
       "number": 48,
@@ -1010,7 +1124,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/48#issuecomment-4006299188",
           "body_excerpt": "> [![IMG-20260121-235102.jpg](https://camo.githubusercontent.com/2eea27bc5db72960b3169026ed7cfc0e2fde2ad41cb123186566679f3e91eb20/68747470733a2f2f692e706f7374696d672e63632f434b50543544304c2f494d472d32303236303132312d3233353130322e6a7067)](…"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 53,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/53"
     },
     {
       "number": 77,
@@ -1048,7 +1165,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/77#issuecomment-3992304474",
           "body_excerpt": "我这边最新版本代码国内环境是可以正常使用zep的"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 54,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/54"
     },
     {
       "number": 68,
@@ -1094,7 +1214,10 @@
           "backend/tests/test_simulation_api_i18n.py",
           "backend/tests/test_i18n.py"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 18,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/18"
     },
     {
       "number": 75,
@@ -1140,7 +1263,10 @@
           "scripts/test_backend_lite.sh"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 19,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/19"
     },
     {
       "number": 63,
@@ -1162,7 +1288,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/63#issuecomment-3858876507",
           "body_excerpt": "这个不是卡住，应该是 Flask 在 debug 模式下的正常日志，后端启动成功了。 后端进程会一直前台监听请求，所以终端看起来会停在那一行 你直接打开前端 `http://localhost:3000`，或者访问后端健康检查 `http://127.0.0.1:5001/health` 看是否返回 `{\"status\":\"ok\"}`。 直接访问前端页面就可以看到前端ui了"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 55,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/55"
     },
     {
       "number": 76,
@@ -1198,7 +1327,10 @@
         "validation": [
           "tracking only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 20,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/20"
     },
     {
       "number": 71,
@@ -1227,7 +1359,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/71#issuecomment-3941233636",
           "body_excerpt": "已经修复"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 56,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/56"
     },
     {
       "number": 59,
@@ -1263,7 +1398,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/59#issuecomment-3831091168",
           "body_excerpt": "<img width=\"1861\" height=\"850\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/74e99fc5-f84a-445e-af65-3ea38102c14b\" />"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 57,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/57"
     },
     {
       "number": 9,
@@ -1315,7 +1453,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 21,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/21"
     },
     {
       "number": 67,
@@ -1337,7 +1478,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/67#issuecomment-3869889329",
           "body_excerpt": "🤣"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 58,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/58"
     },
     {
       "number": 69,
@@ -1374,7 +1518,10 @@
         "validation": [
           "documentation review"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 22,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/22"
     },
     {
       "number": 37,
@@ -1409,7 +1556,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 23,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/23"
     },
     {
       "number": 66,
@@ -1423,7 +1573,10 @@
       "author": "wjh-w",
       "body_excerpt": "<img width=\"1769\" height=\"754\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/1d4ce274-c965-472b-af57-4ccf788ebb1d\" /> <img width=\"1339\" height=\"610\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/94ad9afa-bcee-4b45-b8ad-c135aeb0269a\" />",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 59,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/59"
     },
     {
       "number": 65,
@@ -1437,7 +1590,10 @@
       "author": "wjh-w",
       "body_excerpt": "<img width=\"1769\" height=\"754\" alt=\"Image\" src=\"https://github.com/user-attachmen <img width=\"1339\" height=\"610\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/4ede167d-dba9-4582-966b-a33fb22ce8f0\" /> ts/assets/505a429a-ad7b-4568-a8e5-da0547d7bd11\" />",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 60,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/60"
     },
     {
       "number": 60,
@@ -1490,7 +1646,10 @@
           "scripts/test_backend_lite.sh"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 24,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/24"
     },
     {
       "number": 61,
@@ -1530,7 +1689,10 @@
           "frontend/tests/baseUrl.test.mjs",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 25,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/25"
     },
     {
       "number": 62,
@@ -1570,7 +1732,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 26,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/26"
     },
     {
       "number": 58,
@@ -1620,7 +1785,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 27,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/27"
     },
     {
       "number": 57,
@@ -1649,7 +1817,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/57#issuecomment-3793667034",
           "body_excerpt": "没事了，经排查发现是前端访问了localhost，后端是http://192.168.43.132:5001，手动修改后成功"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 61,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/61"
     },
     {
       "number": 46,
@@ -1689,7 +1860,10 @@
         "validation": [
           "backend: uv run pytest -q"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 28,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/28"
     },
     {
       "number": 40,
@@ -1711,7 +1885,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/40#issuecomment-3789002431",
           "body_excerpt": "很棒的bug发现，已修复！"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 62,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/62"
     },
     {
       "number": 50,
@@ -1733,7 +1910,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/50#issuecomment-3788541679",
           "body_excerpt": "对的，这个也是知识图谱领域老生常谈的问题了，还有一条很长的优化之路要走。"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 63,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/63"
     },
     {
       "number": 51,
@@ -1755,7 +1935,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/51#issuecomment-3788539600",
           "body_excerpt": "当文本量较大的时候，确实在图谱构建的过程中会有中英文混杂的情况，report也会引用图谱原文导致同样的情况产生，但实际上对质量的影响还在可控范围内，初期可以通过提示词的方式缓解这种现象。"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 64,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/64"
     },
     {
       "number": 55,
@@ -1789,7 +1972,10 @@
         "validation": [
           "tracking only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 29,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/29"
     },
     {
       "number": 53,
@@ -1818,7 +2004,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/53#issuecomment-3788523770",
           "body_excerpt": "镜像大是因为依赖了PyTorch，它默认会带上NVIDIA CUDA库，后续会优化成CPU版本，但暂时不打算动。"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 65,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/65"
     },
     {
       "number": 54,
@@ -1843,7 +2032,10 @@
         "validation": [
           "triage only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 30,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/30"
     },
     {
       "number": 52,
@@ -1872,7 +2064,10 @@
           "backend/tests/test_report_agent.py",
           "backend/tests/test_llm_client.py"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 31,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/31"
     },
     {
       "number": 5,
@@ -1908,7 +2103,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/5#issuecomment-3692565486",
           "body_excerpt": "> 会的，最近正在弄 太好了"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 66,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/66"
     },
     {
       "number": 22,
@@ -1937,7 +2135,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/22#issuecomment-3783660373",
           "body_excerpt": "搞定了，现在可以看一下～"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 67,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/67"
     },
     {
       "number": 47,
@@ -1959,7 +2160,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/47#issuecomment-3783658389",
           "body_excerpt": "应该是请求次数太多了，速率限制了，可以把代码中的请求速率改小一点"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 68,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/68"
     },
     {
       "number": 41,
@@ -1988,7 +2192,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/41#issuecomment-3783655418",
           "body_excerpt": "有一些人进行了一些尝试，但是目前还没看到有“可用”的方案诞生，应该最近我们也会弄一版出来，可以等一下"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 69,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/69"
     },
     {
       "number": 39,
@@ -2017,7 +2224,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/39#issuecomment-3783651863",
           "body_excerpt": "已经修复了，感谢你的发现！"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 70,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/70"
     },
     {
       "number": 24,
@@ -2058,7 +2268,10 @@
         "validation": [
           "backend/tests/test_report_agent.py::test_generate_report_survives_empty_llm_section_responses"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 32,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/32"
     },
     {
       "number": 45,
@@ -2094,7 +2307,10 @@
           "frontend/tests/step5Profiles.test.mjs",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 33,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/33"
     },
     {
       "number": 43,
@@ -2130,7 +2346,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 34,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/34"
     },
     {
       "number": 23,
@@ -2166,7 +2385,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/23#issuecomment-3749856666",
           "body_excerpt": "> zep开源集成有说明吗？？ 可以自行搜索调研一下，后续会专门开一个本地版本的graphrag替代分支"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 71,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/71"
     },
     {
       "number": 4,
@@ -2188,7 +2410,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/4#issuecomment-3691108696",
           "body_excerpt": "感谢兄弟支持😉"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 72,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/72"
     },
     {
       "number": 3,
@@ -2210,7 +2435,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/3#issuecomment-3691109209",
           "body_excerpt": "🥳"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 73,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/73"
     },
     {
       "number": 8,
@@ -2232,7 +2460,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/8#issuecomment-3694024007",
           "body_excerpt": "阿里百炼平台的qwen-plus吧我测试的时候一直用的这个"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 74,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/74"
     },
     {
       "number": 26,
@@ -2268,7 +2499,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/26#issuecomment-3753078032",
           "body_excerpt": "是在Windows 11系统下启动的"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 75,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/75"
     },
     {
       "number": 27,
@@ -2290,7 +2524,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/27#issuecomment-3771549066",
           "body_excerpt": "zep 免费账户速率限制了"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 76,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/76"
     },
     {
       "number": 29,
@@ -2312,7 +2549,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/29#issuecomment-3755280454",
           "body_excerpt": "如果不用加速llm api，env里原来就不要出现那个配置项，就会停止，你只要写了参数但是没给数值也不行"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 77,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/77"
     },
     {
       "number": 28,
@@ -2334,7 +2574,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/28#issuecomment-3771544318",
           "body_excerpt": "这个现在还是跟其他分析工具结合使用，作为BettaFish的续作，BettaFish完成“数据联网收集->数据分析”，MiroFish完成“数据预测”。BettaFish是“后视镜”，MiroFish是“望远镜”。"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 78,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/78"
     },
     {
       "number": 30,
@@ -2370,7 +2613,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/30#issuecomment-3771533260",
           "body_excerpt": "zep 免费账户速率限制了，每个月额度一刷新的，要么充值zep要么换个邮箱"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 79,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/79"
     },
     {
       "number": 31,
@@ -2392,7 +2638,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/31#issuecomment-3771529269",
           "body_excerpt": "在`backend/scripts/run_parallel_simulation.py`文件中： ```python result.env = oasis.make( agent_graph=result.agent_graph, platform=oasis.DefaultPlatformType.TWITTER, database_path=db_path, semaphore=30, # 限制最大并发 LLM 请求数，防止 API 过载 ``` 以及在`get_ac…"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 80,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/80"
     },
     {
       "number": 34,
@@ -2414,7 +2663,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/34#issuecomment-3771517407",
           "body_excerpt": "对的，可以把MiroFish跟BettaFish结合起来用，BettaFish是他的前作，做的就是你这个事情"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 81,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/81"
     },
     {
       "number": 35,
@@ -2436,7 +2688,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/35#issuecomment-3771512931",
           "body_excerpt": "这个我在其他issue中进行了一些回答，本地解决方案有很多，大家可以自行调研，后续我也会开个分支单独提供本地RAG版本。 但是现在使用zep的主要原因是为了配置方便，大家填个api就能跑，zep的免费额度也够用一两次，所以暂时接api"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 82,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/82"
     },
     {
       "number": 36,
@@ -2458,7 +2713,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/36#issuecomment-3771502674",
           "body_excerpt": "这里就默认大家都有相关基础能力了"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 83,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/83"
     },
     {
       "number": 32,
@@ -2487,7 +2745,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/32#issuecomment-3771494090",
           "body_excerpt": "### 五个 step 里哪些地方用到了 LLM、怎么取 env、会不会也需要 LLM_PROVIDER Step1（图谱/本体）：OntologyGenerator → LLMClient.chat_json() → 读 LLM_API_KEY/LLM_BASE_URL/LLM_MODEL_NAME。不读取 LLM_PROVIDER，但强依赖 JSON mode。 Step2（人设+模拟配置）：OasisProfileGenerator、SimulationConfigG…"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 84,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/84"
     },
     {
       "number": 19,
@@ -2524,7 +2785,10 @@
         "validation": [
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 35,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/35"
     },
     {
       "number": 21,
@@ -2551,7 +2815,10 @@
         "validation": [
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 36,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/36"
     },
     {
       "number": 20,
@@ -2573,7 +2840,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/20#issuecomment-3748395648",
           "body_excerpt": "预测养老机构发展"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 85,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/85"
     },
     {
       "number": 17,
@@ -2599,7 +2869,10 @@
         "validation": [
           "tracking only"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 37,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/37"
     },
     {
       "number": 16,
@@ -2613,7 +2886,10 @@
       "author": "tt-a1i",
       "body_excerpt": "",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 86,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/86"
     },
     {
       "number": 14,
@@ -2648,7 +2924,10 @@
           "frontend: npm test",
           "frontend: npm run build"
         ]
-      }
+      },
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 38,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/38"
     },
     {
       "number": 11,
@@ -2670,7 +2949,10 @@
           "url": "https://github.com/666ghj/MiroFish/issues/11#issuecomment-3698520490",
           "body_excerpt": "已解决"
         }
-      ]
+      ],
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 87,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/87"
     }
   ],
   "pull_requests": [
@@ -3242,13 +3524,16 @@
       "local_coverage": {
         "number": 119,
         "status": "partial",
-        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, and the remaining MainView graph-build/project-load workflow logs, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
+        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, and bilingual Step 4 Insight/Panorama tool-result parsing, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
         "local_refs": [
           "frontend/src/views/MainView.vue",
           "frontend/src/views/mainViewLogMessages.js",
+          "frontend/src/components/Step4Report.vue",
+          "frontend/src/components/reportParsers.js",
           "frontend/src/i18n/locales/en.js",
           "frontend/src/i18n/locales/zh.js",
-          "frontend/tests/mainViewLogMessages.test.mjs"
+          "frontend/tests/mainViewLogMessages.test.mjs",
+          "frontend/tests/reportParsers.test.mjs"
         ],
         "validation": [
           "frontend: npm test",
@@ -4473,5 +4758,6 @@
       "fork_mirror_ref": "origin/mirror/upstream-pr-2"
     }
   ],
-  "fork_remote": "origin"
+  "fork_remote": "origin",
+  "mirror_issues_repo": "ivanzud/MiroFish"
 }

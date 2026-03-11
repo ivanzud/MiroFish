@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T15:23:00.875237+00:00",
-  "generated_at": "2026-03-11T15:23:00.875237+00:00",
+  "captured_at": "2026-03-11T15:27:04.660229+00:00",
+  "generated_at": "2026-03-11T15:27:04.660229+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -2061,13 +2061,16 @@
       "local_coverage": {
         "number": 119,
         "status": "partial",
-        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, and the remaining MainView graph-build/project-load workflow logs, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
+        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, and bilingual Step 4 Insight/Panorama tool-result parsing, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
         "local_refs": [
           "frontend/src/views/MainView.vue",
           "frontend/src/views/mainViewLogMessages.js",
+          "frontend/src/components/Step4Report.vue",
+          "frontend/src/components/reportParsers.js",
           "frontend/src/i18n/locales/en.js",
           "frontend/src/i18n/locales/zh.js",
-          "frontend/tests/mainViewLogMessages.test.mjs"
+          "frontend/tests/mainViewLogMessages.test.mjs",
+          "frontend/tests/reportParsers.test.mjs"
         ],
         "validation": [
           "frontend: npm test",

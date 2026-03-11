@@ -6,6 +6,8 @@ import {
   getInterviewAnswerForQuestion,
   isMissingPlatformReply,
   parseInterview,
+  parseInsightForge,
+  parsePanorama,
   parseQuickSearch,
 } from '../src/components/reportParsers.js'
 
@@ -136,6 +138,147 @@ Found 3 relevant facts
   assert.deepEqual(english.nodes, [
     { name: 'University', type: 'Organization' },
     { name: 'Student forum', type: '' },
+  ])
+})
+
+test('parseInsightForge supports both Chinese and English formats', () => {
+  const chinese = parseInsightForge(`分析问题: 武大处分事件
+预测场景: 未来一周舆情如何变化
+相关预测事实: 2
+涉及实体: 1
+关系链: 1
+
+### 分析的子问题
+1. 官方会不会回应？
+2. 舆情会不会降温？
+
+### 【关键事实】
+1. "学校已经发布通报"
+2. "讨论仍在持续"
+
+### 【核心实体】
+- **学校** (组织)
+摘要: "事件主体"
+相关事实: 2
+
+### 【关系链】
+- 学校 --[发布]--> 通报
+`)
+
+  assert.equal(chinese.query, '武大处分事件')
+  assert.equal(chinese.simulationRequirement, '未来一周舆情如何变化')
+  assert.deepEqual(chinese.stats, { facts: 2, entities: 1, relationships: 1 })
+  assert.deepEqual(chinese.subQueries, ['官方会不会回应？', '舆情会不会降温？'])
+  assert.deepEqual(chinese.facts, ['学校已经发布通报', '讨论仍在持续'])
+  assert.deepEqual(chinese.entities, [
+    { name: '学校', type: '组织', summary: '事件主体', relatedFactsCount: 2 },
+  ])
+  assert.deepEqual(chinese.relations, [
+    { source: '学校', relation: '发布', target: '通报' },
+  ])
+
+  const english = parseInsightForge(`Analysis Question: Campus discipline fallout
+Prediction Scenario: How sentiment changes over the next week
+Relevant Prediction Facts: 3
+Entities Involved: 2
+Relationship Chains: 1
+
+### Analysis Subquestions
+1. Will the school issue another statement?
+2. Does discussion cool off after clarification?
+
+### Key Facts
+1. "The university already issued a statement"
+2. "Students are still debating online"
+
+### Core Entities
+- **University** (Organization)
+Summary: "Primary institution in the event"
+Related Facts: 2
+- **Student Forum** (Community)
+Summary: "Tracks the reaction"
+Related Facts: 1
+
+### Relationship Chains
+- University --[issued]--> statement
+`)
+
+  assert.equal(english.query, 'Campus discipline fallout')
+  assert.equal(english.simulationRequirement, 'How sentiment changes over the next week')
+  assert.deepEqual(english.stats, { facts: 3, entities: 2, relationships: 1 })
+  assert.deepEqual(english.subQueries, [
+    'Will the school issue another statement?',
+    'Does discussion cool off after clarification?',
+  ])
+  assert.deepEqual(english.facts, [
+    'The university already issued a statement',
+    'Students are still debating online',
+  ])
+  assert.deepEqual(english.entities, [
+    { name: 'University', type: 'Organization', summary: 'Primary institution in the event', relatedFactsCount: 2 },
+    { name: 'Student Forum', type: 'Community', summary: 'Tracks the reaction', relatedFactsCount: 1 },
+  ])
+  assert.deepEqual(english.relations, [
+    { source: 'University', relation: 'issued', target: 'statement' },
+  ])
+})
+
+test('parsePanorama supports both Chinese and English formats', () => {
+  const chinese = parsePanorama(`查询: 武大舆情
+总节点数: 5
+总边数: 4
+当前有效事实: 2
+历史/过期事实: 1
+
+### 【当前有效事实】
+1. "学校回应仍在传播"
+2. "讨论热度开始下降"
+
+### 【历史/过期事实】
+1. "早期传言已失效"
+
+### 【涉及实体】
+- **学校** (组织)
+- **校友** (群体)
+`)
+
+  assert.equal(chinese.query, '武大舆情')
+  assert.deepEqual(chinese.stats, { nodes: 5, edges: 4, activeFacts: 2, historicalFacts: 1 })
+  assert.deepEqual(chinese.activeFacts, ['学校回应仍在传播', '讨论热度开始下降'])
+  assert.deepEqual(chinese.historicalFacts, ['早期传言已失效'])
+  assert.deepEqual(chinese.entities, [
+    { name: '学校', type: '组织' },
+    { name: '校友', type: '群体' },
+  ])
+
+  const english = parsePanorama(`Query: campus sentiment
+Total Nodes: 7
+Total Edges: 9
+Current Active Facts: 2
+Historical/Expired Facts: 1
+
+### Current Active Facts
+1. "Official clarification is still being shared"
+2. "Most replies are less heated now"
+
+### Historical/Expired Facts
+1. "An early rumor has been disproven"
+
+### Entities Involved
+- **University** (Organization)
+- **Alumni** (Audience)
+`)
+
+  assert.equal(english.query, 'campus sentiment')
+  assert.deepEqual(english.stats, { nodes: 7, edges: 9, activeFacts: 2, historicalFacts: 1 })
+  assert.deepEqual(english.activeFacts, [
+    'Official clarification is still being shared',
+    'Most replies are less heated now',
+  ])
+  assert.deepEqual(english.historicalFacts, ['An early rumor has been disproven'])
+  assert.deepEqual(english.entities, [
+    { name: 'University', type: 'Organization' },
+    { name: 'Alumni', type: 'Audience' },
   ])
 })
 

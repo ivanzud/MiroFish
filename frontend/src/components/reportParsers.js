@@ -20,6 +20,25 @@ const QUICK_COUNT_RE = /(?:找到|Found)\s*(\d+)\s*(?:条(?:相关(?:信息|事�
 const QUICK_FACTS_RE = /###\s*(?:相关事实|Relevant Facts):\n([\s\S]*?)(?=\n###|$)/i
 const QUICK_EDGES_RE = /###\s*(?:相关边|Related Edges):\n([\s\S]*?)(?=\n###|$)/i
 const QUICK_NODES_RE = /###\s*(?:相关节点|Related Nodes):\n([\s\S]*?)(?=\n###|$)/i
+const INSIGHT_QUERY_RE = /(?:分析问题|Analysis Question):\s*(.+?)(?:\n|$)/i
+const INSIGHT_SCENARIO_RE = /(?:预测场景|Prediction Scenario):\s*(.+?)(?:\n|$)/i
+const INSIGHT_FACT_COUNT_RE = /(?:相关预测事实|Relevant Prediction Facts):\s*(\d+)/i
+const INSIGHT_ENTITY_COUNT_RE = /(?:涉及实体|Entities Involved):\s*(\d+)/i
+const INSIGHT_RELATION_COUNT_RE = /(?:关系链|Relationship Chains):\s*(\d+)/i
+const INSIGHT_SUBQUERIES_RE = /###\s*(?:分析的子问题|Analysis Subquestions)\n([\s\S]*?)(?=\n###|$)/i
+const INSIGHT_FACTS_RE = /###\s*(?:【关键事实】|Key Facts)\n([\s\S]*?)(?=\n###|$)/i
+const INSIGHT_ENTITIES_RE = /###\s*(?:【核心实体】|Core Entities)\n([\s\S]*?)(?=\n###|$)/i
+const INSIGHT_ENTITY_SUMMARY_RE = /(?:摘要|Summary):\s*"?(.+?)"?(?:\n|$)/i
+const INSIGHT_ENTITY_RELATED_RE = /(?:相关事实|Related Facts):\s*(\d+)/i
+const INSIGHT_RELATIONS_RE = /###\s*(?:【关系链】|Relationship Chains)\n([\s\S]*?)(?=\n###|$)/i
+const PANORAMA_QUERY_RE = /(?:查询|Query):\s*(.+?)(?:\n|$)/i
+const PANORAMA_NODES_RE = /(?:总节点数|Total Nodes):\s*(\d+)/i
+const PANORAMA_EDGES_RE = /(?:总边数|Total Edges):\s*(\d+)/i
+const PANORAMA_ACTIVE_COUNT_RE = /(?:当前有效事实|Current Active Facts):\s*(\d+)/i
+const PANORAMA_HISTORICAL_COUNT_RE = /(?:历史\/过期事实|Historical\/Expired Facts):\s*(\d+)/i
+const PANORAMA_ACTIVE_RE = /###\s*(?:【当前有效事实】|Current Active Facts)\n([\s\S]*?)(?=\n###|$)/i
+const PANORAMA_HISTORICAL_RE = /###\s*(?:【历史\/过期事实】|Historical\/Expired Facts)\n([\s\S]*?)(?=\n###|$)/i
+const PANORAMA_ENTITIES_RE = /###\s*(?:【涉及实体】|Entities Involved)\n([\s\S]*?)(?=\n###|$)/i
 const QUESTION_PREFIX_RE = /(?:^|[\r\n]+)(?:问题|Question)\s*(\d+)[：:]\s*/g
 const NUMBERED_PREFIX_RE = /(?:^|[\r\n]+)(\d+)\.\s+/g
 const FINAL_ANSWER_RE = /Final\s*Answer:\s*\n*([\s\S]*)$/i
@@ -348,6 +367,164 @@ export const parseQuickSearch = (text) => {
     }
   } catch (error) {
     console.warn('Parse quick_search failed:', error)
+  }
+
+  return result
+}
+
+export const parseInsightForge = (text) => {
+  const result = {
+    query: '',
+    simulationRequirement: '',
+    stats: { facts: 0, entities: 0, relationships: 0 },
+    subQueries: [],
+    facts: [],
+    entities: [],
+    relations: [],
+  }
+
+  try {
+    const queryMatch = text.match(INSIGHT_QUERY_RE)
+    if (queryMatch) {
+      result.query = queryMatch[1].trim()
+    }
+
+    const scenarioMatch = text.match(INSIGHT_SCENARIO_RE)
+    if (scenarioMatch) {
+      result.simulationRequirement = scenarioMatch[1].trim()
+    }
+
+    const factMatch = text.match(INSIGHT_FACT_COUNT_RE)
+    const entityMatch = text.match(INSIGHT_ENTITY_COUNT_RE)
+    const relationMatch = text.match(INSIGHT_RELATION_COUNT_RE)
+    if (factMatch) {
+      result.stats.facts = parseInt(factMatch[1], 10)
+    }
+    if (entityMatch) {
+      result.stats.entities = parseInt(entityMatch[1], 10)
+    }
+    if (relationMatch) {
+      result.stats.relationships = parseInt(relationMatch[1], 10)
+    }
+
+    const subQueriesSection = text.match(INSIGHT_SUBQUERIES_RE)
+    if (subQueriesSection) {
+      result.subQueries = collectNumberedLines(subQueriesSection[1])
+    }
+
+    const factsSection = text.match(INSIGHT_FACTS_RE)
+    if (factsSection) {
+      result.facts = collectNumberedLines(factsSection[1]).map((line) =>
+        line.replace(/^"|"$/g, '').trim()
+      )
+    }
+
+    const entitiesSection = text.match(INSIGHT_ENTITIES_RE)
+    if (entitiesSection) {
+      const entityBlocks = entitiesSection[1]
+        .split(/\n(?=- \*\*)/)
+        .filter((block) => block.trim().startsWith('- **'))
+
+      result.entities = entityBlocks
+        .map((block) => {
+          const nameMatch = block.match(/^-\s*\*\*(.+?)\*\*\s*\((.+?)\)/)
+          return {
+            name: nameMatch ? nameMatch[1].trim() : '',
+            type: nameMatch ? nameMatch[2].trim() : '',
+            summary: block.match(INSIGHT_ENTITY_SUMMARY_RE)?.[1]?.trim() || '',
+            relatedFactsCount: parseInt(block.match(INSIGHT_ENTITY_RELATED_RE)?.[1] || '0', 10),
+          }
+        })
+        .filter((entity) => entity.name)
+    }
+
+    const relationsSection = text.match(INSIGHT_RELATIONS_RE)
+    if (relationsSection) {
+      result.relations = relationsSection[1]
+        .split('\n')
+        .filter((line) => line.trim().startsWith('-'))
+        .map((line) => {
+          const match = line.match(/^-\s*(.+?)\s*--\[(.+?)\]-->\s*(.+)$/)
+          if (!match) {
+            return null
+          }
+          return {
+            source: match[1].trim(),
+            relation: match[2].trim(),
+            target: match[3].trim(),
+          }
+        })
+        .filter(Boolean)
+    }
+  } catch (error) {
+    console.warn('Parse insight_forge failed:', error)
+  }
+
+  return result
+}
+
+export const parsePanorama = (text) => {
+  const result = {
+    query: '',
+    stats: { nodes: 0, edges: 0, activeFacts: 0, historicalFacts: 0 },
+    activeFacts: [],
+    historicalFacts: [],
+    entities: [],
+  }
+
+  try {
+    const queryMatch = text.match(PANORAMA_QUERY_RE)
+    if (queryMatch) {
+      result.query = queryMatch[1].trim()
+    }
+
+    const nodesMatch = text.match(PANORAMA_NODES_RE)
+    const edgesMatch = text.match(PANORAMA_EDGES_RE)
+    const activeMatch = text.match(PANORAMA_ACTIVE_COUNT_RE)
+    const historicalMatch = text.match(PANORAMA_HISTORICAL_COUNT_RE)
+    if (nodesMatch) {
+      result.stats.nodes = parseInt(nodesMatch[1], 10)
+    }
+    if (edgesMatch) {
+      result.stats.edges = parseInt(edgesMatch[1], 10)
+    }
+    if (activeMatch) {
+      result.stats.activeFacts = parseInt(activeMatch[1], 10)
+    }
+    if (historicalMatch) {
+      result.stats.historicalFacts = parseInt(historicalMatch[1], 10)
+    }
+
+    const activeSection = text.match(PANORAMA_ACTIVE_RE)
+    if (activeSection) {
+      result.activeFacts = collectNumberedLines(activeSection[1]).map((line) =>
+        line.replace(/^"|"$/g, '').trim()
+      )
+    }
+
+    const historicalSection = text.match(PANORAMA_HISTORICAL_RE)
+    if (historicalSection) {
+      result.historicalFacts = collectNumberedLines(historicalSection[1]).map((line) =>
+        line.replace(/^"|"$/g, '').trim()
+      )
+    }
+
+    const entitiesSection = text.match(PANORAMA_ENTITIES_RE)
+    if (entitiesSection) {
+      result.entities = entitiesSection[1]
+        .split('\n')
+        .filter((line) => line.trim().startsWith('-'))
+        .map((line) => {
+          const typedNode = line.match(/^-\s*\*\*(.+?)\*\*\s*\((.+?)\)/)
+          if (!typedNode) {
+            return null
+          }
+          return { name: typedNode[1].trim(), type: typedNode[2].trim() }
+        })
+        .filter(Boolean)
+    }
+  } catch (error) {
+    console.warn('Parse panorama failed:', error)
   }
 
   return result
