@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import csv
+import sqlite3
 import sys
 from types import ModuleType
 
@@ -27,6 +29,7 @@ sys.modules.setdefault("zep_cloud.external_clients.ontology", fake_zep_ontology)
 
 from app.api import simulation_bp
 from app.api import simulation as simulation_api
+from app.services.simulation_manager import SimulationManager
 from app.services.simulation_manager import SimulationState, SimulationStatus
 
 
@@ -436,7 +439,7 @@ def test_posts_missing_database_message_is_localized(monkeypatch, tmp_path):
     simulations_root = uploads_root / "simulations"
     simulations_root.mkdir(parents=True)
 
-    monkeypatch.setattr(simulation_api.os.path, "dirname", lambda _path: str(uploads_root / "placeholder"))
+    monkeypatch.setattr(simulation_api.Config, "OASIS_SIMULATION_DATA_DIR", str(simulations_root))
 
     response = client.get(
         "/api/simulation/sim_123/posts?platform=twitter",
@@ -451,6 +454,76 @@ def test_posts_missing_database_message_is_localized(monkeypatch, tmp_path):
         "The simulation database does not exist yet. "
         "The simulation may not have run for this platform."
     )
+
+
+def test_profiles_realtime_falls_back_to_enabled_twitter_platform(monkeypatch, tmp_path):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    monkeypatch.setattr(simulation_api.Config, "OASIS_SIMULATION_DATA_DIR", str(tmp_path))
+    monkeypatch.setattr(simulation_api.SimulationManager, "SIMULATION_DATA_DIR", str(tmp_path))
+
+    manager = SimulationManager()
+    state = manager.create_simulation(
+        project_id="proj_123",
+        graph_id="graph_123",
+        enable_twitter=True,
+        enable_reddit=False,
+    )
+
+    profiles_path = tmp_path / state.simulation_id / "twitter_profiles.csv"
+    with profiles_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["username", "platform"])
+        writer.writeheader()
+        writer.writerow({"username": "tw-user", "platform": "twitter"})
+
+    response = client.get(
+        f"/api/simulation/{state.simulation_id}/profiles/realtime?platform=reddit",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()["data"]
+    assert payload["platform"] == "twitter"
+    assert payload["count"] == 1
+    assert payload["profiles"] == [{"username": "tw-user", "platform": "twitter"}]
+
+
+def test_posts_infer_enabled_twitter_platform_when_request_omits_platform(monkeypatch, tmp_path):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    monkeypatch.setattr(simulation_api.Config, "OASIS_SIMULATION_DATA_DIR", str(tmp_path))
+    monkeypatch.setattr(simulation_api.SimulationManager, "SIMULATION_DATA_DIR", str(tmp_path))
+
+    manager = SimulationManager()
+    state = manager.create_simulation(
+        project_id="proj_123",
+        graph_id="graph_123",
+        enable_twitter=True,
+        enable_reddit=False,
+    )
+
+    db_path = tmp_path / state.simulation_id / "twitter_simulation.db"
+    conn = sqlite3.connect(db_path)
+    conn.execute("CREATE TABLE post (id INTEGER PRIMARY KEY, created_at TEXT, content TEXT)")
+    conn.execute(
+        "INSERT INTO post (created_at, content) VALUES (?, ?)",
+        ("2026-03-11T17:40:00", "hello twitter"),
+    )
+    conn.commit()
+    conn.close()
+
+    response = client.get(
+        f"/api/simulation/{state.simulation_id}/posts",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()["data"]
+    assert payload["platform"] == "twitter"
+    assert payload["count"] == 1
+    assert payload["posts"][0]["content"] == "hello twitter"
 
 
 def test_ready_simulation_run_instructions_are_localized(monkeypatch, tmp_path):

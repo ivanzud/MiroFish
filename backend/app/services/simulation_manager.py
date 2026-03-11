@@ -7,13 +7,14 @@ OASIS模拟管理器
 import os
 import json
 import shutil
+import csv
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
 from ..config import Config
-from ..i18n import tr
+from ..i18n import get_locale, tr
 from ..utils.logger import get_logger
 from .zep_entity_reader import ZepEntityReader, FilteredEntities
 from .oasis_profile_generator import OasisProfileGenerator, OasisAgentProfile
@@ -460,6 +461,57 @@ class SimulationManager:
     def get_simulation(self, simulation_id: str) -> Optional[SimulationState]:
         """获取模拟状态"""
         return self._load_simulation_state(simulation_id)
+
+    def get_enabled_platforms(self, simulation_id: str) -> List[str]:
+        """Return enabled platforms in stable preference order."""
+        state = self._load_simulation_state(simulation_id)
+        if not state:
+            raise ValueError(tr("simulation.not_found", get_locale(), simulation_id=simulation_id))
+
+        platforms: List[str] = []
+        if state.enable_reddit:
+            platforms.append(PlatformType.REDDIT.value)
+        if state.enable_twitter:
+            platforms.append(PlatformType.TWITTER.value)
+        return platforms
+
+    def resolve_platform(self, simulation_id: str, platform: Optional[str] = None) -> str:
+        """
+        Resolve a caller-requested platform against the simulation's enabled platforms.
+
+        If exactly one platform is enabled, use it even when older callers still request
+        the historical reddit default.
+        """
+        normalized = platform.strip().lower() if isinstance(platform, str) else None
+        if normalized == "":
+            normalized = None
+
+        valid_platforms = {PlatformType.REDDIT.value, PlatformType.TWITTER.value}
+        if normalized and normalized not in valid_platforms:
+            raise ValueError(tr("simulation.platform_invalid", get_locale()))
+
+        enabled_platforms = self.get_enabled_platforms(simulation_id)
+        if normalized in enabled_platforms:
+            return normalized
+
+        if len(enabled_platforms) == 1:
+            if normalized and normalized != enabled_platforms[0]:
+                logger.info(
+                    "simulation %s requested disabled platform %s; falling back to enabled platform %s",
+                    simulation_id,
+                    normalized,
+                    enabled_platforms[0],
+                )
+            return enabled_platforms[0]
+
+        if normalized:
+            return normalized
+
+        if enabled_platforms:
+            return enabled_platforms[0]
+
+        # Legacy fallback for malformed historical state files with no enabled flags.
+        return PlatformType.REDDIT.value
     
     def list_simulations(self, project_id: Optional[str] = None) -> List[SimulationState]:
         """列出所有模拟"""
@@ -481,17 +533,20 @@ class SimulationManager:
     
     def get_profiles(self, simulation_id: str, platform: str = "reddit") -> List[Dict[str, Any]]:
         """获取模拟的Agent Profile"""
-        state = self._load_simulation_state(simulation_id)
-        if not state:
-            raise ValueError(tr("simulation.not_found", simulation_id=simulation_id))
+        platform = self.resolve_platform(simulation_id, platform)
         
         sim_dir = self._get_simulation_dir(simulation_id)
-        profile_path = os.path.join(sim_dir, f"{platform}_profiles.json")
+        profile_path = os.path.join(
+            sim_dir,
+            "twitter_profiles.csv" if platform == PlatformType.TWITTER.value else "reddit_profiles.json",
+        )
         
         if not os.path.exists(profile_path):
             return []
         
         with open(profile_path, 'r', encoding='utf-8') as f:
+            if platform == PlatformType.TWITTER.value:
+                return list(csv.DictReader(f))
             return json.load(f)
     
     def get_simulation_config(self, simulation_id: str) -> Optional[Dict[str, Any]]:

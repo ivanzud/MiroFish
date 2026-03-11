@@ -3,6 +3,24 @@
   "captured_at": "2026-03-11T16:53:01.002573+00:00",
   "issues": [
     {
+      "number": 150,
+      "status": "covered",
+      "summary": "Simulation data retrieval now resolves the active platform from `SimulationState` instead of silently defaulting to Reddit when Twitter/X is the only enabled platform, and `SimulationManager.get_profiles()` now reads Twitter profile CSV files correctly as well. That prevents empty profile/post responses in Twitter-only simulations even when older callers still pass the historical `reddit` default.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "backend/app/services/simulation_manager.py",
+        "backend/app/api/simulation.py",
+        "backend/tests/test_simulation_service_i18n.py",
+        "backend/tests/test_simulation_api_i18n.py",
+        "https://github.com/ivanzud/MiroFish/issues/91"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_simulation_service_i18n.py tests/test_simulation_api_i18n.py",
+        "python3 -m compileall backend/app/services/simulation_manager.py backend/app/api/simulation.py"
+      ],
+      "notes": "Mirrored into fork issue #91 on March 11, 2026. The fix keeps legacy callers working by falling back to the sole enabled platform instead of assuming Reddit."
+    },
+    {
       "number": 148,
       "status": "covered",
       "summary": "Interview env liveness now validates the persisted runner state and recorded process PID instead of trusting stale env_status.json alone, so Step 5 world-agent chat fails fast with the existing closed-environment guidance instead of hanging into a 504 when the simulation process has already exited.",

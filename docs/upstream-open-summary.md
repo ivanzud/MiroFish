@@ -2,15 +2,18 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T17:34:01.772369+00:00`
-- Issues: `39` total (`open=39`, `closed=0`)
+- Captured: `2026-03-11T17:42:55.359680+00:00`
+- Issues: `40` total (`open=40`, `closed=0`)
 - Pull requests: `37` total (`open=37`, `closed=0`)
 - Mirrored in `origin`: `37` of `37` PR refs
-- Mirrored in `ivanzud/MiroFish`: `39` of `39` issues
+- Mirrored in `ivanzud/MiroFish`: `40` of `40` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
+- #150 [open, mirror=#91] Bug: Hardcoded 'reddit' platform default causes silent data loss for Twitter-only simulations (no labels)
+  - local coverage [covered]: Simulation data retrieval now resolves the active platform from `SimulationState` instead of silently defaulting to Reddit when Twitter/X is the only enabled platform, and `SimulationManager.get_profiles()` now reads Twitter profile CSV files correctly as well. That prevents empty profile/post responses in Twitter-only simulations even when older callers still pass the historical `reddit` default.
+  - ## Summary When a simulation is created with Twitter-only configuration (`enable_reddit=false`), all data retrieval APIs silently return empty results because they default to looking up Reddit data. No error is raised — the user sees an empty UI with no indication of what went wrong. ## Root Cause The platform parameter defaults to `'reddit'` in 11+ locations across the codebase. When a Twitter-o…
 - #149 [open, mirror=#90] 一直卡在 Waiting for agent actions (question)
   - local coverage [covered]: Step 3 now reconciles stale persisted `running` states when the worker PID is gone, and the detailed status payload exposes compact simulation-log diagnostics while waiting for the first actions. That prevents indefinite "Waiting for agent actions" polling after a dead worker and makes true startup stalls visible in the UI.
   - <img width="947" height="398" alt="Image" src="https://github.com/user-attachments/assets/09b45da5-150c-4d3b-82c0-6ba2204c1743" />
@@ -40,10 +43,6 @@
 - #117 [open, mirror=#8] ### Feature Request: English Language Support (enhancement)
   - local coverage [covered]: The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, report/interview parsing, and Step 5 interview fallbacks: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, Step 4 tool-output parsers accept both Chinese and English markers, and zep_tools now localizes deterministic interview-selection/question/summary fallback copy in English mode.
   - Hi, First of all, thank you for creating and open-sourcing this amazing project. MiroFish is a very interesting and powerful multi-agent prediction engine. Currently, a large portion of the documentation, UI text, and comments appear to be primarily in Chinese. This makes it difficult for international developers to fully understand and use the project. ### Request It would be very helpful if the…
-- #110 [open, mirror=#9] 阿里云百炼 API 调用异常：付费计划（Coding Plan）非千文模型及大模型API中转站的API均失效，仅免费额度模型或coding plan的千文模型可用 (LLM API)
-  - local coverage [covered]: The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.
-  - 阿里云百炼 API 调用异常：付费计划（Coding Plan）非千文模型及大模型API中转站的API均失效，仅免费额度模型或coding plan的千文模型可用
-  - latest comment by `lukeliu95`: 使用以下方式调用Coding Plan LLM_BASE_URL=https://coding.dashscope.aliyuncs.com/v1 LLM_MODEL_NAME=qwen3.5-plus
 
 ## Recently Updated Pull Requests
 

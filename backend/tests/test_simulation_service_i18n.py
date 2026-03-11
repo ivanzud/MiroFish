@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import builtins
+import csv
 from types import SimpleNamespace
 
 from flask import Flask
@@ -147,6 +148,34 @@ def test_prepare_simulation_progress_messages_use_explicit_locale(tmp_path, monk
     assert "Calling the LLM to generate the config..." in messages
     assert "Saving the config file..." in messages
     assert "Configuration generation completed" in messages
+
+
+def test_get_profiles_falls_back_to_enabled_twitter_platform_and_reads_csv(tmp_path, monkeypatch):
+    monkeypatch.setattr(SimulationManager, "SIMULATION_DATA_DIR", str(tmp_path))
+
+    manager = SimulationManager()
+    state = manager.create_simulation(
+        project_id="project-1",
+        graph_id="graph-1",
+        enable_twitter=True,
+        enable_reddit=False,
+    )
+
+    sim_dir = tmp_path / state.simulation_id
+    with (sim_dir / "twitter_profiles.csv").open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["username", "platform", "bio"])
+        writer.writeheader()
+        writer.writerow({"username": "tw-user", "platform": "twitter", "bio": "Tracks breaking news"})
+
+    profiles = manager.get_profiles(state.simulation_id, platform="reddit")
+
+    assert profiles == [
+        {
+            "username": "tw-user",
+            "platform": "twitter",
+            "bio": "Tracks breaking news",
+        }
+    ]
 
 
 def test_stop_simulation_not_running_uses_english_request_locale(monkeypatch):

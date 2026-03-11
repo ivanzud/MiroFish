@@ -2,15 +2,18 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T17:34:12.430550+00:00`
-- Issues: `89` total (`open=39`, `closed=50`)
+- Captured: `2026-03-11T17:43:14.963099+00:00`
+- Issues: `90` total (`open=40`, `closed=50`)
 - Pull requests: `51` total (`open=37`, `closed=14`)
 - Mirrored in `origin`: `51` of `51` PR refs
-- Mirrored in `ivanzud/MiroFish`: `89` of `89` issues
+- Mirrored in `ivanzud/MiroFish`: `90` of `90` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
+- #150 [open, mirror=#91] Bug: Hardcoded 'reddit' platform default causes silent data loss for Twitter-only simulations (no labels)
+  - local coverage [covered]: Simulation data retrieval now resolves the active platform from `SimulationState` instead of silently defaulting to Reddit when Twitter/X is the only enabled platform, and `SimulationManager.get_profiles()` now reads Twitter profile CSV files correctly as well. That prevents empty profile/post responses in Twitter-only simulations even when older callers still pass the historical `reddit` default.
+  - ## Summary When a simulation is created with Twitter-only configuration (`enable_reddit=false`), all data retrieval APIs silently return empty results because they default to looking up Reddit data. No error is raised — the user sees an empty UI with no indication of what went wrong. ## Root Cause The platform parameter defaults to `'reddit'` in 11+ locations across the codebase. When a Twitter-o…
 - #148 [closed, mirror=#89] Request failed with status code 504 (LLM API)
   - local coverage [covered]: Interview env liveness now validates the persisted runner state and recorded process PID instead of trusting stale env_status.json alone, so Step 5 world-agent chat fails fast with the existing closed-environment guidance instead of hanging into a 504 when the simulation process has already exited.
   - 完成report后，进入深度对话，在Interactive Tools中，与Report agent对话是正常的，但是与世界中任意个体对话则报错：“抱歉，发生了错误: Request failed with status code 504“。
@@ -40,10 +43,6 @@
 - #138 [closed, mirror=#40] 生成的报告让人看不懂 (question)
   - 生成的报告感觉有点太偏题了，看不懂😭 ，比如我写了一个游戏的设计方案，预测这个游戏的受众群体将会是什么，给我的报告题目是《未来受众群体生态的静默与解体：一项基于模拟的预测报告》
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @huamingjie0815! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 感谢反馈！这个问题我找到原因了 😊 **根本原因**：报告标题生成的 [Prompt 模板](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d6…
-- #135 [open, mirror=#6] 报错，Zep图谱构建失败 (no labels)
-  - local coverage [covered]: Graph ontology ingestion now accepts string-valued attribute definitions for entity and edge schemas, so malformed LLM ontology output no longer crashes graph builds with `TypeError: string indices must be integers`.
-  - Graph build task failed: Traceback (most recent call last): File "/app/backend/app/api/graph.py", line 418, in build_task builder.set_ontology(graph_id, ontology) File "/app/backend/app/services/graph_builder.py", line 230, in set_ontology attr_name = safe_attr_name(attr_def["name"]) # 使用安全名称 ~~~~~~~~^^^^^^^^ TypeError: string indices must be integers, not 'str'
-  - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @rheeh! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这个错误是因为 `attr_def` 应该是字典格式 `{"name": "attr_name", ...}`，但实际收到的是字符串。 **根本原因**：LLM 生成的 ontology 中，`attributes` 字段可能返回了简单的…
 
 ## Recently Updated Pull Requests
 

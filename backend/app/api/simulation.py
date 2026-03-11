@@ -160,6 +160,20 @@ def _handle_simulation_api_exception(error: Exception, locale: str, context: str
     return handle_api_exception(logger, error, _simulation_error_context(locale, context))
 
 
+def _resolve_simulation_platform(manager: SimulationManager, simulation_id: str, platform: str | None) -> str:
+    """Resolve platform requests against the simulation's enabled platform set."""
+    normalized = platform.strip().lower() if isinstance(platform, str) else None
+    if normalized == "":
+        normalized = None
+
+    if manager.get_simulation(simulation_id) is None:
+        if normalized and normalized not in ("twitter", "reddit"):
+            raise ValueError(tr("simulation.platform_invalid", get_locale()))
+        return normalized or "reddit"
+
+    return manager.resolve_platform(simulation_id, platform)
+
+
 def optimize_interview_prompt(prompt: str, locale: str | None = None) -> str:
     """
     优化Interview提问，添加前缀避免Agent调用工具
@@ -1119,12 +1133,11 @@ def get_simulation_profiles(simulation_id: str):
     获取模拟的Agent Profile
     
     Query参数：
-        platform: 平台类型（reddit/twitter，默认reddit）
+        platform: 平台类型（reddit/twitter，未指定时按模拟配置推断）
     """
     try:
-        platform = request.args.get('platform', 'reddit')
-        
         manager = SimulationManager()
+        platform = _resolve_simulation_platform(manager, simulation_id, request.args.get('platform'))
         profiles = manager.get_profiles(simulation_id, platform=platform)
         
         return jsonify({
@@ -1157,7 +1170,7 @@ def get_simulation_profiles_realtime(simulation_id: str):
     - 返回额外的元数据（如文件修改时间、是否正在生成等）
     
     Query参数：
-        platform: 平台类型（reddit/twitter，默认reddit）
+        platform: 平台类型（reddit/twitter，未指定时按模拟配置推断）
     
     返回：
         {
@@ -1180,7 +1193,8 @@ def get_simulation_profiles_realtime(simulation_id: str):
     
     try:
         locale = get_locale()
-        platform = request.args.get('platform', 'reddit')
+        manager = SimulationManager()
+        platform = _resolve_simulation_platform(manager, simulation_id, request.args.get('platform'))
         
         # 获取模拟目录
         sim_dir = os.path.join(Config.OASIS_SIMULATION_DATA_DIR, simulation_id)
@@ -2095,14 +2109,12 @@ def get_simulation_posts(simulation_id: str):
     """
     try:
         locale = get_locale()
-        platform = request.args.get('platform', 'reddit')
+        manager = SimulationManager()
+        platform = _resolve_simulation_platform(manager, simulation_id, request.args.get('platform'))
         limit = request.args.get('limit', 50, type=int)
         offset = request.args.get('offset', 0, type=int)
         
-        sim_dir = os.path.join(
-            os.path.dirname(__file__),
-            f'../../uploads/simulations/{simulation_id}'
-        )
+        sim_dir = os.path.join(Config.OASIS_SIMULATION_DATA_DIR, simulation_id)
         
         db_file = f"{platform}_simulation.db"
         db_path = os.path.join(sim_dir, db_file)

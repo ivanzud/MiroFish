@@ -1,12 +1,12 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T17:34:01.772369+00:00",
-  "generated_at": "2026-03-11T17:34:01.772369+00:00",
+  "captured_at": "2026-03-11T17:42:55.359680+00:00",
+  "generated_at": "2026-03-11T17:42:55.359680+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
-      "open": 39
+      "open": 40
     },
     "pull_requests": {
       "open": 37
@@ -16,11 +16,48 @@
       "not_mirrored": 0
     },
     "mirrored_issues": {
-      "mirrored": 39,
+      "mirrored": 40,
       "not_mirrored": 0
     }
   },
   "issues": [
+    {
+      "number": 150,
+      "title": "Bug: Hardcoded 'reddit' platform default causes silent data loss for Twitter-only simulations",
+      "url": "https://github.com/666ghj/MiroFish/issues/150",
+      "state": "open",
+      "created_at": "2026-03-11T17:36:38Z",
+      "updated_at": "2026-03-11T17:41:52Z",
+      "closed_at": null,
+      "labels": [],
+      "author": "karesansui-u",
+      "body_excerpt": "## Summary When a simulation is created with Twitter-only configuration (`enable_reddit=false`), all data retrieval APIs silently return empty results because they default to looking up Reddit data. No error is raised — the user sees an empty UI with no indication of what went wrong. ## Root Cause The platform parameter defaults to `'reddit'` in 11+ locations across the codebase. When a Twitter-o…",
+      "comment_count": 0,
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 150,
+        "status": "covered",
+        "summary": "Simulation data retrieval now resolves the active platform from `SimulationState` instead of silently defaulting to Reddit when Twitter/X is the only enabled platform, and `SimulationManager.get_profiles()` now reads Twitter profile CSV files correctly as well. That prevents empty profile/post responses in Twitter-only simulations even when older callers still pass the historical `reddit` default.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "backend/app/services/simulation_manager.py",
+          "backend/app/api/simulation.py",
+          "backend/tests/test_simulation_service_i18n.py",
+          "backend/tests/test_simulation_api_i18n.py",
+          "https://github.com/ivanzud/MiroFish/issues/91"
+        ],
+        "validation": [
+          "cd backend && uv run pytest -q tests/test_simulation_service_i18n.py tests/test_simulation_api_i18n.py",
+          "python3 -m compileall backend/app/services/simulation_manager.py backend/app/api/simulation.py"
+        ],
+        "notes": "Mirrored into fork issue #91 on March 11, 2026. The fix keeps legacy callers working by falling back to the sole enabled platform instead of assuming Reddit."
+      },
+      "local_status": "covered",
+      "local_summary": "Simulation data retrieval now resolves the active platform from `SimulationState` instead of silently defaulting to Reddit when Twitter/X is the only enabled platform, and `SimulationManager.get_profiles()` now reads Twitter profile CSV files correctly as well. That prevents empty profile/post responses in Twitter-only simulations even when older callers still pass the historical `reddit` default.",
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 91,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/91"
+    },
     {
       "number": 149,
       "title": "一直卡在 Waiting for agent actions",
