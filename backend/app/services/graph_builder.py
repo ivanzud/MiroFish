@@ -8,6 +8,7 @@ import uuid
 import time
 import threading
 import re
+from copy import deepcopy
 from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass
 from email.utils import parsedate_to_datetime
@@ -21,6 +22,7 @@ from ..models.task import TaskManager, TaskStatus
 from ..utils.logger import get_logger
 from ..utils.zep_paging import fetch_all_nodes, fetch_all_edges
 from .text_processor import TextProcessor
+from .zep_entity_reader import EntityNode, ZepEntityReader
 
 
 @dataclass
@@ -220,6 +222,166 @@ class GraphBuilderService:
             return cleaned_lines[-1]
 
         return error_text
+
+    @staticmethod
+    def _entity_type_from_node(node: Dict[str, Any]) -> str:
+        for label in node.get("labels", []):
+            if label not in ["Entity", "Node"]:
+                return label
+        return ""
+
+    @classmethod
+    def _node_as_entity(cls, node: Dict[str, Any]) -> EntityNode:
+        return EntityNode(
+            uuid=str(node.get("uuid", "")),
+            name=str(node.get("name", "") or ""),
+            labels=list(node.get("labels", []) or []),
+            summary=str(node.get("summary", "") or ""),
+            attributes=dict(node.get("attributes", {}) or {}),
+        )
+
+    @staticmethod
+    def _unique_values(values: List[Any]) -> List[Any]:
+        seen = set()
+        result = []
+        for value in values:
+            if value in (None, ""):
+                continue
+            if value in seen:
+                continue
+            seen.add(value)
+            result.append(value)
+        return result
+
+    @classmethod
+    def _pick_primary_graph_node(cls, left: Dict[str, Any], right: Dict[str, Any]) -> Dict[str, Any]:
+        left_name = ZepEntityReader._normalize_entity_name(left.get("name", ""))
+        right_name = ZepEntityReader._normalize_entity_name(right.get("name", ""))
+
+        if left_name and right_name and len(left_name) != len(right_name):
+            return left if len(left_name) < len(right_name) else right
+
+        def score(node: Dict[str, Any]) -> int:
+            return (
+                len(node.get("attributes") or {}) * 10
+                + len(node.get("summary") or "")
+                + len(node.get("labels") or [])
+            )
+
+        return left if score(left) >= score(right) else right
+
+    @classmethod
+    def _merge_duplicate_graph_nodes(
+        cls, nodes: List[Dict[str, Any]]
+    ) -> tuple[List[Dict[str, Any]], Dict[str, str]]:
+        merged_nodes: List[Dict[str, Any]] = []
+
+        for node in nodes:
+            prepared = {
+                **deepcopy(node),
+                "labels": list(node.get("labels", []) or []),
+                "attributes": dict(node.get("attributes", {}) or {}),
+                "alias_names": cls._unique_values([*(node.get("alias_names", []) or []), node.get("name")]),
+                "merged_node_uuids": cls._unique_values(
+                    [*(node.get("merged_node_uuids", []) or []), node.get("uuid")]
+                ),
+            }
+
+            duplicate_index = next(
+                (
+                    idx
+                    for idx, existing in enumerate(merged_nodes)
+                    if ZepEntityReader._are_duplicate_entities(
+                        cls._node_as_entity(existing),
+                        cls._node_as_entity(prepared),
+                    )
+                ),
+                None,
+            )
+            if duplicate_index is None:
+                merged_nodes.append(prepared)
+                continue
+
+            existing = merged_nodes[duplicate_index]
+            primary = cls._pick_primary_graph_node(existing, prepared)
+            secondary = prepared if primary is existing else existing
+
+            merged_nodes[duplicate_index] = {
+                **secondary,
+                **primary,
+                "labels": cls._unique_values([*(primary.get("labels", []) or []), *(secondary.get("labels", []) or [])]),
+                "attributes": {
+                    **(secondary.get("attributes") or {}),
+                    **(primary.get("attributes") or {}),
+                },
+                "summary": max(
+                    [part for part in (primary.get("summary"), secondary.get("summary")) if part],
+                    key=len,
+                    default="",
+                ),
+                "created_at": primary.get("created_at") or secondary.get("created_at"),
+                "alias_names": cls._unique_values(
+                    [
+                        *(primary.get("alias_names", []) or []),
+                        *(secondary.get("alias_names", []) or []),
+                        primary.get("name"),
+                        secondary.get("name"),
+                    ]
+                ),
+                "merged_node_uuids": cls._unique_values(
+                    [
+                        *(primary.get("merged_node_uuids", []) or []),
+                        *(secondary.get("merged_node_uuids", []) or []),
+                    ]
+                ),
+            }
+
+        uuid_remap: Dict[str, str] = {}
+        sanitized_nodes: List[Dict[str, Any]] = []
+        for node in merged_nodes:
+            merged_uuids = cls._unique_values(node.get("merged_node_uuids", []) or [])
+            for raw_uuid in merged_uuids:
+                uuid_remap[raw_uuid] = node["uuid"]
+
+            sanitized = dict(node)
+            if len(node.get("alias_names", []) or []) <= 1:
+                sanitized.pop("alias_names", None)
+            if len(merged_uuids) <= 1:
+                sanitized.pop("merged_node_uuids", None)
+            sanitized_nodes.append(sanitized)
+
+        return sanitized_nodes, uuid_remap
+
+    @classmethod
+    def _deduplicate_graph_edges(
+        cls,
+        edges: List[Dict[str, Any]],
+        uuid_remap: Dict[str, str],
+        node_name_map: Dict[str, str],
+    ) -> List[Dict[str, Any]]:
+        deduplicated: List[Dict[str, Any]] = []
+        seen_keys = set()
+
+        for edge in edges:
+            remapped = dict(edge)
+            remapped["source_node_uuid"] = uuid_remap.get(edge.get("source_node_uuid"), edge.get("source_node_uuid"))
+            remapped["target_node_uuid"] = uuid_remap.get(edge.get("target_node_uuid"), edge.get("target_node_uuid"))
+            remapped["source_node_name"] = node_name_map.get(remapped["source_node_uuid"], edge.get("source_node_name", ""))
+            remapped["target_node_name"] = node_name_map.get(remapped["target_node_uuid"], edge.get("target_node_name", ""))
+
+            edge_key = (
+                remapped.get("name", ""),
+                remapped.get("fact", ""),
+                remapped.get("fact_type", ""),
+                remapped.get("source_node_uuid", ""),
+                remapped.get("target_node_uuid", ""),
+            )
+            if edge_key in seen_keys:
+                continue
+            seen_keys.add(edge_key)
+            deduplicated.append(remapped)
+
+        return deduplicated
     
     def build_graph_async(
         self,
@@ -689,6 +851,9 @@ class GraphBuilderService:
                 "created_at": created_at,
             })
         
+        merged_nodes, uuid_remap = self._merge_duplicate_graph_nodes(nodes_data)
+        node_name_map = {node["uuid"]: node.get("name") or "" for node in merged_nodes}
+
         edges_data = []
         for edge in edges:
             # 获取时间信息
@@ -723,12 +888,14 @@ class GraphBuilderService:
                 "expired_at": str(expired_at) if expired_at else None,
                 "episodes": episodes or [],
             })
+
+        edges_data = self._deduplicate_graph_edges(edges_data, uuid_remap, node_name_map)
         
         return {
             "graph_id": graph_id,
-            "nodes": nodes_data,
+            "nodes": merged_nodes,
             "edges": edges_data,
-            "node_count": len(nodes_data),
+            "node_count": len(merged_nodes),
             "edge_count": len(edges_data),
         }
     

@@ -301,6 +301,116 @@ def test_set_ontology_normalizes_entity_and_edge_type_names(graph_builder_module
     assert source_targets[0].target == "ResearchLab"
 
 
+def test_get_graph_data_collapses_obvious_alias_duplicates_and_remaps_edges(graph_builder_module, monkeypatch):
+    service = build_service(graph_builder_module)
+
+    nodes = [
+        SimpleNamespace(
+            uuid_="node-short",
+            name="特朗普",
+            labels=["Entity", "人物"],
+            summary="Short summary",
+            attributes={"role": "candidate"},
+            created_at="2026-01-01T00:00:00Z",
+        ),
+        SimpleNamespace(
+            uuid_="node-long",
+            name="美国总统特朗普",
+            labels=["Entity", "人物"],
+            summary="Longer summary with more context",
+            attributes={"title": "President"},
+            created_at="2026-01-02T00:00:00Z",
+        ),
+        SimpleNamespace(
+            uuid_="node-other",
+            name="白宫",
+            labels=["Entity", "机构"],
+            summary="",
+            attributes={},
+            created_at=None,
+        ),
+    ]
+    edges = [
+        SimpleNamespace(
+            uuid_="edge-1",
+            name="VISITS",
+            fact="特朗普访问白宫",
+            source_node_uuid="node-short",
+            target_node_uuid="node-other",
+            attributes={},
+            created_at=None,
+            valid_at=None,
+            invalid_at=None,
+            expired_at=None,
+            episodes=[],
+        ),
+        SimpleNamespace(
+            uuid_="edge-2",
+            name="VISITS",
+            fact="特朗普访问白宫",
+            source_node_uuid="node-long",
+            target_node_uuid="node-other",
+            attributes={},
+            created_at=None,
+            valid_at=None,
+            invalid_at=None,
+            expired_at=None,
+            episodes=[],
+        ),
+    ]
+
+    monkeypatch.setattr(graph_builder_module, "fetch_all_nodes", lambda client, graph_id: nodes)
+    monkeypatch.setattr(graph_builder_module, "fetch_all_edges", lambda client, graph_id: edges)
+
+    result = service.get_graph_data("graph-1")
+
+    assert result["node_count"] == 2
+    assert result["edge_count"] == 1
+
+    merged_trump = next(node for node in result["nodes"] if node["uuid"] == "node-short")
+    assert merged_trump["name"] == "特朗普"
+    assert merged_trump["alias_names"] == ["特朗普", "美国总统特朗普"]
+    assert merged_trump["merged_node_uuids"] == ["node-short", "node-long"]
+    assert merged_trump["attributes"] == {"title": "President", "role": "candidate"}
+    assert merged_trump["summary"] == "Longer summary with more context"
+
+    merged_edge = result["edges"][0]
+    assert merged_edge["source_node_uuid"] == "node-short"
+    assert merged_edge["source_node_name"] == "特朗普"
+    assert merged_edge["target_node_uuid"] == "node-other"
+
+
+def test_get_graph_data_keeps_distinct_nodes_separate(graph_builder_module, monkeypatch):
+    service = build_service(graph_builder_module)
+
+    nodes = [
+        SimpleNamespace(
+            uuid_="node-1",
+            name="特朗普",
+            labels=["Entity", "人物"],
+            summary="",
+            attributes={},
+            created_at=None,
+        ),
+        SimpleNamespace(
+            uuid_="node-2",
+            name="特朗普大厦",
+            labels=["Entity", "机构"],
+            summary="",
+            attributes={},
+            created_at=None,
+        ),
+    ]
+
+    monkeypatch.setattr(graph_builder_module, "fetch_all_nodes", lambda client, graph_id: nodes)
+    monkeypatch.setattr(graph_builder_module, "fetch_all_edges", lambda client, graph_id: [])
+
+    result = service.get_graph_data("graph-2")
+
+    assert result["node_count"] == 2
+    assert sorted(node["uuid"] for node in result["nodes"]) == ["node-1", "node-2"]
+
+
 def test_format_user_facing_error_maps_zep_auth_failures(graph_builder_module):
     service = build_service(graph_builder_module)
 

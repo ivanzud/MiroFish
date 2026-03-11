@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T18:54:35.099071+00:00",
-  "generated_at": "2026-03-11T18:54:35.099071+00:00",
+  "captured_at": "2026-03-11T19:03:15.504553+00:00",
+  "generated_at": "2026-03-11T19:03:15.504553+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -198,28 +198,30 @@
       "local_coverage": {
         "number": 145,
         "status": "partial",
-        "summary": "Repo-native partial mitigations are now landed locally across simulation inputs, backend analysis/report surfaces, and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `backend/app/services/zep_tools.py` now collapses the same conservative alias pairs when building typed entity lists, Panorama output, and InsightForge entity/relationship summaries, and `frontend/src/views/processGraphData.js` collapses those aliases while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear as separate entities in the main downstream workflows. Full graph-level deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
+        "summary": "Repo-native partial mitigations are now landed locally across simulation inputs, backend graph/report surfaces, and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `backend/app/services/graph_builder.py` now collapses the same conservative alias pairs when serving `/api/graph/data/<graph_id>` and remaps duplicate edges to the retained node UUID, `backend/app/services/zep_tools.py` collapses them when building typed entity lists, Panorama output, and InsightForge entity/relationship summaries, and `frontend/src/views/processGraphData.js` collapses those aliases while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear as separate entities in the main downstream workflows. Full graph-level persisted deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
         "local_refs": [
           ".beads/issues.jsonl",
           "docs/upstream-triage.md",
           "origin/mirror/upstream-pr-141",
           "backend/app/services/zep_entity_reader.py",
           "backend/tests/test_zep_entity_reader.py",
+          "backend/app/services/graph_builder.py",
+          "backend/tests/test_graph_builder.py",
           "backend/app/services/zep_tools.py",
           "backend/tests/test_zep_tools_dedup.py",
           "frontend/src/views/processGraphData.js",
           "frontend/tests/processGraphData.test.mjs"
         ],
         "validation": [
-          "cd backend && uv run pytest -q tests/test_zep_entity_reader.py tests/test_zep_tools_dedup.py tests/test_zep_tools_i18n.py",
-          "python3 -m compileall backend/app/services/zep_tools.py",
+          "cd backend && uv run pytest -q tests/test_graph_builder.py tests/test_zep_entity_reader.py tests/test_zep_tools_dedup.py tests/test_zep_tools_i18n.py",
+          "python3 -m compileall backend/app/services/graph_builder.py backend/app/services/zep_tools.py",
           "bash ./scripts/test_backend_lite.sh",
           "triage diff review"
         ],
-        "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish. 2026-03-11: Added a third repo-native partial mitigation in backend report/search tooling so conservative alias pairs are collapsed before Step 4/analysis surfaces render entity summaries and relationship chains."
+        "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish. 2026-03-11: Added a third repo-native partial mitigation in backend report/search tooling so conservative alias pairs are collapsed before Step 4/analysis surfaces render entity summaries and relationship chains. 2026-03-11: Added a fourth repo-native partial mitigation in backend graph-data responses so `/api/graph/data/<graph_id>` collapses the same obvious alias pairs and remaps duplicate edges without mutating stored Zep nodes."
       },
       "local_status": "partial",
-      "local_summary": "Repo-native partial mitigations are now landed locally across simulation inputs, backend analysis/report surfaces, and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `backend/app/services/zep_tools.py` now collapses the same conservative alias pairs when building typed entity lists, Panorama output, and InsightForge entity/relationship summaries, and `frontend/src/views/processGraphData.js` collapses those aliases while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear as separate entities in the main downstream workflows. Full graph-level deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
+      "local_summary": "Repo-native partial mitigations are now landed locally across simulation inputs, backend graph/report surfaces, and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `backend/app/services/graph_builder.py` now collapses the same conservative alias pairs when serving `/api/graph/data/<graph_id>` and remaps duplicate edges to the retained node UUID, `backend/app/services/zep_tools.py` collapses them when building typed entity lists, Panorama output, and InsightForge entity/relationship summaries, and `frontend/src/views/processGraphData.js` collapses those aliases while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear as separate entities in the main downstream workflows. Full graph-level persisted deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 2,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/2"
