@@ -30,8 +30,16 @@ class FakeValidationResult:
 
 class FakeLogger:
     def __init__(self):
+        self.infos = []
+        self.warnings = []
         self.errors = []
         self.debugs = []
+
+    def info(self, message):
+        self.infos.append(message)
+
+    def warning(self, message):
+        self.warnings.append(message)
 
     def error(self, message):
         self.errors.append(message)
@@ -243,6 +251,35 @@ def test_generate_ontology_reports_unsupported_extensions_in_english(monkeypatch
             "supported_extensions": ["markdown", "md", "pdf", "txt"],
         }
     ]
+
+
+def test_generate_ontology_logs_are_localized_in_english(monkeypatch, tmp_path):
+    client, graph_module = create_graph_test_client(monkeypatch, tmp_path)
+    logger = FakeLogger()
+    monkeypatch.setattr(graph_module, "logger", logger)
+
+    def raise_parse_error(_path):
+        raise ValueError("mock parse failure")
+
+    monkeypatch.setattr(graph_module.FileParser, "extract_text", raise_parse_error)
+
+    response = client.post(
+        "/api/graph/ontology/generate",
+        headers={"X-Locale": "en"},
+        data={
+            "project_name": "English ontology project",
+            "simulation_requirement": "predict audience reaction",
+            "files": (io.BytesIO(b"hello"), "sample.txt"),
+        },
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 400
+    assert logger.infos[0] == "=== Starting ontology generation ==="
+    assert "Project name: English ontology project" in logger.debugs
+    assert "Simulation requirement: predict audience reaction..." in logger.debugs
+    assert any(message.startswith("Created project: proj_") for message in logger.infos)
+    assert logger.warnings == ["Document parsing failed for sample.txt: mock parse failure"]
 
 
 def test_get_graph_data_exception_logs_english_context(monkeypatch, tmp_path):
@@ -630,3 +667,71 @@ def test_graph_task_payload_translates_worker_progress_messages_in_english(monke
         == "No waiting required (no episodes)"
     )
     assert graph_module._translate_graph_task_message("en", "获取图谱信息...") == "Fetching graph info..."
+
+
+def test_build_graph_logs_are_localized_in_english(monkeypatch, tmp_path):
+    client, graph_module = create_graph_build_test_client(monkeypatch, tmp_path)
+    api_logger = FakeLogger()
+    build_logger = FakeLogger()
+    monkeypatch.setattr(graph_module, "logger", api_logger)
+    monkeypatch.setattr(graph_module, "get_logger", lambda name: build_logger)
+
+    graph_module.TaskManager()._tasks.clear()
+
+    class ImmediateThread:
+        def __init__(self, target=None, args=(), kwargs=None, daemon=None):
+            self._target = target
+            self._args = args
+            self._kwargs = kwargs or {}
+            self.daemon = daemon
+
+        def start(self):
+            self._target(*self._args, **self._kwargs)
+
+    monkeypatch.setattr(graph_module.threading, "Thread", ImmediateThread)
+    monkeypatch.setattr(graph_module.TextProcessor, "split_text", lambda text, chunk_size, overlap: ["chunk-1"])
+    monkeypatch.setattr(graph_module.GraphBuilderService, "create_graph", lambda self, name: "graph_en_123")
+    monkeypatch.setattr(graph_module.GraphBuilderService, "set_ontology", lambda self, graph_id, ontology: None)
+    monkeypatch.setattr(
+        graph_module.GraphBuilderService,
+        "add_text_batches",
+        lambda self, graph_id, chunks, batch_size, progress_callback: ["episode-1"],
+    )
+    monkeypatch.setattr(
+        graph_module.GraphBuilderService,
+        "_wait_for_episodes",
+        lambda self, episode_uuids, progress_callback: None,
+    )
+    monkeypatch.setattr(
+        graph_module.GraphBuilderService,
+        "get_graph_data",
+        lambda self, graph_id: {"node_count": 3, "edge_count": 2},
+    )
+
+    project = graph_module.ProjectManager.create_project("English graph build")
+    project.status = graph_module.ProjectStatus.ONTOLOGY_GENERATED
+    project.ontology = {
+        "entity_types": [{"name": "Person", "attributes": []}],
+        "edge_types": [],
+    }
+    graph_module.ProjectManager.save_project(project)
+    graph_module.ProjectManager.save_extracted_text(project.project_id, "test text")
+
+    response = client.post(
+        "/api/graph/build",
+        headers={"X-Locale": "en"},
+        json={"project_id": project.project_id, "graph_name": "English graph"},
+    )
+
+    assert response.status_code == 200
+    assert api_logger.infos[0] == "=== Starting graph build ==="
+    assert api_logger.debugs == [f"Request params: project_id={project.project_id}"]
+    assert any(
+        message.startswith("Created graph build task: task_id=") and f"project_id={project.project_id}" in message
+        for message in api_logger.infos
+    )
+    assert any("Starting graph build..." in message for message in build_logger.infos)
+    assert any(
+        "Graph build completed: graph_id=graph_en_123, nodes=3, edges=2" in message
+        for message in build_logger.infos
+    )

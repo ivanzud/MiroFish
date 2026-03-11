@@ -188,6 +188,10 @@ TRANSLATIONS = {
         "zh": "文件 {filename} 解析失败: {details}",
         "en": "Failed to parse file {filename}: {details}",
     },
+    "graph.document_parse_failed_log": {
+        "zh": "文档解析失败 {filename}: {details}",
+        "en": "Document parsing failed for {filename}: {details}",
+    },
     "graph.document_empty_after_parse": {
         "zh": "文件 {filename} 未提取到可用文本内容",
         "en": "File {filename} did not yield any usable text",
@@ -296,9 +300,53 @@ TRANSLATIONS = {
         "zh": "图谱构建任务已启动，请通过 /task/{task_id} 查询进度",
         "en": "The graph build task has started. Query /task/{task_id} for progress.",
     },
+    "graph.ontology_log_started": {
+        "zh": "=== 开始生成本体定义 ===",
+        "en": "=== Starting ontology generation ===",
+    },
+    "graph.ontology_log_project_name": {
+        "zh": "项目名称: {project_name}",
+        "en": "Project name: {project_name}",
+    },
+    "graph.ontology_log_requirement": {
+        "zh": "模拟需求: {requirement}",
+        "en": "Simulation requirement: {requirement}",
+    },
+    "graph.project_created_log": {
+        "zh": "创建项目: {project_id}",
+        "en": "Created project: {project_id}",
+    },
+    "graph.text_extraction_completed_log": {
+        "zh": "文本提取完成，共 {total_chars} 字符",
+        "en": "Text extraction completed with {total_chars} character(s)",
+    },
+    "graph.ontology_call_started_log": {
+        "zh": "调用 LLM 生成本体定义...",
+        "en": "Calling the LLM to generate the ontology...",
+    },
+    "graph.ontology_generation_completed_log": {
+        "zh": "本体生成完成: {entity_count} 个实体类型, {edge_count} 个关系类型",
+        "en": "Ontology generation completed: {entity_count} entity type(s), {edge_count} edge type(s)",
+    },
+    "graph.ontology_log_completed": {
+        "zh": "=== 本体生成完成 === 项目ID: {project_id}",
+        "en": "=== Ontology generation completed === project_id: {project_id}",
+    },
     "graph.build_task_type": {
         "zh": "构建图谱: {graph_name}",
         "en": "Build graph: {graph_name}",
+    },
+    "graph.build_log_started": {
+        "zh": "=== 开始构建图谱 ===",
+        "en": "=== Starting graph build ===",
+    },
+    "graph.build_log_request_params": {
+        "zh": "请求参数: project_id={project_id}",
+        "en": "Request params: project_id={project_id}",
+    },
+    "graph.build_task_created_log": {
+        "zh": "创建图谱构建任务: task_id={task_id}, project_id={project_id}",
+        "en": "Created graph build task: task_id={task_id}, project_id={project_id}",
     },
     "graph.build_service_initializing": {
         "zh": "初始化图谱构建服务...",
@@ -360,6 +408,10 @@ TRANSLATIONS = {
         "zh": "开始构建图谱...",
         "en": "Starting graph build...",
     },
+    "graph.build_worker_started_log": {
+        "zh": "[{task_id}] 开始构建图谱...",
+        "en": "[{task_id}] Starting graph build...",
+    },
     "graph.build_graph_created": {
         "zh": "图谱已创建: {graph_id}",
         "en": "Graph created: {graph_id}",
@@ -380,9 +432,17 @@ TRANSLATIONS = {
         "zh": "图谱构建完成",
         "en": "Graph build completed",
     },
+    "graph.build_worker_completed_log": {
+        "zh": "[{task_id}] 图谱构建完成: graph_id={graph_id}, 节点={node_count}, 边={edge_count}",
+        "en": "[{task_id}] Graph build completed: graph_id={graph_id}, nodes={node_count}, edges={edge_count}",
+    },
     "graph.build_failed": {
         "zh": "构建失败: {details}",
         "en": "Build failed: {details}",
+    },
+    "graph.build_worker_failed_log": {
+        "zh": "[{task_id}] 图谱构建失败: {details}",
+        "en": "[{task_id}] Graph build failed: {details}",
     },
     "report.simulation_id_required": {
         "zh": "请提供 simulation_id",
