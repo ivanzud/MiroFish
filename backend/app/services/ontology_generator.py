@@ -266,7 +266,15 @@ class OntologyGenerator:
             result["analysis_summary"] = ""
         
         # 验证实体类型
+        validated_entities = []
         for entity in result["entity_types"]:
+            if isinstance(entity, str):
+                entity = {
+                    "name": entity,
+                    "description": f"Entity type: {entity}"
+                }
+            if not isinstance(entity, dict):
+                continue
             if "attributes" not in entity:
                 entity["attributes"] = []
             if "examples" not in entity:
@@ -274,15 +282,27 @@ class OntologyGenerator:
             # 确保description不超过100字符
             if len(entity.get("description", "")) > 100:
                 entity["description"] = entity["description"][:97] + "..."
+            validated_entities.append(entity)
+        result["entity_types"] = validated_entities
         
         # 验证关系类型
+        validated_edges = []
         for edge in result["edge_types"]:
+            if isinstance(edge, str):
+                edge = {
+                    "name": edge,
+                    "description": f"Relationship type: {edge}"
+                }
+            if not isinstance(edge, dict):
+                continue
             if "source_targets" not in edge:
                 edge["source_targets"] = []
             if "attributes" not in edge:
                 edge["attributes"] = []
             if len(edge.get("description", "")) > 100:
                 edge["description"] = edge["description"][:97] + "..."
+            validated_edges.append(edge)
+        result["edge_types"] = validated_edges
         
         # Zep API 限制：最多 10 个自定义实体类型，最多 10 个自定义边类型
         MAX_ENTITY_TYPES = 10
@@ -450,4 +470,3 @@ class OntologyGenerator:
         code_lines.append('}')
         
         return '\n'.join(code_lines)
-

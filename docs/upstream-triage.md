@@ -21,6 +21,8 @@ Last refreshed: `2026-03-11`
 - `#131` Safe subset landed locally: Zep graph creation, ontology setup, and batch uploads now retry only transient failures (429/timeout/5xx-style cases) with bounded backoff, plus targeted regression tests.
 - `#130` Add `CONTRIBUTING.md`: safe docs-only cherry-pick.
 - `#132` Add README architecture overview: safe docs-only cherry-pick.
+- `#73` Sanitize malformed ontology entity/edge items before fallback injection: prevents `_validate_and_process()` crashes on mixed-quality LLM JSON output.
+- `#74` Replace bare `except:` clauses with `except Exception:` in JSON repair and simulation history formatting paths.
 - OpenAI-compatible backend aliases now work in the standalone simulation runners too, so `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` can be used directly outside the Flask app path.
 
 ## Deferred for later review
@@ -32,6 +34,7 @@ Last refreshed: `2026-03-11`
 - `cd frontend && npm run build` passes after landing `#129` subset and the OpenAI-alias compatibility updates.
 - `npm run test:backend:lite` now provides a repo-native lightweight backend validation path when full `uv` resolution is blocked by Rust/CUDA-heavy dependencies.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes with targeted regression coverage for context-length handling and transient Zep retry behavior.
+- `./.tmp-test-venv/bin/pytest backend/tests/test_ontology_generator.py backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes after landing the ontology validation hardening and exception-scope cleanup.
 - `cd backend && uv run pytest -q` is currently blocked in this environment because dependency resolution reaches `tiktoken`, which attempts a source build and fails without a Rust compiler.
 
 ## Snapshot artifacts
