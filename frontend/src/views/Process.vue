@@ -77,6 +77,13 @@
                   <span class="detail-label">{{ t('process.created') }}:</span>
                   <span class="detail-value">{{ formatDate(selectedItem.data.created_at) }}</span>
                 </div>
+
+                <div class="detail-row" v-if="selectedNodeAliasNames.length">
+                  <span class="detail-label">{{ t('process.aliases') }}:</span>
+                  <div class="detail-labels">
+                    <span v-for="alias in selectedNodeAliasNames" :key="alias" class="label-tag">{{ alias }}</span>
+                  </div>
+                </div>
                 
                 <!-- Properties / Attributes -->
                 <div class="detail-section" v-if="selectedItem.data.attributes && Object.keys(selectedItem.data.attributes).length > 0">
@@ -415,6 +422,7 @@ import { generateOntology, getProject, buildGraph, getTaskStatus, getGraphData, 
 import { formatApiError } from '../api/errors'
 import { resolveBaseURL } from '../api/index.js'
 import { getPendingUpload, clearPendingUpload } from '../store/pendingUpload'
+import { getDisplayedAliasNames } from '../components/graphAliasDetails.js'
 import { mapProcessGraphData } from './processGraphData.js'
 import * as d3 from 'd3'
 
@@ -435,6 +443,11 @@ const buildProgress = ref(null)
 const ontologyProgress = ref(null) // 本体生成进度
 const currentPhase = ref(-1) // -1: 上传中, 0: 本体生成中, 1: 图谱构建, 2: 完成
 const selectedItem = ref(null) // 选中的节点或边
+const selectedNodeAliasNames = computed(() =>
+  selectedItem.value?.type === 'node'
+    ? getDisplayedAliasNames(selectedItem.value.data)
+    : [],
+)
 const isFullScreen = ref(false)
 
 // DOM引用

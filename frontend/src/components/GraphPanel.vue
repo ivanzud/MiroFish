@@ -72,6 +72,15 @@
               <span class="detail-label">{{ t('graphPanel.created') }}:</span>
               <span class="detail-value">{{ formatDateTime(selectedItem.data.created_at) }}</span>
             </div>
+
+            <div class="detail-section" v-if="selectedNodeAliasNames.length">
+              <div class="section-title">{{ t('graphPanel.aliases') }}:</div>
+              <div class="labels-list">
+                <span v-for="alias in selectedNodeAliasNames" :key="alias" class="label-tag">
+                  {{ alias }}
+                </span>
+              </div>
+            </div>
             
             <!-- Properties -->
             <div class="detail-section" v-if="selectedItem.data.attributes && Object.keys(selectedItem.data.attributes).length > 0">
@@ -239,6 +248,7 @@
 import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import * as d3 from 'd3'
+import { getDisplayedAliasNames } from './graphAliasDetails.js'
 import { normalizeGraphPanelData } from './graphPanelData.js'
 
 const props = defineProps({
@@ -258,6 +268,11 @@ const showEdgeLabels = ref(true) // 默认显示边标签
 const expandedSelfLoops = ref(new Set()) // 展开的自环项
 const showSimulationFinishedHint = ref(false) // 模拟结束后的提示
 const wasSimulating = ref(false) // 追踪之前是否在模拟中
+const selectedNodeAliasNames = computed(() =>
+  selectedItem.value?.type === 'node'
+    ? getDisplayedAliasNames(selectedItem.value.data)
+    : [],
+)
 
 // 关闭模拟结束提示
 const dismissFinishedHint = () => {
