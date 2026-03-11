@@ -146,6 +146,12 @@ OPENAI_API_BASE_URL=https://coding.dashscope.aliyuncs.com/v1
 OPENAI_MODEL=qwen3.5-plus
 ```
 
+OpenAI-compatible 설정이 실제로 인식됐는지 확인하려면:
+
+- 먼저 `http://localhost:5001/health` 에 접속해 백엔드가 정상 기동했는지 확인합니다.
+- 다음으로 `http://localhost:5001/api/graph/config/status` 를 엽니다. 반환 JSON 의 `llm.backend_mode` 값은 `openai_compatible` 이어야 합니다.
+- `summary.llm.sources` 는 실제로 적용된 `LLM_*` 또는 `OPENAI_*` 환경 변수 이름을 보여 주므로, Codex / OpenAI / DashScope Coding Plan 같은 호환 게이트웨이가 추가 `LLM_PROVIDER` 없이 올바르게 인식됐는지 바로 확인할 수 있습니다.
+
 #### 2) 의존성 설치
 
 ```bash

@@ -253,6 +253,12 @@ OPENAI_API_BASE_URL=https://coding.dashscope.aliyuncs.com/v1
 OPENAI_MODEL=qwen3.5-plus
 ```
 
+验证是否已按 OpenAI-compatible 方式接入：
+
+- 先访问 `http://localhost:5001/health`，确认后端进程已启动。
+- 再访问 `http://localhost:5001/api/graph/config/status`。返回 JSON 中 `llm.backend_mode` 应为 `openai_compatible`。
+- `summary.llm.sources` 会显示当前实际生效的是 `LLM_*` 还是 `OPENAI_*` 环境变量，因此可以直接确认 Codex / OpenAI / DashScope Coding Plan 这类兼容网关是否已被正确识别，不需要额外设置 `LLM_PROVIDER`。
+
 如果遇到 `5001` 根路径返回 `404`，那通常不是后端启动失败，而是因为后端只暴露 API 路由；请改用 `http://localhost:5001/health` 检查健康状态。
 
 如果 Step 5 深度互动里对单个角色提问、批量问卷或全局采访经常超时，可以同时调大前端请求超时 `VITE_API_TIMEOUT`（毫秒）以及后端 Interview 等待时间 `INTERVIEW_AGENT_TIMEOUT_SECONDS`、`INTERVIEW_BATCH_TIMEOUT_SECONDS`、`INTERVIEW_ALL_TIMEOUT_SECONDS`（秒）。
