@@ -64,6 +64,30 @@ TRANSLATIONS = {
         "zh": "请检查 .env 文件中的配置",
         "en": "Check the configuration in the .env file",
     },
+    "app.starting": {
+        "zh": "MiroFish Backend 启动中...",
+        "en": "MiroFish Backend is starting...",
+    },
+    "app.cleanup_registered": {
+        "zh": "已注册模拟进程清理函数",
+        "en": "Registered the simulation process cleanup hook",
+    },
+    "app.request": {
+        "zh": "请求: {method} {path}",
+        "en": "Request: {method} {path}",
+    },
+    "app.request_body": {
+        "zh": "请求体: {body}",
+        "en": "Request body: {body}",
+    },
+    "app.response": {
+        "zh": "响应: {status_code}",
+        "en": "Response: {status_code}",
+    },
+    "app.started": {
+        "zh": "MiroFish Backend 启动完成",
+        "en": "MiroFish Backend startup completed",
+    },
     "llm.invalid_json": {
         "zh": "LLM返回的JSON格式无效: {payload}",
         "en": "The LLM returned invalid JSON: {payload}",
