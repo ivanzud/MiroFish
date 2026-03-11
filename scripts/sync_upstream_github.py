@@ -365,7 +365,7 @@ def write_summary(
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", default="666ghj/MiroFish", help="owner/repo to inspect")
     parser.add_argument("--state", default="open", help="GitHub state filter (open, closed, or all)")
@@ -376,13 +376,30 @@ def main() -> int:
         default=DEFAULT_API_TIMEOUT,
         help="Timeout in seconds for each gh/http request",
     )
-    parser.add_argument("--output", required=True, help="Path to write machine-readable JSON")
-    parser.add_argument("--summary", required=True, help="Path to write markdown summary")
+    parser.add_argument(
+        "--output",
+        "--json-out",
+        dest="output",
+        required=True,
+        help="Path to write machine-readable JSON",
+    )
+    parser.add_argument(
+        "--summary",
+        "--md-out",
+        dest="summary",
+        required=True,
+        help="Path to write markdown summary",
+    )
     parser.add_argument(
         "--fork-remote",
         default=None,
         help="Optional git remote name used to annotate whether upstream PR refs are mirrored into the fork",
     )
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
     args = parser.parse_args()
     global REQUEST_TIMEOUT
     REQUEST_TIMEOUT = max(1, args.timeout)

@@ -19,6 +19,21 @@ sync_upstream_github = load_module()
 
 
 class SyncUpstreamGithubTests(unittest.TestCase):
+    def test_build_parser_accepts_legacy_output_flag_names(self):
+        args = sync_upstream_github.build_parser().parse_args(
+            [
+                "--repo",
+                "666ghj/MiroFish",
+                "--json-out",
+                "docs/upstream-open-state.json",
+                "--md-out",
+                "docs/upstream-open-summary.md",
+            ]
+        )
+
+        self.assertEqual(args.output, "docs/upstream-open-state.json")
+        self.assertEqual(args.summary, "docs/upstream-open-summary.md")
+
     def test_normalize_excerpt_collapses_whitespace_and_truncates(self):
         excerpt = sync_upstream_github.normalize_excerpt(" line 1\n\nline\t2  " * 20, limit=30)
 

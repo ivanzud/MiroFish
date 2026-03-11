@@ -28,6 +28,7 @@ Last refreshed: `2026-03-11`
 - `#112` Add Korean README: safe docs-only cherry-pick; normalized cross-links with the other language READMEs while landing it locally.
 - `#113` Add Japanese README: safe docs-only cherry-pick; normalized cross-links with the other language READMEs while landing it locally.
 - `#73` Sanitize malformed ontology entity/edge items before fallback injection: prevents `_validate_and_process()` crashes on mixed-quality LLM JSON output.
+- Upstream issue `#135` is now covered locally: `GraphBuilderService.set_ontology()` accepts string-valued ontology `attributes` items for both entity and edge definitions, so malformed LLM output no longer crashes graph builds with `TypeError: string indices must be integers`.
 - `#74` Replace bare `except:` clauses with `except Exception:` in JSON repair and simulation history formatting paths.
 - `#15` Handle failed simulation status in `Step3Simulation`: stop polling and surface an error instead of leaving the UI stuck in a running state.
 - `#84` Failed report generation can now be retried directly from `Step4Report`: the view polls the persisted report status, surfaces backend error text when generation fails, and offers a `force_regenerate` retry path instead of leaving the user stranded on a dead report page.
@@ -78,6 +79,7 @@ Last refreshed: `2026-03-11`
 - `./.tmp-test-venv/bin/pytest backend/tests/test_error_handler.py backend/tests/test_llm_client.py backend/tests/test_graph_builder.py backend/tests/test_ontology_generator.py -q` passes after landing the safe subset of `#105`.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes with targeted regression coverage for context-length handling and transient Zep retry behavior.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_ontology_generator.py backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes after landing the ontology validation hardening and exception-scope cleanup.
+- `./.tmp-test-venv/bin/pytest backend/tests/test_graph_builder.py -q` passes after hardening `set_ontology()` to normalize string-valued ontology attributes from loose LLM output, covering the new upstream issue `#135` traceback shape.
 - `python3 -m unittest tests/test_sync_upstream_github.py` passes after teaching the sync script to hydrate per-PR details, so the local JSON/markdown snapshots now include real `mergeable_state` metadata instead of `unknown` placeholders.
 - `python3 -m unittest tests/test_sync_upstream_github.py` passes after extending the sync script to persist compact `body_excerpt`, `comment_count`, and `recent_comments` fields for issues/PRs, and the markdown summaries now surface those excerpts inline for faster manual triage.
 - `python3 scripts/sync_upstream_github.py --state open ...` and `--state all ...` refreshed the local snapshots again on March 11, 2026; the latest capture currently shows `34` open upstream issues, `33` open upstream PRs, and `14` closed upstream PRs (`47` total PRs in the full snapshot, `81` total issues/PR metadata records across the issue history view).
@@ -100,6 +102,7 @@ Last refreshed: `2026-03-11`
 - `docs/upstream-all-state.json` and `docs/upstream-all-summary.md` now capture the full upstream issue/PR state for historical triage and mirroring decisions.
 - Those JSON snapshots now also retain compact body/comment previews, which made issue `#64` immediately more actionable by exposing the server-deployment and model/Zep configuration clues from the latest discussion without another live GitHub round-trip.
 - `scripts/sync_upstream_github.py` now supports paginated `--state all` refreshes, hydrates PR detail records so machine-readable snapshots include labels plus `mergeable_state`, preserves upstream head/base repo identity and head SHA for deterministic mirroring, annotates optional fork mirror status via `--fork-remote`, and uses `GITHUB_TOKEN` / `GH_TOKEN` when available; when those env vars are absent but the GitHub CLI is authenticated, it falls back to `gh api`, retries transient CLI/API failures, and then degrades to direct HTTP fetches so upstream intake is less brittle under rate-limit or transport hiccup conditions.
+- The sync script again accepts the legacy `--json-out` / `--md-out` flag names as aliases for `--output` / `--summary`, which keeps older evolve notes and wrapper commands working while the newer CLI names remain primary.
 - The sync script now also accepts `--timeout` (or `MIROFISH_GITHUB_SYNC_TIMEOUT`) so evolve passes can bound each GitHub request instead of risking a stuck upstream-ingest cycle.
 
 ## Practical mirror strategy for the fork

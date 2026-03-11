@@ -1,10 +1,10 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T08:48:03.897038+00:00",
+  "captured_at": "2026-03-11T08:58:30.945255+00:00",
   "counts": {
     "issues": {
-      "open": 34
+      "open": 35
     },
     "pull_requests": {
       "open": 33
@@ -15,6 +15,28 @@
     }
   },
   "issues": [
+    {
+      "number": 135,
+      "title": "报错，Zep图谱构建失败",
+      "url": "https://github.com/666ghj/MiroFish/issues/135",
+      "state": "open",
+      "created_at": "2026-03-11T08:51:14Z",
+      "updated_at": "2026-03-11T08:55:24Z",
+      "closed_at": null,
+      "labels": [],
+      "author": "rheeh",
+      "body_excerpt": "Graph build task failed: Traceback (most recent call last): File \"/app/backend/app/api/graph.py\", line 418, in build_task builder.set_ontology(graph_id, ontology) File \"/app/backend/app/services/graph_builder.py\", line 230, in set_ontology attr_name = safe_attr_name(attr_def[\"name\"]) # 使用安全名称 ~~~~~~~~^^^^^^^^ TypeError: string indices must be integers, not 'str'",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "dosubot[bot]",
+          "created_at": "2026-03-11T08:55:24Z",
+          "updated_at": "2026-03-11T08:55:24Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/135#issuecomment-4037553350",
+          "body_excerpt": "<!-- Greeting --> Hi @rheeh! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这个错误是因为 `attr_def` 应该是字典格式 `{\"name\": \"attr_name\", ...}`，但实际收到的是字符串。 **根本原因**：LLM 生成的 ontology 中，`attributes` 字段可能返回了简单的…"
+        }
+      ]
+    },
     {
       "number": 134,
       "title": "别再交“学费”了，一步到位才是最省钱的",

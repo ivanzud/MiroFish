@@ -2,13 +2,16 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T08:48:03.898146+00:00`
-- Issues: `34` total (`open=34`, `closed=0`)
+- Captured: `2026-03-11T08:58:30.946400+00:00`
+- Issues: `35` total (`open=35`, `closed=0`)
 - Pull requests: `33` total (`open=33`, `closed=0`)
 - Mirrored in `origin`: `33` of `33` PR refs
 
 ## Recently Updated Issues
 
+- #135 [open] 报错，Zep图谱构建失败 (no labels)
+  - Graph build task failed: Traceback (most recent call last): File "/app/backend/app/api/graph.py", line 418, in build_task builder.set_ontology(graph_id, ontology) File "/app/backend/app/services/graph_builder.py", line 230, in set_ontology attr_name = safe_attr_name(attr_def["name"]) # 使用安全名称 ~~~~~~~~^^^^^^^^ TypeError: string indices must be integers, not 'str'
+  - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @rheeh! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这个错误是因为 `attr_def` 应该是字典格式 `{"name": "attr_name", ...}`，但实际收到的是字符串。 **根本原因**：LLM 生成的 ontology 中，`attributes` 字段可能返回了简单的…
 - #134 [open] 别再交“学费”了，一步到位才是最省钱的 (no labels)
   - 你以为用复杂的脚本搭个 VPS 就能掌控一切？现实是，面对公网晚高峰 20% 的丢包率和无差别的 TCP 阻断，你所有的伪装协议都不堪一击。一旦 IP 被墙，寻找新机器、重置环境的成本远超买一个现成服务。 WgetCloud 是“折腾党”的最终归宿。我们通过全线 BGP 中转 + 双向 IEPL 专线，从物理层面上抹平了网络波动与封锁风险。把专业底层的运维交出去，别让修梯子占用了你写代码、做产品和思考商业模式的核心精力。 点击下方链接注册新用户即可享受全员无门槛8折优惠券： ### [WgetCloud官网链接：wgetcloud.org](https://invite.wgetcloud.ltd/auth/register?code=jll8) 以下为晚高峰测速： ![image](https://github.com/cadencando/SSSSRV2RayTrojanClash/…
 - #133 [open] 本地部署，启动已经显示成功了，访问却失败 (question)
@@ -33,9 +36,6 @@
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @luchenwei9266! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 目前 MiroFish **不支持通过界面重试报告生成**，这是一个[已知问题](https://github.com/666ghj/MiroFish/issues/30)。系统虽然有 `force_regenerate`…
 - #107 [open] 镜像问题 (no labels)
   - ✘ Image ghcr.io/666ghj/mirofish:latest Error Get "https://ghcr.io/v2/": EOF 7.9s Error response from daemon: Get "https://ghcr.io/v2/": EOF
-- #99 [open] Docker镜像没有arm版本 (enhancement)
-  - arm架构机器使用docker-compose部署提示： `no matching manifest for linux/arm64/v8 in the manifest list entries ` 可以调整一下工作流的脚本，支持一下么？
-  - latest comment by `dosubot[bot]`: <!-- Answer --> 好消息！当前的工作流 [`.github/workflows/docker-image.yml`](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d680682c741a44eeebe/.github/workflows/docker-image.yml) 已经配置了 QEMU 和 Buildx（支持多架构构建的必要组件），只需要在构建步骤中添加 `platforms…
 
 ## Recently Updated Pull Requests
 

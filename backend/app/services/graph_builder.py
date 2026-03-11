@@ -281,6 +281,28 @@ class GraphBuilderService:
             if attr_name.lower() in RESERVED_NAMES:
                 return f"entity_{attr_name}"
             return attr_name
+
+        def normalized_attributes(owner_name: str, attributes: Any) -> List[Dict[str, str]]:
+            """Accept string-style attributes from loose LLM output and skip unusable entries."""
+            normalized: List[Dict[str, str]] = []
+            for attr_def in attributes or []:
+                if isinstance(attr_def, str):
+                    attr_name = attr_def.strip()
+                    if attr_name:
+                        normalized.append({"name": attr_name, "description": attr_name})
+                    continue
+                if not isinstance(attr_def, dict):
+                    self.logger.warning("Skipping invalid ontology attribute for %s: %r", owner_name, attr_def)
+                    continue
+
+                attr_name = str(attr_def.get("name", "")).strip()
+                if not attr_name:
+                    self.logger.warning("Skipping ontology attribute without name for %s: %r", owner_name, attr_def)
+                    continue
+
+                description = str(attr_def.get("description") or attr_name).strip() or attr_name
+                normalized.append({"name": attr_name, "description": description})
+            return normalized
         
         # 动态创建实体类型
         entity_types = {}
@@ -292,7 +314,7 @@ class GraphBuilderService:
             attrs = {"__doc__": description}
             annotations = {}
             
-            for attr_def in entity_def.get("attributes", []):
+            for attr_def in normalized_attributes(name, entity_def.get("attributes", [])):
                 attr_name = safe_attr_name(attr_def["name"])  # 使用安全名称
                 attr_desc = attr_def.get("description", attr_name)
                 # Zep API 需要 Field 的 description，这是必需的
@@ -316,7 +338,7 @@ class GraphBuilderService:
             attrs = {"__doc__": description}
             annotations = {}
             
-            for attr_def in edge_def.get("attributes", []):
+            for attr_def in normalized_attributes(name, edge_def.get("attributes", [])):
                 attr_name = safe_attr_name(attr_def["name"])  # 使用安全名称
                 attr_desc = attr_def.get("description", attr_name)
                 # Zep API 需要 Field 的 description，这是必需的

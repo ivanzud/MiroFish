@@ -125,3 +125,48 @@ def test_add_text_batches_retries_failed_batch_once(graph_builder_module, monkey
     assert len(add_batch_calls) == 2
     assert sleep_calls == [2.0, 1]
     assert any("重试" in message for message, _ in progress_updates)
+
+
+def test_set_ontology_accepts_string_attribute_definitions(graph_builder_module):
+    service = build_service(graph_builder_module)
+    captured = {}
+
+    def fake_set_ontology(**kwargs):
+        captured.update(kwargs)
+
+    service.client.graph.set_ontology = fake_set_ontology
+
+    service.set_ontology(
+        "graph-1",
+        {
+            "entity_types": [
+                {
+                    "name": "Person",
+                    "description": "Person entity",
+                    "attributes": ["full_name", {"name": "role", "description": "Role"}],
+                }
+            ],
+            "edge_types": [
+                {
+                    "name": "knows",
+                    "description": "Knows edge",
+                    "attributes": ["since", {"name": "context", "description": "Context"}],
+                    "source_targets": [{"source": "Person", "target": "Person"}],
+                }
+            ],
+        },
+    )
+
+    entities = captured["entities"]
+    edges = captured["edges"]
+
+    assert "Person" in entities
+    assert entities["Person"].__annotations__["full_name"] is not None
+    assert entities["Person"].__annotations__["role"] is not None
+
+    edge_model, source_targets = edges["knows"]
+    assert edge_model.__annotations__["since"] is not None
+    assert edge_model.__annotations__["context"] is not None
+    assert len(source_targets) == 1
+    assert source_targets[0].source == "Person"
+    assert source_targets[0].target == "Person"
