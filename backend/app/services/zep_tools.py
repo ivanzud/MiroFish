@@ -108,11 +108,18 @@ class NodeInfo:
             (l for l in self.labels if l not in ["Entity", "Node"]),
             _localized_text(self.locale, "未知类型", "Unknown type"),
         )
-        return (
+        text = (
             f"{_localized_text(self.locale, '实体', 'Entity')}: {self.name} "
             f"({_localized_text(self.locale, '类型', 'Type')}: {entity_type})\n"
             f"{_localized_text(self.locale, '摘要', 'Summary')}: {self.summary}"
         )
+        normalized_aliases = [alias for alias in dict.fromkeys([*(self.alias_names or []), self.name]) if alias]
+        if len(normalized_aliases) > 1:
+            text += (
+                f"\n{_localized_text(self.locale, '别名', 'Aliases')}: "
+                + ", ".join(normalized_aliases)
+            )
+        return text
 
 
 @dataclass

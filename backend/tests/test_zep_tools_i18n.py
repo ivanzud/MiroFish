@@ -211,7 +211,7 @@ def test_panorama_quicksearch_and_insightforge_logs_are_localized_in_english(mon
         )
     ]
     service._generate_sub_queries = lambda **kwargs: ["Who influenced the discussion?"]
-    service.get_node_detail = lambda uuid: NodeInfo(
+    service.get_node_detail = lambda uuid, graph_id=None: NodeInfo(
         uuid=uuid,
         name="Alice" if uuid == "node-1" else "Bob",
         labels=["Entity", "Analyst" if uuid == "node-1" else "Citizen"],
@@ -379,9 +379,15 @@ def test_tool_result_renderers_localize_deterministic_wrappers_in_english():
         labels=["Entity", "Analyst"],
         summary="Tracks sentiment shifts.",
         attributes={},
+        alias_names=["Alice", "Alice Chen"],
         locale="en",
     )
-    assert node.to_text() == "Entity: Alice (Type: Analyst)\nSummary: Tracks sentiment shifts."
+    assert (
+        node.to_text()
+        == "Entity: Alice (Type: Analyst)\n"
+        "Summary: Tracks sentiment shifts.\n"
+        "Aliases: Alice, Alice Chen"
+    )
 
     edge = EdgeInfo(
         uuid="edge-1",
@@ -505,7 +511,7 @@ def test_insight_forge_localizes_default_entity_type_in_english():
         total_count=1,
         locale="en",
     )
-    service.get_node_detail = lambda uuid: NodeInfo(
+    service.get_node_detail = lambda uuid, graph_id=None: NodeInfo(
         uuid=uuid,
         name="Alice" if uuid == "node-1" else "Bob",
         labels=["Entity"],
