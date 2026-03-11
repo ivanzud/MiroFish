@@ -72,6 +72,27 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(compacted["local_coverage"]["summary"], "Auth failures are sanitized")
         self.assertEqual(compacted["local_status"], "covered")
         self.assertEqual(compacted["local_summary"], "Auth failures are sanitized")
+        self.assertEqual(compacted["triage_status"], "covered")
+        self.assertEqual(compacted["summary"], "Auth failures are sanitized")
+
+    def test_compact_issue_promotes_body_excerpt_when_untracked(self):
+        issue = {
+            "number": 140,
+            "title": "General commentary",
+            "html_url": "https://example.test/issues/140",
+            "state": "open",
+            "created_at": "2026-03-10T00:00:00Z",
+            "updated_at": "2026-03-11T00:00:00Z",
+            "labels": [],
+            "user": {"login": "alice"},
+            "body": "This is the upstream body excerpt.",
+            "comments": 0,
+        }
+
+        compacted = sync_upstream_github.compact_issue(issue, {})
+
+        self.assertEqual(compacted["triage_status"], "untracked")
+        self.assertEqual(compacted["summary"], "This is the upstream body excerpt.")
 
     def test_build_mirror_issue_body_includes_markers_and_local_coverage(self):
         body = sync_upstream_github.build_mirror_issue_body(
@@ -172,6 +193,8 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(compacted["local_coverage"]["status"], "landed")
         self.assertEqual(compacted["local_status"], "landed")
         self.assertEqual(compacted["local_summary"], "Diagnostics landed locally")
+        self.assertEqual(compacted["triage_status"], "landed")
+        self.assertEqual(compacted["summary"], "Diagnostics landed locally")
         self.assertEqual(compacted["fork_mirror_ref"], "origin/mirror/upstream-pr-125")
 
     def test_attach_local_coverage_promotes_status_fields(self):
@@ -182,6 +205,8 @@ class SyncUpstreamGithubTests(unittest.TestCase):
 
         self.assertEqual(attached[0]["local_status"], "tracked")
         self.assertEqual(attached[0]["local_summary"], "Tracked in beads")
+        self.assertEqual(attached[0]["triage_status"], "tracked")
+        self.assertEqual(attached[0]["summary"], "Tracked in beads")
 
     def test_write_summary_includes_local_coverage_notes(self):
         with tempfile.TemporaryDirectory() as tmpdir:

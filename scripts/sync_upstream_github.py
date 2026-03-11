@@ -359,15 +359,20 @@ def attach_local_coverage_fields(
     item: dict[str, object],
     local_coverage: dict[str, object] | None,
 ) -> dict[str, object]:
-    if not local_coverage:
-        return item
-
     enriched = dict(item)
-    enriched["local_coverage"] = local_coverage
-    enriched["local_status"] = str(local_coverage.get("status") or "covered")
-    enriched["local_summary"] = str(
-        local_coverage.get("summary") or "covered locally on this branch"
-    )
+    if local_coverage:
+        triage_status = str(local_coverage.get("status") or "covered")
+        triage_summary = str(local_coverage.get("summary") or "covered locally on this branch")
+        enriched["local_coverage"] = local_coverage
+        enriched["local_status"] = triage_status
+        enriched["local_summary"] = triage_summary
+    else:
+        triage_status = "untracked"
+        triage_summary = str(item.get("body_excerpt") or "")
+
+    # Promote stable top-level fields for downstream machine-readable consumers.
+    enriched["triage_status"] = triage_status
+    enriched["summary"] = triage_summary
     return enriched
 
 
