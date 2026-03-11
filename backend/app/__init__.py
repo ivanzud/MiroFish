@@ -68,13 +68,32 @@ def create_app(config_class=Config):
     app.register_blueprint(simulation_bp, url_prefix='/api/simulation')
     app.register_blueprint(report_bp, url_prefix='/api/report')
     
+    def backend_status_payload():
+        return {
+            'status': 'ok',
+            'service': 'MiroFish Backend',
+            'api_prefixes': [
+                '/api/graph',
+                '/api/simulation',
+                '/api/report',
+            ],
+            'health_endpoint': '/health',
+        }
+
+    @app.route('/')
+    def index():
+        return backend_status_payload()
+
     # 健康检查
     @app.route('/health')
     def health():
-        return {'status': 'ok', 'service': 'MiroFish Backend'}
-    
+        return backend_status_payload()
+
+    @app.route('/healthz')
+    def healthz():
+        return backend_status_payload()
+
     if should_log_startup:
         logger.info("MiroFish Backend 启动完成")
     
     return app
-
