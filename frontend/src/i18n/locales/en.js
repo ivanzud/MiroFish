@@ -356,6 +356,8 @@ export default {
     unknownError: 'Unknown error',
     requestTimeout: 'The request timed out after 5 minutes. Try smaller documents or check backend model latency.',
     backendUnavailable: 'Cannot reach the backend service ({apiBase}). Check whether it is running, and verify proxy/CORS/network configuration.',
+    backendConfigIncomplete: 'Backend configuration is incomplete: {details}',
+    missingConfigKey: '{name} is not configured',
     ontologyFailed: 'Ontology generation failed',
     initFailed: 'Project initialization failed: {message}',
     loadFailed: 'Failed to load project',

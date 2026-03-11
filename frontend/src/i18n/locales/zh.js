@@ -356,6 +356,8 @@ export default {
     unknownError: '未知错误',
     requestTimeout: '请求超时（5分钟），请尝试减小文档体积或检查后端模型响应速度。',
     backendUnavailable: '无法连接后端服务（{apiBase}）。请检查后端是否已启动，以及代理、跨域和网络配置。',
+    backendConfigIncomplete: '后端配置不完整: {details}',
+    missingConfigKey: '{name} 未配置',
     ontologyFailed: '本体生成失败',
     initFailed: '项目初始化失败: {message}',
     loadFailed: '加载项目失败',
