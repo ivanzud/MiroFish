@@ -1,7 +1,223 @@
 {
   "repo": "666ghj/MiroFish",
-  "captured_at": "2026-03-11T11:55:00+00:00",
+  "captured_at": "2026-03-11T12:15:00+00:00",
   "issues": [
+    {
+      "number": 14,
+      "status": "covered",
+      "summary": "Step 3 now stops polling and surfaces backend failure text when the simulation runner reports `failed`, so the UI no longer hangs indefinitely.",
+      "local_refs": [
+        "frontend/src/components/Step3Simulation.vue",
+        "frontend/tests/errors.test.mjs"
+      ],
+      "validation": [
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 45,
+      "status": "covered",
+      "summary": "Step 5 now preserves platform metadata and targets Reddit/Twitter interviews against the matching backend instead of assuming a Reddit-only profile list.",
+      "local_refs": [
+        "frontend/src/components/Step5Interaction.vue",
+        "frontend/src/components/step5Profiles.js",
+        "frontend/tests/step5Profiles.test.mjs"
+      ],
+      "validation": [
+        "frontend/tests/step5Profiles.test.mjs",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 46,
+      "status": "covered",
+      "summary": "The setuptools `project.license` warning path is gone because the repo now uses an SPDX license string.",
+      "local_refs": [
+        "backend/pyproject.toml"
+      ],
+      "validation": [
+        "backend: uv run pytest -q"
+      ]
+    },
+    {
+      "number": 52,
+      "status": "covered",
+      "summary": "Report generation now trims oversized message history, retries after context-length failures, and exposes configurable `LLM_MAX_TOKENS` for smaller-context models.",
+      "local_refs": [
+        "backend/app/services/report_agent.py",
+        "backend/app/utils/llm_client.py",
+        "backend/tests/test_report_agent.py",
+        "backend/tests/test_llm_client.py"
+      ],
+      "validation": [
+        "backend/tests/test_report_agent.py",
+        "backend/tests/test_llm_client.py"
+      ]
+    },
+    {
+      "number": 58,
+      "status": "covered",
+      "summary": "Step 5 interviews now derive timeout overrides from the configured frontend request window, and the backend/docs expose dedicated interview timeout settings for slower local models.",
+      "local_refs": [
+        "frontend/src/api/timeout.js",
+        "frontend/src/components/Step5Interaction.vue",
+        ".env.example"
+      ],
+      "validation": [
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 64,
+      "status": "covered",
+      "summary": "Upload and graph-build failures now surface structured per-file parser/config validation errors instead of collapsing common deployment or document-ingest problems into a generic 500.",
+      "local_refs": [
+        "backend/app/api/graph.py",
+        "backend/app/config.py",
+        "frontend/src/views/Process.vue",
+        "backend/tests/test_graph_upload_api.py"
+      ],
+      "validation": [
+        "scripts/test_backend_lite.sh",
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 84,
+      "status": "covered",
+      "summary": "Failed report generation can now be retried directly from Step 4 with persisted status polling, backend error text, and a `force_regenerate` retry path.",
+      "local_refs": [
+        "frontend/src/components/Step4Report.vue",
+        "frontend/src/api/report.js"
+      ],
+      "validation": [
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 93,
+      "status": "covered",
+      "summary": "The frontend no longer hardcodes `http://localhost:5001` in project-init messaging and instead uses the shared API base-url resolver.",
+      "local_refs": [
+        "frontend/src/views/Process.vue",
+        "frontend/src/api/baseUrl.js"
+      ],
+      "validation": [
+        "frontend/tests/baseUrl.test.mjs",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 92,
+      "status": "covered",
+      "summary": "The current GitHub Actions workflow already includes the later upgrade sweep from upstream PR #116, so this issue is stale on this branch.",
+      "local_refs": [
+        ".github/workflows/docker-image.yml"
+      ],
+      "validation": [
+        "workflow review only"
+      ]
+    },
+    {
+      "number": 99,
+      "status": "covered",
+      "summary": "Docker image publishing now builds both `linux/amd64` and `linux/arm64`, so the missing ARM image issue is already resolved locally.",
+      "local_refs": [
+        ".github/workflows/docker-image.yml"
+      ],
+      "validation": [
+        "workflow review only"
+      ]
+    },
+    {
+      "number": 9,
+      "status": "partial",
+      "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, but true mid-run checkpoint/resume is still deferred.",
+      "local_refs": [
+        "frontend/src/views/SimulationRunView.vue",
+        "frontend/src/components/Step3Simulation.vue"
+      ],
+      "validation": [
+        "frontend/tests/simulationTimeline.test.mjs",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 21,
+      "status": "covered",
+      "summary": "The docs/UI now clarify that refreshing the browser does not stop backend jobs, persisted runs remain reopenable from history, and Step 3/5 still require a live runtime session.",
+      "local_refs": [
+        "frontend/src/components/HistoryDatabase.vue",
+        "README.md",
+        "README-EN.md"
+      ],
+      "validation": [
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 37,
+      "status": "covered",
+      "summary": "Step 5 now preflights simulation environment status and blocks interview requests against closed or unavailable backends before they fail.",
+      "local_refs": [
+        "frontend/src/components/Step5Interaction.vue",
+        "frontend/src/api/simulation.js"
+      ],
+      "validation": [
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 43,
+      "status": "covered",
+      "summary": "Step 5 now rewrites timeout and environment-closed failures into actionable guidance, and the backend/frontend timeout knobs give slow local models an explicit supported path.",
+      "local_refs": [
+        "frontend/src/components/Step5Interaction.vue",
+        "frontend/src/api/timeout.js",
+        ".env.example"
+      ],
+      "validation": [
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 42,
+      "status": "covered",
+      "summary": "Step 3 detailed run polling is now incremental and bounded, so the frontend no longer re-downloads the entire simulation timeline every few seconds as a run grows.",
+      "local_refs": [
+        "backend/app/api/simulation.py",
+        "frontend/src/components/Step3Simulation.vue",
+        "frontend/src/components/simulationTimeline.js"
+      ],
+      "validation": [
+        "scripts/test_backend_lite.sh",
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 110,
+      "status": "covered",
+      "summary": "The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.",
+      "local_refs": [
+        "README.md",
+        "README-EN.md",
+        ".env.example",
+        "backend/app/config.py",
+        "backend/app/api/graph.py",
+        "backend/tests/test_openai_compat_services.py"
+      ],
+      "validation": [
+        "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_mentions_openai_alias",
+        "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_english_message"
+      ],
+      "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+    },
     {
       "number": 117,
       "status": "covered",
@@ -19,24 +235,6 @@
         "frontend/tests/step5Profiles.test.mjs",
         "frontend: npm test",
         "frontend: npm run build"
-      ],
-      "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
-    },
-    {
-      "number": 110,
-      "status": "covered",
-      "summary": "The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.",
-      "local_refs": [
-        "README.md",
-        "README-EN.md",
-        ".env.example",
-        "backend/app/config.py",
-        "backend/app/api/graph.py",
-        "backend/tests/test_openai_compat_services.py"
-      ],
-      "validation": [
-        "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_mentions_openai_alias",
-        "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_english_message"
       ],
       "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
     },
@@ -80,6 +278,192 @@
         "backend/tests/test_graph_upload_api.py::test_build_graph_task_persists_sanitized_zep_auth_error"
       ],
       "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+    },
+    {
+      "number": 69,
+      "status": "covered",
+      "summary": "Both READMEs now explicitly document direct OpenAI-compatible usage through either `LLM_*` or `OPENAI_*` environment variables, with examples for Codex/OpenAI-compatible gateways, DashScope, LM Studio, and Ollama.",
+      "local_refs": [
+        "README.md",
+        "README-EN.md",
+        ".env.example"
+      ],
+      "validation": [
+        "documentation review"
+      ]
+    }
+  ],
+  "pull_requests": [
+    {
+      "number": 15,
+      "status": "landed",
+      "summary": "Landed locally: Step 3 now surfaces failed simulation status instead of polling forever.",
+      "local_refs": [
+        "frontend/src/components/Step3Simulation.vue"
+      ],
+      "validation": [
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 38,
+      "status": "not_safe",
+      "summary": "Not safe to cherry-pick: it expands the backend API surface to Anthropic-specific protocol work while this branch is intentionally standardizing on OpenAI-compatible gateways."
+    },
+    {
+      "number": 49,
+      "status": "not_safe",
+      "summary": "Not safe to cherry-pick: it introduces a large local graph backend without targeted regression coverage and is superseded conceptually by the broader backend-abstraction follow-up."
+    },
+    {
+      "number": 70,
+      "status": "not_safe",
+      "summary": "Not safe to cherry-pick: the Windows installer flow assumes a repo topology that does not match the current `run.py` plus built-frontend layout."
+    },
+    {
+      "number": 72,
+      "status": "superseded",
+      "summary": "Superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`."
+    },
+    {
+      "number": 73,
+      "status": "landed",
+      "summary": "Landed locally: malformed ontology entity and edge items are sanitized before fallback injection."
+    },
+    {
+      "number": 74,
+      "status": "landed",
+      "summary": "Landed locally: bare `except:` clauses in the reviewed JSON/simulation paths were narrowed to `except Exception:`."
+    },
+    {
+      "number": 81,
+      "status": "landed",
+      "summary": "Landed locally: frontend API timeout is configurable for slow local and OpenAI-compatible backends."
+    },
+    {
+      "number": 82,
+      "status": "covered",
+      "summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies."
+    },
+    {
+      "number": 86,
+      "status": "superseded",
+      "summary": "Superseded locally by the newer workflow updates already carried on this branch, including the later ARM64/cache improvements."
+    },
+    {
+      "number": 87,
+      "status": "superseded",
+      "summary": "Superseded locally by the broader GitHub Actions upgrade sweep from upstream PR #116."
+    },
+    {
+      "number": 100,
+      "status": "superseded",
+      "summary": "Superseded locally by the shared frontend API base-url resolver, which already uses runtime-origin fallback and repo-specific localhost handling."
+    },
+    {
+      "number": 101,
+      "status": "superseded",
+      "summary": "Superseded locally: the useful JSON-cleanup intent is already covered by the current LLM payload extraction hardening, and the branch predates substantial newer backend/frontend work."
+    },
+    {
+      "number": 102,
+      "status": "superseded",
+      "summary": "Superseded locally by the landed multi-platform Docker workflow that already builds `linux/amd64` and `linux/arm64` images."
+    },
+    {
+      "number": 103,
+      "status": "landed",
+      "summary": "Landed locally: Docker workflow now builds ARM64 images and carries the related cache/buildx improvements."
+    },
+    {
+      "number": 104,
+      "status": "landed",
+      "summary": "Landed locally: Vite dev proxy target is configurable via `VITE_API_BASE_URL`."
+    },
+    {
+      "number": 105,
+      "status": "partial",
+      "summary": "Safe subset landed locally for JSON error sanitization and parser logging, but the behavior-changing `DEBUG`, `SECRET_KEY`, and stricter default CORS pieces remain deferred for compatibility review."
+    },
+    {
+      "number": 108,
+      "status": "not_safe",
+      "summary": "Not safe to cherry-pick: the Windows packaging flow targets the wrong runtime entrypoints, serves the frontend in dev mode, and rebundles already-landed workflow changes."
+    },
+    {
+      "number": 112,
+      "status": "landed",
+      "summary": "Landed locally: Korean README added and cross-links normalized."
+    },
+    {
+      "number": 113,
+      "status": "landed",
+      "summary": "Landed locally: Japanese README added and cross-links normalized."
+    },
+    {
+      "number": 114,
+      "status": "superseded",
+      "summary": "Superseded locally by the current frontend API client, which already falls back to the runtime origin and supports custom base URLs."
+    },
+    {
+      "number": 115,
+      "status": "landed",
+      "summary": "Landed locally: SPDX license string metadata cleanup."
+    },
+    {
+      "number": 116,
+      "status": "landed",
+      "summary": "Landed locally: GitHub Actions dependency upgrades."
+    },
+    {
+      "number": 118,
+      "status": "not_safe",
+      "summary": "Not safe to cherry-pick: RAGflow support threads a second graph backend through core graph/simulation paths without the targeted regression coverage or rebasing needed on top of current local changes."
+    },
+    {
+      "number": 119,
+      "status": "partial",
+      "summary": "Safe subset landed locally for persisted EN/ZH UI chrome and locale headers, but broader backend/runtime localization remains a follow-up instead of a blind merge."
+    },
+    {
+      "number": 122,
+      "status": "landed",
+      "summary": "Landed locally: removed `response_format={type: json_object}` from `chat_json()` for LM Studio and Ollama compatibility."
+    },
+    {
+      "number": 124,
+      "status": "landed",
+      "summary": "Landed locally: robust JSON extraction for mixed LLM responses."
+    },
+    {
+      "number": 125,
+      "status": "landed",
+      "summary": "Landed locally: improved new-project network error diagnostics in the frontend."
+    },
+    {
+      "number": 126,
+      "status": "landed",
+      "summary": "Safe subset landed locally for structured config validation and non-sensitive config summaries."
+    },
+    {
+      "number": 129,
+      "status": "landed",
+      "summary": "Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning."
+    },
+    {
+      "number": 130,
+      "status": "landed",
+      "summary": "Landed locally: `CONTRIBUTING.md`."
+    },
+    {
+      "number": 131,
+      "status": "landed",
+      "summary": "Safe subset landed locally: transient Zep failures now retry with bounded backoff."
+    },
+    {
+      "number": 132,
+      "status": "landed",
+      "summary": "Landed locally: README architecture overview."
     }
   ]
 }

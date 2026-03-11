@@ -279,7 +279,7 @@ def list_mirrored_pull_request_numbers(remote: str) -> set[int]:
     return mirrored
 
 
-def load_local_issue_coverage(path: Path | None) -> dict[int, dict[str, object]]:
+def load_local_coverage_entries(path: Path | None, key: str) -> dict[int, dict[str, object]]:
     if path is None or not path.exists():
         return {}
 
@@ -288,7 +288,7 @@ def load_local_issue_coverage(path: Path | None) -> dict[int, dict[str, object]]
     except (OSError, json.JSONDecodeError):
         return {}
 
-    entries = payload.get("issues", []) if isinstance(payload, dict) else []
+    entries = payload.get(key, []) if isinstance(payload, dict) else []
     if not isinstance(entries, list):
         return {}
 
@@ -300,6 +300,14 @@ def load_local_issue_coverage(path: Path | None) -> dict[int, dict[str, object]]
         if isinstance(number, int):
             coverage_map[number] = entry
     return coverage_map
+
+
+def load_local_issue_coverage(path: Path | None) -> dict[int, dict[str, object]]:
+    return load_local_coverage_entries(path, "issues")
+
+
+def load_local_pr_coverage(path: Path | None) -> dict[int, dict[str, object]]:
+    return load_local_coverage_entries(path, "pull_requests")
 
 
 def compact_issue(
@@ -343,6 +351,7 @@ def compact_pr(
     pr: dict[str, object],
     mirrored_pr_numbers: set[int] | None = None,
     fork_remote: str | None = None,
+    coverage_map: dict[int, dict[str, object]] | None = None,
 ) -> dict[str, object]:
     number = int(pr["number"])
     head = pr.get("head") or {}
@@ -357,7 +366,7 @@ def compact_pr(
     comment_count = int(pr.get("comments") or 0)
     review_comment_count = int(pr.get("review_comments") or 0)
 
-    return {
+    compacted = {
         "number": number,
         "title": pr["title"],
         "url": pr["html_url"],
@@ -383,6 +392,10 @@ def compact_pr(
         "fork_mirrored": fork_mirrored,
         "fork_mirror_ref": fork_mirror_ref,
     }
+    local_coverage = (coverage_map or {}).get(number)
+    if local_coverage:
+        compacted["local_coverage"] = local_coverage
+    return compacted
 
 
 def compact_pull_requests(
@@ -390,10 +403,11 @@ def compact_pull_requests(
     mirrored_pr_numbers: set[int] | None,
     fork_remote: str | None,
     max_workers: int,
+    coverage_map: dict[int, dict[str, object]] | None = None,
 ) -> list[dict[str, object]]:
     return parallel_ordered_map(
         pr_items,
-        lambda item: compact_pr(item, mirrored_pr_numbers, fork_remote),
+        lambda item: compact_pr(item, mirrored_pr_numbers, fork_remote, coverage_map),
         max_workers=max_workers,
     )
 
@@ -461,6 +475,11 @@ def write_summary(
             f"- #{pr['number']} [{pr['state']}{suffix}, mergeable={mergeable_state}{mirror_suffix}] "
             f"{pr['title']} (`{pr['head']}` -> `{pr['base']}`)"
         )
+        local_coverage = pr.get("local_coverage") or {}
+        if local_coverage:
+            status = local_coverage.get("status") or "covered"
+            summary = local_coverage.get("summary") or "covered locally on this branch"
+            lines.append(f"  - local coverage [{status}]: {summary}")
         if pr.get("body_excerpt"):
             lines.append(f"  - {pr['body_excerpt']}")
         if pr.get("recent_comments"):
@@ -471,6 +490,26 @@ def write_summary(
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def attach_local_coverage(
+    items: list[dict[str, Any]],
+    coverage_map: dict[int, dict[str, object]] | None,
+) -> list[dict[str, Any]]:
+    attached: list[dict[str, Any]] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        number = item.get("number")
+        if not isinstance(number, int):
+            attached.append(item)
+            continue
+        enriched = dict(item)
+        local_coverage = (coverage_map or {}).get(number)
+        if local_coverage:
+            enriched["local_coverage"] = local_coverage
+        attached.append(enriched)
+    return attached
 
 
 def load_cached_snapshot(path: Path, repo: str, state: str) -> dict[str, Any] | None:
@@ -509,9 +548,13 @@ def try_reuse_cached_snapshot(
     *,
     repo: str,
     state: str,
+    output_path: Path,
     summary_path: Path,
     exc: RuntimeError,
     stale_cache_hours: int,
+    issue_coverage_map: dict[int, dict[str, object]] | None = None,
+    pr_coverage_map: dict[int, dict[str, object]] | None = None,
+    coverage_map_path: str | None = None,
 ) -> bool:
     rate_limited = "rate limit" in str(exc).lower()
     if not rate_limited or not cached_payload or not snapshot_is_fresh(cached_payload, stale_cache_hours):
@@ -522,6 +565,13 @@ def try_reuse_cached_snapshot(
     captured_at = cached_payload.get("captured_at") or cached_payload.get("generated_at")
     if not isinstance(issues, list) or not isinstance(prs, list):
         return False
+    issues = attach_local_coverage(issues, issue_coverage_map)
+    prs = attach_local_coverage(prs, pr_coverage_map)
+    refreshed_payload = dict(cached_payload)
+    refreshed_payload["issues"] = issues
+    refreshed_payload["pull_requests"] = prs
+    refreshed_payload["coverage_map_path"] = coverage_map_path
+    output_path.write_text(json.dumps(refreshed_payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     write_summary(
         summary_path,
@@ -531,7 +581,7 @@ def try_reuse_cached_snapshot(
         prs,
         cached_payload.get("fork_remote"),
         captured_at=captured_at,
-        coverage_map_path=cached_payload.get("coverage_map_path"),
+        coverage_map_path=coverage_map_path or cached_payload.get("coverage_map_path"),
     )
     print(
         f"warning: {exc}; reusing fresh cached snapshot from "
@@ -642,7 +692,8 @@ def main() -> int:
     output_path = Path(args.output)
     summary_path = Path(args.summary)
     coverage_map_path = Path(args.coverage_map) if args.coverage_map else None
-    coverage_map = load_local_issue_coverage(coverage_map_path)
+    issue_coverage_map = load_local_issue_coverage(coverage_map_path)
+    pr_coverage_map = load_local_pr_coverage(coverage_map_path)
     cached_payload = load_cached_snapshot(output_path, args.repo, args.state)
     if cached_payload is not None:
         cached_payload["_cache_path"] = str(output_path)
@@ -665,9 +716,13 @@ def main() -> int:
                 cached_payload,
                 repo=args.repo,
                 state=args.state,
+                output_path=output_path,
                 summary_path=summary_path,
                 exc=exc,
                 stale_cache_hours=args.stale_cache_hours,
+                issue_coverage_map=issue_coverage_map,
+                pr_coverage_map=pr_coverage_map,
+                coverage_map_path=str(coverage_map_path) if coverage_map_path and coverage_map_path.exists() else None,
             ):
                 return 0
             raise
@@ -676,7 +731,7 @@ def main() -> int:
             issues = compact_issues(
                 [item for item in issue_items if "pull_request" not in item],
                 max_workers=max_workers,
-                coverage_map=coverage_map,
+                coverage_map=issue_coverage_map,
             )
             pr_details = hydrate_pull_requests(owner, name, pr_items, max_workers=max_workers)
             mirrored_pr_numbers = (
@@ -687,15 +742,20 @@ def main() -> int:
                 mirrored_pr_numbers,
                 args.fork_remote,
                 max_workers=max_workers,
+                coverage_map=pr_coverage_map,
             )
         except RuntimeError as exc:
             if try_reuse_cached_snapshot(
                 cached_payload,
                 repo=args.repo,
                 state=args.state,
+                output_path=output_path,
                 summary_path=summary_path,
                 exc=exc,
                 stale_cache_hours=args.stale_cache_hours,
+                issue_coverage_map=issue_coverage_map,
+                pr_coverage_map=pr_coverage_map,
+                coverage_map_path=str(coverage_map_path) if coverage_map_path and coverage_map_path.exists() else None,
             ):
                 return 0
             raise

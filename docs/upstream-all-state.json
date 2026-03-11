@@ -232,7 +232,27 @@
       "author": "malpaniga",
       "body_excerpt": "Hi, First of all, thank you for creating and open-sourcing this amazing project. MiroFish is a very interesting and powerful multi-agent prediction engine. Currently, a large portion of the documentation, UI text, and comments appear to be primarily in Chinese. This makes it difficult for international developers to fully understand and use the project. ### Request It would be very helpful if the…",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 117,
+        "status": "covered",
+        "summary": "The remaining Step 3 timeline labels, Step 5 platform/status labels, and locale-aware interaction timestamps now flow through the shared i18n dictionaries, so the English mode no longer falls back to hardcoded workflow strings in those surfaces.",
+        "local_refs": [
+          "frontend/src/components/Step3Simulation.vue",
+          "frontend/src/components/Step5Interaction.vue",
+          "frontend/src/components/step5Profiles.js",
+          "frontend/src/components/simulationTimeline.js",
+          "frontend/src/i18n/locales/en.js",
+          "frontend/src/i18n/locales/zh.js"
+        ],
+        "validation": [
+          "frontend/tests/simulationTimeline.test.mjs",
+          "frontend/tests/step5Profiles.test.mjs",
+          "frontend: npm test",
+          "frontend: npm run build"
+        ],
+        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+      }
     },
     {
       "number": 110,
@@ -310,7 +330,23 @@
           "url": "https://github.com/666ghj/MiroFish/issues/64#issuecomment-3863455964",
           "body_excerpt": "这个 500的报错 你要看下你前端界面 调用generate 这个接口的反馈 结果反馈是什么吧 我之前也是500的 报错 原因在调用这个接口的时候 发现 因为zep cloude 只提供 秘钥 但是不提供模型 而 项目中的模型 你要需要去申请一个没药来使用 很多模型也并不是免费的 但是一般 新用户注册 都有免费额度"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 64,
+        "status": "covered",
+        "summary": "Upload and graph-build failures now surface structured per-file parser/config validation errors instead of collapsing common deployment or document-ingest problems into a generic 500.",
+        "local_refs": [
+          "backend/app/api/graph.py",
+          "backend/app/config.py",
+          "frontend/src/views/Process.vue",
+          "backend/tests/test_graph_upload_api.py"
+        ],
+        "validation": [
+          "scripts/test_backend_lite.sh",
+          "frontend: npm test",
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 106,
@@ -437,7 +473,19 @@
           "url": "https://github.com/666ghj/MiroFish/issues/84#issuecomment-4025475607",
           "body_excerpt": "<img width=\"1242\" height=\"707\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/871bbcaa-85e2-4f1c-a714-cc038fdf6fd7\" /> 我这跑了一个任务还没结束 ZEP的API就用完了 用了默认的设置 40 ，现在很尴尬的状态 接下来应该怎么才能继续呢？ @dosu 难道只能重新注册一个Zep 再跑一遍流程吗？"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 84,
+        "status": "covered",
+        "summary": "Failed report generation can now be retried directly from Step 4 with persisted status polling, backend error text, and a `force_regenerate` retry path.",
+        "local_refs": [
+          "frontend/src/components/Step4Report.vue",
+          "frontend/src/api/report.js"
+        ],
+        "validation": [
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 107,
@@ -513,7 +561,18 @@
           "url": "https://github.com/666ghj/MiroFish/issues/99#issuecomment-4021549881",
           "body_excerpt": "<!-- Answer --> 好消息！当前的工作流 [`.github/workflows/docker-image.yml`](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d680682c741a44eeebe/.github/workflows/docker-image.yml) 已经配置了 QEMU 和 Buildx（支持多架构构建的必要组件），只需要在构建步骤中添加 `platforms…"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 99,
+        "status": "covered",
+        "summary": "Docker image publishing now builds both `linux/amd64` and `linux/arm64`, so the missing ARM image issue is already resolved locally.",
+        "local_refs": [
+          ".github/workflows/docker-image.yml"
+        ],
+        "validation": [
+          "workflow review only"
+        ]
+      }
     },
     {
       "number": 98,
@@ -551,7 +610,20 @@
           "url": "https://github.com/666ghj/MiroFish/issues/93#issuecomment-4020607805",
           "body_excerpt": "VITE_API_BASE_URL 你修改这个配置就可以了吧，那个5001是容错的，没有VITE_API_BASE_URL配置才会启用这个吧"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 93,
+        "status": "covered",
+        "summary": "The frontend no longer hardcodes `http://localhost:5001` in project-init messaging and instead uses the shared API base-url resolver.",
+        "local_refs": [
+          "frontend/src/views/Process.vue",
+          "frontend/src/api/baseUrl.js"
+        ],
+        "validation": [
+          "frontend/tests/baseUrl.test.mjs",
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 95,
@@ -605,7 +677,18 @@
       "author": "leon-x-labs",
       "body_excerpt": "",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 92,
+        "status": "covered",
+        "summary": "The current GitHub Actions workflow already includes the later upgrade sweep from upstream PR #116, so this issue is stale on this branch.",
+        "local_refs": [
+          ".github/workflows/docker-image.yml"
+        ],
+        "validation": [
+          "workflow review only"
+        ]
+      }
     },
     {
       "number": 90,
@@ -1021,7 +1104,20 @@
           "url": "https://github.com/666ghj/MiroFish/issues/9#issuecomment-3702763655",
           "body_excerpt": "> > > 希望可以中断重新加载，有时候调用大模型会出错就要重新开始了， > > > > > > 好，可以具体说一下场景吗，是在模拟过程中还是前面生成配置的过程中，或者是后面report的环节？因为我记得运行时加了重试机制的嘞。 > > 在模拟过程中，我使用阿里百炼的时候免费额度用完以后他就断了，重新配置启动以后就要重新模拟了 模拟过程中这个目前没有办法，因为直接使用的是第三方库，开源为了大家部署方便没有使用源码部署，后续应该会开个分支，把专业开发版分出来就可以更改了"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 9,
+        "status": "partial",
+        "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, but true mid-run checkpoint/resume is still deferred.",
+        "local_refs": [
+          "frontend/src/views/SimulationRunView.vue",
+          "frontend/src/components/Step3Simulation.vue"
+        ],
+        "validation": [
+          "frontend/tests/simulationTimeline.test.mjs",
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 67,
@@ -1089,7 +1185,20 @@
           "url": "https://github.com/666ghj/MiroFish/issues/37#issuecomment-3869291906",
           "body_excerpt": "我也遇到了相同问题，请问如何解决"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 37,
+        "status": "covered",
+        "summary": "Step 5 now preflights simulation environment status and blocks interview requests against closed or unavailable backends before they fail.",
+        "local_refs": [
+          "frontend/src/components/Step5Interaction.vue",
+          "frontend/src/api/simulation.js"
+        ],
+        "validation": [
+          "frontend: npm test",
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 66,
@@ -1233,7 +1342,21 @@
           "url": "https://github.com/666ghj/MiroFish/issues/58#issuecomment-3794961360",
           "body_excerpt": "这个让ai帮忙定位一下，一个超时参数的数值问题"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 58,
+        "status": "covered",
+        "summary": "Step 5 interviews now derive timeout overrides from the configured frontend request window, and the backend/docs expose dedicated interview timeout settings for slower local models.",
+        "local_refs": [
+          "frontend/src/api/timeout.js",
+          "frontend/src/components/Step5Interaction.vue",
+          ".env.example"
+        ],
+        "validation": [
+          "frontend: npm test",
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 57,
@@ -1291,7 +1414,18 @@
           "url": "https://github.com/666ghj/MiroFish/issues/46#issuecomment-3789585469",
           "body_excerpt": "现在没事了，给自己气笑了，uv自带python的版本问题"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 46,
+        "status": "covered",
+        "summary": "The setuptools `project.license` warning path is gone because the repo now uses an SPDX license string.",
+        "local_refs": [
+          "backend/pyproject.toml"
+        ],
+        "validation": [
+          "backend: uv run pytest -q"
+        ]
+      }
     },
     {
       "number": 40,
@@ -1436,7 +1570,22 @@
       "author": "ngyygm",
       "body_excerpt": "在调用自己部署的API时，模型最大长度如果小于18000可能会报错。 个人使用的时候，显示系统传输的token数在16384，我设定的是16000最大长度，然后我改成320000就能正常跑了。",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 52,
+        "status": "covered",
+        "summary": "Report generation now trims oversized message history, retries after context-length failures, and exposes configurable `LLM_MAX_TOKENS` for smaller-context models.",
+        "local_refs": [
+          "backend/app/services/report_agent.py",
+          "backend/app/utils/llm_client.py",
+          "backend/tests/test_report_agent.py",
+          "backend/tests/test_llm_client.py"
+        ],
+        "validation": [
+          "backend/tests/test_report_agent.py",
+          "backend/tests/test_llm_client.py"
+        ]
+      }
     },
     {
       "number": 5,
@@ -1632,7 +1781,21 @@
           "url": "https://github.com/666ghj/MiroFish/issues/45#issuecomment-3776523496",
           "body_excerpt": "interview_agents 方法依赖于模拟环境处于运行状态才能运行，也就是需要从第三步跑完以后继续执行才行"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 45,
+        "status": "covered",
+        "summary": "Step 5 now preserves platform metadata and targets Reddit/Twitter interviews against the matching backend instead of assuming a Reddit-only profile list.",
+        "local_refs": [
+          "frontend/src/components/Step5Interaction.vue",
+          "frontend/src/components/step5Profiles.js",
+          "frontend/tests/step5Profiles.test.mjs"
+        ],
+        "validation": [
+          "frontend/tests/step5Profiles.test.mjs",
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 43,
@@ -1654,7 +1817,21 @@
           "url": "https://github.com/666ghj/MiroFish/issues/43#issuecomment-3776520523",
           "body_excerpt": "是不是模拟世界太大了，这样采访接口就会好久"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 43,
+        "status": "covered",
+        "summary": "Step 5 now rewrites timeout and environment-closed failures into actionable guidance, and the backend/frontend timeout knobs give slow local models an explicit supported path.",
+        "local_refs": [
+          "frontend/src/components/Step5Interaction.vue",
+          "frontend/src/api/timeout.js",
+          ".env.example"
+        ],
+        "validation": [
+          "frontend: npm test",
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 23,
@@ -2047,7 +2224,20 @@
       "author": "usernametooshort",
       "body_excerpt": "做准备等了半天，不敢试，但是我觉得docker在服务器端，我关掉网页再打开应该也还是可以恢复吧 <img width=\"1728\" height=\"965\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/f132121a-ee66-4623-880b-3ea8782c2265\" />",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 21,
+        "status": "covered",
+        "summary": "The docs/UI now clarify that refreshing the browser does not stop backend jobs, persisted runs remain reopenable from history, and Step 3/5 still require a live runtime session.",
+        "local_refs": [
+          "frontend/src/components/HistoryDatabase.vue",
+          "README.md",
+          "README-EN.md"
+        ],
+        "validation": [
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 20,
@@ -2119,7 +2309,20 @@
           "url": "https://github.com/666ghj/MiroFish/issues/14#issuecomment-3713269669",
           "body_excerpt": "I'll investigate this, and you're also welcome to submit a PR first."
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 14,
+        "status": "covered",
+        "summary": "Step 3 now stops polling and surfaces backend failure text when the simulation runner reports `failed`, so the UI no longer hangs indefinitely.",
+        "local_refs": [
+          "frontend/src/components/Step3Simulation.vue",
+          "frontend/tests/errors.test.mjs"
+        ],
+        "validation": [
+          "frontend: npm test",
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 11,
@@ -2259,7 +2462,12 @@
         }
       ],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-105"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-105",
+      "local_coverage": {
+        "number": 105,
+        "status": "partial",
+        "summary": "Safe subset landed locally for JSON error sanitization and parser logging, but the behavior-changing `DEBUG`, `SECRET_KEY`, and stricter default CORS pieces remain deferred for compatibility review."
+      }
     },
     {
       "number": 132,
@@ -2288,7 +2496,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-132"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-132",
+      "local_coverage": {
+        "number": 132,
+        "status": "landed",
+        "summary": "Landed locally: README architecture overview."
+      }
     },
     {
       "number": 131,
@@ -2317,7 +2530,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-131"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-131",
+      "local_coverage": {
+        "number": 131,
+        "status": "landed",
+        "summary": "Safe subset landed locally: transient Zep failures now retry with bounded backoff."
+      }
     },
     {
       "number": 130,
@@ -2346,7 +2564,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-130"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-130",
+      "local_coverage": {
+        "number": 130,
+        "status": "landed",
+        "summary": "Landed locally: `CONTRIBUTING.md`."
+      }
     },
     {
       "number": 129,
@@ -2375,7 +2598,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-129"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-129",
+      "local_coverage": {
+        "number": 129,
+        "status": "landed",
+        "summary": "Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning."
+      }
     },
     {
       "number": 126,
@@ -2404,7 +2632,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-126"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-126",
+      "local_coverage": {
+        "number": 126,
+        "status": "landed",
+        "summary": "Safe subset landed locally for structured config validation and non-sensitive config summaries."
+      }
     },
     {
       "number": 125,
@@ -2433,7 +2666,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-125"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-125",
+      "local_coverage": {
+        "number": 125,
+        "status": "landed",
+        "summary": "Landed locally: improved new-project network error diagnostics in the frontend."
+      }
     },
     {
       "number": 124,
@@ -2462,7 +2700,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-124"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-124",
+      "local_coverage": {
+        "number": 124,
+        "status": "landed",
+        "summary": "Landed locally: robust JSON extraction for mixed LLM responses."
+      }
     },
     {
       "number": 122,
@@ -2491,7 +2734,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-122"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-122",
+      "local_coverage": {
+        "number": 122,
+        "status": "landed",
+        "summary": "Landed locally: removed `response_format={type: json_object}` from `chat_json()` for LM Studio and Ollama compatibility."
+      }
     },
     {
       "number": 119,
@@ -2535,7 +2783,12 @@
         }
       ],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-119"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-119",
+      "local_coverage": {
+        "number": 119,
+        "status": "partial",
+        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome and locale headers, but broader backend/runtime localization remains a follow-up instead of a blind merge."
+      }
     },
     {
       "number": 89,
@@ -2602,7 +2855,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-118"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-118",
+      "local_coverage": {
+        "number": 118,
+        "status": "not_safe",
+        "summary": "Not safe to cherry-pick: RAGflow support threads a second graph backend through core graph/simulation paths without the targeted regression coverage or rebasing needed on top of current local changes."
+      }
     },
     {
       "number": 116,
@@ -2630,7 +2888,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-116"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-116",
+      "local_coverage": {
+        "number": 116,
+        "status": "landed",
+        "summary": "Landed locally: GitHub Actions dependency upgrades."
+      }
     },
     {
       "number": 115,
@@ -2658,7 +2921,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-115"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-115",
+      "local_coverage": {
+        "number": 115,
+        "status": "landed",
+        "summary": "Landed locally: SPDX license string metadata cleanup."
+      }
     },
     {
       "number": 114,
@@ -2686,7 +2954,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-114"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-114",
+      "local_coverage": {
+        "number": 114,
+        "status": "superseded",
+        "summary": "Superseded locally by the current frontend API client, which already falls back to the runtime origin and supports custom base URLs."
+      }
     },
     {
       "number": 113,
@@ -2715,7 +2988,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-113"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-113",
+      "local_coverage": {
+        "number": 113,
+        "status": "landed",
+        "summary": "Landed locally: Japanese README added and cross-links normalized."
+      }
     },
     {
       "number": 112,
@@ -2744,7 +3022,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-112"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-112",
+      "local_coverage": {
+        "number": 112,
+        "status": "landed",
+        "summary": "Landed locally: Korean README added and cross-links normalized."
+      }
     },
     {
       "number": 72,
@@ -2794,7 +3077,12 @@
         }
       ],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-72"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-72",
+      "local_coverage": {
+        "number": 72,
+        "status": "superseded",
+        "summary": "Superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`."
+      }
     },
     {
       "number": 108,
@@ -2823,7 +3111,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-108"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-108",
+      "local_coverage": {
+        "number": 108,
+        "status": "not_safe",
+        "summary": "Not safe to cherry-pick: the Windows packaging flow targets the wrong runtime entrypoints, serves the frontend in dev mode, and rebundles already-landed workflow changes."
+      }
     },
     {
       "number": 104,
@@ -2852,7 +3145,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-104"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-104",
+      "local_coverage": {
+        "number": 104,
+        "status": "landed",
+        "summary": "Landed locally: Vite dev proxy target is configurable via `VITE_API_BASE_URL`."
+      }
     },
     {
       "number": 103,
@@ -2881,7 +3179,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-103"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-103",
+      "local_coverage": {
+        "number": 103,
+        "status": "landed",
+        "summary": "Landed locally: Docker workflow now builds ARM64 images and carries the related cache/buildx improvements."
+      }
     },
     {
       "number": 91,
@@ -2946,7 +3249,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-102"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-102",
+      "local_coverage": {
+        "number": 102,
+        "status": "superseded",
+        "summary": "Superseded locally by the landed multi-platform Docker workflow that already builds `linux/amd64` and `linux/arm64` images."
+      }
     },
     {
       "number": 101,
@@ -2975,7 +3283,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-101"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-101",
+      "local_coverage": {
+        "number": 101,
+        "status": "superseded",
+        "summary": "Superseded locally: the useful JSON-cleanup intent is already covered by the current LLM payload extraction hardening, and the branch predates substantial newer backend/frontend work."
+      }
     },
     {
       "number": 100,
@@ -3004,7 +3317,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-100"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-100",
+      "local_coverage": {
+        "number": 100,
+        "status": "superseded",
+        "summary": "Superseded locally by the shared frontend API base-url resolver, which already uses runtime-origin fallback and repo-specific localhost handling."
+      }
     },
     {
       "number": 97,
@@ -3069,7 +3387,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-87"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-87",
+      "local_coverage": {
+        "number": 87,
+        "status": "superseded",
+        "summary": "Superseded locally by the broader GitHub Actions upgrade sweep from upstream PR #116."
+      }
     },
     {
       "number": 86,
@@ -3097,7 +3420,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-86"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-86",
+      "local_coverage": {
+        "number": 86,
+        "status": "superseded",
+        "summary": "Superseded locally by the newer workflow updates already carried on this branch, including the later ARM64/cache improvements."
+      }
     },
     {
       "number": 82,
@@ -3125,7 +3453,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-82"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-82",
+      "local_coverage": {
+        "number": 82,
+        "status": "covered",
+        "summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies."
+      }
     },
     {
       "number": 81,
@@ -3154,7 +3487,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-81"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-81",
+      "local_coverage": {
+        "number": 81,
+        "status": "landed",
+        "summary": "Landed locally: frontend API timeout is configurable for slow local and OpenAI-compatible backends."
+      }
     },
     {
       "number": 13,
@@ -3216,7 +3554,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-74"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-74",
+      "local_coverage": {
+        "number": 74,
+        "status": "landed",
+        "summary": "Landed locally: bare `except:` clauses in the reviewed JSON/simulation paths were narrowed to `except Exception:`."
+      }
     },
     {
       "number": 73,
@@ -3245,7 +3588,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-73"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-73",
+      "local_coverage": {
+        "number": 73,
+        "status": "landed",
+        "summary": "Landed locally: malformed ontology entity and edge items are sanitized before fallback injection."
+      }
     },
     {
       "number": 70,
@@ -3282,7 +3630,12 @@
         }
       ],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-70"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-70",
+      "local_coverage": {
+        "number": 70,
+        "status": "not_safe",
+        "summary": "Not safe to cherry-pick: the Windows installer flow assumes a repo topology that does not match the current `run.py` plus built-frontend layout."
+      }
     },
     {
       "number": 33,
@@ -3349,7 +3702,12 @@
         }
       ],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-38"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-38",
+      "local_coverage": {
+        "number": 38,
+        "status": "not_safe",
+        "summary": "Not safe to cherry-pick: it expands the backend API surface to Anthropic-specific protocol work while this branch is intentionally standardizing on OpenAI-compatible gateways."
+      }
     },
     {
       "number": 25,
@@ -3435,7 +3793,12 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-49"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-49",
+      "local_coverage": {
+        "number": 49,
+        "status": "not_safe",
+        "summary": "Not safe to cherry-pick: it introduces a large local graph backend without targeted regression coverage and is superseded conceptually by the broader backend-abstraction follow-up."
+      }
     },
     {
       "number": 6,
@@ -3495,7 +3858,18 @@
       "review_comment_count": 0,
       "recent_comments": [],
       "fork_mirrored": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-15"
+      "fork_mirror_ref": "origin/mirror/upstream-pr-15",
+      "local_coverage": {
+        "number": 15,
+        "status": "landed",
+        "summary": "Landed locally: Step 3 now surfaces failed simulation status instead of polling forever.",
+        "local_refs": [
+          "frontend/src/components/Step3Simulation.vue"
+        ],
+        "validation": [
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 12,
@@ -3633,5 +4007,6 @@
       "fork_mirror_ref": "origin/mirror/upstream-pr-2"
     }
   ],
-  "fork_remote": "origin"
+  "fork_remote": "origin",
+  "_cache_path": "docs/upstream-all-state.json"
 }

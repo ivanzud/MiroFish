@@ -64,6 +64,55 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(compacted["local_coverage"]["status"], "covered")
         self.assertEqual(compacted["local_coverage"]["summary"], "Auth failures are sanitized")
 
+    def test_load_local_pr_coverage_reads_machine_readable_map(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            coverage_path = Path(tmpdir) / "coverage.json"
+            coverage_path.write_text(
+                json.dumps(
+                    {
+                        "pull_requests": [
+                            {"number": 125, "status": "landed", "summary": "Diagnostics landed locally"},
+                            {"number": 118, "status": "not_safe", "summary": "Needs a backend abstraction redesign"},
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            coverage = sync_upstream_github.load_local_pr_coverage(coverage_path)
+
+        self.assertEqual(sorted(coverage), [118, 125])
+        self.assertEqual(coverage[125]["status"], "landed")
+
+    def test_compact_pr_includes_local_coverage_when_available(self):
+        pr = {
+            "number": 125,
+            "title": "Improve diagnostics",
+            "html_url": "https://example.test/pull/125",
+            "state": "open",
+            "created_at": "2026-03-10T00:00:00Z",
+            "updated_at": "2026-03-11T00:00:00Z",
+            "head": {"ref": "fix/issue-121", "sha": "abc123", "repo": {"full_name": "fork/repo", "clone_url": "https://example.test/fork/repo.git"}},
+            "base": {"ref": "main", "repo": {"full_name": "666ghj/MiroFish"}},
+            "draft": False,
+            "mergeable_state": "clean",
+            "labels": [],
+            "user": {"login": "alice"},
+            "body": "PR body",
+            "comments": 0,
+            "review_comments": 0,
+        }
+
+        compacted = sync_upstream_github.compact_pr(
+            pr,
+            mirrored_pr_numbers={125},
+            fork_remote="origin",
+            coverage_map={125: {"number": 125, "status": "landed", "summary": "Diagnostics landed locally"}},
+        )
+
+        self.assertEqual(compacted["local_coverage"]["status"], "landed")
+        self.assertEqual(compacted["fork_mirror_ref"], "origin/mirror/upstream-pr-125")
+
     def test_write_summary_includes_local_coverage_notes(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             summary_path = Path(tmpdir) / "summary.md"
@@ -95,6 +144,41 @@ class SyncUpstreamGithubTests(unittest.TestCase):
 
         self.assertIn("Local issue coverage map: `docs/upstream-coverage.json`", summary)
         self.assertIn("local coverage [covered]: Root and health endpoints now return backend status JSON", summary)
+
+    def test_write_summary_includes_pull_request_local_coverage_notes(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "summary.md"
+            sync_upstream_github.write_summary(
+                summary_path,
+                "666ghj/MiroFish",
+                "open",
+                [],
+                [
+                    {
+                        "number": 125,
+                        "title": "Improve diagnostics",
+                        "state": "open",
+                        "head": "fix/issue-121",
+                        "base": "main",
+                        "mergeable_state": "clean",
+                        "fork_mirrored": True,
+                        "body_excerpt": "PR body",
+                        "recent_comments": [],
+                        "local_coverage": {
+                            "number": 125,
+                            "status": "landed",
+                            "summary": "Diagnostics landed locally",
+                        },
+                    }
+                ],
+                fork_remote="origin",
+                coverage_map_path="docs/upstream-coverage.json",
+                captured_at="2026-03-11T09:00:00+00:00",
+            )
+
+            summary = summary_path.read_text(encoding="utf-8")
+
+        self.assertIn("local coverage [landed]: Diagnostics landed locally", summary)
 
     def test_build_parser_accepts_legacy_output_flag_names(self):
         args = sync_upstream_github.build_parser().parse_args(
@@ -252,6 +336,7 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "state.json"
             summary_path = Path(tmpdir) / "summary.md"
+            coverage_path = Path(tmpdir) / "coverage.json"
             cached_payload = {
                 "repo": "666ghj/MiroFish",
                 "state": "open",
@@ -303,6 +388,19 @@ class SyncUpstreamGithubTests(unittest.TestCase):
                 ],
             }
             output_path.write_text(json.dumps(cached_payload), encoding="utf-8")
+            coverage_path.write_text(
+                json.dumps(
+                    {
+                        "issues": [
+                            {"number": 1, "status": "covered", "summary": "Issue handled locally"}
+                        ],
+                        "pull_requests": [
+                            {"number": 2, "status": "landed", "summary": "PR landed locally"}
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
 
             stderr = io.StringIO()
             stdout = io.StringIO()
@@ -329,6 +427,8 @@ class SyncUpstreamGithubTests(unittest.TestCase):
                         str(summary_path),
                         "--fork-remote",
                         "origin",
+                        "--coverage-map",
+                        str(coverage_path),
                     ],
                 ),
                 patch.object(sync_upstream_github, "github_api_paginated", side_effect=rate_limit_error),
@@ -344,7 +444,11 @@ class SyncUpstreamGithubTests(unittest.TestCase):
             self.assertTrue(summary_path.exists())
             self.assertIn("reusing fresh cached snapshot", stderr.getvalue())
             self.assertIn("Reused cached snapshot", stdout.getvalue())
-            self.assertIn("2026-03-11T08:30:00+00:00", summary_path.read_text(encoding="utf-8"))
+            summary_text = summary_path.read_text(encoding="utf-8")
+            self.assertIn("2026-03-11T08:30:00+00:00", summary_text)
+            self.assertIn("local coverage [landed]: PR landed locally", summary_text)
+            refreshed_payload = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(refreshed_payload["pull_requests"][0]["local_coverage"]["status"], "landed")
 
     def test_main_writes_backward_compatible_generated_at_field(self):
         with tempfile.TemporaryDirectory() as tmpdir:
