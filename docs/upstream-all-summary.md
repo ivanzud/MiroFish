@@ -12,7 +12,7 @@
 ## Recently Updated Issues
 
 - #149 [open, mirror=#90] 一直卡在 Waiting for agent actions (no labels)
-  - local coverage [tracked]: Tracked under beads issue `mirofish-nja`: the new Step 3 stall report currently includes only a screenshot of "Waiting for agent actions", so the next pass should reproduce it and map it against existing simulation-stall/env-liveness fixes before landing a targeted change.
+  - local coverage [covered]: Step 3 now reconciles stale persisted `running` states when the worker PID is gone, and the detailed status payload exposes compact simulation-log diagnostics while waiting for the first actions. That prevents indefinite "Waiting for agent actions" polling after a dead worker and makes true startup stalls visible in the UI.
   - <img width="947" height="398" alt="Image" src="https://github.com/user-attachments/assets/09b45da5-150c-4d3b-82c0-6ba2204c1743" />
 - #148 [open, mirror=#89] Request failed with status code 504 (LLM API)
   - local coverage [covered]: Interview env liveness now validates the persisted runner state and recorded process PID instead of trusting stale env_status.json alone, so Step 5 world-agent chat fails fast with the existing closed-environment guidance instead of hanging into a 504 when the simulation process has already exited.

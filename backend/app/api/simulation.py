@@ -1917,6 +1917,7 @@ def get_run_status_detail(simulation_id: str):
             since_timestamp=since_timestamp,
             limit=None if since_timestamp else requested_limit,
         )
+        latest_action = all_actions[0] if all_actions else None
         ordered_actions = list(reversed(all_actions))
         twitter_actions = [action for action in ordered_actions if action.platform == "twitter"]
         reddit_actions = [action for action in ordered_actions if action.platform == "reddit"]
@@ -1941,6 +1942,22 @@ def get_run_status_detail(simulation_id: str):
         result["requested_since"] = since_timestamp
         result["returned_actions_count"] = len(ordered_actions)
         result["detail_mode"] = "incremental" if since_timestamp else "recent_window"
+        process_alive = SimulationRunner._process_pid_is_alive(run_state.process_pid)
+        waiting_for_actions = (
+            run_state.runner_status in {RunnerStatus.RUNNING.value, RunnerStatus.STARTING.value}
+            and not ordered_actions
+        )
+        result["waiting_diagnostics"] = {
+            "waiting_for_actions": waiting_for_actions,
+            "process_alive": process_alive,
+            "process_pid": run_state.process_pid,
+            "latest_action_timestamp": latest_action.timestamp if latest_action else None,
+            "simulation_log_tail": (
+                SimulationRunner.get_simulation_log_tail(simulation_id)
+                if waiting_for_actions or run_state.runner_status == RunnerStatus.FAILED.value
+                else ""
+            ),
+        }
         
         return jsonify({
             "success": True,

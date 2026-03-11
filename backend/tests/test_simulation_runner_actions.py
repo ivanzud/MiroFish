@@ -553,3 +553,35 @@ def test_check_env_alive_rejects_non_running_run_state_even_with_alive_file(tmp_
     finally:
         runner.RUN_STATE_DIR = original_run_state_dir
         runner._run_states = original_states
+
+
+def test_get_run_state_reconciles_stale_running_state_when_process_is_gone(tmp_path):
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+    original_run_state_dir = runner.RUN_STATE_DIR
+    original_states = runner._run_states.copy()
+    runner.RUN_STATE_DIR = str(tmp_path)
+    runner._run_states = {}
+
+    try:
+        runner._save_run_state(
+            module.SimulationRunState(
+                simulation_id="sim-stale-runner",
+                locale="en",
+                runner_status=module.RunnerStatus.RUNNING,
+                process_pid=515151,
+            )
+        )
+
+        with mock.patch.object(runner, "_process_pid_is_alive", return_value=False):
+            state = runner.get_run_state("sim-stale-runner")
+
+        assert state is not None
+        assert state.runner_status == module.RunnerStatus.STOPPED
+        assert state.error == module.tr("simulation.environment_not_alive", "en")
+        assert state.completed_at is not None
+        assert state.twitter_running is False
+        assert state.reddit_running is False
+    finally:
+        runner.RUN_STATE_DIR = original_run_state_dir
+        runner._run_states = original_states

@@ -280,12 +280,64 @@ class SimulationRunner:
     def get_run_state(cls, simulation_id: str) -> Optional[SimulationRunState]:
         """获取运行状态"""
         if simulation_id in cls._run_states:
-            return cls._run_states[simulation_id]
-        
+            return cls._reconcile_run_state(cls._run_states[simulation_id])
+
         # 尝试从文件加载
         state = cls._load_run_state(simulation_id)
         if state:
             cls._run_states[simulation_id] = state
+            return cls._reconcile_run_state(state)
+        return state
+
+    @classmethod
+    def _reconcile_run_state(cls, state: SimulationRunState) -> SimulationRunState:
+        """Normalize persisted running states when the worker process has already exited."""
+        if state.runner_status not in {
+            RunnerStatus.RUNNING,
+            RunnerStatus.STARTING,
+            RunnerStatus.PAUSED,
+        }:
+            return state
+
+        process = cls._processes.get(state.simulation_id)
+        if process is not None:
+            returncode = process.poll()
+            if returncode is None:
+                return state
+            return cls._finalize_exited_run_state(state, returncode=returncode)
+
+        if cls._process_pid_is_alive(state.process_pid):
+            return state
+
+        return cls._finalize_exited_run_state(state, returncode=None)
+
+    @classmethod
+    def _finalize_exited_run_state(
+        cls,
+        state: SimulationRunState,
+        returncode: int | None,
+    ) -> SimulationRunState:
+        now = datetime.now().isoformat()
+        state.completed_at = state.completed_at or now
+        state.updated_at = now
+        state.twitter_running = False
+        state.reddit_running = False
+
+        if returncode == 0:
+            state.runner_status = RunnerStatus.COMPLETED
+            state.error = None
+        elif isinstance(returncode, int):
+            state.runner_status = RunnerStatus.FAILED
+            state.error = cls._format_process_exit_error(
+                exit_code=returncode,
+                details=cls.get_simulation_log_tail(state.simulation_id),
+                locale=state.locale,
+            )
+        else:
+            state.runner_status = RunnerStatus.STOPPED
+            state.error = state.error or tr("simulation.environment_not_alive", state.locale)
+
+        cls._save_run_state(state)
         return state
     
     @classmethod
@@ -1058,6 +1110,36 @@ class SimulationRunner:
             actions = actions[:limit]
         
         return actions
+
+    @classmethod
+    def get_simulation_log_tail(
+        cls,
+        simulation_id: str,
+        max_chars: int = 1200,
+        max_lines: int = 12,
+    ) -> str:
+        """Return a compact tail of simulation.log for diagnostics."""
+        if max_chars <= 0 or max_lines <= 0:
+            return ""
+
+        log_path = os.path.join(cls.RUN_STATE_DIR, simulation_id, "simulation.log")
+        if not os.path.exists(log_path):
+            return ""
+
+        try:
+            with open(log_path, "r", encoding="utf-8") as handle:
+                handle.seek(0, os.SEEK_END)
+                file_size = handle.tell()
+                handle.seek(max(0, file_size - max_chars))
+                tail = handle.read()
+        except OSError:
+            return ""
+
+        lines = [line.rstrip() for line in tail.splitlines() if line.strip()]
+        if not lines:
+            return ""
+
+        return "\n".join(lines[-max_lines:])
     
     @classmethod
     def get_actions(

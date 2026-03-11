@@ -14,15 +14,19 @@
     },
     {
       "number": 149,
-      "status": "tracked",
-      "summary": "Tracked under beads issue `mirofish-nja`: the new Step 3 stall report currently includes only a screenshot of \"Waiting for agent actions\", so the next pass should reproduce it and map it against existing simulation-stall/env-liveness fixes before landing a targeted change.",
+      "status": "covered",
+      "summary": "Step 3 now reconciles stale persisted `running` states when the worker PID is gone, and the detailed status payload exposes compact simulation-log diagnostics while waiting for the first actions. That prevents indefinite \"Waiting for agent actions\" polling after a dead worker and makes true startup stalls visible in the UI.",
       "local_refs": [
-        ".beads/issues.jsonl",
-        "docs/upstream-open-state.json",
-        "docs/upstream-triage.md"
+        "backend/app/services/simulation_runner.py",
+        "backend/app/api/simulation.py",
+        "backend/tests/test_simulation_runner_actions.py",
+        "backend/tests/test_simulation_run_status_detail.py",
+        "frontend/src/components/Step3Simulation.vue"
       ],
       "validation": [
-        "tracking only"
+        "cd backend && uv run pytest -q tests/test_simulation_runner_actions.py tests/test_simulation_run_status_detail.py",
+        "npm --prefix frontend test",
+        "npm --prefix frontend run build"
       ]
     },
     {

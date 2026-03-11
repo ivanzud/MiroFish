@@ -268,6 +268,25 @@
         <div v-if="allActions.length === 0" class="waiting-state">
           <div class="pulse-ring"></div>
           <span>{{ t('step3.waitingActions') }}</span>
+          <div v-if="waitingDiagnostics" class="waiting-diagnostics">
+            <p class="waiting-hint">
+              {{
+                waitingDiagnostics.process_alive
+                  ? t('step3.waitingDiagnosticsProcessAlive')
+                  : t('step3.waitingDiagnosticsProcessExited')
+              }}
+            </p>
+            <p class="waiting-meta">
+              {{ t('step3.waitingDiagnosticsStatus', { status: waitingStatusLabel }) }}
+              <span v-if="waitingDiagnostics.process_pid">
+                · {{ t('step3.waitingDiagnosticsPid', { pid: waitingDiagnostics.process_pid }) }}
+              </span>
+            </p>
+            <pre
+              v-if="waitingDiagnostics.simulation_log_tail"
+              class="waiting-log-tail"
+            >{{ waitingDiagnostics.simulation_log_tail }}</pre>
+          </div>
         </div>
       </div>
     </div>
@@ -358,6 +377,25 @@ const twitterActionsCount = computed(() => {
 
 const redditActionsCount = computed(() => {
   return allActions.value.filter(a => a.platform === 'reddit').length
+})
+
+const waitingDiagnostics = computed(() => {
+  const diagnostics = runStatus.value?.waiting_diagnostics
+  if (!diagnostics?.waiting_for_actions) {
+    return null
+  }
+  return diagnostics
+})
+
+const waitingStatusLabel = computed(() => {
+  const status = runStatus.value?.runner_status
+  if (status === 'starting') {
+    return t('step3.waitingDiagnosticsStatusStarting')
+  }
+  if (status === 'running') {
+    return t('step3.waitingDiagnosticsStatusRunning')
+  }
+  return status || t('common.none')
 })
 
 // 格式化模拟流逝时间（根据轮次和每轮分钟数计算）
@@ -1289,6 +1327,8 @@ onUnmounted(() => {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
+  max-width: min(560px, calc(100vw - 48px));
+  text-align: center;
 }
 
 .pulse-ring {
@@ -1302,6 +1342,45 @@ onUnmounted(() => {
 @keyframes ripple {
   0% { transform: scale(0.8); opacity: 1; border-color: #CCC; }
   100% { transform: scale(2.5); opacity: 0; border-color: #EAEAEA; }
+}
+
+.waiting-diagnostics {
+  margin-top: 4px;
+  padding: 14px 16px;
+  border: 1px solid #EAEAEA;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #444;
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: 'JetBrains Mono', monospace;
+  width: 100%;
+}
+
+.waiting-hint,
+.waiting-meta {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.waiting-meta {
+  color: #666;
+}
+
+.waiting-log-tail {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  background: #111;
+  color: #F5F5F5;
+  border-radius: 6px;
+  text-align: left;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 180px;
+  overflow: auto;
 }
 
 /* Animation */
