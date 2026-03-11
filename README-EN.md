@@ -297,6 +297,20 @@ npm run dev
 
 If you use the default dual-port layout, the frontend auto-targets backend port `5001` on the same host. The backend root is API-only; use `http://localhost:5001/health` for a quick health check.
 
+#### 3.1 FAQ
+
+**Which models / APIs are supported?**
+
+- The backend accepts any OpenAI-compatible API; it is not locked to one provider.
+- Paths already validated and documented in this repo include OpenAI, Codex-compatible gateways, Alibaba DashScope compatible mode, Alibaba DashScope Coding Plan, and local OpenAI-compatible gateways such as LM Studio or Ollama.
+- You can configure either the project-specific `LLM_API_KEY` / `LLM_BASE_URL` / `LLM_MODEL_NAME` variables or the standard `OPENAI_API_KEY` / `OPENAI_API_BASE_URL` / `OPENAI_MODEL` aliases directly.
+
+**What happens if I refresh the browser or close the page?**
+
+- Refreshing the browser or closing the tab does not directly stop graph-building, simulation, or report jobs that are already running on the backend.
+- Persisted data remains under `backend/uploads/`, and the homepage history view can reopen Step 1 (Graph Build), Step 2 (Environment Setup), and Step 4 (Report).
+- Step 3 and Step 5 still depend on a live OASIS runtime session. If the backend process, container, or simulation environment has already been shut down, those live runtime stages cannot be replayed seamlessly and must be prepared or started again.
+
 **Start Individually:**
 
 ```bash

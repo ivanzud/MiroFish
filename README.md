@@ -297,6 +297,20 @@ npm run dev
 
 默认前后端双端口部署时，前端会自动访问同主机的 `5001` 端口后端。后端根路径仅提供 API，快速健康检查请访问 `http://localhost:5001/health`。
 
+#### 3.1 常见问题
+
+**支持哪些模型 / API？**
+
+- 当前后端支持任意 OpenAI-compatible 接口，不要求必须使用某一个固定厂商。
+- 已在本仓库中验证并写入示例配置的路径包括：OpenAI、Codex 兼容网关、阿里云百炼兼容模式、阿里云百炼 Coding Plan，以及 LM Studio / Ollama 这类 OpenAI SDK 兼容本地网关。
+- 配置时既可以使用项目内的 `LLM_API_KEY` / `LLM_BASE_URL` / `LLM_MODEL_NAME`，也可以直接使用标准 `OPENAI_API_KEY` / `OPENAI_API_BASE_URL` / `OPENAI_MODEL`。
+
+**浏览器刷新、关闭页面后会发生什么？**
+
+- 单纯刷新页面或暂时关闭浏览器，不会直接终止服务器端已经启动的图谱构建、模拟或报告任务。
+- 已落盘的数据会保存在 `backend/uploads/` 下，首页历史记录也可以重新打开 Step1「图谱构建」、Step2「环境搭建」和 Step4「分析报告」。
+- 但 Step3「开始模拟」和 Step5「深度互动」依赖实时运行中的 OASIS 环境；如果后端进程、容器或对应模拟环境已经关闭，就不能像录像回放一样无缝恢复，需要重新准备或重新启动该运行环境。
+
 **单独启动：**
 
 ```bash

@@ -81,7 +81,7 @@ export default {
     graphBuildBtn: '图谱构建',
     envSetupBtn: '环境搭建',
     reportBtn: '分析报告',
-    playbackHint: 'Step3「开始模拟」与 Step5「深度互动」需在运行中启动，不支持历史回放',
+    playbackHint: '刷新或关闭浏览器不会直接停止后端任务；可从历史重新打开 Step1 / Step2 / Step4，但 Step3「开始模拟」与 Step5「深度互动」仍依赖实时运行中的环境，不支持在环境关闭后做历史回放。',
     unnamedSimulation: '未命名模拟',
     unknownSimulationId: 'SIM_UNKNOWN',
     notStarted: '未开始',

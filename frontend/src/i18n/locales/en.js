@@ -81,7 +81,7 @@ export default {
     graphBuildBtn: 'Graph Build',
     envSetupBtn: 'Environment Setup',
     reportBtn: 'Report',
-    playbackHint: 'Step 3 and Step 5 require a live runtime session and cannot be replayed from history.',
+    playbackHint: 'Refreshing or closing the browser does not stop backend jobs by itself. You can reopen Step 1 / Step 2 / Step 4 from history, but Step 3 and Step 5 still require a live runtime session and cannot be replayed after that environment is closed.',
     unnamedSimulation: 'Untitled simulation',
     unknownSimulationId: 'SIM_UNKNOWN',
     notStarted: 'Not started',
