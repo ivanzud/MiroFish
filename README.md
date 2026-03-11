@@ -260,6 +260,7 @@ OPENAI_MODEL=qwen3.5-plus
 - 或直接运行 `npm run check:backend-config`，无需启动服务也能打印同样的非敏感 config-status JSON。
 - 再访问 `http://localhost:5001/api/graph/config/status`。返回 JSON 中 `llm.backend_mode` 应为 `openai_compatible`。
 - `summary.llm.sources` 会显示当前实际生效的是 `LLM_*` 还是 `OPENAI_*` 环境变量，以及具体命中了 `OPENAI_BASE_URL` 还是 `OPENAI_API_BASE_URL`，因此可以直接确认 Codex / OpenAI / DashScope Coding Plan 这类兼容网关是否已被正确识别，不需要额外设置 `LLM_PROVIDER`。
+- 如果本地验证时没有设置 `SECRET_KEY`，`npm run check:backend-config` 里出现“临时生成 SECRET_KEY”的 warning 是预期行为，并不表示直连 `OPENAI_*` 配置失败。
 
 如果遇到 `5001` 根路径返回 `404`，那通常不是后端启动失败，而是因为后端只暴露 API 路由；请改用 `http://localhost:5001/health` 检查健康状态。
 

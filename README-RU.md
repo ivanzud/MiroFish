@@ -97,6 +97,7 @@ How to verify that MiroFish detected the direct OpenAI-compatible path:
 - Or run `npm run check:backend-config` to print the same non-sensitive config-status JSON without starting the server.
 - Then open `http://localhost:5001/api/graph/config/status`. The JSON payload should report `llm.backend_mode = openai_compatible`.
 - `summary.llm.sources` shows whether MiroFish resolved `LLM_*` or `OPENAI_*` variables and whether the active base URL came from `OPENAI_BASE_URL` or `OPENAI_API_BASE_URL`, so you can confirm that a Codex/OpenAI-compatible gateway is wired correctly without adding `LLM_PROVIDER`.
+- If `SECRET_KEY` is unset during a local verification run, a warning about using a temporary generated key is expected and does not mean the direct `OPENAI_*` path failed.
 
 If `http://localhost:5001` returns `404`, that usually does not mean the backend failed to start. The backend root is API-only; use `http://localhost:5001/health` for a health check instead.
 

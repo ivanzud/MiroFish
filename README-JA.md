@@ -150,6 +150,7 @@ OpenAI-compatible 設定として認識されたかを確認するには:
 - または `npm run check:backend-config` を実行すると、サーバーを起動しなくても同じ非機密の config-status JSON を出力できます。
 - 次に `http://localhost:5001/api/graph/config/status` を開きます。返却 JSON の `llm.backend_mode` は `openai_compatible` である必要があります。
 - `summary.llm.sources` には実際に採用された `LLM_*` または `OPENAI_*` 環境変数名が表示されるため、Codex / OpenAI / DashScope Coding Plan のような互換ゲートウェイを追加の `LLM_PROVIDER` なしで正しく認識できているか確認できます。
+- ローカル検証で `SECRET_KEY` を設定していない場合、`npm run check:backend-config` に一時的な生成キーの warning が出ることがありますが、これは想定内であり、直接の `OPENAI_*` 接続失敗を意味しません。
 
 #### 2. 依存関係のインストール
 
