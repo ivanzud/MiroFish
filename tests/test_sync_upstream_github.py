@@ -37,6 +37,20 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(args.output, "docs/upstream-open-state.json")
         self.assertEqual(args.summary, "docs/upstream-open-summary.md")
 
+    def test_build_parser_accepts_max_workers_flag(self):
+        args = sync_upstream_github.build_parser().parse_args(
+            [
+                "--output",
+                "docs/upstream-open-state.json",
+                "--summary",
+                "docs/upstream-open-summary.md",
+                "--max-workers",
+                "4",
+            ]
+        )
+
+        self.assertEqual(args.max_workers, 4)
+
     def test_snapshot_is_fresh_accepts_recent_capture(self):
         payload = {"captured_at": "2026-03-11T08:30:00+00:00"}
 
@@ -450,6 +464,25 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(mocked.call_args_list[0].args[1]["page"], 1)
         self.assertEqual(mocked.call_args_list[1].args[1]["page"], 2)
 
+    def test_parallel_ordered_map_preserves_input_order(self):
+        items = [1, 2, 3, 4]
+
+        results = sync_upstream_github.parallel_ordered_map(
+            items,
+            lambda item: {"item": item, "square": item * item},
+            max_workers=3,
+        )
+
+        self.assertEqual(
+            results,
+            [
+                {"item": 1, "square": 1},
+                {"item": 2, "square": 4},
+                {"item": 3, "square": 9},
+                {"item": 4, "square": 16},
+            ],
+        )
+
     def test_hydrate_pull_requests_fetches_detail_payloads(self):
         with patch.object(
             sync_upstream_github,
@@ -463,6 +496,7 @@ class SyncUpstreamGithubTests(unittest.TestCase):
                 "test-owner",
                 "test-repo",
                 [{"number": 101}, {"number": 102}],
+                max_workers=2,
             )
 
         self.assertEqual(
@@ -474,6 +508,43 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         )
         self.assertEqual(mocked.call_args_list[0].args, ("/repos/test-owner/test-repo/pulls/101", {}))
         self.assertEqual(mocked.call_args_list[1].args, ("/repos/test-owner/test-repo/pulls/102", {}))
+
+    def test_compact_helpers_delegate_parallel_work_with_requested_worker_cap(self):
+        issue_items = [{"number": 1}, {"number": 2}]
+        pr_items = [{"number": 101}, {"number": 102}]
+
+        with (
+            patch.object(
+                sync_upstream_github,
+                "parallel_ordered_map",
+                side_effect=[
+                    [{"number": 1, "kind": "issue"}, {"number": 2, "kind": "issue"}],
+                    [{"number": 101, "kind": "pr"}, {"number": 102, "kind": "pr"}],
+                    [{"number": 101, "title": "PR 101"}, {"number": 102, "title": "PR 102"}],
+                ],
+            ) as mocked_parallel,
+            patch.object(sync_upstream_github, "compact_pr", side_effect=lambda item, mirrored, remote: item),
+        ):
+            issues = sync_upstream_github.compact_issues(issue_items, max_workers=5)
+            hydrated = sync_upstream_github.hydrate_pull_requests(
+                "test-owner",
+                "test-repo",
+                pr_items,
+                max_workers=4,
+            )
+            prs = sync_upstream_github.compact_pull_requests(
+                hydrated,
+                mirrored_pr_numbers={101},
+                fork_remote="origin",
+                max_workers=3,
+            )
+
+        self.assertEqual(issues, [{"number": 1, "kind": "issue"}, {"number": 2, "kind": "issue"}])
+        self.assertEqual(hydrated, [{"number": 101, "kind": "pr"}, {"number": 102, "kind": "pr"}])
+        self.assertEqual(prs, [{"number": 101, "title": "PR 101"}, {"number": 102, "title": "PR 102"}])
+        self.assertEqual(mocked_parallel.call_args_list[0].kwargs["max_workers"], 5)
+        self.assertEqual(mocked_parallel.call_args_list[1].kwargs["max_workers"], 4)
+        self.assertEqual(mocked_parallel.call_args_list[2].kwargs["max_workers"], 3)
 
     def test_compact_records_include_state_fields(self):
         with patch.object(

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import concurrent.futures
 import errno
 import fcntl
 import json
@@ -28,6 +29,7 @@ GH_API_MAX_ATTEMPTS = 3
 DEFAULT_API_TIMEOUT = int(os.environ.get("MIROFISH_GITHUB_SYNC_TIMEOUT", "30"))
 REQUEST_TIMEOUT = DEFAULT_API_TIMEOUT
 DEFAULT_STALE_CACHE_HOURS = int(os.environ.get("MIROFISH_GITHUB_SYNC_STALE_HOURS", "24"))
+DEFAULT_MAX_WORKERS = int(os.environ.get("MIROFISH_GITHUB_SYNC_MAX_WORKERS", "8"))
 
 
 def has_github_token() -> bool:
@@ -201,17 +203,55 @@ def fetch_recent_comments(comments_url: str | None, limit: int = RECENT_COMMENT_
     return comments
 
 
-def hydrate_pull_requests(owner: str, name: str, pull_requests: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    hydrated: list[dict[str, Any]] = []
-    for pull_request in pull_requests:
+def hydrate_pull_requests(
+    owner: str,
+    name: str,
+    pull_requests: list[dict[str, Any]],
+    max_workers: int,
+) -> list[dict[str, Any]]:
+    def hydrate_one(pull_request: dict[str, Any]) -> dict[str, Any]:
         number = pull_request.get("number")
         if number is None:
             raise ValueError("Pull request payload missing number")
         details = github_api(f"/repos/{owner}/{name}/pulls/{number}", {})
         if not isinstance(details, dict):
             raise ValueError(f"Expected pull request details dict for #{number}, got {type(details)!r}")
-        hydrated.append(details)
-    return hydrated
+        return details
+
+    return parallel_ordered_map(
+        pull_requests,
+        hydrate_one,
+        max_workers=max_workers,
+    )
+
+
+def parallel_ordered_map(
+    items: list[Any],
+    func,
+    *,
+    max_workers: int,
+) -> list[Any]:
+    if not items:
+        return []
+
+    resolved_max_workers = max(1, min(max_workers, len(items)))
+    if resolved_max_workers == 1:
+        return [func(item) for item in items]
+
+    results: list[Any] = [None] * len(items)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=resolved_max_workers) as executor:
+        future_to_index = {
+            executor.submit(func, item): index for index, item in enumerate(items)
+        }
+        try:
+            for future in concurrent.futures.as_completed(future_to_index):
+                index = future_to_index[future]
+                results[index] = future.result()
+        except Exception:
+            for future in future_to_index:
+                future.cancel()
+            raise
+    return results
 
 
 def list_mirrored_pull_request_numbers(remote: str) -> set[int]:
@@ -255,6 +295,10 @@ def compact_issue(issue: dict[str, object]) -> dict[str, object]:
         "comment_count": comment_count,
         "recent_comments": fetch_recent_comments(issue.get("comments_url")) if comment_count else [],
     }
+
+
+def compact_issues(issue_items: list[dict[str, object]], max_workers: int) -> list[dict[str, object]]:
+    return parallel_ordered_map(issue_items, compact_issue, max_workers=max_workers)
 
 
 def compact_pr(
@@ -301,6 +345,19 @@ def compact_pr(
         "fork_mirrored": fork_mirrored,
         "fork_mirror_ref": fork_mirror_ref,
     }
+
+
+def compact_pull_requests(
+    pr_items: list[dict[str, object]],
+    mirrored_pr_numbers: set[int] | None,
+    fork_remote: str | None,
+    max_workers: int,
+) -> list[dict[str, object]]:
+    return parallel_ordered_map(
+        pr_items,
+        lambda item: compact_pr(item, mirrored_pr_numbers, fork_remote),
+        max_workers=max_workers,
+    )
 
 
 def summarize_counts(items: list[dict[str, object]]) -> dict[str, int]:
@@ -468,6 +525,15 @@ def build_parser() -> argparse.ArgumentParser:
             "instead of failing. Set to -1 to disable stale cache fallback."
         ),
     )
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=DEFAULT_MAX_WORKERS,
+        help=(
+            "Maximum concurrent GitHub hydration workers for per-item PR detail/comment fetches. "
+            "Lower this if GitHub starts rate limiting aggressively."
+        ),
+    )
     return parser
 
 
@@ -476,6 +542,7 @@ def main() -> int:
     args = parser.parse_args()
     global REQUEST_TIMEOUT
     REQUEST_TIMEOUT = max(1, args.timeout)
+    max_workers = max(1, args.max_workers)
 
     output_path = Path(args.output)
     summary_path = Path(args.summary)
@@ -522,10 +589,18 @@ def main() -> int:
                     return 0
             raise
 
-        issues = [compact_issue(item) for item in issue_items if "pull_request" not in item]
-        pr_details = hydrate_pull_requests(owner, name, pr_items)
+        issues = compact_issues(
+            [item for item in issue_items if "pull_request" not in item],
+            max_workers=max_workers,
+        )
+        pr_details = hydrate_pull_requests(owner, name, pr_items, max_workers=max_workers)
         mirrored_pr_numbers = list_mirrored_pull_request_numbers(args.fork_remote) if args.fork_remote else None
-        prs = [compact_pr(item, mirrored_pr_numbers, args.fork_remote) for item in pr_details]
+        prs = compact_pull_requests(
+            pr_details,
+            mirrored_pr_numbers,
+            args.fork_remote,
+            max_workers=max_workers,
+        )
         captured_at = datetime.now(timezone.utc).isoformat()
         payload = {
             "repo": args.repo,
