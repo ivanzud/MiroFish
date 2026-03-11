@@ -70,6 +70,7 @@ def test_validate_comprehensive_reports_debug_warning_and_safe_summary(monkeypat
     assert any("DEBUG" in warning for warning in result.warnings)
     assert summary["llm"]["configured"] is True
     assert summary["zep"]["configured"] is True
+    assert summary["cors"]["allowed_origins"] == ["*"]
     assert summary["simulation"]["interview_timeouts"]["single_seconds"] == 120.0
     assert "api_key" not in str(summary).lower()
     assert config_module.validate_on_startup() is True
@@ -87,3 +88,29 @@ def test_validate_comprehensive_can_render_english_messages(monkeypatch):
     assert "LLM_API_KEY / OPENAI_API_KEY is not configured" in result.errors
     assert "ZEP_API_KEY is not configured" in result.errors
     assert "OASIS_DEFAULT_MAX_ROUNDS must be a valid number, current value: bad-value" in result.errors
+
+
+def test_config_parses_cors_csv_environment_variables(monkeypatch):
+    monkeypatch.setenv(
+        "CORS_ALLOWED_ORIGINS",
+        "https://app.example.test, https://admin.example.test",
+    )
+    monkeypatch.setenv("CORS_ALLOW_METHODS", "GET,POST")
+    monkeypatch.setenv("CORS_ALLOW_HEADERS", "Content-Type, X-Locale")
+
+    config_module = load_config_module()
+
+    assert config_module.Config.CORS_ALLOWED_ORIGINS == [
+        "https://app.example.test",
+        "https://admin.example.test",
+    ]
+    assert config_module.Config.CORS_ALLOW_METHODS == ["GET", "POST"]
+    assert config_module.Config.CORS_ALLOW_HEADERS == ["Content-Type", "X-Locale"]
+    assert config_module.Config.get_cors_resources() == {
+        "origins": [
+            "https://app.example.test",
+            "https://admin.example.test",
+        ],
+        "methods": ["GET", "POST"],
+        "allow_headers": ["Content-Type", "X-Locale"],
+    }

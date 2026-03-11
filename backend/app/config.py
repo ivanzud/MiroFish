@@ -57,6 +57,14 @@ def _float_env(name, default):
         return default
 
 
+def _csv_env(name, default=None):
+    """Parse comma-separated environment variables into a normalized list."""
+    raw_value = os.environ.get(name)
+    if raw_value in (None, ''):
+        return list(default or [])
+    return [item.strip() for item in raw_value.split(',') if item.strip()]
+
+
 @dataclass
 class ConfigValidationResult:
     """Structured config validation output."""
@@ -95,6 +103,15 @@ class Config:
     # Flask配置
     SECRET_KEY = os.environ.get('SECRET_KEY', 'mirofish-secret-key')
     DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
+    CORS_ALLOWED_ORIGINS = _csv_env('CORS_ALLOWED_ORIGINS', default=['*'])
+    CORS_ALLOW_METHODS = _csv_env(
+        'CORS_ALLOW_METHODS',
+        default=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    )
+    CORS_ALLOW_HEADERS = _csv_env(
+        'CORS_ALLOW_HEADERS',
+        default=['Content-Type', 'Authorization', 'X-Locale'],
+    )
     
     # JSON配置 - 禁用ASCII转义，让中文直接显示（而不是 \uXXXX 格式）
     JSON_AS_ASCII = False
@@ -206,6 +223,11 @@ class Config:
     def get_config_summary(cls):
         """Return a non-sensitive config snapshot for diagnostics."""
         return {
+            'cors': {
+                'allowed_origins': cls.CORS_ALLOWED_ORIGINS,
+                'allow_methods': cls.CORS_ALLOW_METHODS,
+                'allow_headers': cls.CORS_ALLOW_HEADERS,
+            },
             'llm': {
                 'base_url': cls.LLM_BASE_URL,
                 'model': cls.LLM_MODEL_NAME,
@@ -232,6 +254,15 @@ class Config:
                 'temperature': cls.REPORT_AGENT_TEMPERATURE,
             },
             'debug': cls.DEBUG,
+        }
+
+    @classmethod
+    def get_cors_resources(cls):
+        """Return Flask-CORS resource options from env-backed config."""
+        return {
+            'origins': cls.CORS_ALLOWED_ORIGINS or ['*'],
+            'methods': cls.CORS_ALLOW_METHODS,
+            'allow_headers': cls.CORS_ALLOW_HEADERS,
         }
 
     @classmethod

@@ -342,6 +342,8 @@ docker compose up -d
 
 如果前后端部署在不同主机或不同端口，请为前端显式设置 `VITE_API_BASE_URL`。
 
+如果你是前后端跨域部署，并且希望限制允许访问 `/api/*` 的前端来源，也可以设置后端环境变量 `CORS_ALLOWED_ORIGINS`（逗号分隔），并按需补充 `CORS_ALLOW_METHODS` / `CORS_ALLOW_HEADERS`。为兼容现有部署，默认行为仍然是允许所有来源 `*`。
+
 > 在 `docker-compose.yml` 中已通过注释提供加速镜像地址，可按需替换
 
 ## 📬 更多交流
