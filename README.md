@@ -258,6 +258,7 @@ OPENAI_MODEL=qwen3.5-plus
 
 - 先访问 `http://localhost:5001/health`，确认后端进程已启动。
 - 或直接运行 `npm run check:backend-config`，无需启动服务也能打印同样的非敏感 config-status JSON。
+- 如果你想走最直接的本地后端启动路径，可运行 `npm run backend:local`。它会先执行同样的配置预检，只有当前 `LLM_*` / `OPENAI_*` 别名解析正常时才启动 Flask。
 - 再访问 `http://localhost:5001/api/graph/config/status`。返回 JSON 中 `llm.backend_mode` 应为 `openai_compatible`。
 - `summary.llm.sources` 会显示当前实际生效的是 `LLM_*` 还是 `OPENAI_*` 环境变量，以及具体命中了 `OPENAI_BASE_URL` 还是 `OPENAI_API_BASE_URL`，因此可以直接确认 Codex / OpenAI / DashScope Coding Plan 这类兼容网关是否已被正确识别，不需要额外设置 `LLM_PROVIDER`。
 - 如果本地验证时没有设置 `SECRET_KEY`，`npm run check:backend-config` 里出现“临时生成 SECRET_KEY”的 warning 是预期行为，并不表示直连 `OPENAI_*` 配置失败。
@@ -306,6 +307,9 @@ npm run setup:backend:simulation
 ```bash
 # 同时启动前后端（在项目根目录执行）
 npm run dev
+
+# 或仅启动后端，并先做一次 OpenAI-compatible 配置预检
+npm run backend:local
 ```
 
 **服务地址：**

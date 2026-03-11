@@ -65,6 +65,18 @@ class LLMClient:
             "token limit",
         )
         return any(marker in text for marker in markers)
+
+    @staticmethod
+    def _is_unsupported_response_format_error(exc: Exception) -> bool:
+        text = str(exc).lower()
+        markers = (
+            "response_format",
+            "json_object unsupported",
+            "invalid parameter: response_format",
+            "unsupported json mode",
+            "json schema is not supported",
+        )
+        return any(marker in text for marker in markers)
     
     def chat(
         self,
@@ -101,19 +113,35 @@ class LLMClient:
         try:
             response = self.client.chat.completions.create(**kwargs)
         except BadRequestError as exc:
-            if not self._is_context_length_error(exc):
-                raise
+            if response_format and self._is_unsupported_response_format_error(exc):
+                logger.warning(
+                    "LLM backend rejected response_format=%s; retrying without JSON mode",
+                    response_format.get("type") if isinstance(response_format, dict) else response_format,
+                )
+                kwargs.pop("response_format", None)
+                response = self.client.chat.completions.create(**kwargs)
+            else:
+                if not self._is_context_length_error(exc):
+                    raise
 
-            trimmed_messages = self._trim_messages(messages)
-            if len(trimmed_messages) == len(messages):
-                raise
+                trimmed_messages = self._trim_messages(messages)
+                if len(trimmed_messages) == len(messages):
+                    raise
 
-            logger.warning("Retrying LLM call after context-length failure")
-            kwargs["messages"] = trimmed_messages
-            response = self.client.chat.completions.create(**kwargs)
-        except APIError:
-            logger.exception("LLM API request failed")
-            raise
+                logger.warning("Retrying LLM call after context-length failure")
+                kwargs["messages"] = trimmed_messages
+                response = self.client.chat.completions.create(**kwargs)
+        except APIError as exc:
+            if response_format and self._is_unsupported_response_format_error(exc):
+                logger.warning(
+                    "LLM backend rejected response_format=%s via APIError; retrying without JSON mode",
+                    response_format.get("type") if isinstance(response_format, dict) else response_format,
+                )
+                kwargs.pop("response_format", None)
+                response = self.client.chat.completions.create(**kwargs)
+            else:
+                logger.exception("LLM API request failed")
+                raise
 
         content = response.choices[0].message.content or ""
         # 部分模型会在 content 中夹带 <think>...</think>，且标签大小写不固定

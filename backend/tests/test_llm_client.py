@@ -122,6 +122,72 @@ def test_chat_retries_with_trimmed_messages_on_context_length_error(monkeypatch)
     assert create_calls[1]["messages"][:2] == messages[:2]
 
 
+def test_chat_retries_without_response_format_when_backend_rejects_json_mode(monkeypatch):
+    create_calls = []
+
+    class FakeBadRequestError(Exception):
+        pass
+
+    class FakeCompletions:
+        def create(self, **kwargs):
+            create_calls.append(kwargs)
+            if "response_format" in kwargs:
+                raise FakeBadRequestError("invalid parameter: response_format")
+            return SimpleNamespace(
+                choices=[SimpleNamespace(message=SimpleNamespace(content='{"ok": true}'))]
+            )
+
+    class FakeOpenAI:
+        def __init__(self, api_key, base_url):
+            self.chat = SimpleNamespace(completions=FakeCompletions())
+
+    monkeypatch.setattr("app.utils.llm_client.OpenAI", FakeOpenAI)
+    monkeypatch.setattr("app.utils.llm_client.BadRequestError", FakeBadRequestError)
+
+    client = LLMClient(api_key="test-key", base_url="https://example.test/v1", model="test-model")
+    response = client.chat(
+        [{"role": "user", "content": "hello"}],
+        response_format={"type": "json_object"},
+    )
+
+    assert response == '{"ok": true}'
+    assert "response_format" in create_calls[0]
+    assert "response_format" not in create_calls[1]
+
+
+def test_chat_retries_without_response_format_on_api_error(monkeypatch):
+    create_calls = []
+
+    class FakeAPIError(Exception):
+        pass
+
+    class FakeCompletions:
+        def create(self, **kwargs):
+            create_calls.append(kwargs)
+            if "response_format" in kwargs:
+                raise FakeAPIError("response_format json_object unsupported")
+            return SimpleNamespace(
+                choices=[SimpleNamespace(message=SimpleNamespace(content="ok"))]
+            )
+
+    class FakeOpenAI:
+        def __init__(self, api_key, base_url):
+            self.chat = SimpleNamespace(completions=FakeCompletions())
+
+    monkeypatch.setattr("app.utils.llm_client.OpenAI", FakeOpenAI)
+    monkeypatch.setattr("app.utils.llm_client.APIError", FakeAPIError)
+
+    client = LLMClient(api_key="test-key", base_url="https://example.test/v1", model="test-model")
+    response = client.chat(
+        [{"role": "user", "content": "hello"}],
+        response_format={"type": "json_object"},
+    )
+
+    assert response == "ok"
+    assert "response_format" in create_calls[0]
+    assert "response_format" not in create_calls[1]
+
+
 def test_chat_uses_configured_default_max_tokens(monkeypatch):
     create_calls = []
 

@@ -11,6 +11,7 @@
     "sync:upstream": "bash ./scripts/refresh_upstream_snapshots.sh",
     "dev": "concurrently --kill-others -n \"backend,frontend\" -c \"green,cyan\" \"npm run backend\" \"npm run frontend\"",
     "backend": "cd backend && uv run python run.py",
+    "backend:local": "npm run check:backend-config && npm run backend",
     "check:backend-config": "cd backend && uv run python scripts/print_config_status.py --locale en",
     "frontend": "cd frontend && npm run dev",
     "build": "cd frontend && npm run build",
