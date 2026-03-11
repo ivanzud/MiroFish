@@ -317,16 +317,19 @@
     {
       "number": 117,
       "status": "covered",
-      "summary": "The remaining Step 3 timeline labels, Step 5 platform/status labels, and locale-aware interaction timestamps now flow through the shared i18n dictionaries, so the English mode no longer falls back to hardcoded workflow strings in those surfaces.",
+      "summary": "The English support sweep now covers workflow chrome plus report/interview parsing: Step 3/5 labels flow through shared i18n dictionaries, and Step 4 tool-output parsers now accept both Chinese and English markers for interview/search results and no-reply placeholders.",
       "local_refs": [
         "frontend/src/components/Step3Simulation.vue",
+        "frontend/src/components/Step4Report.vue",
         "frontend/src/components/Step5Interaction.vue",
+        "frontend/src/components/reportParsers.js",
         "frontend/src/components/step5Profiles.js",
         "frontend/src/components/simulationTimeline.js",
         "frontend/src/i18n/locales/en.js",
         "frontend/src/i18n/locales/zh.js"
       ],
       "validation": [
+        "frontend/tests/reportParsers.test.mjs",
         "frontend/tests/simulationTimeline.test.mjs",
         "frontend/tests/step5Profiles.test.mjs",
         "frontend: npm test",
