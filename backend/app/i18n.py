@@ -108,6 +108,14 @@ TRANSLATIONS = {
         "zh": "缺少 PDF 解析依赖 PyMuPDF，请先执行 `pip install PyMuPDF`",
         "en": "Missing PDF parsing dependency PyMuPDF. Install it with `pip install PyMuPDF` first.",
     },
+    "file.multi_doc_header": {
+        "zh": "=== 文档 {index}: {filename} ===",
+        "en": "=== Document {index}: {filename} ===",
+    },
+    "file.multi_doc_failed_header": {
+        "zh": "=== 文档 {index}: {filename} (提取失败: {details}) ===",
+        "en": "=== Document {index}: {filename} (extraction failed: {details}) ===",
+    },
     "task.completed": {
         "zh": "任务完成",
         "en": "Task completed",

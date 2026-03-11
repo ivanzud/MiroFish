@@ -53,6 +53,36 @@ def test_file_parser_errors_use_english_request_locale(tmp_path):
             raise AssertionError("expected ValueError for an unsupported file")
 
 
+def test_file_parser_multi_document_wrappers_use_english_request_locale(tmp_path):
+    valid_path = tmp_path / "alpha.txt"
+    valid_path.write_text("hello", encoding="utf-8")
+    missing_path = tmp_path / "missing.txt"
+
+    app = Flask(__name__)
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        combined = FileParser.extract_from_multiple([str(valid_path), str(missing_path)])
+
+    assert "=== Document 1: alpha.txt ===\nhello" in combined
+    assert (
+        f"=== Document 2: missing.txt (extraction failed: File not found: {missing_path}) ==="
+        in combined
+    )
+
+
+def test_file_parser_multi_document_wrappers_support_explicit_locale(tmp_path):
+    valid_path = tmp_path / "alpha.txt"
+    valid_path.write_text("hello", encoding="utf-8")
+    missing_path = tmp_path / "missing.txt"
+
+    combined = FileParser.extract_from_multiple([str(valid_path), str(missing_path)], locale="en")
+
+    assert "=== Document 1: alpha.txt ===\nhello" in combined
+    assert (
+        f"=== Document 2: missing.txt (extraction failed: File not found: {missing_path}) ==="
+        in combined
+    )
+
+
 def test_task_manager_complete_and_fail_support_explicit_locale():
     manager = TaskManager()
     manager._tasks.clear()
