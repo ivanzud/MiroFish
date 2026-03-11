@@ -297,12 +297,16 @@ def test_interview_agents_localizes_english_placeholders_and_text(monkeypatch):
         "[Reddit answer]\n"
         "(no reply received from this platform)"
     )
+    assert result.interviews[0].key_quotes == [
+        "People became more cautious after the update."
+    ]
 
     rendered = result.to_text()
     assert "## In-Depth Interview Report" in rendered
     assert "**Interview topic:** Understand the reaction" in rendered
     assert "_Bio: Tracks policy sentiment shifts._" in rendered
-    assert "**Key quotes:**" in rendered or result.interviews[0].key_quotes == []
+    assert '**Key quotes:**' in rendered
+    assert '> "People became more cautious after the update."' in rendered
 
 
 def test_interview_agents_localizes_api_failure_summary_in_english(monkeypatch):

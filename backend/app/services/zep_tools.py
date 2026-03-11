@@ -414,23 +414,32 @@ class AgentInterview:
             for quote in self.key_quotes:
                 # 清理各种引号
                 clean_quote = quote.replace('\u201c', '').replace('\u201d', '').replace('"', '')
+                clean_quote = clean_quote.replace("'", "").replace('\u2018', '').replace('\u2019', '')
                 clean_quote = clean_quote.replace('\u300c', '').replace('\u300d', '')
                 clean_quote = clean_quote.strip()
                 # 去掉开头的标点
-                while clean_quote and clean_quote[0] in '，,；;：:、。！？\n\r\t ':
+                while clean_quote and clean_quote[0] in '，,；;：:、。！？.!?\n\r\t ':
                     clean_quote = clean_quote[1:]
-                # 过滤包含问题编号的垃圾内容（问题1-9）
-                skip = False
-                for d in '123456789':
-                    if f'\u95ee\u9898{d}' in clean_quote:
-                        skip = True
-                        break
-                if skip:
+                # 过滤包含问题编号的垃圾内容（中英文）
+                if any(f'\u95ee\u9898{d}' in clean_quote for d in '123456789') or clean_quote.lower().startswith("question "):
                     continue
                 # 截断过长内容（按句号截断，而非硬截断）
                 if len(clean_quote) > 150:
-                    dot_pos = clean_quote.find('\u3002', 80)
-                    if dot_pos > 0:
+                    sentence_end_candidates = [
+                        pos
+                        for pos in (
+                            clean_quote.find('\u3002', 80),
+                            clean_quote.find('. ', 80),
+                            clean_quote.find('! ', 80),
+                            clean_quote.find('? ', 80),
+                            clean_quote.find('.', 80),
+                            clean_quote.find('!', 80),
+                            clean_quote.find('?', 80),
+                        )
+                        if pos > 0
+                    ]
+                    if sentence_end_candidates:
+                        dot_pos = min(sentence_end_candidates)
                         clean_quote = clean_quote[:dot_pos + 1]
                     else:
                         clean_quote = clean_quote[:147] + "..."
@@ -2175,21 +2184,29 @@ Requirements:
                 clean_text = re.sub(r'【[^】]+】', '', clean_text)
 
                 # 策略1（主）: 提取完整的有实质内容的句子
-                sentences = re.split(r'[。！？]', clean_text)
+                sentences = re.split(r'[。！？.!?]+(?:["”」])?\s*', clean_text)
                 meaningful = [
                     s.strip() for s in sentences
                     if 20 <= len(s.strip()) <= 150
-                    and not re.match(r'^[\s\W，,；;：:、]+', s.strip())
-                    and not s.strip().startswith(('{', '问题'))
+                    and not re.match(r'^[\s\W，,；;：:、.!?]+', s.strip())
+                    and not re.match(r'^(?:\{|\u95ee\u9898\d+|question\s+\d+)', s.strip(), re.IGNORECASE)
                 ]
                 meaningful.sort(key=len, reverse=True)
-                key_quotes = [s + "。" for s in meaningful[:3]]
+                sentence_suffix = "." if locale == "en" else "。"
+                key_quotes = [s + sentence_suffix for s in meaningful[:3]]
 
-                # 策略2（补充）: 正确配对的中文引号「」内长文本
+                # 策略2（补充）: 提取正确配对的中英文长引号文本
                 if not key_quotes:
                     paired = re.findall(r'\u201c([^\u201c\u201d]{15,100})\u201d', clean_text)
                     paired += re.findall(r'\u300c([^\u300c\u300d]{15,100})\u300d', clean_text)
-                    key_quotes = [q for q in paired if not re.match(r'^[，,；;：:、]', q)][:3]
+                    paired += re.findall(r'"([^"\n]{15,160})"', clean_text)
+                    paired += re.findall(r"'([^'\n]{15,160})'", clean_text)
+                    key_quotes = [
+                        q.strip()
+                        for q in paired
+                        if not re.match(r'^[，,；;：:、.!?]', q.strip())
+                        and not re.match(r'^(?:\u95ee\u9898\d+|question\s+\d+)', q.strip(), re.IGNORECASE)
+                    ][:3]
                 
                 interview = AgentInterview(
                     agent_name=agent_name,
