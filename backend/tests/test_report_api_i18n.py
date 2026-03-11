@@ -103,6 +103,77 @@ def test_generate_status_completed_message_is_localized(monkeypatch):
     assert payload["data"]["already_completed"] is True
 
 
+def test_generate_report_start_message_is_localized(monkeypatch):
+    app = create_report_test_app()
+    client = app.test_client()
+
+    report_api.TaskManager()._tasks.clear()
+
+    class ImmediateThread:
+        def __init__(self, target=None, args=(), kwargs=None, daemon=None):
+            self._target = target
+            self._args = args
+            self._kwargs = kwargs or {}
+            self.daemon = daemon
+
+        def start(self):
+            self._target(*self._args, **self._kwargs)
+
+    monkeypatch.setattr(report_api.threading, "Thread", ImmediateThread)
+    monkeypatch.setattr(
+        report_api.SimulationManager,
+        "get_simulation",
+        lambda self, simulation_id: SimpleNamespace(
+            project_id="proj_123",
+            graph_id="graph_123",
+        ),
+    )
+    monkeypatch.setattr(
+        report_api.ReportManager,
+        "get_report_by_simulation",
+        lambda simulation_id: None,
+    )
+    monkeypatch.setattr(
+        report_api.ProjectManager,
+        "get_project",
+        lambda project_id: SimpleNamespace(
+            graph_id="graph_123",
+            simulation_requirement="Need a report",
+        ),
+    )
+    monkeypatch.setattr(
+        report_api.ReportManager,
+        "save_report",
+        lambda report: None,
+    )
+    monkeypatch.setattr(
+        report_api.ReportAgent,
+        "__init__",
+        lambda self, graph_id, simulation_id, simulation_requirement, locale: None,
+    )
+    monkeypatch.setattr(
+        report_api.ReportAgent,
+        "generate_report",
+        lambda self, progress_callback, report_id: SimpleNamespace(
+            report_id=report_id,
+            status=ReportStatus.COMPLETED,
+            error=None,
+        ),
+    )
+
+    response = client.post(
+        "/api/report/generate",
+        json={"simulation_id": "sim_123"},
+        headers={"X-Locale": "en"},
+    )
+
+    payload = response.get_json()["data"]
+    assert response.status_code == 200
+    assert payload["status"] == "generating"
+    assert payload["message"] == "Report generation has started. Query /api/report/generate/status for progress."
+    assert payload["already_generated"] is False
+
+
 def test_generate_status_translates_task_progress_message(monkeypatch):
     app = create_report_test_app()
     client = app.test_client()
