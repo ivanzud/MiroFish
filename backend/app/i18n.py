@@ -56,6 +56,14 @@ TRANSLATIONS = {
         "zh": "LLM_MODEL_NAME={model}",
         "en": "LLM_MODEL_NAME={model}",
     },
+    "startup.config_error_header": {
+        "zh": "配置错误:",
+        "en": "Configuration errors:",
+    },
+    "startup.config_hint": {
+        "zh": "请检查 .env 文件中的配置",
+        "en": "Check the configuration in the .env file",
+    },
     "llm.invalid_json": {
         "zh": "LLM返回的JSON格式无效: {payload}",
         "en": "The LLM returned invalid JSON: {payload}",
