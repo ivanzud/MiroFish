@@ -2244,29 +2244,30 @@ def get_simulation_posts(simulation_id: str):
 @simulation_bp.route('/<simulation_id>/comments', methods=['GET'])
 def get_simulation_comments(simulation_id: str):
     """
-    获取模拟中的评论（仅Reddit）
+    获取模拟中的评论
     
     Query参数：
+        platform: 平台类型（twitter/reddit，未指定时按模拟配置推断）
         post_id: 过滤帖子ID（可选）
         limit: 返回数量
         offset: 偏移量
     """
     try:
+        manager = SimulationManager()
+        platform = _resolve_simulation_platform(manager, simulation_id, request.args.get('platform'))
         post_id = request.args.get('post_id')
         limit = request.args.get('limit', 50, type=int)
         offset = request.args.get('offset', 0, type=int)
         
-        sim_dir = os.path.join(
-            os.path.dirname(__file__),
-            f'../../uploads/simulations/{simulation_id}'
-        )
+        sim_dir = os.path.join(Config.OASIS_SIMULATION_DATA_DIR, simulation_id)
         
-        db_path = os.path.join(sim_dir, "reddit_simulation.db")
+        db_path = os.path.join(sim_dir, f"{platform}_simulation.db")
         
         if not os.path.exists(db_path):
             return jsonify({
                 "success": True,
                 "data": {
+                    "platform": platform,
                     "count": 0,
                     "comments": []
                 }
@@ -2302,6 +2303,7 @@ def get_simulation_comments(simulation_id: str):
         return jsonify({
             "success": True,
             "data": {
+                "platform": platform,
                 "count": len(comments),
                 "comments": comments
             }

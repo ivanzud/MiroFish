@@ -6,6 +6,7 @@ import {
   extractInterviewResponseContent,
   formatInterviewFailureMessage,
   formatAgentRole,
+  getEnabledProfilePlatforms,
   getPlatformLabel,
   getInterviewGuardMessage,
   mergeInteractionProfiles,
@@ -84,6 +85,24 @@ test('formatAgentRole includes platform label for mixed-platform lists', () => {
 
 test('getPlatformLabel uses locale translator when available', () => {
   assert.equal(getPlatformLabel('twitter', t), 'step5.platforms.twitter:{}')
+})
+
+test('getEnabledProfilePlatforms keeps only enabled simulation platforms', () => {
+  assert.deepEqual(
+    getEnabledProfilePlatforms({
+      enable_twitter: true,
+      enable_reddit: false,
+    }),
+    ['twitter']
+  )
+
+  assert.deepEqual(
+    getEnabledProfilePlatforms({
+      enable_twitter: true,
+      enable_reddit: true,
+    }),
+    ['reddit', 'twitter']
+  )
 })
 
 test('summarizeInterviewEnvStatus reports ready platforms', () => {

@@ -424,13 +424,14 @@
 import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { chatWithReport, getReport, getAgentLog } from '../api/report'
-import { interviewAgents, getEnvStatus, getSimulationProfilesRealtime } from '../api/simulation'
+import { interviewAgents, getEnvStatus, getSimulation, getSimulationProfilesRealtime } from '../api/simulation'
 import { deriveInterviewTimeoutSeconds, resolveTimeoutMs } from '../api/timeout'
 import {
   buildInterviewRequest,
   extractInterviewResponseContent,
   formatInterviewFailureMessage,
   formatAgentRole,
+  getEnabledProfilePlatforms,
   getInterviewGuardMessage,
   mergeInteractionProfiles,
   summarizeInterviewTimeoutBudget,
@@ -938,13 +939,16 @@ const loadProfiles = async () => {
   if (!props.simulationId) return
   
   try {
-    const results = await Promise.allSettled([
-      getSimulationProfilesRealtime(props.simulationId, 'reddit'),
-      getSimulationProfilesRealtime(props.simulationId, 'twitter'),
-    ])
+    const simulationResponse = await getSimulation(props.simulationId)
+    const platforms = simulationResponse?.success
+      ? getEnabledProfilePlatforms(simulationResponse.data)
+      : ['reddit', 'twitter']
+    const results = await Promise.allSettled(
+      platforms.map((platform) => getSimulationProfilesRealtime(props.simulationId, platform))
+    )
 
     const availableProfiles = results.flatMap((result, index) => {
-      const platform = index === 0 ? 'reddit' : 'twitter'
+      const platform = platforms[index]
       if (result.status !== 'fulfilled' || !result.value?.success || !result.value?.data?.profiles?.length) {
         return []
       }

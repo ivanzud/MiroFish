@@ -647,6 +647,33 @@ def test_posts_infer_enabled_twitter_platform_when_request_omits_platform(monkey
     assert payload["posts"][0]["content"] == "hello twitter"
 
 
+def test_comments_infer_enabled_twitter_platform_when_request_omits_platform(monkeypatch, tmp_path):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    monkeypatch.setattr(simulation_api.Config, "OASIS_SIMULATION_DATA_DIR", str(tmp_path))
+    monkeypatch.setattr(simulation_api.SimulationManager, "SIMULATION_DATA_DIR", str(tmp_path))
+
+    manager = SimulationManager()
+    state = manager.create_simulation(
+        project_id="proj_123",
+        graph_id="graph_123",
+        enable_twitter=True,
+        enable_reddit=False,
+    )
+
+    response = client.get(
+        f"/api/simulation/{state.simulation_id}/comments",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()["data"]
+    assert payload["platform"] == "twitter"
+    assert payload["count"] == 0
+    assert payload["comments"] == []
+
+
 def test_ready_simulation_run_instructions_are_localized(monkeypatch, tmp_path):
     app = create_simulation_test_app()
     client = app.test_client()

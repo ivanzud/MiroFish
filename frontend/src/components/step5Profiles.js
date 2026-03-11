@@ -52,6 +52,22 @@ export const mergeInteractionProfiles = (entries = []) => {
     })
 }
 
+export const getEnabledProfilePlatforms = (simulationState) => {
+  if (!simulationState || typeof simulationState !== 'object') {
+    return ['reddit', 'twitter']
+  }
+
+  const enabledPlatforms = []
+  if (simulationState.enable_reddit) {
+    enabledPlatforms.push('reddit')
+  }
+  if (simulationState.enable_twitter) {
+    enabledPlatforms.push('twitter')
+  }
+
+  return enabledPlatforms.length > 0 ? enabledPlatforms : ['reddit', 'twitter']
+}
+
 export const buildInterviewRequest = (profile, prompt) => ({
   agent_id: profile.agent_id,
   prompt,
