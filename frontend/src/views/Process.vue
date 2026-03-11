@@ -415,6 +415,7 @@ import { generateOntology, getProject, buildGraph, getTaskStatus, getGraphData, 
 import { formatApiError } from '../api/errors'
 import { resolveBaseURL } from '../api/index.js'
 import { getPendingUpload, clearPendingUpload } from '../store/pendingUpload'
+import { mapProcessGraphData } from './processGraphData.js'
 import * as d3 from 'd3'
 
 const route = useRoute()
@@ -809,7 +810,7 @@ const pollTaskStatus = async (taskId) => {
       // 更新进度显示
       buildProgress.value = {
         progress: task.progress || 0,
-        message: task.message || '处理中...'
+        message: task.message || t('process.defaultProgressMessage')
       }
       
       console.log('Task status:', task.status, 'Progress:', task.progress)
@@ -824,7 +825,7 @@ const pollTaskStatus = async (taskId) => {
         // 更新进度显示为完成状态
         buildProgress.value = {
           progress: 100,
-          message: '构建完成，正在加载图谱...'
+          message: t('process.buildCompletedLoadingGraph')
         }
         
         // 重新加载项目数据获取 graph_id
@@ -927,34 +928,12 @@ const renderGraph = () => {
     return
   }
   
-  // 创建节点映射用于查找名称
-  const nodeMap = {}
-  nodesData.forEach(n => {
-    nodeMap[n.uuid] = n
+  const { nodes, edges } = mapProcessGraphData({
+    nodes: nodesData,
+    edges: edgesData,
+    unnamedNodeLabel: t('process.unnamedNode'),
+    unknownNodeLabel: t('process.unknownNode'),
   })
-  
-  const nodes = nodesData.map(n => ({
-    id: n.uuid,
-    name: n.name || '未命名',
-    type: n.labels?.find(l => l !== 'Entity' && l !== 'Node') || 'Entity',
-    rawData: n // 保存原始数据
-  }))
-  
-  // 创建节点ID集合用于过滤有效边
-  const nodeIds = new Set(nodes.map(n => n.id))
-  
-  const edges = edgesData
-    .filter(e => nodeIds.has(e.source_node_uuid) && nodeIds.has(e.target_node_uuid))
-    .map(e => ({
-      source: e.source_node_uuid,
-      target: e.target_node_uuid,
-      type: e.fact_type || e.name || 'RELATED_TO',
-      rawData: {
-        ...e,
-        source_name: nodeMap[e.source_node_uuid]?.name || '未知',
-        target_name: nodeMap[e.target_node_uuid]?.name || '未知'
-      }
-    }))
   
   console.log('Nodes:', nodes.length, 'Edges:', edges.length)
   
