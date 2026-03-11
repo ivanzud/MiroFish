@@ -6,11 +6,12 @@ Last refreshed: `2026-03-11`
 
 - Keep reusable local snapshots of `666ghj/MiroFish` open and full issue/PR state.
 - Land small, low-risk upstream fixes before considering larger feature branches.
-- Make backend compatibility with OpenAI-compatible providers explicit in code and docs.
+- Keep OpenAI-compatible backend support verified in both code paths and docs while reviewing the remaining open PR queue.
 
 ## Landed on this branch
 
 - `#81` Configurable frontend API timeout: low-risk support for slow local/OpenAI-compatible backends such as Ollama.
+- `#104` Make Vite dev proxy target configurable with `VITE_API_BASE_URL`: removes another hardcoded localhost assumption for custom backend hosts and ports.
 - `#115` Use SPDX license string: safe metadata-only cherry-pick.
 - `#116` Upgrade GitHub Actions: safe workflow-only dependency bump.
 - `#125` Improve new-project network error diagnostics: safe single-file frontend error-message improvement.
@@ -24,6 +25,7 @@ Last refreshed: `2026-03-11`
 - `#73` Sanitize malformed ontology entity/edge items before fallback injection: prevents `_validate_and_process()` crashes on mixed-quality LLM JSON output.
 - `#74` Replace bare `except:` clauses with `except Exception:` in JSON repair and simulation history formatting paths.
 - OpenAI-compatible backend aliases now work in the standalone simulation runners too, so `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` can be used directly outside the Flask app path.
+- Objective 7 verification status: backend config, standalone runners, and both READMEs now explicitly support direct OpenAI / Codex-compatible / OpenAI-compatible backends without requiring a project-specific raw-key-only setup.
 
 ## Deferred for later review
 
@@ -31,7 +33,7 @@ Last refreshed: `2026-03-11`
 ## Validation status
 
 - `python3 -m unittest tests/test_sync_upstream_github.py` passes for the GitHub sync script pagination/state summary logic.
-- `cd frontend && npm run build` passes after landing `#129` subset and the OpenAI-alias compatibility updates.
+- `cd frontend && npm run build` passes after landing `#104` and the prior OpenAI-alias compatibility updates.
 - `npm run test:backend:lite` now provides a repo-native lightweight backend validation path when full `uv` resolution is blocked by Rust/CUDA-heavy dependencies.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes with targeted regression coverage for context-length handling and transient Zep retry behavior.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_ontology_generator.py backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes after landing the ontology validation hardening and exception-scope cleanup.
