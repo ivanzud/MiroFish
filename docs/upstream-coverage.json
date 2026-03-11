@@ -1,6 +1,6 @@
 {
   "repo": "666ghj/MiroFish",
-  "captured_at": "2026-03-11T13:19:00+00:00",
+  "captured_at": "2026-03-11T14:45:31.057867+00:00",
   "issues": [
     {
       "number": 17,
@@ -510,6 +510,21 @@
       "validation": [
         "triage only"
       ]
+    },
+    {
+      "number": 145,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-975`: upstream issue #145 confirms the duplicate-entity-node problem behind PR #141, but the only related upstream implementation is still not safe to cherry-pick wholesale on top of the current branch.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-triage.md",
+        "origin/mirror/upstream-pr-141"
+      ],
+      "validation": [
+        "tracking only",
+        "triage diff review"
+      ],
+      "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
     },
     {
       "number": 69,

@@ -1,12 +1,12 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T14:41:35.652644+00:00",
-  "generated_at": "2026-03-11T14:41:35.652644+00:00",
+  "captured_at": "2026-03-11T14:45:31.057867+00:00",
+  "generated_at": "2026-03-11T14:45:31.057867+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
-      "open": 36,
+      "open": 37,
       "closed": 49
     },
     "pull_requests": {
@@ -19,6 +19,35 @@
     }
   },
   "issues": [
+    {
+      "number": 145,
+      "title": "知识图谱中存在重复实体节点",
+      "url": "https://github.com/666ghj/MiroFish/issues/145",
+      "state": "open",
+      "created_at": "2026-03-11T14:43:11Z",
+      "updated_at": "2026-03-11T14:43:11Z",
+      "closed_at": null,
+      "labels": [],
+      "author": "Stayfoool",
+      "body_excerpt": "## 问题描述 在使用 MiroFish 构建知识图谱时，Zep 会将同一现实实体识别为多个不同节点。 例如输入包含\"特朗普\"相关内容的文本后，图谱中会同时出现\"特朗普\"和 \"美国总统特朗普\"两个独立节点，它们各自有独立的边和关系。 这会导致： - 图谱中同一实体的信息被分散到多个节点上 - 后续的模拟推演基于不完整的实体关系进行，影响准确性 - 图谱可视化时出现冗余节点，影响可读性 ## 复现步骤 1. 准备一段包含同一人物/组织不同称呼的背景文本 2. 通过前端正常流程构建知识图谱 3. 查看生成的图谱，可以看到同一实体被拆分为多个节点 ## 截图 <img width=\"675\" height=\"399\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/593f4188-e766-46b3-9b88-25486…",
+      "comment_count": 0,
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 145,
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-975`: upstream issue #145 confirms the duplicate-entity-node problem behind PR #141, but the only related upstream implementation is still not safe to cherry-pick wholesale on top of the current branch.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "docs/upstream-triage.md",
+          "origin/mirror/upstream-pr-141"
+        ],
+        "validation": [
+          "tracking only",
+          "triage diff review"
+        ],
+        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+      }
+    },
     {
       "number": 142,
       "title": "这个方向最后商业化落地应用的点是什么呢",

@@ -2,14 +2,17 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T14:41:24.757260+00:00`
-- Issues: `36` total (`open=36`, `closed=0`)
+- Captured: `2026-03-11T14:45:39.008852+00:00`
+- Issues: `37` total (`open=37`, `closed=0`)
 - Pull requests: `36` total (`open=36`, `closed=0`)
 - Mirrored in `origin`: `36` of `36` PR refs
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
+- #145 [open] 知识图谱中存在重复实体节点 (no labels)
+  - local coverage [tracked]: Tracked under beads issue `mirofish-975`: upstream issue #145 confirms the duplicate-entity-node problem behind PR #141, but the only related upstream implementation is still not safe to cherry-pick wholesale on top of the current branch.
+  - ## 问题描述 在使用 MiroFish 构建知识图谱时，Zep 会将同一现实实体识别为多个不同节点。 例如输入包含"特朗普"相关内容的文本后，图谱中会同时出现"特朗普"和 "美国总统特朗普"两个独立节点，它们各自有独立的边和关系。 这会导致： - 图谱中同一实体的信息被分散到多个节点上 - 后续的模拟推演基于不完整的实体关系进行，影响准确性 - 图谱可视化时出现冗余节点，影响可读性 ## 复现步骤 1. 准备一段包含同一人物/组织不同称呼的背景文本 2. 通过前端正常流程构建知识图谱 3. 查看生成的图谱，可以看到同一实体被拆分为多个节点 ## 截图 <img width="675" height="399" alt="Image" src="https://github.com/user-attachments/assets/593f4188-e766-46b3-9b88-25486…
 - #142 [open] 这个方向最后商业化落地应用的点是什么呢 (question)
   - local coverage [no_action]: Upstream issue #142 asks about long-term commercialization direction rather than reporting a reproducible bug or scoped feature request, so there is no local implementation task attached to it.
 - #64 [open] 一直卡在上传文件错误：Request failed with status code 500 (no labels)
@@ -41,10 +44,6 @@
   - local coverage [covered]: Step 3 detailed run polling is now incremental and bounded, so the frontend no longer re-downloads the entire simulation timeline every few seconds as a run grows.
   - 作为可能会用到的信息，我上传了大约有260000字符的《白夜行》前十二章。推测原因是simulation.py的接口会把所有动作读全量并返回，这些动作会随着模拟变大而线性膨胀，从而导致巨量内存消耗。 <img width="988" height="666" alt="Image" src="https://github.com/user-attachments/assets/3fce3699-5e8d-4a8c-a33f-5290b236a2f0" />
   - latest comment by `666ghj`: 我后续会进行算法层面的优化
-- #84 [open] 报告生成失败，请问有没有办法重新生成？ (question)
-  - local coverage [covered]: Failed report generation can now be retried directly from Step 4 with persisted status polling, backend error text, and a `force_regenerate` retry path.
-  - <img width="2538" height="1213" alt="Image" src="https://github.com/user-attachments/assets/e3d01822-aa09-45b7-9210-2ce8e23bca8f" /> 好像是Zep超出调用限额导致报告生成失败，但是即使我充值了Zep，似乎也没有办法重新生成报告，难道只能重新走一轮？
-  - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @luchenwei9266! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 目前 MiroFish **不支持通过界面重试报告生成**，这是一个[已知问题](https://github.com/666ghj/MiroFish/issues/30)。系统虽然有 `force_regenerate`…
 
 ## Recently Updated Pull Requests
 
