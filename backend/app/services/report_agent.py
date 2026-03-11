@@ -889,6 +889,30 @@ class ReportAgent:
     # 对话中的最大工具调用次数
     MAX_TOOL_CALLS_PER_CHAT = 2
 
+    ABSTRACT_TITLE_MARKERS_ZH = (
+        "静默",
+        "解体",
+        "寓言",
+        "诗学",
+        "镜像",
+        "图景",
+        "谱系",
+        "变奏",
+        "宿命",
+        "迷宫",
+        "生态",
+        "叙事",
+    )
+    ABSTRACT_TITLE_MARKERS_EN = (
+        "silence",
+        "collapse",
+        "ecology",
+        "poetics",
+        "allegory",
+        "deconstruction",
+        "narrative",
+    )
+
     @staticmethod
     def _prune_messages_for_retry(messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
         """Keep the initial prompt and latest turns to avoid unbounded context growth."""
@@ -952,6 +976,94 @@ class ReportAgent:
    - 翻译时保持原意不变，确保表述自然通顺
    - 这一规则同时适用于正文和引用块（> 格式）中的内容
 """
+
+    def _requirement_subject_for_title(self) -> str:
+        requirement = (self.simulation_requirement or "").strip()
+        if not requirement:
+            return ""
+
+        if self.locale == "en":
+            subject = requirement
+            subject = re.sub(r"^[Pp]lease\s+", "", subject)
+            subject = re.sub(
+                r"^(predict|analyze|analyse|assess|evaluate|research|explore)\s+",
+                "",
+                subject,
+            )
+            subject = re.sub(
+                r"^(the|this|these|those)\s+",
+                "",
+                subject,
+            )
+            subject = re.sub(
+                r"\b(will|would|could|should|might|can)\b.*$",
+                "",
+                subject,
+            )
+            subject = re.sub(r"[?.!]+$", "", subject).strip(" -,:;")
+            return subject[:60].strip()
+
+        subject = re.sub(r"\s+", "", requirement)
+        subject = re.sub(
+            r"^(请|请问|帮我|麻烦你|想请你)?(分析|预测|评估|判断|研究|推测|模拟|看看|看下)+",
+            "",
+            subject,
+        )
+        subject = re.sub(r"^(这个|该|此)", "", subject)
+        subject = re.sub(r"(会是什么样|是什么样|会如何|如何|怎么样|吗|呢|呀|啊|吧)+$", "", subject)
+        subject = re.sub(r"[？?！!。；;，,]+$", "", subject)
+        subject = subject.replace("的", "")
+        return subject[:24]
+
+    def _fallback_outline_title(self) -> str:
+        subject = self._requirement_subject_for_title()
+        if not subject:
+            return "Forecast Analysis" if self.locale == "en" else "模拟分析报告"
+        if self.locale == "en":
+            return f"{subject} Analysis"
+        return f"{subject}分析报告"
+
+    def _normalize_outline_title(self, title: str) -> str:
+        normalized = re.sub(r"\s+", " ", (title or "")).strip().strip("\"'“”‘’")
+        normalized = normalized.strip("《》")
+        normalized = re.sub(
+            r"[：:]\s*(一项基于模拟的预测报告|基于模拟的预测报告|模拟分析报告|预测报告)$",
+            "",
+            normalized,
+        ).strip()
+        normalized = re.sub(
+            r"[：:]\s*(a simulation[- ]based forecast report|forecast report|analysis report)$",
+            "",
+            normalized,
+            flags=re.IGNORECASE,
+        ).strip()
+
+        fallback_title = self._fallback_outline_title()
+        requirement_subject = self._requirement_subject_for_title()
+        lowered_title = normalized.lower()
+        lowered_subject = requirement_subject.lower()
+        has_subject_overlap = bool(
+            requirement_subject and (
+                requirement_subject in normalized
+                or lowered_subject in lowered_title
+            )
+        )
+
+        if not normalized:
+            return fallback_title
+
+        if self.locale == "en":
+            has_abstract_marker = any(marker in lowered_title for marker in self.ABSTRACT_TITLE_MARKERS_EN)
+            is_too_generic = normalized in {"Forecast Analysis", "Analysis Report", "Future Forecast Report"}
+        else:
+            has_abstract_marker = any(marker in normalized for marker in self.ABSTRACT_TITLE_MARKERS_ZH)
+            is_too_generic = normalized in {"未来预测报告", "模拟分析报告", "预测报告"}
+
+        if requirement_subject and not has_subject_overlap and (has_abstract_marker or is_too_generic):
+            logger.info("报告标题过于抽象，回退到需求导向标题: %s -> %s", normalized, fallback_title)
+            return fallback_title
+
+        return normalized
     
     def _define_tools(self) -> Dict[str, Dict[str, Any]]:
         """定义可用工具"""
@@ -1243,7 +1355,7 @@ class ReportAgent:
                 ))
             
             outline = ReportOutline(
-                title=response.get("title", "模拟分析报告"),
+                title=self._normalize_outline_title(response.get("title", "模拟分析报告")),
                 summary=response.get("summary", ""),
                 sections=sections
             )
