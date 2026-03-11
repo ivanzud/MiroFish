@@ -269,3 +269,25 @@ def test_get_entity_with_context_includes_alias_linked_relations(monkeypatch):
             "summary": "另一个人物。",
         }
     ]
+
+
+def test_get_entity_with_context_localizes_english_failure_log(monkeypatch):
+    reader = _build_reader()
+    reader.locale = "en"
+    fake_logger = _FakeLogger()
+    monkeypatch.setattr("app.services.zep_entity_reader.logger", fake_logger)
+    monkeypatch.setattr(reader, "get_all_nodes", lambda graph_id: [])
+    monkeypatch.setattr(reader, "get_all_edges", lambda graph_id: [])
+    monkeypatch.setattr(
+        reader,
+        "_call_with_retry",
+        lambda func, operation_name: (_ for _ in ()).throw(RuntimeError("node exploded")),
+    )
+
+    entity = reader.get_entity_with_context("graph-1", "node-404")
+
+    assert entity is None
+    assert fake_logger.messages[-1] == (
+        "error",
+        "Failed to fetch entity node-404: node exploded",
+    )

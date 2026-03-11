@@ -288,6 +288,10 @@ TRANSLATIONS = {
         "zh": "筛选完成: 总节点 {total_count}, 符合条件 {filtered_count}, 实体类型: {entity_types}",
         "en": "Entity filtering completed: total nodes {total_count}, matched {filtered_count}, entity types: {entity_types}",
     },
+    "zep.reader_get_entity_failed": {
+        "zh": "获取实体 {entity_uuid} 失败: {error}",
+        "en": "Failed to fetch entity {entity_uuid}: {error}",
+    },
     "simulation.entity_not_found": {
         "zh": "实体不存在: {entity_uuid}",
         "en": "Entity not found: {entity_uuid}",
@@ -831,6 +835,26 @@ TRANSLATIONS = {
     "simulation.prepare_config_completed": {
         "zh": "配置生成完成",
         "en": "Configuration generation completed",
+    },
+    "simulation.task_status_query_failed": {
+        "zh": "查询任务状态失败: {error}",
+        "en": "Failed to query task status: {error}",
+    },
+    "simulation.report_lookup_failed": {
+        "zh": "查找 simulation {simulation_id} 的 report 失败: {error}",
+        "en": "Failed to find the report for simulation {simulation_id}: {error}",
+    },
+    "simulation.realtime_profiles_read_failed": {
+        "zh": "读取 profiles 文件失败（可能正在写入中）: {error}",
+        "en": "Failed to read the profiles file (it may still be being written): {error}",
+    },
+    "simulation.realtime_config_read_failed": {
+        "zh": "读取 config 文件失败（可能正在写入中）: {error}",
+        "en": "Failed to read the config file (it may still be being written): {error}",
+    },
+    "simulation.config_output_truncated": {
+        "zh": "LLM输出被截断, 尝试修复...",
+        "en": "LLM output was truncated; attempting to repair JSON...",
     },
     "simulation.run_instructions_activate_env": {
         "zh": "1. 激活conda环境: conda activate MiroFish",

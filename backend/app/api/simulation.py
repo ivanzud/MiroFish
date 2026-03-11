@@ -1015,7 +1015,7 @@ def get_prepare_status():
         })
         
     except Exception as e:
-        logger.error(f"查询任务状态失败: {str(e)}")
+        logger.error(tr("simulation.task_status_query_failed", get_locale(), error=str(e)))
         return jsonify({
             "success": False,
             "error": str(e)
@@ -1130,7 +1130,14 @@ def _get_report_id_for_simulation(simulation_id: str) -> str:
         return matching_reports[0].get("report_id")
         
     except Exception as e:
-        logger.warning(f"查找 simulation {simulation_id} 的 report 失败: {e}")
+        logger.warning(
+            tr(
+                "simulation.report_lookup_failed",
+                get_locale(),
+                simulation_id=simulation_id,
+                error=str(e),
+            )
+        )
         return None
 
 
@@ -1346,7 +1353,13 @@ def get_simulation_profiles_realtime(simulation_id: str):
                         reader = csv.DictReader(f)
                         profiles = list(reader)
             except (json.JSONDecodeError, Exception) as e:
-                logger.warning(f"读取 profiles 文件失败（可能正在写入中）: {e}")
+                logger.warning(
+                    tr(
+                        "simulation.realtime_profiles_read_failed",
+                        locale,
+                        error=str(e),
+                    )
+                )
                 profiles = []
         
         # 检查是否正在生成（通过 state.json 判断）
@@ -1437,7 +1450,13 @@ def get_simulation_config_realtime(simulation_id: str):
                 with open(config_file, 'r', encoding='utf-8') as f:
                     config = json.load(f)
             except (json.JSONDecodeError, Exception) as e:
-                logger.warning(f"读取 config 文件失败（可能正在写入中）: {e}")
+                logger.warning(
+                    tr(
+                        "simulation.realtime_config_read_failed",
+                        locale,
+                        error=str(e),
+                    )
+                )
                 config = None
         
         # 检查是否正在生成（通过 state.json 判断）

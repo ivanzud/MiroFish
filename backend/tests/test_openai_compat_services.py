@@ -454,6 +454,30 @@ def test_simulation_config_generator_logs_english_initial_post_assignment(monkey
     ]
 
 
+def test_simulation_config_generator_logs_english_truncated_output_warning(monkeypatch):
+    warning_messages = []
+    fake_logger = SimpleNamespace(warning=warning_messages.append)
+    monkeypatch.setattr(simulation_config_generator_module, "logger", fake_logger)
+
+    class FakeCompletions:
+        def create(self, **kwargs):
+            return _make_response('{"time_config": {"total_simulation_hours": 12}', finish_reason="length")
+
+    generator = SimulationConfigGenerator.__new__(SimulationConfigGenerator)
+    generator.model_name = "test-model"
+    generator.locale = "en"
+    generator.client = SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions()))
+    generator._fix_truncated_json = lambda content: content + "}"
+
+    result = generator._request_json_completion(
+        messages=[{"role": "user", "content": "hello"}],
+        temperature=0.6,
+    )
+
+    assert result["content"] == '{"time_config": {"total_simulation_hours": 12}}'
+    assert warning_messages == ["LLM output was truncated; attempting to repair JSON..."]
+
+
 def test_zep_services_missing_key_support_english_request_locale(monkeypatch):
     monkeypatch.setattr("app.services.graph_builder.Config.ZEP_API_KEY", "")
     monkeypatch.setattr("app.services.zep_entity_reader.Config.ZEP_API_KEY", "")

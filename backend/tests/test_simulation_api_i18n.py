@@ -276,6 +276,94 @@ def test_prepare_status_keeps_english_task_progress_payload(monkeypatch):
     assert payload["progress_detail"]["item_description"] == "Connecting to the Zep graph..."
 
 
+def test_prepare_status_query_failure_logs_are_localized(monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    logger = FakeLogger()
+    monkeypatch.setattr(simulation_api, "logger", logger)
+    monkeypatch.setattr(
+        "app.models.task.TaskManager.get_task",
+        lambda self, task_id: (_ for _ in ()).throw(RuntimeError("status exploded")),
+    )
+
+    response = client.post(
+        "/api/simulation/prepare/status",
+        json={"task_id": "task_123"},
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 500
+    assert logger.errors == ["Failed to query task status: status exploded"]
+
+
+def test_report_lookup_warning_is_localized_in_english(monkeypatch):
+    logger = FakeLogger()
+    monkeypatch.setattr(simulation_api, "logger", logger)
+    monkeypatch.setattr(simulation_api.os.path, "exists", lambda path: True)
+    monkeypatch.setattr(
+        simulation_api.os,
+        "listdir",
+        lambda path: (_ for _ in ()).throw(RuntimeError("report scan exploded")),
+    )
+
+    app = Flask(__name__)
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        assert simulation_api._get_report_id_for_simulation("sim_123") is None
+
+    assert logger.warnings == [
+        "Failed to find the report for simulation sim_123: report scan exploded"
+    ]
+
+
+def test_realtime_profiles_read_warning_is_localized(monkeypatch, tmp_path):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    simulation_id = "sim_profiles_en"
+    sim_dir = tmp_path / simulation_id
+    sim_dir.mkdir()
+    (sim_dir / "reddit_profiles.json").write_text("{", encoding="utf-8")
+
+    monkeypatch.setattr(simulation_api.Config, "OASIS_SIMULATION_DATA_DIR", str(tmp_path))
+    logger = FakeLogger()
+    monkeypatch.setattr(simulation_api, "logger", logger)
+
+    response = client.get(
+        f"/api/simulation/{simulation_id}/profiles/realtime?platform=reddit",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    assert logger.warnings == [
+        "Failed to read the profiles file (it may still be being written): Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    ]
+
+
+def test_realtime_config_read_warning_is_localized(monkeypatch, tmp_path):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    simulation_id = "sim_config_en"
+    sim_dir = tmp_path / simulation_id
+    sim_dir.mkdir()
+    (sim_dir / "simulation_config.json").write_text("{", encoding="utf-8")
+
+    monkeypatch.setattr(simulation_api.Config, "OASIS_SIMULATION_DATA_DIR", str(tmp_path))
+    logger = FakeLogger()
+    monkeypatch.setattr(simulation_api, "logger", logger)
+
+    response = client.get(
+        f"/api/simulation/{simulation_id}/config/realtime",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    assert logger.warnings == [
+        "Failed to read the config file (it may still be being written): Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    ]
+
+
 def test_prepare_requires_existing_simulation_in_english(monkeypatch):
     app = create_simulation_test_app()
     client = app.test_client()

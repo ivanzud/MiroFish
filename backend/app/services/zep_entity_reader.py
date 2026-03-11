@@ -720,7 +720,14 @@ class ZepEntityReader:
             return merged_entity
             
         except Exception as e:
-            logger.error(f"获取实体 {entity_uuid} 失败: {str(e)}")
+            logger.error(
+                tr(
+                    "zep.reader_get_entity_failed",
+                    self._get_locale(),
+                    entity_uuid=entity_uuid,
+                    error=str(e),
+                )
+            )
             return None
     
     def get_entities_by_type(

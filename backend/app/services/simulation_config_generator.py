@@ -282,10 +282,7 @@ class SimulationConfigGenerator:
         content = response.choices[0].message.content or ""
         finish_reason = response.choices[0].finish_reason
         if finish_reason == 'length':
-            if self.locale == "en":
-                logger.warning("LLM output was truncated; attempting to repair JSON...")
-            else:
-                logger.warning("LLM输出被截断, 尝试修复...")
+            logger.warning(tr("simulation.config_output_truncated", self.locale))
             content = self._fix_truncated_json(content)
 
         parsed_content = LLMClient._extract_json_payload(content)
