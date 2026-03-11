@@ -371,6 +371,8 @@ export default {
     unknownUser: 'User',
   },
   step4: {
+    reportTag: 'Prediction Report',
+    reportId: 'ID: {id}',
     sectionGenerating: 'Generating {title}...',
     failedTitle: 'Report generation failed',
     retrying: 'Retrying...',
@@ -429,6 +431,81 @@ export default {
       complete: 'Complete',
     },
     reportAgentInitialized: 'Report Agent initialized: {id}',
+    toolDisplay: {
+      showLess: 'Show Less',
+      showAll: 'Show all {count} {unit}',
+      countEntries: '{count} entries',
+      countItems: '{count} items',
+      units: {
+        entries: 'entries',
+        items: 'items',
+      },
+      insight: {
+        scenarioLabel: 'Scenario: ',
+        tabs: {
+          facts: 'Current Key Memory ({count})',
+          entities: 'Core Entities ({count})',
+          relations: 'Relation Chains ({count})',
+          subqueries: 'Sub-questions ({count})',
+        },
+        panels: {
+          facts: 'Latest key facts linked from temporal memory',
+          entities: 'Core Entities',
+          relations: 'Relation Chains',
+          subqueries: 'Generated analytical sub-questions',
+        },
+        empty: {
+          facts: 'No current key memory',
+          entities: 'No core entities',
+          relations: 'No relation chains',
+        },
+      },
+      panorama: {
+        tabs: {
+          active: 'Active Memory ({count})',
+          historical: 'Historical Memory ({count})',
+          entities: 'Involved Entities ({count})',
+        },
+        panels: {
+          active: 'Active Memory',
+          historical: 'Historical Memory',
+          entities: 'Involved Entities',
+        },
+        empty: {
+          active: 'No active memory',
+          historical: 'No historical memory',
+          entities: 'No involved entities',
+        },
+      },
+      interview: {
+        agentIndex: 'Agent {index}',
+        agentFallback: 'Agent',
+        selectionReason: 'Selection Reason',
+        noQuestion: 'No question available',
+        interviewer: 'Interviewer',
+        worldOne: 'World 1',
+        worldTwo: 'World 2',
+        showMore: 'Show More',
+        keyQuotes: 'Key Quotes',
+        summary: 'Interview Summary',
+      },
+      quickSearch: {
+        searchLabel: 'Search: ',
+        tabs: {
+          facts: 'Facts ({count})',
+          edges: 'Relations ({count})',
+          nodes: 'Nodes ({count})',
+        },
+        panels: {
+          results: 'Search Results',
+          edges: 'Related Relations',
+          nodes: 'Related Nodes',
+        },
+        empty: {
+          results: 'No related results found',
+        },
+      },
+    },
   },
   graphPanel: {
     title: 'Graph Relationship Visualization',

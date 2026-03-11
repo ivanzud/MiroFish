@@ -371,6 +371,8 @@ export default {
     unknownUser: '用户',
   },
   step4: {
+    reportTag: '预测报告',
+    reportId: 'ID: {id}',
     sectionGenerating: '正在生成 {title}...',
     failedTitle: '报告生成失败',
     retrying: '重试中...',
@@ -429,6 +431,81 @@ export default {
       complete: '完成',
     },
     reportAgentInitialized: 'Report Agent 已初始化: {id}',
+    toolDisplay: {
+      showLess: '收起',
+      showAll: '展开全部 {count} {unit}',
+      countEntries: '共 {count} 条',
+      countItems: '共 {count} 个',
+      units: {
+        entries: '条',
+        items: '个',
+      },
+      insight: {
+        scenarioLabel: '预测场景: ',
+        tabs: {
+          facts: '当前关键记忆 ({count})',
+          entities: '核心实体 ({count})',
+          relations: '关系链 ({count})',
+          subqueries: '子问题 ({count})',
+        },
+        panels: {
+          facts: '时序记忆中所关联的最新关键事实',
+          entities: '核心实体',
+          relations: '关系链',
+          subqueries: '漂移查询生成分析子问题',
+        },
+        empty: {
+          facts: '暂无当前关键记忆',
+          entities: '暂无核心实体',
+          relations: '暂无关系链',
+        },
+      },
+      panorama: {
+        tabs: {
+          active: '当前有效记忆 ({count})',
+          historical: '历史记忆 ({count})',
+          entities: '涉及实体 ({count})',
+        },
+        panels: {
+          active: '当前有效记忆',
+          historical: '历史记忆',
+          entities: '涉及实体',
+        },
+        empty: {
+          active: '暂无当前有效记忆',
+          historical: '暂无历史记忆',
+          entities: '暂无涉及实体',
+        },
+      },
+      interview: {
+        agentIndex: 'Agent {index}',
+        agentFallback: 'Agent',
+        selectionReason: '选择理由',
+        noQuestion: '暂无问题',
+        interviewer: '采访者',
+        worldOne: '世界1',
+        worldTwo: '世界2',
+        showMore: '展开更多',
+        keyQuotes: '关键引言',
+        summary: '采访摘要',
+      },
+      quickSearch: {
+        searchLabel: '搜索: ',
+        tabs: {
+          facts: '事实 ({count})',
+          edges: '关系 ({count})',
+          nodes: '节点 ({count})',
+        },
+        panels: {
+          results: '搜索结果',
+          edges: '相关关系',
+          nodes: '相关节点',
+        },
+        empty: {
+          results: '未找到相关结果',
+        },
+      },
+    },
   },
   graphPanel: {
     title: '图谱关系可视化',
