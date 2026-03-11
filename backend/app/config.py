@@ -44,6 +44,8 @@ class Config:
     
     # Zep配置
     ZEP_API_KEY = os.environ.get('ZEP_API_KEY')
+    ZEP_RETRY_MAX_ATTEMPTS = int(os.environ.get('ZEP_RETRY_MAX_ATTEMPTS', '3'))
+    ZEP_RETRY_BASE_DELAY_SECONDS = float(os.environ.get('ZEP_RETRY_BASE_DELAY_SECONDS', '2'))
     
     # 文件上传配置
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB

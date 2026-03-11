@@ -15,6 +15,7 @@ from zep_cloud import EpisodeData, EntityEdgeSourceTarget
 
 from ..config import Config
 from ..models.task import TaskManager, TaskStatus
+from ..utils.logger import get_logger
 from ..utils.zep_paging import fetch_all_nodes, fetch_all_edges
 from .text_processor import TextProcessor
 
@@ -49,6 +50,67 @@ class GraphBuilderService:
         
         self.client = Zep(api_key=self.api_key)
         self.task_manager = TaskManager()
+        self.logger = get_logger('mirofish.graph_builder')
+
+    @staticmethod
+    def _is_retryable_zep_error(error: Exception) -> bool:
+        """Return whether a Zep operation failure looks transient and safe to retry."""
+        status_code = getattr(error, "status_code", None)
+        if status_code in {408, 409, 423, 425, 429, 500, 502, 503, 504}:
+            return True
+
+        error_text = str(error).lower()
+        retry_signals = (
+            "429",
+            "too many requests",
+            "rate limit",
+            "timeout",
+            "timed out",
+            "temporarily unavailable",
+            "service unavailable",
+            "bad gateway",
+            "gateway timeout",
+            "connection reset",
+            "connection aborted",
+            "connection error",
+            "remote disconnected",
+        )
+        return any(signal in error_text for signal in retry_signals)
+
+    def _retry_zep_operation(
+        self,
+        operation_name: str,
+        func: Callable[[], Any],
+        *,
+        max_retries: Optional[int] = None,
+        progress_callback: Optional[Callable[[str, float], None]] = None,
+        progress_message: Optional[Callable[[int, int, float], str]] = None,
+        progress_value: float = 0,
+    ) -> Any:
+        """Retry transient Zep failures with backoff while surfacing progress updates."""
+        max_attempts = max_retries or Config.ZEP_RETRY_MAX_ATTEMPTS
+        base_delay = Config.ZEP_RETRY_BASE_DELAY_SECONDS
+
+        for attempt in range(max_attempts):
+            try:
+                return func()
+            except Exception as error:
+                should_retry = attempt < max_attempts - 1 and self._is_retryable_zep_error(error)
+                if not should_retry:
+                    raise
+
+                wait_time = base_delay * (2 ** attempt)
+                self.logger.warning(
+                    "%s failed on attempt %s/%s, retrying in %.1fs: %s",
+                    operation_name,
+                    attempt + 1,
+                    max_attempts,
+                    wait_time,
+                    error,
+                )
+                if progress_callback and progress_message:
+                    progress_callback(progress_message(attempt + 1, max_attempts, wait_time), progress_value)
+                time.sleep(wait_time)
     
     def build_graph_async(
         self,
@@ -184,19 +246,23 @@ class GraphBuilderService:
             error_msg = f"{str(e)}\n{traceback.format_exc()}"
             self.task_manager.fail_task(task_id, error_msg)
     
-    def create_graph(self, name: str) -> str:
+    def create_graph(self, name: str, max_retries: Optional[int] = None) -> str:
         """创建Zep图谱（公开方法）"""
         graph_id = f"mirofish_{uuid.uuid4().hex[:16]}"
-        
-        self.client.graph.create(
-            graph_id=graph_id,
-            name=name,
-            description="MiroFish Social Simulation Graph"
+
+        self._retry_zep_operation(
+            "create_graph",
+            lambda: self.client.graph.create(
+                graph_id=graph_id,
+                name=name,
+                description="MiroFish Social Simulation Graph"
+            ),
+            max_retries=max_retries,
         )
         
         return graph_id
     
-    def set_ontology(self, graph_id: str, ontology: Dict[str, Any]):
+    def set_ontology(self, graph_id: str, ontology: Dict[str, Any], max_retries: Optional[int] = None):
         """设置图谱本体（公开方法）"""
         import warnings
         from typing import Optional
@@ -279,10 +345,14 @@ class GraphBuilderService:
         
         # 调用Zep API设置本体
         if entity_types or edge_definitions:
-            self.client.graph.set_ontology(
-                graph_ids=[graph_id],
-                entities=entity_types if entity_types else None,
-                edges=edge_definitions if edge_definitions else None,
+            self._retry_zep_operation(
+                "set_ontology",
+                lambda: self.client.graph.set_ontology(
+                    graph_ids=[graph_id],
+                    entities=entity_types if entity_types else None,
+                    edges=edge_definitions if edge_definitions else None,
+                ),
+                max_retries=max_retries,
             )
     
     def add_text_batches(
@@ -314,27 +384,31 @@ class GraphBuilderService:
                 for chunk in batch_chunks
             ]
             
-            # 发送到Zep
-            try:
-                batch_result = self.client.graph.add_batch(
+            def send_batch():
+                return self.client.graph.add_batch(
                     graph_id=graph_id,
                     episodes=episodes
                 )
-                
-                # 收集返回的 episode uuid
-                if batch_result and isinstance(batch_result, list):
-                    for ep in batch_result:
-                        ep_uuid = getattr(ep, 'uuid_', None) or getattr(ep, 'uuid', None)
-                        if ep_uuid:
-                            episode_uuids.append(ep_uuid)
-                
-                # 避免请求过快
-                time.sleep(1)
-                
-            except Exception as e:
-                if progress_callback:
-                    progress_callback(f"批次 {batch_num} 发送失败: {str(e)}", 0)
-                raise
+
+            batch_result = self._retry_zep_operation(
+                f"add_batch[{batch_num}]",
+                send_batch,
+                progress_callback=progress_callback,
+                progress_message=lambda attempt, total, wait_time: (
+                    f"批次 {batch_num} 发送失败，{wait_time:.0f}秒后重试 ({attempt}/{total})..."
+                ),
+                progress_value=(i + len(batch_chunks)) / total_chunks,
+            )
+
+            # 收集返回的 episode uuid
+            if batch_result and isinstance(batch_result, list):
+                for ep in batch_result:
+                    ep_uuid = getattr(ep, 'uuid_', None) or getattr(ep, 'uuid', None)
+                    if ep_uuid:
+                        episode_uuids.append(ep_uuid)
+
+            # 避免请求过快
+            time.sleep(1)
         
         return episode_uuids
     
@@ -497,4 +571,3 @@ class GraphBuilderService:
     def delete_graph(self, graph_id: str):
         """删除图谱"""
         self.client.graph.delete(graph_id=graph_id)
-
