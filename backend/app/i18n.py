@@ -484,6 +484,22 @@ TRANSLATIONS = {
         "zh": "等待命令响应超时 ({timeout}秒)",
         "en": "Timed out while waiting for the command response ({timeout}s)",
     },
+    "simulation.ipc_command_sent": {
+        "zh": "发送IPC命令: {command_type}, command_id={command_id}",
+        "en": "Sent IPC command: {command_type}, command_id={command_id}",
+    },
+    "simulation.ipc_response_received": {
+        "zh": "收到IPC响应: command_id={command_id}, status={status}",
+        "en": "Received IPC response: command_id={command_id}, status={status}",
+    },
+    "simulation.ipc_response_parse_failed": {
+        "zh": "解析IPC响应失败: {error}",
+        "en": "Failed to parse the IPC response: {error}",
+    },
+    "simulation.ipc_command_file_read_failed": {
+        "zh": "读取IPC命令文件失败: {path}, {error}",
+        "en": "Failed to read the IPC command file: {path}, {error}",
+    },
     "simulation.simulation_id_required": {
         "zh": "请提供 simulation_id",
         "en": "Please provide simulation_id",

@@ -100,7 +100,7 @@ class SimulationIPCClient:
     用于向模拟进程发送命令并等待响应
     """
     
-    def __init__(self, simulation_dir: str):
+    def __init__(self, simulation_dir: str, locale: str | None = None):
         """
         初始化IPC客户端
         
@@ -108,6 +108,7 @@ class SimulationIPCClient:
             simulation_dir: 模拟数据目录
         """
         self.simulation_dir = simulation_dir
+        self.locale = locale or get_locale()
         self.commands_dir = os.path.join(simulation_dir, "ipc_commands")
         self.responses_dir = os.path.join(simulation_dir, "ipc_responses")
         
@@ -149,7 +150,14 @@ class SimulationIPCClient:
         with open(command_file, 'w', encoding='utf-8') as f:
             json.dump(command.to_dict(), f, ensure_ascii=False, indent=2)
         
-        logger.info(f"发送IPC命令: {command_type.value}, command_id={command_id}")
+        logger.info(
+            tr(
+                "simulation.ipc_command_sent",
+                self.locale,
+                command_type=command_type.value,
+                command_id=command_id,
+            )
+        )
         
         # 等待响应
         response_file = os.path.join(self.responses_dir, f"{command_id}.json")
@@ -169,15 +177,34 @@ class SimulationIPCClient:
                     except OSError:
                         pass
                     
-                    logger.info(f"收到IPC响应: command_id={command_id}, status={response.status.value}")
+                    logger.info(
+                        tr(
+                            "simulation.ipc_response_received",
+                            self.locale,
+                            command_id=command_id,
+                            status=response.status.value,
+                        )
+                    )
                     return response
                 except (json.JSONDecodeError, KeyError) as e:
-                    logger.warning(f"解析响应失败: {e}")
+                    logger.warning(
+                        tr(
+                            "simulation.ipc_response_parse_failed",
+                            self.locale,
+                            error=e,
+                        )
+                    )
             
             time.sleep(poll_interval)
         
         # 超时
-        logger.error(f"等待IPC响应超时: command_id={command_id}")
+        logger.error(
+            tr(
+                "simulation.ipc_timeout",
+                self.locale,
+                timeout=timeout,
+            )
+        )
         
         # 清理命令文件
         try:
@@ -293,7 +320,7 @@ class SimulationIPCServer:
     轮询命令目录，执行命令并返回响应
     """
     
-    def __init__(self, simulation_dir: str):
+    def __init__(self, simulation_dir: str, locale: str | None = None):
         """
         初始化IPC服务器
         
@@ -301,6 +328,7 @@ class SimulationIPCServer:
             simulation_dir: 模拟数据目录
         """
         self.simulation_dir = simulation_dir
+        self.locale = locale or get_locale()
         self.commands_dir = os.path.join(simulation_dir, "ipc_commands")
         self.responses_dir = os.path.join(simulation_dir, "ipc_responses")
         
@@ -355,7 +383,14 @@ class SimulationIPCServer:
                     data = json.load(f)
                 return IPCCommand.from_dict(data)
             except (json.JSONDecodeError, KeyError, OSError) as e:
-                logger.warning(f"读取命令文件失败: {filepath}, {e}")
+                logger.warning(
+                    tr(
+                        "simulation.ipc_command_file_read_failed",
+                        self.locale,
+                        path=filepath,
+                        error=e,
+                    )
+                )
                 continue
         
         return None

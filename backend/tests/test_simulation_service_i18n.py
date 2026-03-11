@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import builtins
 import csv
+import json
 from types import SimpleNamespace
 
 from flask import Flask
 
+from app.services import simulation_ipc as simulation_ipc_module
 from app.services.simulation_ipc import CommandType, SimulationIPCClient
 from app.services.simulation_manager import SimulationManager, SimulationStatus
 from app.services.simulation_runner import RunnerStatus, SimulationRunState, SimulationRunner
@@ -46,6 +48,79 @@ def test_simulation_ipc_timeout_uses_english_request_locale(tmp_path):
             assert str(exc) == "Timed out while waiting for the command response (0.01s)"
         else:
             raise AssertionError("expected TimeoutError when no IPC response arrives")
+
+
+def test_simulation_ipc_logs_english_timeout_diagnostics(tmp_path, monkeypatch):
+    app = Flask(__name__)
+    fake_logger = SimpleNamespace(info=lambda *_: None, warning=lambda *_: None, error_messages=[])
+
+    def _capture_error(message):
+        fake_logger.error_messages.append(message)
+
+    fake_logger.error = _capture_error
+    monkeypatch.setattr(simulation_ipc_module, "logger", fake_logger)
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        client = SimulationIPCClient(str(tmp_path))
+        try:
+            client.send_command(CommandType.CLOSE_ENV, {}, timeout=0.01, poll_interval=0.0)
+        except TimeoutError:
+            pass
+        else:
+            raise AssertionError("expected TimeoutError when no IPC response arrives")
+
+    assert fake_logger.error_messages[-1] == "Timed out while waiting for the command response (0.01s)"
+
+
+def test_simulation_ipc_logs_english_send_and_receive_messages(tmp_path, monkeypatch):
+    app = Flask(__name__)
+
+    class FakeLogger:
+        def __init__(self):
+            self.info_messages = []
+
+        def info(self, message):
+            self.info_messages.append(message)
+
+        def warning(self, message):
+            raise AssertionError(f"did not expect warning log: {message}")
+
+        def error(self, message):
+            raise AssertionError(f"did not expect error log: {message}")
+
+    fake_logger = FakeLogger()
+    monkeypatch.setattr(simulation_ipc_module, "logger", fake_logger)
+    monkeypatch.setattr(simulation_ipc_module.uuid, "uuid4", lambda: "fixed-command-id")
+
+    original_sleep = simulation_ipc_module.time.sleep
+
+    def _write_response(_seconds):
+        response_file = tmp_path / "ipc_responses" / "fixed-command-id.json"
+        response_file.parent.mkdir(parents=True, exist_ok=True)
+        response_file.write_text(
+            json.dumps(
+                {
+                    "command_id": "fixed-command-id",
+                    "status": "completed",
+                    "result": {"ok": True},
+                    "timestamp": "2026-03-11T18:00:00",
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(simulation_ipc_module.time, "sleep", original_sleep)
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        monkeypatch.setattr(simulation_ipc_module.time, "sleep", _write_response)
+        client = SimulationIPCClient(str(tmp_path))
+        response = client.send_command(CommandType.CLOSE_ENV, {}, timeout=0.1, poll_interval=0.01)
+
+    assert response.status.value == "completed"
+    assert fake_logger.info_messages == [
+        "Sent IPC command: close_env, command_id=fixed-command-id",
+        "Received IPC response: command_id=fixed-command-id, status=completed",
+    ]
 
 
 def test_prepare_simulation_empty_entities_uses_explicit_locale(tmp_path, monkeypatch):

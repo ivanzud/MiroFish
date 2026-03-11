@@ -110,6 +110,7 @@ def test_print_config_status_script_accepts_openai_aliases_end_to_end():
         "LLM_BASE_URL": "",
         "LLM_MODEL_NAME": "",
         "OPENAI_API_KEY": "codex-test-key",
+        "OPENAI_BASE_URL": "",
         "OPENAI_API_BASE_URL": "https://codex.example.test/v1",
         "OPENAI_MODEL": "gpt-4.1-mini",
         "ZEP_API_KEY": "zep-test-key",
