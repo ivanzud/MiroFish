@@ -135,6 +135,7 @@ ZEP_API_KEY=your_zep_api_key
 ```env
 # OpenAI / Codex-compatible gateway
 OPENAI_API_KEY=your_api_key
+OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_API_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-4.1-mini
 
