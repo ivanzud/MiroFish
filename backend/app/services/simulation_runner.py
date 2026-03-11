@@ -438,7 +438,7 @@ class SimulationRunner:
                 raise ValueError(tr("simulation.graph_id_required_for_memory", resolved_locale))
             
             try:
-                ZepGraphMemoryManager.create_updater(simulation_id, graph_id)
+                ZepGraphMemoryManager.create_updater(simulation_id, graph_id, locale=resolved_locale)
                 cls._graph_memory_enabled[simulation_id] = True
                 logger.info(f"已启用图谱记忆更新: simulation_id={simulation_id}, graph_id={graph_id}")
             except Exception as e:

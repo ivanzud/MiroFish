@@ -229,6 +229,86 @@ def test_start_simulation_passes_locale_to_runner_process(tmp_path):
         runner._stderr_files = original_stderr_files
 
 
+def test_start_simulation_passes_locale_to_graph_memory_updater(tmp_path):
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+    original_run_state_dir = runner.RUN_STATE_DIR
+    original_scripts_dir = runner.SCRIPTS_DIR
+    original_processes = runner._processes.copy()
+    original_threads = runner._monitor_threads.copy()
+    original_stdout_files = runner._stdout_files.copy()
+    original_stderr_files = runner._stderr_files.copy()
+    original_graph_memory_enabled = runner._graph_memory_enabled.copy()
+    runner.RUN_STATE_DIR = str(tmp_path)
+    runner.SCRIPTS_DIR = str(tmp_path)
+
+    simulation_dir = tmp_path / "sim-graph-memory-locale"
+    simulation_dir.mkdir()
+    (simulation_dir / "simulation_config.json").write_text(
+        json.dumps({"time_config": {"total_simulation_hours": 1, "minutes_per_round": 30}}),
+        encoding="utf-8",
+    )
+    (tmp_path / "run_parallel_simulation.py").write_text("# placeholder", encoding="utf-8")
+
+    class FakeProcess:
+        pid = 4343
+
+        def poll(self):
+            return None
+
+    class FakeThread:
+        def __init__(self, target=None, args=None, daemon=None):
+            self.target = target
+            self.args = args
+            self.daemon = daemon
+
+        def start(self):
+            return None
+
+    updater_calls = {}
+
+    def fake_popen(cmd, cwd, stdout, stderr, text, encoding, bufsize, env, start_new_session):
+        return FakeProcess()
+
+    def fake_create_updater(simulation_id, graph_id, locale="zh"):
+        updater_calls["simulation_id"] = simulation_id
+        updater_calls["graph_id"] = graph_id
+        updater_calls["locale"] = locale
+        return object()
+
+    try:
+        with mock.patch.object(runner, "_simulation_dependencies_available", return_value=True):
+            with mock.patch.object(module.subprocess, "Popen", side_effect=fake_popen):
+                with mock.patch.object(module.threading, "Thread", FakeThread):
+                    with mock.patch.object(module.ZepGraphMemoryManager, "create_updater", side_effect=fake_create_updater):
+                        state = runner.start_simulation(
+                            "sim-graph-memory-locale",
+                            locale="en",
+                            enable_graph_memory_update=True,
+                            graph_id="graph_123",
+                        )
+
+        assert state.locale == "en"
+        assert updater_calls == {
+            "simulation_id": "sim-graph-memory-locale",
+            "graph_id": "graph_123",
+            "locale": "en",
+        }
+    finally:
+        for handle in runner._stdout_files.values():
+            try:
+                handle.close()
+            except Exception:
+                pass
+        runner.RUN_STATE_DIR = original_run_state_dir
+        runner.SCRIPTS_DIR = original_scripts_dir
+        runner._processes = original_processes
+        runner._monitor_threads = original_threads
+        runner._stdout_files = original_stdout_files
+        runner._stderr_files = original_stderr_files
+        runner._graph_memory_enabled = original_graph_memory_enabled
+
+
 def test_simulation_runtime_manifests_do_not_depend_on_camel_oasis():
     backend_dir = Path(__file__).resolve().parents[1]
     pyproject = (backend_dir / "pyproject.toml").read_text(encoding="utf-8")

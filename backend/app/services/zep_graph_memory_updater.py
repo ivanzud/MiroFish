@@ -31,6 +31,7 @@ class AgentActivity:
     action_args: Dict[str, Any]
     round_num: int
     timestamp: str
+    locale: str = "zh"
     
     def to_episode_text(self) -> str:
         """
@@ -64,8 +65,8 @@ class AgentActivity:
     def _describe_create_post(self) -> str:
         content = self.action_args.get("content", "")
         if content:
-            return f"发布了一条帖子：「{content}」"
-        return "发布了一条帖子"
+            return self._format('created a post: "{content}"', "发布了一条帖子：「{content}」", content=content)
+        return self._message("created a post", "发布了一条帖子")
     
     def _describe_like_post(self) -> str:
         """点赞帖子 - 包含帖子原文和作者信息"""
@@ -73,12 +74,17 @@ class AgentActivity:
         post_author = self.action_args.get("post_author_name", "")
         
         if post_content and post_author:
-            return f"点赞了{post_author}的帖子：「{post_content}」"
+            return self._format(
+                'liked {author}\'s post: "{content}"',
+                "点赞了{author}的帖子：「{content}」",
+                author=post_author,
+                content=post_content,
+            )
         elif post_content:
-            return f"点赞了一条帖子：「{post_content}」"
+            return self._format('liked a post: "{content}"', "点赞了一条帖子：「{content}」", content=post_content)
         elif post_author:
-            return f"点赞了{post_author}的一条帖子"
-        return "点赞了一条帖子"
+            return self._format("liked one of {author}'s posts", "点赞了{author}的一条帖子", author=post_author)
+        return self._message("liked a post", "点赞了一条帖子")
     
     def _describe_dislike_post(self) -> str:
         """踩帖子 - 包含帖子原文和作者信息"""
@@ -86,12 +92,17 @@ class AgentActivity:
         post_author = self.action_args.get("post_author_name", "")
         
         if post_content and post_author:
-            return f"踩了{post_author}的帖子：「{post_content}」"
+            return self._format(
+                'disliked {author}\'s post: "{content}"',
+                "踩了{author}的帖子：「{content}」",
+                author=post_author,
+                content=post_content,
+            )
         elif post_content:
-            return f"踩了一条帖子：「{post_content}」"
+            return self._format('disliked a post: "{content}"', "踩了一条帖子：「{content}」", content=post_content)
         elif post_author:
-            return f"踩了{post_author}的一条帖子"
-        return "踩了一条帖子"
+            return self._format("disliked one of {author}'s posts", "踩了{author}的一条帖子", author=post_author)
+        return self._message("disliked a post", "踩了一条帖子")
     
     def _describe_repost(self) -> str:
         """转发帖子 - 包含原帖内容和作者信息"""
@@ -99,12 +110,17 @@ class AgentActivity:
         original_author = self.action_args.get("original_author_name", "")
         
         if original_content and original_author:
-            return f"转发了{original_author}的帖子：「{original_content}」"
+            return self._format(
+                'reposted {author}\'s post: "{content}"',
+                "转发了{author}的帖子：「{content}」",
+                author=original_author,
+                content=original_content,
+            )
         elif original_content:
-            return f"转发了一条帖子：「{original_content}」"
+            return self._format('reposted a post: "{content}"', "转发了一条帖子：「{content}」", content=original_content)
         elif original_author:
-            return f"转发了{original_author}的一条帖子"
-        return "转发了一条帖子"
+            return self._format("reposted one of {author}'s posts", "转发了{author}的一条帖子", author=original_author)
+        return self._message("reposted a post", "转发了一条帖子")
     
     def _describe_quote_post(self) -> str:
         """引用帖子 - 包含原帖内容、作者信息和引用评论"""
@@ -114,16 +130,24 @@ class AgentActivity:
         
         base = ""
         if original_content and original_author:
-            base = f"引用了{original_author}的帖子「{original_content}」"
+            base = self._format(
+                'quoted {author}\'s post "{content}"',
+                "引用了{author}的帖子「{content}」",
+                author=original_author,
+                content=original_content,
+            )
         elif original_content:
-            base = f"引用了一条帖子「{original_content}」"
+            base = self._format('quoted a post "{content}"', "引用了一条帖子「{content}」", content=original_content)
         elif original_author:
-            base = f"引用了{original_author}的一条帖子"
+            base = self._format("quoted one of {author}'s posts", "引用了{author}的一条帖子", author=original_author)
         else:
-            base = "引用了一条帖子"
-        
+            base = self._message("quoted a post", "引用了一条帖子")
+
         if quote_content:
-            base += f"，并评论道：「{quote_content}」"
+            if self.locale == "en":
+                base += f', adding: "{quote_content}"'
+            else:
+                base += f"，并评论道：「{quote_content}」"
         return base
     
     def _describe_follow(self) -> str:
@@ -131,8 +155,8 @@ class AgentActivity:
         target_user_name = self.action_args.get("target_user_name", "")
         
         if target_user_name:
-            return f"关注了用户「{target_user_name}」"
-        return "关注了一个用户"
+            return self._format('followed user "{name}"', "关注了用户「{name}」", name=target_user_name)
+        return self._message("followed a user", "关注了一个用户")
     
     def _describe_create_comment(self) -> str:
         """发表评论 - 包含评论内容和所评论的帖子信息"""
@@ -142,13 +166,29 @@ class AgentActivity:
         
         if content:
             if post_content and post_author:
-                return f"在{post_author}的帖子「{post_content}」下评论道：「{content}」"
+                return self._format(
+                    'commented on {author}\'s post "{post}": "{content}"',
+                    "在{author}的帖子「{post}」下评论道：「{content}」",
+                    author=post_author,
+                    post=post_content,
+                    content=content,
+                )
             elif post_content:
-                return f"在帖子「{post_content}」下评论道：「{content}」"
+                return self._format(
+                    'commented on a post "{post}": "{content}"',
+                    "在帖子「{post}」下评论道：「{content}」",
+                    post=post_content,
+                    content=content,
+                )
             elif post_author:
-                return f"在{post_author}的帖子下评论道：「{content}」"
-            return f"评论道：「{content}」"
-        return "发表了评论"
+                return self._format(
+                    'commented on {author}\'s post: "{content}"',
+                    "在{author}的帖子下评论道：「{content}」",
+                    author=post_author,
+                    content=content,
+                )
+            return self._format('commented: "{content}"', "评论道：「{content}」", content=content)
+        return self._message("left a comment", "发表了评论")
     
     def _describe_like_comment(self) -> str:
         """点赞评论 - 包含评论内容和作者信息"""
@@ -156,12 +196,17 @@ class AgentActivity:
         comment_author = self.action_args.get("comment_author_name", "")
         
         if comment_content and comment_author:
-            return f"点赞了{comment_author}的评论：「{comment_content}」"
+            return self._format(
+                'liked {author}\'s comment: "{content}"',
+                "点赞了{author}的评论：「{content}」",
+                author=comment_author,
+                content=comment_content,
+            )
         elif comment_content:
-            return f"点赞了一条评论：「{comment_content}」"
+            return self._format('liked a comment: "{content}"', "点赞了一条评论：「{content}」", content=comment_content)
         elif comment_author:
-            return f"点赞了{comment_author}的一条评论"
-        return "点赞了一条评论"
+            return self._format("liked one of {author}'s comments", "点赞了{author}的一条评论", author=comment_author)
+        return self._message("liked a comment", "点赞了一条评论")
     
     def _describe_dislike_comment(self) -> str:
         """踩评论 - 包含评论内容和作者信息"""
@@ -169,34 +214,49 @@ class AgentActivity:
         comment_author = self.action_args.get("comment_author_name", "")
         
         if comment_content and comment_author:
-            return f"踩了{comment_author}的评论：「{comment_content}」"
+            return self._format(
+                'disliked {author}\'s comment: "{content}"',
+                "踩了{author}的评论：「{content}」",
+                author=comment_author,
+                content=comment_content,
+            )
         elif comment_content:
-            return f"踩了一条评论：「{comment_content}」"
+            return self._format('disliked a comment: "{content}"', "踩了一条评论：「{content}」", content=comment_content)
         elif comment_author:
-            return f"踩了{comment_author}的一条评论"
-        return "踩了一条评论"
+            return self._format("disliked one of {author}'s comments", "踩了{author}的一条评论", author=comment_author)
+        return self._message("disliked a comment", "踩了一条评论")
     
     def _describe_search(self) -> str:
         """搜索帖子 - 包含搜索关键词"""
         query = self.action_args.get("query", "") or self.action_args.get("keyword", "")
-        return f"搜索了「{query}」" if query else "进行了搜索"
+        if query:
+            return self._format('searched for "{query}"', "搜索了「{query}」", query=query)
+        return self._message("performed a search", "进行了搜索")
     
     def _describe_search_user(self) -> str:
         """搜索用户 - 包含搜索关键词"""
         query = self.action_args.get("query", "") or self.action_args.get("username", "")
-        return f"搜索了用户「{query}」" if query else "搜索了用户"
+        if query:
+            return self._format('searched for user "{query}"', "搜索了用户「{query}」", query=query)
+        return self._message("searched for a user", "搜索了用户")
     
     def _describe_mute(self) -> str:
         """屏蔽用户 - 包含被屏蔽用户的名称"""
         target_user_name = self.action_args.get("target_user_name", "")
         
         if target_user_name:
-            return f"屏蔽了用户「{target_user_name}」"
-        return "屏蔽了一个用户"
+            return self._format('muted user "{name}"', "屏蔽了用户「{name}」", name=target_user_name)
+        return self._message("muted a user", "屏蔽了一个用户")
     
     def _describe_generic(self) -> str:
         # 对于未知的动作类型，生成通用描述
-        return f"执行了{self.action_type}操作"
+        return self._format("performed action {action}", "执行了{action}操作", action=self.action_type)
+
+    def _message(self, en: str, zh: str) -> str:
+        return en if self.locale == "en" else zh
+
+    def _format(self, en: str, zh: str, **params: Any) -> str:
+        return self._message(en, zh).format(**params)
 
 
 class ZepGraphMemoryUpdater:
@@ -218,8 +278,8 @@ class ZepGraphMemoryUpdater:
     
     # 平台名称映射（用于控制台显示）
     PLATFORM_DISPLAY_NAMES = {
-        'twitter': '世界1',
-        'reddit': '世界2',
+        "zh": {"twitter": "世界1", "reddit": "世界2"},
+        "en": {"twitter": "World 1", "reddit": "World 2"},
     }
     
     # 发送间隔（秒），避免请求过快
@@ -229,7 +289,7 @@ class ZepGraphMemoryUpdater:
     MAX_RETRIES = 3
     RETRY_DELAY = 2  # 秒
     
-    def __init__(self, graph_id: str, api_key: Optional[str] = None):
+    def __init__(self, graph_id: str, api_key: Optional[str] = None, locale: str = "zh"):
         """
         初始化更新器
         
@@ -239,6 +299,7 @@ class ZepGraphMemoryUpdater:
         """
         self.graph_id = graph_id
         self.api_key = api_key or Config.ZEP_API_KEY
+        self.locale = locale if locale in {"zh", "en"} else "zh"
         
         if not self.api_key:
             raise ValueError(tr("graph.zep_key_missing", get_locale()))
@@ -270,7 +331,8 @@ class ZepGraphMemoryUpdater:
     
     def _get_platform_display_name(self, platform: str) -> str:
         """获取平台的显示名称"""
-        return self.PLATFORM_DISPLAY_NAMES.get(platform.lower(), platform)
+        localized_names = self.PLATFORM_DISPLAY_NAMES.get(self.locale, self.PLATFORM_DISPLAY_NAMES["zh"])
+        return localized_names.get(platform.lower(), platform)
     
     def start(self):
         """启动后台工作线程"""
@@ -353,6 +415,7 @@ class ZepGraphMemoryUpdater:
             action_args=data.get("action_args", {}),
             round_num=data.get("round", 0),
             timestamp=data.get("timestamp", datetime.now().isoformat()),
+            locale=self.locale,
         )
         
         self.add_activity(activity)
@@ -482,7 +545,7 @@ class ZepGraphMemoryManager:
     _lock = threading.Lock()
     
     @classmethod
-    def create_updater(cls, simulation_id: str, graph_id: str) -> ZepGraphMemoryUpdater:
+    def create_updater(cls, simulation_id: str, graph_id: str, locale: str = "zh") -> ZepGraphMemoryUpdater:
         """
         为模拟创建图谱记忆更新器
         
@@ -498,7 +561,7 @@ class ZepGraphMemoryManager:
             if simulation_id in cls._updaters:
                 cls._updaters[simulation_id].stop()
             
-            updater = ZepGraphMemoryUpdater(graph_id)
+            updater = ZepGraphMemoryUpdater(graph_id, locale=locale)
             updater.start()
             cls._updaters[simulation_id] = updater
             

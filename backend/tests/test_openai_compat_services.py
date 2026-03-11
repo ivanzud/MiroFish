@@ -15,7 +15,7 @@ from app.services.oasis_profile_generator import OasisAgentProfile, OasisProfile
 from app.services.graph_builder import GraphBuilderService
 from app.services.simulation_config_generator import SimulationConfigGenerator
 from app.services.zep_entity_reader import ZepEntityReader
-from app.services.zep_graph_memory_updater import ZepGraphMemoryUpdater
+from app.services.zep_graph_memory_updater import AgentActivity, ZepGraphMemoryUpdater
 from app.services.zep_tools import ZepToolsService
 
 
@@ -224,3 +224,25 @@ def test_zep_services_missing_key_support_english_request_locale(monkeypatch):
                 assert str(exc) == "ZEP_API_KEY is not configured"
             else:
                 raise AssertionError(f"expected ValueError for {service_type.__name__}")
+
+
+def test_agent_activity_episode_text_respects_english_locale():
+    activity = AgentActivity(
+        platform="twitter",
+        agent_id=1,
+        agent_name="Alice",
+        action_type="QUOTE_POST",
+        action_args={
+            "original_author_name": "Bob",
+            "original_content": "Launch day is tomorrow",
+            "quote_content": "I agree",
+        },
+        round_num=1,
+        timestamp="2026-03-11T12:00:00",
+        locale="en",
+    )
+
+    assert (
+        activity.to_episode_text()
+        == 'Alice: quoted Bob\'s post "Launch day is tomorrow", adding: "I agree"'
+    )
