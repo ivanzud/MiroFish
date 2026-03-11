@@ -119,6 +119,19 @@ def test_script_message_supports_english_runtime_strings():
     assert llm_env.script_message("no_successful_interviews", "en") == (
         "No interviews completed successfully"
     )
+    assert llm_env.script_message("platform_unavailable", "en", platform="twitter") == (
+        "twitter platform is unavailable"
+    )
+    assert llm_env.script_message("no_available_simulation_env", "en") == (
+        "No simulation environment is available"
+    )
+    assert llm_env.script_message(
+        "platform_agent_lookup_warning",
+        "en",
+        platform="Twitter",
+        agent_id=7,
+        error="boom",
+    ) == "  Warning: failed to load Twitter agent 7: boom"
     assert llm_env.script_message("runner_title", "en", platform="Twitter") == (
         "OASIS Twitter simulation"
     )
@@ -177,6 +190,14 @@ def test_script_message_defaults_to_chinese_runtime_strings():
     assert llm_env.script_message("unknown_command", command_type="mystery") == (
         "未知命令类型: mystery"
     )
+    assert llm_env.script_message("platform_unavailable", platform="twitter") == "twitter平台不可用"
+    assert llm_env.script_message("no_available_simulation_env") == "没有可用的模拟环境"
+    assert llm_env.script_message(
+        "platform_agent_lookup_warning",
+        platform="Twitter",
+        agent_id=7,
+        error="boom",
+    ) == "  警告: 无法获取Twitter Agent 7: boom"
     assert llm_env.script_message("install_simulation_deps_uv") == (
         "或在 backend 目录执行: `uv sync --extra simulation`"
     )

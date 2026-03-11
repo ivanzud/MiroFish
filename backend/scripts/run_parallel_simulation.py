@@ -368,7 +368,11 @@ class ParallelIPCHandler:
         if not env or not agent_graph:
             return {
                 "platform": platform,
-                "error": _t(f"{platform}平台不可用", f"{platform} platform is unavailable"),
+                "error": script_message(
+                    "platform_unavailable",
+                    SCRIPT_LOCALE,
+                    platform=platform,
+                ),
             }
         
         try:
@@ -436,7 +440,7 @@ class ParallelIPCHandler:
             self.send_response(
                 command_id,
                 "failed",
-                error=_t("没有可用的模拟环境", "No simulation environment is available"),
+                error=script_message("no_available_simulation_env", SCRIPT_LOCALE),
             )
             return False
         
@@ -539,9 +543,12 @@ class ParallelIPCHandler:
                         )
                     except Exception as e:
                         print(
-                            _t(
-                                f"  警告: 无法获取Twitter Agent {agent_id}: {e}",
-                                f"  Warning: failed to load Twitter agent {agent_id}: {e}",
+                            script_message(
+                                "platform_agent_lookup_warning",
+                                SCRIPT_LOCALE,
+                                platform="Twitter",
+                                agent_id=agent_id,
+                                error=e,
                             )
                         )
                 
@@ -571,9 +578,12 @@ class ParallelIPCHandler:
                         )
                     except Exception as e:
                         print(
-                            _t(
-                                f"  警告: 无法获取Reddit Agent {agent_id}: {e}",
-                                f"  Warning: failed to load Reddit agent {agent_id}: {e}",
+                            script_message(
+                                "platform_agent_lookup_warning",
+                                SCRIPT_LOCALE,
+                                platform="Reddit",
+                                agent_id=agent_id,
+                                error=e,
                             )
                         )
                 
@@ -692,15 +702,19 @@ class ParallelIPCHandler:
             self.send_response(
                 command_id,
                 "completed",
-                result={"message": _t("环境即将关闭", "The environment is shutting down")},
+                result={"message": script_message("close_command_ack", SCRIPT_LOCALE)},
             )
             return False
-        
+
         else:
             self.send_response(
                 command_id,
                 "failed",
-                error=_t(f"未知命令类型: {command_type}", f"Unknown command type: {command_type}"),
+                error=script_message(
+                    "unknown_command",
+                    SCRIPT_LOCALE,
+                    command_type=command_type,
+                ),
             )
             return True
 

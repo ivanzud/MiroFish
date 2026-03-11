@@ -101,6 +101,18 @@ SCRIPT_MESSAGES = {
         "zh": "没有成功的采访",
         "en": "No interviews completed successfully",
     },
+    "platform_unavailable": {
+        "zh": "{platform}平台不可用",
+        "en": "{platform} platform is unavailable",
+    },
+    "no_available_simulation_env": {
+        "zh": "没有可用的模拟环境",
+        "en": "No simulation environment is available",
+    },
+    "platform_agent_lookup_warning": {
+        "zh": "  警告: 无法获取{platform} Agent {agent_id}: {error}",
+        "en": "  Warning: failed to load {platform} agent {agent_id}: {error}",
+    },
     "interview_result_read_failed": {
         "zh": "  读取Interview结果失败: {error}",
         "en": "  Failed to read interview result: {error}",
