@@ -554,6 +554,7 @@ def test_select_agents_for_interview_localizes_prompts_fallback_reasoning_and_lo
     assert indices == [0]
     assert reasoning == "Used the default selection strategy"
     assert "You are an expert interview planner." in captured["messages"][0]["content"]
+    assert "Write the `reasoning` field in natural English" in captured["messages"][0]["content"]
     assert "Simulation background:\nNot provided" in captured["messages"][1]["content"]
     assert '"profession": "Unknown"' in captured["messages"][1]["content"]
     assert any(
@@ -589,6 +590,7 @@ def test_generate_interview_questions_localizes_prompts_fallbacks_and_logs_in_en
         "What should be changed or improved in response?",
     ]
     assert "You are a professional interviewer." in captured["messages"][0]["content"]
+    assert "Write every question in natural English" in captured["messages"][0]["content"]
     assert "Simulation background: Not provided" in captured["messages"][1]["content"]
     assert "Interviewee roles: Unknown" in captured["messages"][1]["content"]
     assert any(
@@ -626,6 +628,7 @@ def test_generate_sub_queries_localizes_prompts_and_fallbacks_in_english(monkeyp
         "How is How will the narrative change likely to evolve?",
     ]
     assert "You are an expert question analyst." in captured["messages"][0]["content"]
+    assert "Write every sub-question in natural English" in captured["messages"][0]["content"]
     assert "Simulation background:\nTrack public reaction over two weeks" in captured["messages"][1]["content"]
     assert "Report context:\nRecent posts show rising skepticism." in captured["messages"][1]["content"]
     assert "Break the following question into 4 focused sub-questions" in captured["messages"][1]["content"]
@@ -721,5 +724,7 @@ def test_generate_interview_summary_uses_english_wrappers_in_english_mode():
         summary = service._generate_interview_summary(interviews, "Understand the reaction")
 
     assert summary == "Summary complete."
+    assert "Write the summary entirely in natural English" in captured["messages"][0]["content"]
+    assert "translate it into fluent English before quoting or summarizing it" in captured["messages"][0]["content"]
     assert "[Alice (Unknown)]" in captured["messages"][1]["content"]
     assert "【Alice（Unknown）】" not in captured["messages"][1]["content"]

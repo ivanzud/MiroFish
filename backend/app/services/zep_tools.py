@@ -1789,7 +1789,8 @@ Requirements:
 1. Each sub-question should be specific enough to map to agent behavior, events, or observable changes in the simulation.
 2. Cover different dimensions of the main question when possible (for example who, what, why, how, when, where).
 3. Keep each sub-question relevant to the simulation scenario.
-4. Return JSON in the form {"sub_queries": ["Sub-question 1", "Sub-question 2", ...]}."""
+4. Write every sub-question in natural English, even if the source materials are in another language.
+5. Return JSON in the form {"sub_queries": ["Sub-question 1", "Sub-question 2", ...]}."""
             simulation_background = simulation_requirement or "Not provided"
             context_prefix = (
                 f"\n\nReport context:\n{report_context[:500]}"
@@ -2451,6 +2452,7 @@ Selection criteria:
 2. The agent may hold a unique or valuable perspective
 3. Prefer a diverse set of viewpoints (for example supporters, critics, neutral observers, professionals)
 4. Prioritize roles directly connected to the event
+5. Write the `reasoning` field in natural English, even if the interview requirement or agent bios use another language
 
 Return JSON:
 {
@@ -2554,6 +2556,7 @@ Question requirements:
 4. Keep the wording natural, like a real interview
 5. Keep each question concise
 6. Ask the question directly without extra framing text
+7. Write every question in natural English, even if the source materials are in another language
 
 Return JSON: {"questions": ["Question 1", "Question 2", ...]}"""
             simulation_background = simulation_requirement or "Not provided"
@@ -2647,6 +2650,8 @@ Summary requirements:
 3. Surface the most valuable quotations
 4. Stay objective and neutral
 5. Keep the summary under 1000 words
+6. Write the summary entirely in natural English
+7. If interview content contains Chinese or mixed-language text, translate it into fluent English before quoting or summarizing it
 
 Formatting constraints:
 - Use plain-text paragraphs separated by blank lines
