@@ -76,6 +76,8 @@ import warnings
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
 
+from llm_env import apply_openai_compat_env, resolve_standard_llm_env
+
 
 # 全局变量：用于信号处理
 _shutdown_event = None
@@ -986,7 +988,7 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
     创建LLM模型
     
     支持双 LLM 配置，用于并行模拟时提速：
-    - 通用配置：LLM_API_KEY / OPENAI_API_KEY, LLM_BASE_URL / OPENAI_BASE_URL, LLM_MODEL_NAME / OPENAI_MODEL
+    - 通用配置：LLM_API_KEY / OPENAI_API_KEY, LLM_BASE_URL / OPENAI_BASE_URL / OPENAI_API_BASE_URL, LLM_MODEL_NAME / OPENAI_MODEL
     - 加速配置（可选）：LLM_BOOST_API_KEY, LLM_BOOST_BASE_URL, LLM_BOOST_MODEL_NAME
     
     如果配置了加速 LLM，并行模拟时可以让不同平台使用不同的 API 服务商，提高并发能力。
@@ -1010,9 +1012,7 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
         config_label = "[加速LLM]"
     else:
         # 使用通用配置
-        llm_api_key = os.environ.get("LLM_API_KEY") or os.environ.get("OPENAI_API_KEY", "")
-        llm_base_url = os.environ.get("LLM_BASE_URL") or os.environ.get("OPENAI_BASE_URL", "")
-        llm_model = os.environ.get("LLM_MODEL_NAME") or os.environ.get("OPENAI_MODEL", "")
+        llm_api_key, llm_base_url, llm_model = resolve_standard_llm_env()
         config_label = "[通用LLM]"
     
     # 如果 .env 中没有模型名，则使用 config 作为备用
@@ -1020,15 +1020,11 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
         llm_model = config.get("llm_model", "gpt-4o-mini")
     
     # 设置 camel-ai 所需的环境变量
-    if llm_api_key:
-        os.environ["OPENAI_API_KEY"] = llm_api_key
-    
+    apply_openai_compat_env(llm_api_key, llm_base_url)
+
     if not os.environ.get("OPENAI_API_KEY"):
         raise ValueError("缺少 API Key 配置，请在项目根目录 .env 文件中设置 LLM_API_KEY 或 OPENAI_API_KEY")
-    
-    if llm_base_url:
-        os.environ["OPENAI_API_BASE_URL"] = llm_base_url
-    
+
     print(f"{config_label} model={llm_model}, base_url={llm_base_url[:40] if llm_base_url else '默认'}...")
     
     return ModelFactory.create(

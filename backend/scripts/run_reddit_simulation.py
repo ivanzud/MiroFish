@@ -48,6 +48,7 @@ else:
 
 
 import re
+from llm_env import apply_openai_compat_env, resolve_standard_llm_env
 
 
 class UnicodeFormatter(logging.Formatter):
@@ -437,28 +438,22 @@ class RedditSimulationRunner:
         
         统一使用项目根目录 .env 文件中的配置（优先级最高）：
         - LLM_API_KEY / OPENAI_API_KEY: API密钥
-        - LLM_BASE_URL / OPENAI_BASE_URL: API基础URL
+        - LLM_BASE_URL / OPENAI_BASE_URL / OPENAI_API_BASE_URL: API基础URL
         - LLM_MODEL_NAME / OPENAI_MODEL: 模型名称
         """
         # 优先从 .env 读取配置
-        llm_api_key = os.environ.get("LLM_API_KEY") or os.environ.get("OPENAI_API_KEY", "")
-        llm_base_url = os.environ.get("LLM_BASE_URL") or os.environ.get("OPENAI_BASE_URL", "")
-        llm_model = os.environ.get("LLM_MODEL_NAME") or os.environ.get("OPENAI_MODEL", "")
+        llm_api_key, llm_base_url, llm_model = resolve_standard_llm_env()
         
         # 如果 .env 中没有，则使用 config 作为备用
         if not llm_model:
             llm_model = self.config.get("llm_model", "gpt-4o-mini")
         
         # 设置 camel-ai 所需的环境变量
-        if llm_api_key:
-            os.environ["OPENAI_API_KEY"] = llm_api_key
+        apply_openai_compat_env(llm_api_key, llm_base_url)
         
         if not os.environ.get("OPENAI_API_KEY"):
             raise ValueError("缺少 API Key 配置，请在项目根目录 .env 文件中设置 LLM_API_KEY 或 OPENAI_API_KEY")
-        
-        if llm_base_url:
-            os.environ["OPENAI_API_BASE_URL"] = llm_base_url
-        
+
         print(f"LLM配置: model={llm_model}, base_url={llm_base_url[:40] if llm_base_url else '默认'}...")
         
         return ModelFactory.create(

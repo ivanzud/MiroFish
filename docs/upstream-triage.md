@@ -35,6 +35,7 @@ Last refreshed: `2026-03-11`
 - OpenAI-compatible backend aliases now work in the standalone simulation runners too, so `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` can be used directly outside the Flask app path.
 - Objective 7 verification status: backend config, standalone runners, and both READMEs now explicitly support direct OpenAI / Codex-compatible / OpenAI-compatible backends without requiring a project-specific raw-key-only setup.
 - Backend config now also accepts `OPENAI_API_BASE_URL`, matching the environment variable exported by the standalone simulation runners and some OpenAI-compatible tooling, with regression coverage in the lightweight backend test path.
+- Standalone simulation runners now also honor `OPENAI_API_BASE_URL` directly on input, so direct Codex/OpenAI-compatible backend setups work consistently in both the Flask app and the CLI simulation entry points.
 - `#114` Fix API base URL fallback is already superseded locally by the current frontend API client, which now falls back to the runtime origin and also supports `VITE_API_TIMEOUT`.
 - `#93` Hardcoded frontend API base URL is now fully addressed locally: `Process.vue` uses the shared frontend API resolver instead of embedding a separate `http://localhost:5001` fallback in network-error messages.
 
@@ -55,6 +56,7 @@ Last refreshed: `2026-03-11`
 - `cd frontend && npm run build` passes after adding failed-report retry handling in `Step4Report` for upstream issue `#84`.
 - `npm run test:backend:lite` now provides a repo-native lightweight backend validation path when full `uv` resolution is blocked by Rust/CUDA-heavy dependencies.
 - `npm run test:backend:lite` passes with the `OPENAI_API_BASE_URL` regression test plus the new structured config-validation coverage included in the default lightweight backend suite.
+- `npm run test:backend:lite` passes after adding standalone-runner alias regression coverage for `backend/scripts/llm_env.py`, confirming the CLI simulation entry points now accept `OPENAI_API_BASE_URL` directly.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_error_handler.py backend/tests/test_llm_client.py backend/tests/test_graph_builder.py backend/tests/test_ontology_generator.py -q` passes after landing the safe subset of `#105`.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes with targeted regression coverage for context-length handling and transient Zep retry behavior.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_ontology_generator.py backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes after landing the ontology validation hardening and exception-scope cleanup.

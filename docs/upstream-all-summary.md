@@ -2,9 +2,9 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T07:22:48.090221+00:00`
+- Captured: `2026-03-11T07:28:20.175818+00:00`
 - Issues: `79` total (`open=32`, `closed=47`)
-- Pull requests: `47` total (`open=34`, `closed=13`)
+- Pull requests: `47` total (`open=33`, `closed=14`)
 
 ## Recently Updated Issues
 
@@ -21,13 +21,13 @@
 
 ## Recently Updated Pull Requests
 
+- #127 [closed] Fix potential crash in LLMClient when content is None (`fix/llm-client-none-content` -> `main`)
 - #120 [closed] fix: 修复subsystems目录下neo4j_client导入路径错误; feat: 添加TODO.md开发规划文档 (`main` -> `main`)
 - #105 [open] fix: security improvements and error handling fixes (`fix/security-improvements` -> `main`)
 - #132 [open] docs:add simple system architecture part for README-EN.md & README.md (`docs/add-sys-architecture-part` -> `main`)
 - #131 [open] feat(graph_builder): add retry mechanism for Zep Cloud connection failures (`feat/zep-retry-mechanism` -> `main`)
 - #130 [open] docs: 添加贡献指南文档 (`docs/add-pr-guide` -> `main`)
 - #129 [open] fix(report_agent): handle API token overflow crash with context lengt… (`fix/fix-priority-issues-mNNjT` -> `main`)
-- #127 [open] Fix potential crash in LLMClient when content is None (`fix/llm-client-none-content` -> `main`)
 - #126 [open] feat: Add custom exceptions and enhanced config validation (`feature/custom-exceptions-and-config-validation` -> `main`)
 - #125 [open] fix: improve new-project network error diagnostics (`fix/issue-121` -> `main`)
 - #124 [open] fix: robust JSON extraction for mixed LLM responses (`fix/issue-64` -> `main`)

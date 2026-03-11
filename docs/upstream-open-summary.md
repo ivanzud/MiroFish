@@ -2,9 +2,9 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T07:22:46.733166+00:00`
+- Captured: `2026-03-11T07:28:18.983604+00:00`
 - Issues: `32` total (`open=32`, `closed=0`)
-- Pull requests: `34` total (`open=34`, `closed=0`)
+- Pull requests: `33` total (`open=33`, `closed=0`)
 
 ## Recently Updated Issues
 
@@ -26,8 +26,8 @@
 - #131 [open] feat(graph_builder): add retry mechanism for Zep Cloud connection failures (`feat/zep-retry-mechanism` -> `main`)
 - #130 [open] docs: 添加贡献指南文档 (`docs/add-pr-guide` -> `main`)
 - #129 [open] fix(report_agent): handle API token overflow crash with context lengt… (`fix/fix-priority-issues-mNNjT` -> `main`)
-- #127 [open] Fix potential crash in LLMClient when content is None (`fix/llm-client-none-content` -> `main`)
 - #126 [open] feat: Add custom exceptions and enhanced config validation (`feature/custom-exceptions-and-config-validation` -> `main`)
 - #125 [open] fix: improve new-project network error diagnostics (`fix/issue-121` -> `main`)
 - #124 [open] fix: robust JSON extraction for mixed LLM responses (`fix/issue-64` -> `main`)
 - #122 [open] fix(llm_client): remove response_format json_object for local LLM compatibility (`fix/lm-studio-json-object-compat` -> `main`)
+- #119 [open] feat: add an option to switch to english language (`language-option` -> `main`)

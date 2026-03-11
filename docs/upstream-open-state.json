@@ -1,13 +1,13 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T07:22:46.732631+00:00",
+  "captured_at": "2026-03-11T07:28:18.983065+00:00",
   "counts": {
     "issues": {
       "open": 32
     },
     "pull_requests": {
-      "open": 34
+      "open": 33
     }
   },
   "issues": [
@@ -452,20 +452,6 @@
       "base": "main",
       "draft": false,
       "author": "ai-x-builder"
-    },
-    {
-      "number": 127,
-      "title": "Fix potential crash in LLMClient when content is None",
-      "url": "https://github.com/666ghj/MiroFish/pull/127",
-      "state": "open",
-      "created_at": "2026-03-10T22:43:33Z",
-      "updated_at": "2026-03-10T22:44:42Z",
-      "closed_at": null,
-      "merged_at": null,
-      "head": "fix/llm-client-none-content",
-      "base": "main",
-      "draft": false,
-      "author": "sjhddh"
     },
     {
       "number": 126,

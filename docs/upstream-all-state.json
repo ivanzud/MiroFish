@@ -1,15 +1,15 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T07:22:48.089547+00:00",
+  "captured_at": "2026-03-11T07:28:20.175126+00:00",
   "counts": {
     "issues": {
       "closed": 47,
       "open": 32
     },
     "pull_requests": {
-      "closed": 13,
-      "open": 34
+      "closed": 14,
+      "open": 33
     }
   },
   "issues": [
@@ -917,6 +917,20 @@
   ],
   "pull_requests": [
     {
+      "number": 127,
+      "title": "Fix potential crash in LLMClient when content is None",
+      "url": "https://github.com/666ghj/MiroFish/pull/127",
+      "state": "closed",
+      "created_at": "2026-03-10T22:43:33Z",
+      "updated_at": "2026-03-11T07:24:30Z",
+      "closed_at": "2026-03-11T07:24:30Z",
+      "merged_at": null,
+      "head": "fix/llm-client-none-content",
+      "base": "main",
+      "draft": false,
+      "author": "sjhddh"
+    },
+    {
       "number": 120,
       "title": "fix: 修复subsystems目录下neo4j_client导入路径错误; feat: 添加TODO.md开发规划文档",
       "url": "https://github.com/666ghj/MiroFish/pull/120",
@@ -999,20 +1013,6 @@
       "base": "main",
       "draft": false,
       "author": "ai-x-builder"
-    },
-    {
-      "number": 127,
-      "title": "Fix potential crash in LLMClient when content is None",
-      "url": "https://github.com/666ghj/MiroFish/pull/127",
-      "state": "open",
-      "created_at": "2026-03-10T22:43:33Z",
-      "updated_at": "2026-03-10T22:44:42Z",
-      "closed_at": null,
-      "merged_at": null,
-      "head": "fix/llm-client-none-content",
-      "base": "main",
-      "draft": false,
-      "author": "sjhddh"
     },
     {
       "number": 126,
