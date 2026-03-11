@@ -957,6 +957,9 @@ class ReportAgent:
         
         logger.info(f"ReportAgent 初始化完成: graph_id={graph_id}, simulation_id={simulation_id}")
 
+    def _text(self, en_text: str, zh_text: str) -> str:
+        return en_text if self.locale == "en" else zh_text
+
     def _report_language_name(self) -> str:
         return "English" if self.locale == "en" else "中文"
 
@@ -1204,11 +1207,17 @@ class ReportAgent:
                 return json.dumps(result, ensure_ascii=False, indent=2)
             
             else:
-                return f"未知工具: {tool_name}。请使用以下工具之一: insight_forge, panorama_search, quick_search"
+                return self._text(
+                    f"Unknown tool: {tool_name}. Use one of: insight_forge, panorama_search, quick_search",
+                    f"未知工具: {tool_name}。请使用以下工具之一: insight_forge, panorama_search, quick_search",
+                )
                 
         except Exception as e:
             logger.error(f"工具执行失败: {tool_name}, 错误: {str(e)}")
-            return f"工具执行失败: {str(e)}"
+            return self._text(
+                f"Tool execution failed: {str(e)}",
+                f"工具执行失败: {str(e)}",
+            )
     
     # 合法的工具名称集合，用于裸 JSON 兜底解析时校验
     VALID_TOOL_NAMES = {"insight_forge", "panorama_search", "quick_search", "interview_agents"}
@@ -1275,12 +1284,12 @@ class ReportAgent:
     
     def _get_tools_description(self) -> str:
         """生成工具描述文本"""
-        desc_parts = ["可用工具："]
+        desc_parts = [self._text("Available tools:", "可用工具：")]
         for name, tool in self.tools.items():
             params_desc = ", ".join([f"{k}: {v}" for k, v in tool["parameters"].items()])
             desc_parts.append(f"- {name}: {tool['description']}")
             if params_desc:
-                desc_parts.append(f"  参数: {params_desc}")
+                desc_parts.append(f"  {self._text('Parameters', '参数')}: {params_desc}")
         return "\n".join(desc_parts)
     
     def plan_outline(
@@ -1301,7 +1310,7 @@ class ReportAgent:
         logger.info("开始规划报告大纲...")
         
         if progress_callback:
-            progress_callback("planning", 0, "正在分析模拟需求...")
+            progress_callback("planning", 0, self._text("Analyzing the simulation requirement...", "正在分析模拟需求..."))
         
         # 首先获取模拟上下文
         context = self.zep_tools.get_simulation_context(
@@ -1310,7 +1319,7 @@ class ReportAgent:
         )
         
         if progress_callback:
-            progress_callback("planning", 30, "正在生成报告大纲...")
+            progress_callback("planning", 30, self._text("Generating the report outline...", "正在生成报告大纲..."))
         
         system_prompt = PLAN_SYSTEM_PROMPT
         user_prompt = PLAN_USER_PROMPT_TEMPLATE.format(
@@ -1344,7 +1353,7 @@ class ReportAgent:
             )
             
             if progress_callback:
-                progress_callback("planning", 80, "正在解析大纲结构...")
+                progress_callback("planning", 80, self._text("Parsing the outline structure...", "正在解析大纲结构..."))
             
             # 解析大纲
             sections = []
@@ -1355,13 +1364,13 @@ class ReportAgent:
                 ))
             
             outline = ReportOutline(
-                title=self._normalize_outline_title(response.get("title", "模拟分析报告")),
+                title=self._normalize_outline_title(response.get("title", self._fallback_outline_title())),
                 summary=response.get("summary", ""),
                 sections=sections
             )
             
             if progress_callback:
-                progress_callback("planning", 100, "大纲规划完成")
+                progress_callback("planning", 100, self._text("Outline planning completed", "大纲规划完成"))
             
             logger.info(f"大纲规划完成: {len(sections)} 个章节")
             return outline
@@ -1370,12 +1379,15 @@ class ReportAgent:
             logger.error(f"大纲规划失败: {str(e)}")
             # 返回默认大纲（3个章节，作为fallback）
             return ReportOutline(
-                title="未来预测报告",
-                summary="基于模拟预测的未来趋势与风险分析",
+                title=self._text("Forecast Report", "未来预测报告"),
+                summary=self._text(
+                    "Trend and risk analysis based on the simulation forecast.",
+                    "基于模拟预测的未来趋势与风险分析",
+                ),
                 sections=[
-                    ReportSection(title="预测场景与核心发现"),
-                    ReportSection(title="人群行为预测分析"),
-                    ReportSection(title="趋势展望与风险提示")
+                    ReportSection(title=self._text("Forecast scenarios and key findings", "预测场景与核心发现")),
+                    ReportSection(title=self._text("Audience behavior analysis", "人群行为预测分析")),
+                    ReportSection(title=self._text("Trend outlook and risk signals", "趋势展望与风险提示"))
                 ]
             )
     
@@ -1756,7 +1768,7 @@ class ReportAgent:
             self.console_logger = ReportConsoleLogger(report_id)
             
             ReportManager.update_progress(
-                report_id, "pending", 0, "初始化报告...",
+                report_id, "pending", 0, self._text("Initializing report...", "初始化报告..."),
                 completed_sections=[]
             )
             ReportManager.save_report(report)
@@ -1764,7 +1776,7 @@ class ReportAgent:
             # 阶段1: 规划大纲
             report.status = ReportStatus.PLANNING
             ReportManager.update_progress(
-                report_id, "planning", 5, "开始规划报告大纲...",
+                report_id, "planning", 5, self._text("Starting report outline planning...", "开始规划报告大纲..."),
                 completed_sections=[]
             )
             
@@ -1772,7 +1784,7 @@ class ReportAgent:
             self.report_logger.log_planning_start()
             
             if progress_callback:
-                progress_callback("planning", 0, "开始规划报告大纲...")
+                progress_callback("planning", 0, self._text("Starting report outline planning...", "开始规划报告大纲..."))
             
             outline = self.plan_outline(
                 progress_callback=lambda stage, prog, msg: 
@@ -1786,7 +1798,13 @@ class ReportAgent:
             # 保存大纲到文件
             ReportManager.save_outline(report_id, outline)
             ReportManager.update_progress(
-                report_id, "planning", 15, f"大纲规划完成，共{len(outline.sections)}个章节",
+                report_id,
+                "planning",
+                15,
+                self._text(
+                    f"Outline planning completed with {len(outline.sections)} sections",
+                    f"大纲规划完成，共{len(outline.sections)}个章节",
+                ),
                 completed_sections=[]
             )
             ReportManager.save_report(report)
@@ -1806,7 +1824,10 @@ class ReportAgent:
                 # 更新进度
                 ReportManager.update_progress(
                     report_id, "generating", base_progress,
-                    f"正在生成章节: {section.title} ({section_num}/{total_sections})",
+                    self._text(
+                        f"Generating section: {section.title} ({section_num}/{total_sections})",
+                        f"正在生成章节: {section.title} ({section_num}/{total_sections})",
+                    ),
                     current_section=section.title,
                     completed_sections=completed_section_titles
                 )
@@ -1815,7 +1836,10 @@ class ReportAgent:
                     progress_callback(
                         "generating", 
                         base_progress, 
-                        f"正在生成章节: {section.title} ({section_num}/{total_sections})"
+                        self._text(
+                            f"Generating section: {section.title} ({section_num}/{total_sections})",
+                            f"正在生成章节: {section.title} ({section_num}/{total_sections})",
+                        )
                     )
                 
                 # 生成主章节内容
@@ -1855,17 +1879,17 @@ class ReportAgent:
                 ReportManager.update_progress(
                     report_id, "generating", 
                     base_progress + int(70 / total_sections),
-                    f"章节 {section.title} 已完成",
+                    self._text(f"Section completed: {section.title}", f"章节 {section.title} 已完成"),
                     current_section=None,
                     completed_sections=completed_section_titles
                 )
             
             # 阶段3: 组装完整报告
             if progress_callback:
-                progress_callback("generating", 95, "正在组装完整报告...")
+                progress_callback("generating", 95, self._text("Assembling the full report...", "正在组装完整报告..."))
             
             ReportManager.update_progress(
-                report_id, "generating", 95, "正在组装完整报告...",
+                report_id, "generating", 95, self._text("Assembling the full report...", "正在组装完整报告..."),
                 completed_sections=completed_section_titles
             )
             
@@ -1887,12 +1911,12 @@ class ReportAgent:
             # 保存最终报告
             ReportManager.save_report(report)
             ReportManager.update_progress(
-                report_id, "completed", 100, "报告生成完成",
+                report_id, "completed", 100, self._text("Report generation completed", "报告生成完成"),
                 completed_sections=completed_section_titles
             )
             
             if progress_callback:
-                progress_callback("completed", 100, "报告生成完成")
+                progress_callback("completed", 100, self._text("Report generation completed", "报告生成完成"))
             
             logger.info(f"报告生成完成: {report_id}")
             
@@ -1916,7 +1940,10 @@ class ReportAgent:
             try:
                 ReportManager.save_report(report)
                 ReportManager.update_progress(
-                    report_id, "failed", -1, f"报告生成失败: {str(e)}",
+                    report_id,
+                    "failed",
+                    -1,
+                    self._text(f"Report generation failed: {str(e)}", f"报告生成失败: {str(e)}"),
                     completed_sections=completed_section_titles
                 )
             except Exception:

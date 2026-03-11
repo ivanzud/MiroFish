@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T11:56:13.717482+00:00",
-  "generated_at": "2026-03-11T11:56:13.717482+00:00",
+  "captured_at": "2026-03-11T12:01:09.310366+00:00",
+  "generated_at": "2026-03-11T12:01:09.310366+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -88,7 +88,20 @@
           "url": "https://github.com/666ghj/MiroFish/issues/135#issuecomment-4037553350",
           "body_excerpt": "<!-- Greeting --> Hi @rheeh! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这个错误是因为 `attr_def` 应该是字典格式 `{\"name\": \"attr_name\", ...}`，但实际收到的是字符串。 **根本原因**：LLM 生成的 ontology 中，`attributes` 字段可能返回了简单的…"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 135,
+        "status": "covered",
+        "summary": "Graph ontology ingestion now accepts string-valued attribute definitions for entity and edge schemas, so malformed LLM ontology output no longer crashes graph builds with `TypeError: string indices must be integers`.",
+        "local_refs": [
+          "backend/app/services/graph_builder.py",
+          "backend/tests/test_graph_builder.py"
+        ],
+        "validation": [
+          "backend/tests/test_graph_builder.py::test_set_ontology_accepts_string_attribute_definitions"
+        ],
+        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+      }
     },
     {
       "number": 133,
@@ -165,7 +178,25 @@
           "url": "https://github.com/666ghj/MiroFish/issues/110#issuecomment-4029067259",
           "body_excerpt": "使用以下方式调用Coding Plan LLM_BASE_URL=https://coding.dashscope.aliyuncs.com/v1 LLM_MODEL_NAME=qwen3.5-plus"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 110,
+        "status": "covered",
+        "summary": "The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.",
+        "local_refs": [
+          "README.md",
+          "README-EN.md",
+          ".env.example",
+          "backend/app/config.py",
+          "backend/app/api/graph.py",
+          "backend/tests/test_openai_compat_services.py"
+        ],
+        "validation": [
+          "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_mentions_openai_alias",
+          "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_english_message"
+        ],
+        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+      }
     },
     {
       "number": 64,

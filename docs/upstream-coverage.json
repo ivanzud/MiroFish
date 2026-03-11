@@ -3,6 +3,24 @@
   "captured_at": "2026-03-11T11:55:00+00:00",
   "issues": [
     {
+      "number": 110,
+      "status": "covered",
+      "summary": "The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.",
+      "local_refs": [
+        "README.md",
+        "README-EN.md",
+        ".env.example",
+        "backend/app/config.py",
+        "backend/app/api/graph.py",
+        "backend/tests/test_openai_compat_services.py"
+      ],
+      "validation": [
+        "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_mentions_openai_alias",
+        "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_english_message"
+      ],
+      "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+    },
+    {
       "number": 133,
       "status": "covered",
       "summary": "The backend root path `/` plus `/health` and `/healthz` now return a small JSON status payload with the live API prefixes, so local or Docker users no longer need to infer backend health from a bare 404.",
@@ -12,6 +30,19 @@
       ],
       "validation": [
         "backend/tests/test_app_routes.py::test_root_and_health_endpoints_expose_backend_status"
+      ],
+      "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+    },
+    {
+      "number": 135,
+      "status": "covered",
+      "summary": "Graph ontology ingestion now accepts string-valued attribute definitions for entity and edge schemas, so malformed LLM ontology output no longer crashes graph builds with `TypeError: string indices must be integers`.",
+      "local_refs": [
+        "backend/app/services/graph_builder.py",
+        "backend/tests/test_graph_builder.py"
+      ],
+      "validation": [
+        "backend/tests/test_graph_builder.py::test_set_ontology_accepts_string_attribute_definitions"
       ],
       "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
     },

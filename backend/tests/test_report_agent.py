@@ -44,6 +44,11 @@ class AbstractTitleLLM(FakeLLM):
         }
 
 
+class FailingLLM(FakeLLM):
+    def chat_json(self, messages, temperature):
+        raise RuntimeError("provider offline")
+
+
 class FakeZepTools:
     def get_simulation_context(self, graph_id, simulation_requirement):
         return {
@@ -120,3 +125,77 @@ def test_plan_outline_requests_english_output_when_locale_is_en():
 
     assert "Return the report title, summary, and section titles/descriptions in English." in user_prompt
     assert "Keep wording concrete, readable, and directly aligned with the simulation requirement." in user_prompt
+
+
+def test_plan_outline_english_progress_messages_are_localized():
+    llm = FakeLLM()
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    progress_updates = []
+    agent.plan_outline(progress_callback=lambda stage, progress, message: progress_updates.append((stage, progress, message)))
+
+    assert progress_updates == [
+        ("planning", 0, "Analyzing the simulation requirement..."),
+        ("planning", 30, "Generating the report outline..."),
+        ("planning", 80, "Parsing the outline structure..."),
+        ("planning", 100, "Outline planning completed"),
+    ]
+
+
+def test_plan_outline_english_fallback_outline_is_localized():
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=FailingLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    outline = agent.plan_outline()
+
+    assert outline.title == "Forecast Report"
+    assert outline.summary == "Trend and risk analysis based on the simulation forecast."
+    assert [section.title for section in outline.sections] == [
+        "Forecast scenarios and key findings",
+        "Audience behavior analysis",
+        "Trend outlook and risk signals",
+    ]
+
+
+def test_execute_tool_english_errors_are_localized():
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=FakeLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    unknown = agent._execute_tool("not_a_tool", {})
+    assert unknown == "Unknown tool: not_a_tool. Use one of: insight_forge, panorama_search, quick_search"
+
+    class BrokenTools(FakeZepTools):
+        def quick_search(self, graph_id, query, limit):
+            raise RuntimeError("search backend unavailable")
+
+    failing_agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=FakeLLM(),
+        zep_tools=BrokenTools(),
+    )
+
+    assert failing_agent._execute_tool("quick_search", {"query": "audience", "limit": 3}) == (
+        "Tool execution failed: search backend unavailable"
+    )
