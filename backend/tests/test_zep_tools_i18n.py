@@ -29,6 +29,20 @@ def _make_service() -> ZepToolsService:
     return ZepToolsService.__new__(ZepToolsService)
 
 
+class FakeLogger:
+    def __init__(self) -> None:
+        self.messages = []
+
+    def info(self, message):
+        self.messages.append(("info", str(message)))
+
+    def warning(self, message):
+        self.messages.append(("warning", str(message)))
+
+    def error(self, message):
+        self.messages.append(("error", str(message)))
+
+
 def test_interview_agents_localizes_missing_profiles_summary_in_english():
     app = Flask(__name__)
     service = _make_service()
@@ -38,6 +52,60 @@ def test_interview_agents_localizes_missing_profiles_summary_in_english():
         result = service.interview_agents("sim_123", "Understand the reaction")
 
     assert result.summary == "No interviewable agent profiles were found"
+
+
+def test_search_graph_localizes_fallback_logs_in_english(monkeypatch):
+    app = Flask(__name__)
+    service = _make_service()
+    service.MAX_RETRIES = 1
+    service.RETRY_DELAY = 0
+
+    class FakeGraphAPI:
+        def search(self, **kwargs):
+            raise RuntimeError("search unavailable")
+
+    class FakeClient:
+        graph = FakeGraphAPI()
+
+    fake_logger = FakeLogger()
+    service.client = FakeClient()
+    service.get_all_edges = lambda graph_id: [
+        EdgeInfo(
+            uuid="edge-1",
+            name="influences",
+            fact="Alice influences Bob",
+            source_node_uuid="node-1",
+            target_node_uuid="node-2",
+            locale="en",
+        )
+    ]
+    service.get_all_nodes = lambda graph_id: []
+    monkeypatch.setattr(zep_tools_module, "logger", fake_logger)
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        result = service.search_graph("graph-1", "Alice")
+
+    assert result.total_count == 1
+    assert any("Graph search: graph_id=graph-1" in message for _, message in fake_logger.messages)
+    assert any("falling back to local search" in message for _, message in fake_logger.messages)
+    assert any("Local search completed: found 1 relevant facts" in message for _, message in fake_logger.messages)
+    assert all("图谱搜索" not in message for _, message in fake_logger.messages)
+
+
+def test_interview_agents_localizes_missing_profile_logs_in_english(monkeypatch):
+    app = Flask(__name__)
+    service = _make_service()
+    service._load_agent_profiles = lambda simulation_id: []
+    fake_logger = FakeLogger()
+    monkeypatch.setattr(zep_tools_module, "logger", fake_logger)
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        result = service.interview_agents("sim_123", "Understand the reaction")
+
+    assert result.summary == "No interviewable agent profiles were found"
+    assert any("InterviewAgents deep interview (live API)" in message for _, message in fake_logger.messages)
+    assert any("No agent profile files were found for simulation sim_123" in message for _, message in fake_logger.messages)
+    assert all("未找到模拟" not in message for _, message in fake_logger.messages)
 
 
 def test_interview_agents_localizes_english_placeholders_and_text(monkeypatch):

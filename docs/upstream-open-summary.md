@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T18:12:09.379981+00:00`
+- Captured: `2026-03-11T18:14:11.800724+00:00`
 - Issues: `40` total (`open=40`, `closed=0`)
 - Pull requests: `39` total (`open=39`, `closed=0`)
 - Mirrored in `origin`: `39` of `39` PR refs
@@ -46,9 +46,9 @@
 
 ## Recently Updated Pull Requests
 
-- #152 [open, mergeable=clean, mirrored=yes] fix(backend): enforce Zep API naming conventions for ontology types (`support-pascal-and-snake-case` -> `main`)
+- #152 [open, mergeable=clean, mirrored=yes] fix(backend): 修复Zep API本体命名格式校验错误 (`support-pascal-and-snake-case` -> `main`)
   - local coverage [landed]: Landed locally as a repo-native graph-builder fix: ontology entity type names now normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.
-  - ## Changes - Add `to_pascal_case()` to enforce PascalCase on entity type names (e.g. `university_student` → `UniversityStudent`) - Add `to_screaming_snake_case()` to enforce SCREAMING_SNAKE_CASE on edge/relationship type names (e.g. `WorksFor` → `WORKS_FOR`) - Enforce PascalCase on edge `source_targets` source/target references to match their corresponding entity type names - Fix Zep API 400 erro…
+  - ## 变更内容 ### 问题 调用 Zep API 构建图谱时返回 400 错误： - 实体类型名称必须为 **PascalCase** 格式（如 `UniversityStudent`） - 关系类型名称必须为 **SCREAMING_SNAKE_CASE** 格式（如 `WORKS_FOR`） - 关系的 source/target 引用也必须为 **PascalCase** ### 修复方案 在 `ontology_generator.py` 的 `_validate_and_process` 方法中新增两个格式化工具函数： - `to_pascal_case()`：将实体类型名称强制转为 PascalCase（如 `university_student` → `UniversityStudent`） - `to_screaming_snake_case()`：将关系类型名称强制转…
 - #151 [open, mergeable=clean, mirrored=yes] Fix silent data loss when platform defaults to reddit for Twitter-only simulations (`fix/platform-default-reddit-silent-failure` -> `main`)
   - local coverage [landed]: Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.
   - ## Summary - API retrieval endpoints (`/profiles`, `/profiles/realtime`, `/posts`, `/comments`) hardcoded `'reddit'` as the default platform - When a Twitter-only simulation was run (`enable_reddit=false`), these APIs silently returned empty results because they looked for `reddit_simulation.db` / `reddit_profiles.json` which did not exist - Frontend also hardcoded `'reddit'` in Vue components an…

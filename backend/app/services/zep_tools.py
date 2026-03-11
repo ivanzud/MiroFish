@@ -531,7 +531,7 @@ class ZepToolsService:
         self.client = Zep(api_key=self.api_key)
         # LLM客户端用于InsightForge生成子问题
         self._llm_client = llm_client
-        logger.info("ZepToolsService 初始化完成")
+        self._log("info", "ZepToolsService 初始化完成", "ZepToolsService initialized")
 
     @staticmethod
     def _locale() -> str:
@@ -540,6 +540,10 @@ class ZepToolsService:
     @classmethod
     def _text(cls, zh: str, en: str, locale: Optional[str] = None) -> str:
         return _localized_text(locale or cls._locale(), zh, en)
+
+    @classmethod
+    def _log(cls, level: str, zh: str, en: str, locale: Optional[str] = None) -> None:
+        getattr(logger, level)(cls._text(zh, en, locale))
     
     @property
     def llm(self) -> LLMClient:
@@ -560,14 +564,19 @@ class ZepToolsService:
             except Exception as e:
                 last_exception = e
                 if attempt < max_retries - 1:
-                    logger.warning(
-                        f"Zep {operation_name} 第 {attempt + 1} 次尝试失败: {str(e)[:100]}, "
-                        f"{delay:.1f}秒后重试..."
+                    self._log(
+                        "warning",
+                        f"Zep {operation_name} 第 {attempt + 1} 次尝试失败: {str(e)[:100]}, {delay:.1f}秒后重试...",
+                        f"Zep {operation_name} attempt {attempt + 1} failed: {str(e)[:100]}. Retrying in {delay:.1f}s...",
                     )
                     time.sleep(delay)
                     delay *= 2
                 else:
-                    logger.error(f"Zep {operation_name} 在 {max_retries} 次尝试后仍失败: {str(e)}")
+                    self._log(
+                        "error",
+                        f"Zep {operation_name} 在 {max_retries} 次尝试后仍失败: {str(e)}",
+                        f"Zep {operation_name} still failed after {max_retries} attempts: {str(e)}",
+                    )
         
         raise last_exception
     
@@ -593,7 +602,13 @@ class ZepToolsService:
         Returns:
             SearchResult: 搜索结果
         """
-        logger.info(f"图谱搜索: graph_id={graph_id}, query={query[:50]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"图谱搜索: graph_id={graph_id}, query={query[:50]}...",
+            f"Graph search: graph_id={graph_id}, query={query[:50]}...",
+            locale,
+        )
         
         # 尝试使用Zep Cloud Search API
         try:
@@ -605,7 +620,11 @@ class ZepToolsService:
                     scope=scope,
                     reranker="cross_encoder"
                 ),
-                operation_name=f"图谱搜索(graph={graph_id})"
+                operation_name=self._text(
+                    f"图谱搜索(graph={graph_id})",
+                    f"graph search (graph={graph_id})",
+                    locale,
+                )
             )
             
             facts = []
@@ -638,7 +657,12 @@ class ZepToolsService:
                     if hasattr(node, 'summary') and node.summary:
                         facts.append(f"[{node.name}]: {node.summary}")
             
-            logger.info(f"搜索完成: 找到 {len(facts)} 条相关事实")
+            self._log(
+                "info",
+                f"搜索完成: 找到 {len(facts)} 条相关事实",
+                f"Search completed: found {len(facts)} relevant facts",
+                locale,
+            )
             
             return SearchResult(
                 facts=facts,
@@ -650,7 +674,12 @@ class ZepToolsService:
             )
             
         except Exception as e:
-            logger.warning(f"Zep Search API失败，降级为本地搜索: {str(e)}")
+            self._log(
+                "warning",
+                f"Zep Search API失败，降级为本地搜索: {str(e)}",
+                f"Zep Search API failed; falling back to local search: {str(e)}",
+                locale,
+            )
             # 降级：使用本地关键词匹配搜索
             return self._local_search(graph_id, query, limit, scope)
     
@@ -675,7 +704,13 @@ class ZepToolsService:
         Returns:
             SearchResult: 搜索结果
         """
-        logger.info(f"使用本地搜索: query={query[:30]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"使用本地搜索: query={query[:30]}...",
+            f"Using local search: query={query[:30]}...",
+            locale,
+        )
         
         facts = []
         edges_result = []
@@ -745,10 +780,20 @@ class ZepToolsService:
                     if node.summary:
                         facts.append(f"[{node.name}]: {node.summary}")
             
-            logger.info(f"本地搜索完成: 找到 {len(facts)} 条相关事实")
+            self._log(
+                "info",
+                f"本地搜索完成: 找到 {len(facts)} 条相关事实",
+                f"Local search completed: found {len(facts)} relevant facts",
+                locale,
+            )
             
         except Exception as e:
-            logger.error(f"本地搜索失败: {str(e)}")
+            self._log(
+                "error",
+                f"本地搜索失败: {str(e)}",
+                f"Local search failed: {str(e)}",
+                locale,
+            )
         
         return SearchResult(
             facts=facts,
@@ -1422,8 +1467,13 @@ class ZepToolsService:
         """
         from .simulation_runner import SimulationRunner
         
-        logger.info(f"InterviewAgents 深度采访（真实API）: {interview_requirement[:50]}...")
         locale = self._locale()
+        self._log(
+            "info",
+            f"InterviewAgents 深度采访（真实API）: {interview_requirement[:50]}...",
+            f"InterviewAgents deep interview (live API): {interview_requirement[:50]}...",
+            locale,
+        )
         
         result = InterviewResult(
             interview_topic=interview_requirement,
@@ -1435,7 +1485,12 @@ class ZepToolsService:
         profiles = self._load_agent_profiles(simulation_id)
         
         if not profiles:
-            logger.warning(f"未找到模拟 {simulation_id} 的人设文件")
+            self._log(
+                "warning",
+                f"未找到模拟 {simulation_id} 的人设文件",
+                f"No agent profile files were found for simulation {simulation_id}",
+                locale,
+            )
             result.summary = self._text(
                 "未找到可采访的Agent人设文件",
                 "No interviewable agent profiles were found",
@@ -1444,7 +1499,12 @@ class ZepToolsService:
             return result
         
         result.total_agents = len(profiles)
-        logger.info(f"加载到 {len(profiles)} 个Agent人设")
+        self._log(
+            "info",
+            f"加载到 {len(profiles)} 个Agent人设",
+            f"Loaded {len(profiles)} agent profiles",
+            locale,
+        )
         
         # Step 2: 使用LLM选择要采访的Agent（返回agent_id列表）
         selected_agents, selected_indices, selection_reasoning = self._select_agents_for_interview(
@@ -1456,7 +1516,12 @@ class ZepToolsService:
         
         result.selected_agents = selected_agents
         result.selection_reasoning = selection_reasoning
-        logger.info(f"选择了 {len(selected_agents)} 个Agent进行采访: {selected_indices}")
+        self._log(
+            "info",
+            f"选择了 {len(selected_agents)} 个Agent进行采访: {selected_indices}",
+            f"Selected {len(selected_agents)} agents for interview: {selected_indices}",
+            locale,
+        )
         
         # Step 3: 生成采访问题（如果没有提供）
         if not result.interview_questions:
@@ -1465,7 +1530,12 @@ class ZepToolsService:
                 simulation_requirement=simulation_requirement,
                 selected_agents=selected_agents
             )
-            logger.info(f"生成了 {len(result.interview_questions)} 个采访问题")
+            self._log(
+                "info",
+                f"生成了 {len(result.interview_questions)} 个采访问题",
+                f"Generated {len(result.interview_questions)} interview questions",
+                locale,
+            )
         
         # 将问题合并为一个采访prompt
         combined_prompt = "\n".join([f"{i+1}. {q}" for i, q in enumerate(result.interview_questions)])
@@ -1509,7 +1579,12 @@ class ZepToolsService:
                     # 不指定platform，API会在twitter和reddit两个平台都采访
                 })
             
-            logger.info(f"调用批量采访API（双平台）: {len(interviews_request)} 个Agent")
+            self._log(
+                "info",
+                f"调用批量采访API（双平台）: {len(interviews_request)} 个Agent",
+                f"Calling the batch interview API (dual platform) for {len(interviews_request)} agents",
+                locale,
+            )
             
             # 调用 SimulationRunner 的批量采访方法（不传platform，双平台采访）
             api_result = SimulationRunner.interview_agents_batch(
@@ -1519,12 +1594,22 @@ class ZepToolsService:
                 timeout=180.0   # 双平台需要更长超时
             )
             
-            logger.info(f"采访API返回: {api_result.get('interviews_count', 0)} 个结果, success={api_result.get('success')}")
+            self._log(
+                "info",
+                f"采访API返回: {api_result.get('interviews_count', 0)} 个结果, success={api_result.get('success')}",
+                f"Interview API returned {api_result.get('interviews_count', 0)} results, success={api_result.get('success')}",
+                locale,
+            )
             
             # 检查API调用是否成功
             if not api_result.get("success", False):
                 error_msg = api_result.get("error", self._text("未知错误", "Unknown error", locale))
-                logger.warning(f"采访API返回失败: {error_msg}")
+                self._log(
+                    "warning",
+                    f"采访API返回失败: {error_msg}",
+                    f"Interview API returned failure: {error_msg}",
+                    locale,
+                )
                 result.summary = self._text(
                     f"采访API调用失败：{error_msg}。请检查OASIS模拟环境状态。",
                     f"Interview API call failed: {error_msg}. Check the OASIS simulation environment status.",
@@ -1607,7 +1692,12 @@ class ZepToolsService:
             
         except ValueError as e:
             # 模拟环境未运行
-            logger.warning(f"采访API调用失败（环境未运行？）: {e}")
+            self._log(
+                "warning",
+                f"采访API调用失败（环境未运行？）: {e}",
+                f"Interview API call failed (environment not running?): {e}",
+                locale,
+            )
             result.summary = self._text(
                 f"采访失败：{str(e)}。模拟环境可能已关闭，请确保OASIS环境正在运行。",
                 f"Interview failed: {str(e)}. The simulation environment may be closed. Make sure the OASIS environment is still running.",
@@ -1615,7 +1705,12 @@ class ZepToolsService:
             )
             return result
         except Exception as e:
-            logger.error(f"采访API调用异常: {e}")
+            self._log(
+                "error",
+                f"采访API调用异常: {e}",
+                f"Interview API call raised an exception: {e}",
+                locale,
+            )
             import traceback
             logger.error(traceback.format_exc())
             result.summary = self._text(
@@ -1632,7 +1727,12 @@ class ZepToolsService:
                 interview_requirement=interview_requirement
             )
         
-        logger.info(f"InterviewAgents完成: 采访了 {result.interviewed_count} 个Agent（双平台）")
+        self._log(
+            "info",
+            f"InterviewAgents完成: 采访了 {result.interviewed_count} 个Agent（双平台）",
+            f"InterviewAgents completed: interviewed {result.interviewed_count} agents (dual platform)",
+            locale,
+        )
         return result
     
     @staticmethod
@@ -1675,10 +1775,18 @@ class ZepToolsService:
             try:
                 with open(reddit_profile_path, 'r', encoding='utf-8') as f:
                     profiles = json.load(f)
-                logger.info(f"从 reddit_profiles.json 加载了 {len(profiles)} 个人设")
+                self._log(
+                    "info",
+                    f"从 reddit_profiles.json 加载了 {len(profiles)} 个人设",
+                    f"Loaded {len(profiles)} profiles from reddit_profiles.json",
+                )
                 return profiles
             except Exception as e:
-                logger.warning(f"读取 reddit_profiles.json 失败: {e}")
+                self._log(
+                    "warning",
+                    f"读取 reddit_profiles.json 失败: {e}",
+                    f"Failed to read reddit_profiles.json: {e}",
+                )
         
         # 尝试读取Twitter CSV格式
         twitter_profile_path = os.path.join(sim_dir, "twitter_profiles.csv")
@@ -1695,10 +1803,18 @@ class ZepToolsService:
                             "persona": row.get("user_char", ""),
                             "profession": "未知"
                         })
-                logger.info(f"从 twitter_profiles.csv 加载了 {len(profiles)} 个人设")
+                self._log(
+                    "info",
+                    f"从 twitter_profiles.csv 加载了 {len(profiles)} 个人设",
+                    f"Loaded {len(profiles)} profiles from twitter_profiles.csv",
+                )
                 return profiles
             except Exception as e:
-                logger.warning(f"读取 twitter_profiles.csv 失败: {e}")
+                self._log(
+                    "warning",
+                    f"读取 twitter_profiles.csv 失败: {e}",
+                    f"Failed to read twitter_profiles.csv: {e}",
+                )
         
         return profiles
     
