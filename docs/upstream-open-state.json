@@ -1,0 +1,700 @@
+{
+  "repo": "666ghj/MiroFish",
+  "state": "open",
+  "captured_at": "2026-03-11T06:33:02.082890+00:00",
+  "issues": [
+    {
+      "number": 117,
+      "title": "### Feature Request: English Language Support",
+      "url": "https://github.com/666ghj/MiroFish/issues/117",
+      "created_at": "2026-03-10T08:44:18Z",
+      "updated_at": "2026-03-10T08:46:24Z",
+      "labels": [
+        "enhancement"
+      ],
+      "author": "malpaniga"
+    },
+    {
+      "number": 110,
+      "title": "阿里云百炼 API 调用异常：付费计划（Coding Plan）非千文模型及大模型API中转站的API均失效，仅免费额度模型或coding plan的千文模型可用",
+      "url": "https://github.com/666ghj/MiroFish/issues/110",
+      "created_at": "2026-03-10T01:08:29Z",
+      "updated_at": "2026-03-10T06:40:37Z",
+      "labels": [
+        "LLM API"
+      ],
+      "author": "weilb"
+    },
+    {
+      "number": 107,
+      "title": "镜像问题",
+      "url": "https://github.com/666ghj/MiroFish/issues/107",
+      "created_at": "2026-03-09T14:44:45Z",
+      "updated_at": "2026-03-09T14:44:45Z",
+      "labels": [],
+      "author": "zhuhw19"
+    },
+    {
+      "number": 106,
+      "title": "能否采用除了zep的别的知识图谱",
+      "url": "https://github.com/666ghj/MiroFish/issues/106",
+      "created_at": "2026-03-09T13:55:59Z",
+      "updated_at": "2026-03-10T02:33:21Z",
+      "labels": [],
+      "author": "paipaiio"
+    },
+    {
+      "number": 99,
+      "title": "Docker镜像没有arm版本",
+      "url": "https://github.com/666ghj/MiroFish/issues/99",
+      "created_at": "2026-03-09T06:52:35Z",
+      "updated_at": "2026-03-09T06:54:58Z",
+      "labels": [
+        "enhancement"
+      ],
+      "author": "linqiu919"
+    },
+    {
+      "number": 93,
+      "title": "`frontend/src/api/index.js`中的`baseURL`不应该硬编码",
+      "url": "https://github.com/666ghj/MiroFish/issues/93",
+      "created_at": "2026-03-08T16:44:24Z",
+      "updated_at": "2026-03-09T01:53:47Z",
+      "labels": [
+        "enhancement"
+      ],
+      "author": "HexStan"
+    },
+    {
+      "number": 92,
+      "title": "Upgrade GitHub Actions",
+      "url": "https://github.com/666ghj/MiroFish/issues/92",
+      "created_at": "2026-03-08T15:26:04Z",
+      "updated_at": "2026-03-08T15:28:09Z",
+      "labels": [
+        "enhancement"
+      ],
+      "author": "leon-x-labs"
+    },
+    {
+      "number": 84,
+      "title": "报告生成失败，请问有没有办法重新生成？",
+      "url": "https://github.com/666ghj/MiroFish/issues/84",
+      "created_at": "2026-03-08T08:10:41Z",
+      "updated_at": "2026-03-09T17:26:28Z",
+      "labels": [
+        "question"
+      ],
+      "author": "luchenwei9266"
+    },
+    {
+      "number": 76,
+      "title": "知识图谱构建提供接入 ragflow api 的功能",
+      "url": "https://github.com/666ghj/MiroFish/issues/76",
+      "created_at": "2026-02-27T12:02:39Z",
+      "updated_at": "2026-02-28T08:02:11Z",
+      "labels": [
+        "Memory Layer"
+      ],
+      "author": "Hitomogami"
+    },
+    {
+      "number": 75,
+      "title": "Zep 的免费限速会让进度卡99%",
+      "url": "https://github.com/666ghj/MiroFish/issues/75",
+      "created_at": "2026-02-26T08:35:41Z",
+      "updated_at": "2026-02-28T08:13:33Z",
+      "labels": [],
+      "author": "fengkuangyibo"
+    },
+    {
+      "number": 69,
+      "title": "模型对接",
+      "url": "https://github.com/666ghj/MiroFish/issues/69",
+      "created_at": "2026-02-10T07:53:43Z",
+      "updated_at": "2026-02-10T07:56:20Z",
+      "labels": [
+        "question"
+      ],
+      "author": "wjh-w"
+    },
+    {
+      "number": 68,
+      "title": "尝试进行首次模拟，等待了1夜还是在3/5的阶段",
+      "url": "https://github.com/666ghj/MiroFish/issues/68",
+      "created_at": "2026-02-10T01:19:08Z",
+      "updated_at": "2026-03-01T08:29:56Z",
+      "labels": [
+        "question"
+      ],
+      "author": "GarretRen"
+    },
+    {
+      "number": 64,
+      "title": "一直卡在上传文件错误：Request failed with status code 500",
+      "url": "https://github.com/666ghj/MiroFish/issues/64",
+      "created_at": "2026-01-31T13:10:06Z",
+      "updated_at": "2026-03-10T05:40:36Z",
+      "labels": [],
+      "author": "G-LJDS2022"
+    },
+    {
+      "number": 62,
+      "title": "很好的创意，专门注册来提提问题和建议啦",
+      "url": "https://github.com/666ghj/MiroFish/issues/62",
+      "created_at": "2026-01-28T01:39:38Z",
+      "updated_at": "2026-01-28T08:34:36Z",
+      "labels": [],
+      "author": "piaopiaomiaomiao"
+    },
+    {
+      "number": 61,
+      "title": "能否将修改api的功能在前端也实现",
+      "url": "https://github.com/666ghj/MiroFish/issues/61",
+      "created_at": "2026-01-27T13:37:15Z",
+      "updated_at": "2026-01-28T08:35:08Z",
+      "labels": [],
+      "author": "skoa323"
+    },
+    {
+      "number": 60,
+      "title": "Zep 免费计划 429 限流导致图谱构建失败（请求过密）",
+      "url": "https://github.com/666ghj/MiroFish/issues/60",
+      "created_at": "2026-01-24T16:03:41Z",
+      "updated_at": "2026-01-28T08:36:57Z",
+      "labels": [],
+      "author": "Jonah-Wu23"
+    },
+    {
+      "number": 58,
+      "title": "使用ollama加载的本地大模型启动引擎时经常会遇到超时问题",
+      "url": "https://github.com/666ghj/MiroFish/issues/58",
+      "created_at": "2026-01-24T10:47:13Z",
+      "updated_at": "2026-01-24T16:18:14Z",
+      "labels": [],
+      "author": "ThomasWang071001"
+    },
+    {
+      "number": 56,
+      "title": "Zep 本地化实现方案交流专贴",
+      "url": "https://github.com/666ghj/MiroFish/issues/56",
+      "created_at": "2026-01-23T07:24:57Z",
+      "updated_at": "2026-03-06T01:40:22Z",
+      "labels": [],
+      "author": "666ghj"
+    },
+    {
+      "number": 55,
+      "title": "做了一个基于本地neo4j的版本",
+      "url": "https://github.com/666ghj/MiroFish/issues/55",
+      "created_at": "2026-01-23T03:08:03Z",
+      "updated_at": "2026-01-23T06:27:04Z",
+      "labels": [],
+      "author": "xumengke2025-sys"
+    },
+    {
+      "number": 54,
+      "title": "太喜欢你这个项目了！给了我巨大的帮助！",
+      "url": "https://github.com/666ghj/MiroFish/issues/54",
+      "created_at": "2026-01-23T02:39:53Z",
+      "updated_at": "2026-01-23T02:39:53Z",
+      "labels": [],
+      "author": "zb2947244682"
+    },
+    {
+      "number": 52,
+      "title": "API最大长度超过导致程序奔溃",
+      "url": "https://github.com/666ghj/MiroFish/issues/52",
+      "created_at": "2026-01-22T13:25:33Z",
+      "updated_at": "2026-01-22T13:25:33Z",
+      "labels": [],
+      "author": "ngyygm"
+    },
+    {
+      "number": 46,
+      "title": "npm安装依赖和配置提示project.license` as a TOML table is deprecated",
+      "url": "https://github.com/666ghj/MiroFish/issues/46",
+      "created_at": "2026-01-21T12:26:05Z",
+      "updated_at": "2026-01-23T10:34:52Z",
+      "labels": [],
+      "author": "Vamco2022"
+    },
+    {
+      "number": 45,
+      "title": "与世界中任意个体对话功能和发送调查问卷到世界中 两个功能报错 IPC 响应 failed",
+      "url": "https://github.com/666ghj/MiroFish/issues/45",
+      "created_at": "2026-01-21T06:46:41Z",
+      "updated_at": "2026-01-21T07:11:18Z",
+      "labels": [],
+      "author": "LucasXu666666"
+    },
+    {
+      "number": 43,
+      "title": "在使用时调用IPC超时",
+      "url": "https://github.com/666ghj/MiroFish/issues/43",
+      "created_at": "2026-01-21T02:23:35Z",
+      "updated_at": "2026-01-21T07:10:12Z",
+      "labels": [],
+      "author": "dbplayer-git"
+    },
+    {
+      "number": 42,
+      "title": "项目在3/5开始模拟时会消耗大量内存",
+      "url": "https://github.com/666ghj/MiroFish/issues/42",
+      "created_at": "2026-01-21T01:57:50Z",
+      "updated_at": "2026-03-09T17:28:20Z",
+      "labels": [],
+      "author": "s1f102500012"
+    },
+    {
+      "number": 37,
+      "title": "模拟环境未运行或已关闭，无法执行Interview: sim_66f01bcf8013。模拟环境可能已关闭，请确保OASIS环境正在运行。",
+      "url": "https://github.com/666ghj/MiroFish/issues/37",
+      "created_at": "2026-01-20T09:10:49Z",
+      "updated_at": "2026-02-09T04:54:14Z",
+      "labels": [],
+      "author": "Ezj-Amon"
+    },
+    {
+      "number": 24,
+      "title": "ERROR: 报告生成失败: 'NoneType' object is not subscriptable",
+      "url": "https://github.com/666ghj/MiroFish/issues/24",
+      "created_at": "2026-01-14T15:53:08Z",
+      "updated_at": "2026-01-21T13:28:41Z",
+      "labels": [],
+      "author": "Joe-rq"
+    },
+    {
+      "number": 21,
+      "title": "部署在群辉服务器上，docker里启动了服务，然后用过反向代理可以访问前端了，如果已经开始模拟了，刷新网页或者关掉再打开会发生什么",
+      "url": "https://github.com/666ghj/MiroFish/issues/21",
+      "created_at": "2026-01-14T08:33:53Z",
+      "updated_at": "2026-01-14T08:33:53Z",
+      "labels": [],
+      "author": "usernametooshort"
+    },
+    {
+      "number": 19,
+      "title": "建议初次使用不用太大的pdf",
+      "url": "https://github.com/666ghj/MiroFish/issues/19",
+      "created_at": "2026-01-14T02:45:19Z",
+      "updated_at": "2026-01-15T05:57:37Z",
+      "labels": [],
+      "author": "paperplane123"
+    },
+    {
+      "number": 17,
+      "title": "多次仿真 + 元报告共识，提升预测结果的可信度",
+      "url": "https://github.com/666ghj/MiroFish/issues/17",
+      "created_at": "2026-01-06T09:07:51Z",
+      "updated_at": "2026-01-06T09:07:51Z",
+      "labels": [],
+      "author": "tt-a1i"
+    },
+    {
+      "number": 14,
+      "title": "Frontend doesn't show error when simulation fails",
+      "url": "https://github.com/666ghj/MiroFish/issues/14",
+      "created_at": "2026-01-05T11:43:44Z",
+      "updated_at": "2026-01-06T06:15:22Z",
+      "labels": [],
+      "author": "tt-a1i"
+    },
+    {
+      "number": 9,
+      "title": "可以设置中断重新加载吗",
+      "url": "https://github.com/666ghj/MiroFish/issues/9",
+      "created_at": "2025-12-28T13:16:54Z",
+      "updated_at": "2026-02-21T09:55:20Z",
+      "labels": [],
+      "author": "LMG-arch"
+    }
+  ],
+  "pull_requests": [
+    {
+      "number": 132,
+      "title": "docs:add simple system architecture part for README-EN.md & README.md",
+      "url": "https://github.com/666ghj/MiroFish/pull/132",
+      "created_at": "2026-03-11T05:45:53Z",
+      "updated_at": "2026-03-11T05:47:00Z",
+      "head": "docs/add-sys-architecture-part",
+      "base": "main",
+      "draft": false,
+      "author": "Noblegasesgoo"
+    },
+    {
+      "number": 131,
+      "title": "feat(graph_builder): add retry mechanism for Zep Cloud connection failures",
+      "url": "https://github.com/666ghj/MiroFish/pull/131",
+      "created_at": "2026-03-11T05:42:07Z",
+      "updated_at": "2026-03-11T05:43:10Z",
+      "head": "feat/zep-retry-mechanism",
+      "base": "main",
+      "draft": false,
+      "author": "EuanTop"
+    },
+    {
+      "number": 130,
+      "title": "docs: 添加贡献指南文档",
+      "url": "https://github.com/666ghj/MiroFish/pull/130",
+      "created_at": "2026-03-11T04:24:56Z",
+      "updated_at": "2026-03-11T04:26:00Z",
+      "head": "docs/add-pr-guide",
+      "base": "main",
+      "draft": false,
+      "author": "M-Tlinqinming"
+    },
+    {
+      "number": 129,
+      "title": "fix(report_agent): handle API token overflow crash with context lengt…",
+      "url": "https://github.com/666ghj/MiroFish/pull/129",
+      "created_at": "2026-03-11T02:55:33Z",
+      "updated_at": "2026-03-11T02:56:38Z",
+      "head": "fix/fix-priority-issues-mNNjT",
+      "base": "main",
+      "draft": false,
+      "author": "ai-x-builder"
+    },
+    {
+      "number": 127,
+      "title": "Fix potential crash in LLMClient when content is None",
+      "url": "https://github.com/666ghj/MiroFish/pull/127",
+      "created_at": "2026-03-10T22:43:33Z",
+      "updated_at": "2026-03-10T22:44:42Z",
+      "head": "fix/llm-client-none-content",
+      "base": "main",
+      "draft": false,
+      "author": "sjhddh"
+    },
+    {
+      "number": 126,
+      "title": "feat: Add custom exceptions and enhanced config validation",
+      "url": "https://github.com/666ghj/MiroFish/pull/126",
+      "created_at": "2026-03-10T22:12:22Z",
+      "updated_at": "2026-03-10T22:13:37Z",
+      "head": "feature/custom-exceptions-and-config-validation",
+      "base": "main",
+      "draft": false,
+      "author": "ZaviQ7"
+    },
+    {
+      "number": 125,
+      "title": "fix: improve new-project network error diagnostics",
+      "url": "https://github.com/666ghj/MiroFish/pull/125",
+      "created_at": "2026-03-10T21:50:43Z",
+      "updated_at": "2026-03-10T21:51:51Z",
+      "head": "fix/issue-121",
+      "base": "main",
+      "draft": false,
+      "author": "SergioChan"
+    },
+    {
+      "number": 124,
+      "title": "fix: robust JSON extraction for mixed LLM responses",
+      "url": "https://github.com/666ghj/MiroFish/pull/124",
+      "created_at": "2026-03-10T21:50:31Z",
+      "updated_at": "2026-03-10T21:51:46Z",
+      "head": "fix/issue-64",
+      "base": "main",
+      "draft": false,
+      "author": "SergioChan"
+    },
+    {
+      "number": 122,
+      "title": "fix(llm_client): remove response_format json_object for local LLM compatibility",
+      "url": "https://github.com/666ghj/MiroFish/pull/122",
+      "created_at": "2026-03-10T18:20:49Z",
+      "updated_at": "2026-03-10T18:33:48Z",
+      "head": "fix/lm-studio-json-object-compat",
+      "base": "main",
+      "draft": false,
+      "author": "ImL1s"
+    },
+    {
+      "number": 120,
+      "title": "fix: 修复subsystems目录下neo4j_client导入路径错误; feat: 添加TODO.md开发规划文档",
+      "url": "https://github.com/666ghj/MiroFish/pull/120",
+      "created_at": "2026-03-10T15:41:04Z",
+      "updated_at": "2026-03-11T03:54:11Z",
+      "head": "main",
+      "base": "main",
+      "draft": false,
+      "author": "28764116"
+    },
+    {
+      "number": 119,
+      "title": "feat: add an option to switch to english language",
+      "url": "https://github.com/666ghj/MiroFish/pull/119",
+      "created_at": "2026-03-10T15:05:40Z",
+      "updated_at": "2026-03-10T18:14:33Z",
+      "head": "language-option",
+      "base": "main",
+      "draft": false,
+      "author": "Pratiyankkumar"
+    },
+    {
+      "number": 118,
+      "title": "feat(ragflow): add RAGflow as alternative graph backend with full pip…",
+      "url": "https://github.com/666ghj/MiroFish/pull/118",
+      "created_at": "2026-03-10T09:29:33Z",
+      "updated_at": "2026-03-10T09:30:44Z",
+      "head": "fix/ragflow-pattern-compliance",
+      "base": "main",
+      "draft": false,
+      "author": "pratyush618"
+    },
+    {
+      "number": 116,
+      "title": "Upgrade GitHub Actions",
+      "url": "https://github.com/666ghj/MiroFish/pull/116",
+      "created_at": "2026-03-10T07:30:38Z",
+      "updated_at": "2026-03-10T07:30:42Z",
+      "head": "chore/upgrade-actions",
+      "base": "main",
+      "draft": false,
+      "author": "ailuntz"
+    },
+    {
+      "number": 115,
+      "title": "Use SPDX license string",
+      "url": "https://github.com/666ghj/MiroFish/pull/115",
+      "created_at": "2026-03-10T07:28:37Z",
+      "updated_at": "2026-03-10T07:28:41Z",
+      "head": "fix/pyproject-license",
+      "base": "main",
+      "draft": false,
+      "author": "ailuntz"
+    },
+    {
+      "number": 114,
+      "title": "Fix API base URL fallback",
+      "url": "https://github.com/666ghj/MiroFish/pull/114",
+      "created_at": "2026-03-10T07:21:29Z",
+      "updated_at": "2026-03-10T07:21:49Z",
+      "head": "fix/api-baseurl-default",
+      "base": "main",
+      "draft": false,
+      "author": "ailuntz"
+    },
+    {
+      "number": 113,
+      "title": "docs(readme): add Japanese README",
+      "url": "https://github.com/666ghj/MiroFish/pull/113",
+      "created_at": "2026-03-10T06:43:16Z",
+      "updated_at": "2026-03-10T06:44:34Z",
+      "head": "add-ja-doc",
+      "base": "main",
+      "draft": false,
+      "author": "eltociear"
+    },
+    {
+      "number": 112,
+      "title": "Korean README.md added",
+      "url": "https://github.com/666ghj/MiroFish/pull/112",
+      "created_at": "2026-03-10T05:25:01Z",
+      "updated_at": "2026-03-10T05:25:55Z",
+      "head": "main",
+      "base": "main",
+      "draft": false,
+      "author": "waitle"
+    },
+    {
+      "number": 108,
+      "title": "feat(installer): add Windows installer build scripts",
+      "url": "https://github.com/666ghj/MiroFish/pull/108",
+      "created_at": "2026-03-09T17:14:55Z",
+      "updated_at": "2026-03-09T17:16:21Z",
+      "head": "feat/windows-installer",
+      "base": "main",
+      "draft": false,
+      "author": "JasonOA888"
+    },
+    {
+      "number": 105,
+      "title": "fix: security improvements and error handling fixes",
+      "url": "https://github.com/666ghj/MiroFish/pull/105",
+      "created_at": "2026-03-09T11:57:58Z",
+      "updated_at": "2026-03-11T05:48:53Z",
+      "head": "fix/security-improvements",
+      "base": "main",
+      "draft": false,
+      "author": "hobostay"
+    },
+    {
+      "number": 104,
+      "title": "fix: make vite proxy target configurable via environment variable",
+      "url": "https://github.com/666ghj/MiroFish/pull/104",
+      "created_at": "2026-03-09T09:05:37Z",
+      "updated_at": "2026-03-09T09:06:54Z",
+      "head": "fix/remove-hardcoded-api-url",
+      "base": "main",
+      "draft": false,
+      "author": "nil957"
+    },
+    {
+      "number": 103,
+      "title": "ci: upgrade GitHub Actions and add ARM64 Docker support",
+      "url": "https://github.com/666ghj/MiroFish/pull/103",
+      "created_at": "2026-03-09T09:03:45Z",
+      "updated_at": "2026-03-09T09:04:59Z",
+      "head": "fix/upgrade-actions-and-arm-support",
+      "base": "main",
+      "draft": false,
+      "author": "nil957"
+    },
+    {
+      "number": 102,
+      "title": "fix(ci): add multi-platform Docker build for ARM64 support",
+      "url": "https://github.com/666ghj/MiroFish/pull/102",
+      "created_at": "2026-03-09T08:25:27Z",
+      "updated_at": "2026-03-09T08:26:30Z",
+      "head": "fix/docker-multiplatform",
+      "base": "main",
+      "draft": false,
+      "author": "JasonOA888"
+    },
+    {
+      "number": 101,
+      "title": "feat(utils): add json_utils module for robust LLM JSON parsing",
+      "url": "https://github.com/666ghj/MiroFish/pull/101",
+      "created_at": "2026-03-09T08:23:07Z",
+      "updated_at": "2026-03-09T08:24:20Z",
+      "head": "feat/json-utils-helper",
+      "base": "main",
+      "draft": false,
+      "author": "JasonOA888"
+    },
+    {
+      "number": 100,
+      "title": "fix(frontend): use relative baseURL in production, avoid hardcoded localhost",
+      "url": "https://github.com/666ghj/MiroFish/pull/100",
+      "created_at": "2026-03-09T08:19:23Z",
+      "updated_at": "2026-03-09T08:20:38Z",
+      "head": "fix/frontend-baseurl",
+      "base": "main",
+      "draft": false,
+      "author": "JasonOA888"
+    },
+    {
+      "number": 87,
+      "title": "Upgrade GitHub Actions to latest versions",
+      "url": "https://github.com/666ghj/MiroFish/pull/87",
+      "created_at": "2026-03-08T09:09:13Z",
+      "updated_at": "2026-03-08T09:09:19Z",
+      "head": "upgrade-github-actions-node24-general",
+      "base": "main",
+      "draft": false,
+      "author": "salmanmkc"
+    },
+    {
+      "number": 86,
+      "title": "Upgrade GitHub Actions for Node 24 compatibility",
+      "url": "https://github.com/666ghj/MiroFish/pull/86",
+      "created_at": "2026-03-08T09:09:10Z",
+      "updated_at": "2026-03-08T09:09:14Z",
+      "head": "upgrade-github-actions-node24",
+      "base": "main",
+      "draft": false,
+      "author": "salmanmkc"
+    },
+    {
+      "number": 82,
+      "title": "[Security] Fix CRITICAL vulnerability: CVE-2025-64712",
+      "url": "https://github.com/666ghj/MiroFish/pull/82",
+      "created_at": "2026-03-08T02:45:42Z",
+      "updated_at": "2026-03-08T02:45:46Z",
+      "head": "fix-cve-2025-64712-unstructured",
+      "base": "main",
+      "draft": false,
+      "author": "orbisai0security"
+    },
+    {
+      "number": 81,
+      "title": "feat: add configurable API timeout for slow local LLMs",
+      "url": "https://github.com/666ghj/MiroFish/pull/81",
+      "created_at": "2026-03-08T02:34:41Z",
+      "updated_at": "2026-03-08T02:35:36Z",
+      "head": "fix/issue-58-configurable-timeout",
+      "base": "main",
+      "draft": false,
+      "author": "JasonOA888"
+    },
+    {
+      "number": 74,
+      "title": "fix: replace 4 bare excepts with except Exception",
+      "url": "https://github.com/666ghj/MiroFish/pull/74",
+      "created_at": "2026-02-25T03:01:43Z",
+      "updated_at": "2026-02-25T09:20:00Z",
+      "head": "fix/bare-excepts",
+      "base": "main",
+      "draft": false,
+      "author": "haosenwang1018"
+    },
+    {
+      "number": 73,
+      "title": "fix: Handle string entities/edges in _validate_and_process",
+      "url": "https://github.com/666ghj/MiroFish/pull/73",
+      "created_at": "2026-02-20T12:41:04Z",
+      "updated_at": "2026-02-20T12:42:03Z",
+      "head": "fix-ontology-validation",
+      "base": "main",
+      "draft": false,
+      "author": "calvinguo721"
+    },
+    {
+      "number": 72,
+      "title": "清理模型返回的markdown标记",
+      "url": "https://github.com/666ghj/MiroFish/pull/72",
+      "created_at": "2026-02-15T05:27:05Z",
+      "updated_at": "2026-03-10T02:58:45Z",
+      "head": "main",
+      "base": "main",
+      "draft": false,
+      "author": "MoeclubM"
+    },
+    {
+      "number": 70,
+      "title": "windows安装程序打包",
+      "url": "https://github.com/666ghj/MiroFish/pull/70",
+      "created_at": "2026-02-10T14:47:00Z",
+      "updated_at": "2026-02-16T20:17:26Z",
+      "head": "main",
+      "base": "main",
+      "draft": false,
+      "author": "Jonah-Wu23"
+    },
+    {
+      "number": 49,
+      "title": "记忆图谱本地化实现",
+      "url": "https://github.com/666ghj/MiroFish/pull/49",
+      "created_at": "2026-01-22T06:42:21Z",
+      "updated_at": "2026-01-22T06:42:21Z",
+      "head": "feat/local",
+      "base": "main",
+      "draft": false,
+      "author": "Momoyeyu"
+    },
+    {
+      "number": 38,
+      "title": "feat: Add support for Anthropic SDK (Claude) and multi-provider switching",
+      "url": "https://github.com/666ghj/MiroFish/pull/38",
+      "created_at": "2026-01-20T09:56:00Z",
+      "updated_at": "2026-01-24T16:25:40Z",
+      "head": "feat/anthropic-sdk",
+      "base": "main",
+      "draft": false,
+      "author": "SmartisanNaive"
+    },
+    {
+      "number": 15,
+      "title": "fix(frontend): handle simulation failed status",
+      "url": "https://github.com/666ghj/MiroFish/pull/15",
+      "created_at": "2026-01-06T06:45:39Z",
+      "updated_at": "2026-01-06T06:53:51Z",
+      "head": "fix/frontend-simulation-error-handling",
+      "base": "main",
+      "draft": false,
+      "author": "tt-a1i"
+    }
+  ]
+}
