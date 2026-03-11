@@ -12,6 +12,8 @@ sys.modules.setdefault("zep_cloud.client", fake_zep_client)
 
 from app.services.report_agent import ReportAgent
 from app.services.report_agent import ReportManager
+from app.services.report_agent import ReportOutline
+from app.services.report_agent import ReportSection
 from app.services.report_agent import ReportStatus
 
 
@@ -68,6 +70,22 @@ class EmptySectionLLM(FakeLLM):
         self.messages = messages
         self.temperature = temperature
         return None
+
+
+class SequenceSectionLLM(FakeLLM):
+    def __init__(self, responses):
+        super().__init__()
+        self.responses = list(responses)
+        self.calls = []
+
+    def chat(self, messages, temperature, max_tokens, response_format=None):
+        snapshot = [{"role": item["role"], "content": item["content"]} for item in messages]
+        self.calls.append(snapshot)
+        self.messages = snapshot
+        self.temperature = temperature
+        if not self.responses:
+            raise AssertionError("SequenceSectionLLM ran out of scripted responses")
+        return self.responses.pop(0)
 
 
 class FakeZepTools:
@@ -242,6 +260,86 @@ def test_generate_report_survives_empty_llm_section_responses(tmp_path, monkeypa
     assert saved_progress is not None
     assert saved_progress["status"] == "completed"
     assert saved_progress["progress"] == 100
+
+
+def test_generate_section_localizes_english_react_loop_messages(monkeypatch):
+    llm = SequenceSectionLLM([
+        '<tool_call>{"name":"quick_search","parameters":{"query":"audience","limit":1}}</tool_call>',
+        "Final Answer: Too early",
+        '<tool_call>{"name":"panorama_search","parameters":{"query":"audience","include_expired":true}}</tool_call>',
+        '<tool_call>{"name":"insight_forge","parameters":{"query":"audience"}}</tool_call>',
+        "Final Answer: Final English section body",
+    ])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+    outline = ReportOutline(
+        title="Forecast Report",
+        summary="Audience forecast",
+        sections=[ReportSection(title="Audience Outlook")],
+    )
+    progress_updates = []
+    observed_contexts = []
+
+    def fake_execute_tool(tool_name, parameters, report_context=None):
+        observed_contexts.append((tool_name, report_context))
+        return f"{tool_name} evidence"
+
+    monkeypatch.setattr(agent, "_execute_tool", fake_execute_tool)
+
+    content = agent._generate_section_react(
+        outline.sections[0],
+        outline,
+        [],
+        progress_callback=lambda stage, progress, message: progress_updates.append((stage, progress, message)),
+        section_index=1,
+    )
+
+    assert content == "Final English section body"
+    assert progress_updates[0] == ("generating", 0, "Deep retrieval and drafting in progress (0/5)")
+    assert "(This is the first section)" in llm.calls[0][1]["content"]
+    assert observed_contexts[0] == (
+        "quick_search",
+        "Section title: Audience Outlook\nSimulation requirement: Predict the likely audience for this game",
+    )
+
+    observation_prompt = llm.calls[1][-1]["content"]
+    assert "Observation:" in observation_prompt
+    assert "Tool quick_search returned" in observation_prompt
+    assert "Tool calls used: 1/5" in observation_prompt
+
+    insufficient_tools_prompt = llm.calls[2][-1]["content"]
+    assert insufficient_tools_prompt.startswith("Notice: you have only used 1 tool calls; at least 3 are required.")
+    assert "Please call another tool to gather more simulation evidence before outputting Final Answer." in insufficient_tools_prompt
+    assert "Tip: you have not used these tools yet:" in insufficient_tools_prompt
+
+
+def test_generate_section_localizes_english_empty_response_retry_and_fallback():
+    llm = SequenceSectionLLM([None, None, None, None, None, None])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+    outline = ReportOutline(
+        title="Forecast Report",
+        summary="Audience forecast",
+        sections=[ReportSection(title="Audience Outlook")],
+    )
+
+    content = agent._generate_section_react(outline.sections[0], outline, [], section_index=1)
+
+    assert content == "(This section could not be generated because the LLM returned an empty response. Please try again later.)"
+    assert llm.calls[1][-2]["content"] == "(The response was empty)"
+    assert llm.calls[1][-1]["content"] == "Please continue generating the content."
 
 
 def test_generate_report_localizes_persisted_agent_log_messages_in_english(tmp_path, monkeypatch):

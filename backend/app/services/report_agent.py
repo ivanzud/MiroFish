@@ -1017,6 +1017,127 @@ class ReportAgent:
    - 这一规则同时适用于正文和引用块（> 格式）中的内容
 """
 
+    def _section_generation_progress_message(self, tool_calls_count: int) -> str:
+        return self._text(
+            f"Deep retrieval and drafting in progress ({tool_calls_count}/{self.MAX_TOOL_CALLS_PER_SECTION})",
+            f"深度检索与撰写中 ({tool_calls_count}/{self.MAX_TOOL_CALLS_PER_SECTION})",
+        )
+
+    def _first_section_placeholder(self) -> str:
+        return self._text("(This is the first section)", "（这是第一个章节）")
+
+    def _report_context_text(self, section_title: str) -> str:
+        return self._text(
+            f"Section title: {section_title}\nSimulation requirement: {self.simulation_requirement}",
+            f"章节标题: {section_title}\n模拟需求: {self.simulation_requirement}",
+        )
+
+    def _empty_response_retry_messages(self) -> tuple[str, str]:
+        return (
+            self._text("(The response was empty)", "（响应为空）"),
+            self._text("Please continue generating the content.", "请继续生成内容。"),
+        )
+
+    def _react_conflict_retry_message(self) -> str:
+        return self._text(
+            "Format error: your reply included both a tool call and Final Answer, which is not allowed.\n"
+            "Each reply must do exactly one of the following:\n"
+            '- Call one tool (output a single <tool_call> block and do not write Final Answer)\n'
+            "- Output the final content (start with 'Final Answer:' and do not include <tool_call>)\n"
+            "Please reply again and do only one of them.",
+            "【格式错误】你在一次回复中同时包含了工具调用和 Final Answer，这是不允许的。\n"
+            "每次回复只能做以下两件事之一：\n"
+            "- 调用一个工具（输出一个 <tool_call> 块，不要写 Final Answer）\n"
+            "- 输出最终内容（以 'Final Answer:' 开头，不要包含 <tool_call>）\n"
+            "请重新回复，只做其中一件事。",
+        )
+
+    def _react_unused_tools_hint(self, unused_tools: set[str]) -> str:
+        if not unused_tools:
+            return ""
+        unused_list = ", ".join(sorted(unused_tools))
+        return self._text(
+            f"\nTip: you have not used these tools yet: {unused_list}. Try mixing tools for broader evidence.",
+            f"\n💡 你还没有使用过: {'、'.join(sorted(unused_tools))}，建议尝试不同工具获取多角度信息",
+        )
+
+    def _react_observation_message(
+        self,
+        *,
+        tool_name: str,
+        result: str,
+        tool_calls_count: int,
+        max_tool_calls: int,
+        used_tools: set[str],
+        unused_hint: str,
+    ) -> str:
+        if self.locale == "en":
+            return (
+                "Observation:\n\n"
+                f"=== Tool {tool_name} returned ===\n"
+                f"{result}\n\n"
+                "============================================================\n"
+                f"Tool calls used: {tool_calls_count}/{max_tool_calls} (used: {', '.join(sorted(used_tools))}){unused_hint}\n"
+                '- If you have enough information: output the section content starting with "Final Answer:" and cite the quoted evidence above.\n'
+                "- If you need more information: call one more tool.\n"
+                "============================================================"
+            )
+        return REACT_OBSERVATION_TEMPLATE.format(
+            tool_name=tool_name,
+            result=result,
+            tool_calls_count=tool_calls_count,
+            max_tool_calls=max_tool_calls,
+            used_tools_str=", ".join(sorted(used_tools)),
+            unused_hint=unused_hint,
+        )
+
+    def _react_insufficient_tools_message(
+        self,
+        *,
+        tool_calls_count: int,
+        min_tool_calls: int,
+        unused_hint: str,
+        alternate: bool = False,
+    ) -> str:
+        if self.locale == "en":
+            if alternate:
+                return (
+                    f"You have only used {tool_calls_count} tool calls so far; at least {min_tool_calls} are required. "
+                    f"Please call a tool to gather simulation data.{unused_hint}"
+                )
+            return (
+                f"Notice: you have only used {tool_calls_count} tool calls; at least {min_tool_calls} are required. "
+                f"Please call another tool to gather more simulation evidence before outputting Final Answer.{unused_hint}"
+            )
+        template = REACT_INSUFFICIENT_TOOLS_MSG_ALT if alternate else REACT_INSUFFICIENT_TOOLS_MSG
+        return template.format(
+            tool_calls_count=tool_calls_count,
+            min_tool_calls=min_tool_calls,
+            unused_hint=unused_hint,
+        )
+
+    def _react_tool_limit_message(self, *, tool_calls_count: int, max_tool_calls: int) -> str:
+        return self._text(
+            f"The tool-call limit has been reached ({tool_calls_count}/{max_tool_calls}); you cannot call more tools. "
+            'Please immediately output the section content starting with "Final Answer:" based on the information already collected.',
+            REACT_TOOL_LIMIT_MSG.format(
+                tool_calls_count=tool_calls_count,
+                max_tool_calls=max_tool_calls,
+            ),
+        )
+
+    def _react_force_final_message(self) -> str:
+        return self._text(
+            'The tool-call limit has been reached. Please output "Final Answer:" and write the section content directly.',
+            REACT_FORCE_FINAL_MSG,
+        )
+
+    def _empty_response_fallback_text(self) -> str:
+        return self._text(
+            "(This section could not be generated because the LLM returned an empty response. Please try again later.)",
+            "（本章节生成失败：LLM 返回空响应，请稍后重试）",
+        )
+
     def _requirement_subject_for_title(self) -> str:
         requirement = (self.simulation_requirement or "").strip()
         if not requirement:
@@ -1516,7 +1637,7 @@ class ReportAgent:
                 previous_parts.append(truncated)
             previous_content = "\n\n---\n\n".join(previous_parts)
         else:
-            previous_content = "（这是第一个章节）"
+            previous_content = self._first_section_placeholder()
         
         user_prompt = SECTION_USER_PROMPT_TEMPLATE.format(
             previous_content=previous_content,
@@ -1537,14 +1658,14 @@ class ReportAgent:
         all_tools = {"insight_forge", "panorama_search", "quick_search", "interview_agents"}
 
         # 报告上下文，用于InsightForge的子问题生成
-        report_context = f"章节标题: {section.title}\n模拟需求: {self.simulation_requirement}"
+        report_context = self._report_context_text(section.title)
         
         for iteration in range(max_iterations):
             if progress_callback:
                 progress_callback(
                     "generating", 
                     int((iteration / max_iterations) * 100),
-                    f"深度检索与撰写中 ({tool_calls_count}/{self.MAX_TOOL_CALLS_PER_SECTION})"
+                    self._section_generation_progress_message(tool_calls_count)
                 )
 
             messages = self._prune_messages_for_retry(messages)
@@ -1567,8 +1688,9 @@ class ReportAgent:
                 )
                 # 如果还有迭代次数，添加消息并重试
                 if iteration < max_iterations - 1:
-                    messages.append({"role": "assistant", "content": "（响应为空）"})
-                    messages.append({"role": "user", "content": "请继续生成内容。"})
+                    empty_assistant, retry_user = self._empty_response_retry_messages()
+                    messages.append({"role": "assistant", "content": empty_assistant})
+                    messages.append({"role": "user", "content": retry_user})
                     continue
                 # 最后一次迭代也返回 None，跳出循环进入强制收尾
                 break
@@ -1597,13 +1719,7 @@ class ReportAgent:
                     messages.append({"role": "assistant", "content": response})
                     messages.append({
                         "role": "user",
-                        "content": (
-                            "【格式错误】你在一次回复中同时包含了工具调用和 Final Answer，这是不允许的。\n"
-                            "每次回复只能做以下两件事之一：\n"
-                            "- 调用一个工具（输出一个 <tool_call> 块，不要写 Final Answer）\n"
-                            "- 输出最终内容（以 'Final Answer:' 开头，不要包含 <tool_call>）\n"
-                            "请重新回复，只做其中一件事。"
-                        ),
+                        "content": self._react_conflict_retry_message(),
                     })
                     continue
                 else:
@@ -1640,10 +1756,10 @@ class ReportAgent:
                 if tool_calls_count < min_tool_calls:
                     messages.append({"role": "assistant", "content": response})
                     unused_tools = all_tools - used_tools
-                    unused_hint = f"（这些工具还未使用，推荐用一下他们: {', '.join(unused_tools)}）" if unused_tools else ""
+                    unused_hint = self._react_unused_tools_hint(unused_tools)
                     messages.append({
                         "role": "user",
-                        "content": REACT_INSUFFICIENT_TOOLS_MSG.format(
+                        "content": self._react_insufficient_tools_message(
                             tool_calls_count=tool_calls_count,
                             min_tool_calls=min_tool_calls,
                             unused_hint=unused_hint,
@@ -1677,7 +1793,7 @@ class ReportAgent:
                     messages.append({"role": "assistant", "content": response})
                     messages.append({
                         "role": "user",
-                        "content": REACT_TOOL_LIMIT_MSG.format(
+                        "content": self._react_tool_limit_message(
                             tool_calls_count=tool_calls_count,
                             max_tool_calls=self.MAX_TOOL_CALLS_PER_SECTION,
                         ),
@@ -1726,17 +1842,17 @@ class ReportAgent:
                 unused_tools = all_tools - used_tools
                 unused_hint = ""
                 if unused_tools and tool_calls_count < self.MAX_TOOL_CALLS_PER_SECTION:
-                    unused_hint = REACT_UNUSED_TOOLS_HINT.format(unused_list="、".join(unused_tools))
+                    unused_hint = self._react_unused_tools_hint(unused_tools)
 
                 messages.append({"role": "assistant", "content": response})
                 messages.append({
                     "role": "user",
-                    "content": REACT_OBSERVATION_TEMPLATE.format(
+                    "content": self._react_observation_message(
                         tool_name=call["name"],
                         result=result,
                         tool_calls_count=tool_calls_count,
                         max_tool_calls=self.MAX_TOOL_CALLS_PER_SECTION,
-                        used_tools_str=", ".join(used_tools),
+                        used_tools=used_tools,
                         unused_hint=unused_hint,
                     ),
                 })
@@ -1748,14 +1864,15 @@ class ReportAgent:
             if tool_calls_count < min_tool_calls:
                 # 工具调用次数不足，推荐未用过的工具
                 unused_tools = all_tools - used_tools
-                unused_hint = f"（这些工具还未使用，推荐用一下他们: {', '.join(unused_tools)}）" if unused_tools else ""
+                unused_hint = self._react_unused_tools_hint(unused_tools)
 
                 messages.append({
                     "role": "user",
-                    "content": REACT_INSUFFICIENT_TOOLS_MSG_ALT.format(
+                    "content": self._react_insufficient_tools_message(
                         tool_calls_count=tool_calls_count,
                         min_tool_calls=min_tool_calls,
                         unused_hint=unused_hint,
+                        alternate=True,
                     ),
                 })
                 continue
@@ -1787,7 +1904,7 @@ class ReportAgent:
             "章节 %s 达到最大迭代次数，强制生成",
             section.title,
         )
-        messages.append({"role": "user", "content": REACT_FORCE_FINAL_MSG})
+        messages.append({"role": "user", "content": self._react_force_final_message()})
         messages = self._prune_messages_for_retry(messages)
         
         response = self.llm.chat(
@@ -1804,7 +1921,7 @@ class ReportAgent:
                 "章节 %s 强制收尾时 LLM 返回 None，使用默认错误提示",
                 section.title,
             )
-            final_answer = f"（本章节生成失败：LLM 返回空响应，请稍后重试）"
+            final_answer = self._empty_response_fallback_text()
         elif "Final Answer:" in response:
             final_answer = response.split("Final Answer:")[-1].strip()
         else:
