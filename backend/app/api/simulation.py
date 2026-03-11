@@ -905,7 +905,7 @@ def get_simulation(simulation_id: str):
         
         # 如果模拟已准备好，附加运行说明
         if state.status == SimulationStatus.READY:
-            result["run_instructions"] = manager.get_run_instructions(simulation_id)
+            result["run_instructions"] = manager.get_run_instructions(simulation_id, locale=locale)
         
         return jsonify({
             "success": True,

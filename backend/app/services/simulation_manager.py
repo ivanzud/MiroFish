@@ -505,12 +505,12 @@ class SimulationManager:
         with open(config_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     
-    def get_run_instructions(self, simulation_id: str) -> Dict[str, str]:
+    def get_run_instructions(self, simulation_id: str, locale: str | None = None) -> Dict[str, str]:
         """获取运行说明"""
         sim_dir = self._get_simulation_dir(simulation_id)
         config_path = os.path.join(sim_dir, "simulation_config.json")
         scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../scripts'))
-        
+
         return {
             "simulation_dir": sim_dir,
             "scripts_dir": scripts_dir,
@@ -520,11 +520,32 @@ class SimulationManager:
                 "reddit": f"python {scripts_dir}/run_reddit_simulation.py --config {config_path}",
                 "parallel": f"python {scripts_dir}/run_parallel_simulation.py --config {config_path}",
             },
-            "instructions": (
-                f"1. 激活conda环境: conda activate MiroFish\n"
-                f"2. 运行模拟 (脚本位于 {scripts_dir}):\n"
-                f"   - 单独运行Twitter: python {scripts_dir}/run_twitter_simulation.py --config {config_path}\n"
-                f"   - 单独运行Reddit: python {scripts_dir}/run_reddit_simulation.py --config {config_path}\n"
-                f"   - 并行运行双平台: python {scripts_dir}/run_parallel_simulation.py --config {config_path}"
-            )
+            "instructions": "\n".join(
+                [
+                    tr("simulation.run_instructions_activate_env", locale),
+                    tr(
+                        "simulation.run_instructions_run_header",
+                        locale,
+                        scripts_dir=scripts_dir,
+                    ),
+                    tr(
+                        "simulation.run_instructions_twitter",
+                        locale,
+                        scripts_dir=scripts_dir,
+                        config_path=config_path,
+                    ),
+                    tr(
+                        "simulation.run_instructions_reddit",
+                        locale,
+                        scripts_dir=scripts_dir,
+                        config_path=config_path,
+                    ),
+                    tr(
+                        "simulation.run_instructions_parallel",
+                        locale,
+                        scripts_dir=scripts_dir,
+                        config_path=config_path,
+                    ),
+                ]
+            ),
         }

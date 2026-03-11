@@ -27,6 +27,7 @@ sys.modules.setdefault("zep_cloud.external_clients.ontology", fake_zep_ontology)
 
 from app.api import simulation_bp
 from app.api import simulation as simulation_api
+from app.services.simulation_manager import SimulationState, SimulationStatus
 
 
 def create_simulation_test_app():
@@ -413,4 +414,47 @@ def test_posts_missing_database_message_is_localized(monkeypatch, tmp_path):
     assert payload["message"] == (
         "The simulation database does not exist yet. "
         "The simulation may not have run for this platform."
+    )
+
+
+def test_ready_simulation_run_instructions_are_localized(monkeypatch, tmp_path):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    monkeypatch.setattr(
+        simulation_api.SimulationManager,
+        "SIMULATION_DATA_DIR",
+        str(tmp_path),
+    )
+
+    ready_state = SimulationState(
+        simulation_id="sim_ready",
+        project_id="proj_123",
+        graph_id="graph_123",
+        status=SimulationStatus.READY,
+    )
+
+    monkeypatch.setattr(
+        simulation_api.SimulationManager,
+        "get_simulation",
+        lambda self, simulation_id: ready_state,
+    )
+
+    response = client.get(
+        "/api/simulation/sim_ready",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    instructions = response.get_json()["data"]["run_instructions"]
+    assert instructions["commands"]["parallel"].endswith(
+        "run_parallel_simulation.py --config "
+        f"{tmp_path}/sim_ready/simulation_config.json"
+    )
+    assert instructions["instructions"] == (
+        "1. Activate the conda environment: conda activate MiroFish\n"
+        f"2. Run the simulation (scripts are located in {instructions['scripts_dir']}):\n"
+        f"   - Run Twitter only: python {instructions['scripts_dir']}/run_twitter_simulation.py --config {tmp_path}/sim_ready/simulation_config.json\n"
+        f"   - Run Reddit only: python {instructions['scripts_dir']}/run_reddit_simulation.py --config {tmp_path}/sim_ready/simulation_config.json\n"
+        f"   - Run both platforms in parallel: python {instructions['scripts_dir']}/run_parallel_simulation.py --config {tmp_path}/sim_ready/simulation_config.json"
     )

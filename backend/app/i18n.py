@@ -564,6 +564,26 @@ TRANSLATIONS = {
         "zh": "任务已完成（准备工作已存在）",
         "en": "The task is already complete because preparation already exists",
     },
+    "simulation.run_instructions_activate_env": {
+        "zh": "1. 激活conda环境: conda activate MiroFish",
+        "en": "1. Activate the conda environment: conda activate MiroFish",
+    },
+    "simulation.run_instructions_run_header": {
+        "zh": "2. 运行模拟 (脚本位于 {scripts_dir}):",
+        "en": "2. Run the simulation (scripts are located in {scripts_dir}):",
+    },
+    "simulation.run_instructions_twitter": {
+        "zh": "   - 单独运行Twitter: python {scripts_dir}/run_twitter_simulation.py --config {config_path}",
+        "en": "   - Run Twitter only: python {scripts_dir}/run_twitter_simulation.py --config {config_path}",
+    },
+    "simulation.run_instructions_reddit": {
+        "zh": "   - 单独运行Reddit: python {scripts_dir}/run_reddit_simulation.py --config {config_path}",
+        "en": "   - Run Reddit only: python {scripts_dir}/run_reddit_simulation.py --config {config_path}",
+    },
+    "simulation.run_instructions_parallel": {
+        "zh": "   - 并行运行双平台: python {scripts_dir}/run_parallel_simulation.py --config {config_path}",
+        "en": "   - Run both platforms in parallel: python {scripts_dir}/run_parallel_simulation.py --config {config_path}",
+    },
     "simulation.graph_id_required": {
         "zh": "请提供 graph_id",
         "en": "Please provide graph_id",
