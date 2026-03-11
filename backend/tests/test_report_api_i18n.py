@@ -30,6 +30,18 @@ from app.api import report_bp
 from app.services.report_agent import ReportStatus
 
 
+class FakeLogger:
+    def __init__(self):
+        self.errors = []
+        self.debugs = []
+
+    def error(self, message):
+        self.errors.append(message)
+
+    def debug(self, message):
+        self.debugs.append(message)
+
+
 def create_report_test_app():
     app = Flask(__name__)
     app.register_blueprint(report_bp, url_prefix="/api/report")
@@ -194,3 +206,49 @@ def test_missing_report_section_error_is_localized(monkeypatch, tmp_path):
 
     assert response.status_code == 404
     assert response.get_json()["error"] == "Section not found: section_01.md"
+
+
+def test_generate_status_exception_logs_english_context(monkeypatch):
+    app = create_report_test_app()
+    client = app.test_client()
+    logger = FakeLogger()
+
+    monkeypatch.setattr("app.api.report.logger", logger)
+
+    def boom(self, task_id):
+        raise RuntimeError("status exploded")
+
+    monkeypatch.setattr("app.api.report.TaskManager.get_task", boom)
+
+    response = client.post(
+        "/api/report/generate/status",
+        json={"task_id": "task_123"},
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 500
+    assert response.get_json()["error"] == "status exploded"
+    assert logger.errors == ["Failed to query task status: status exploded"]
+
+
+def test_get_report_exception_logs_english_context(monkeypatch):
+    app = create_report_test_app()
+    client = app.test_client()
+    logger = FakeLogger()
+
+    monkeypatch.setattr("app.api.report.logger", logger)
+
+    def boom(report_id):
+        raise RuntimeError("report exploded")
+
+    monkeypatch.setattr("app.api.report.ReportManager.get_report", boom)
+
+    response = client.get(
+        "/api/report/report_123",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 500
+    assert response.get_json()["error"] == "report exploded"
+    assert logger.errors == ["Failed to fetch the report: report exploded"]
+    assert logger.debugs

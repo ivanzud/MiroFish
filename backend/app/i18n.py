@@ -292,6 +292,70 @@ TRANSLATIONS = {
         "zh": "报告生成失败",
         "en": "Report generation failed",
     },
+    "report.error_generation_failed": {
+        "zh": "报告生成失败",
+        "en": "Report generation failed",
+    },
+    "report.error_start_generation_failed": {
+        "zh": "启动报告生成任务失败",
+        "en": "Failed to start report generation",
+    },
+    "report.error_task_status_failed": {
+        "zh": "查询任务状态失败",
+        "en": "Failed to query task status",
+    },
+    "report.error_get_failed": {
+        "zh": "获取报告失败",
+        "en": "Failed to fetch the report",
+    },
+    "report.error_list_failed": {
+        "zh": "列出报告失败",
+        "en": "Failed to list reports",
+    },
+    "report.error_download_failed": {
+        "zh": "下载报告失败",
+        "en": "Failed to download the report",
+    },
+    "report.error_delete_failed": {
+        "zh": "删除报告失败",
+        "en": "Failed to delete the report",
+    },
+    "report.error_chat_failed": {
+        "zh": "对话失败",
+        "en": "Report chat failed",
+    },
+    "report.error_progress_failed": {
+        "zh": "获取报告进度失败",
+        "en": "Failed to fetch report progress",
+    },
+    "report.error_section_list_failed": {
+        "zh": "获取章节列表失败",
+        "en": "Failed to fetch the section list",
+    },
+    "report.error_section_content_failed": {
+        "zh": "获取章节内容失败",
+        "en": "Failed to fetch section content",
+    },
+    "report.error_status_failed": {
+        "zh": "检查报告状态失败",
+        "en": "Failed to check report status",
+    },
+    "report.error_agent_log_failed": {
+        "zh": "获取Agent日志失败",
+        "en": "Failed to fetch the agent log",
+    },
+    "report.error_console_log_failed": {
+        "zh": "获取控制台日志失败",
+        "en": "Failed to fetch the console log",
+    },
+    "report.error_graph_search_failed": {
+        "zh": "图谱搜索失败",
+        "en": "Graph search failed",
+    },
+    "report.error_graph_stats_failed": {
+        "zh": "获取图谱统计失败",
+        "en": "Failed to fetch graph statistics",
+    },
     "report.log_started": {
         "zh": "报告生成任务开始",
         "en": "Report generation task started",
