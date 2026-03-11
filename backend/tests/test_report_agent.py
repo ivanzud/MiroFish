@@ -195,10 +195,17 @@ def test_plan_outline_requests_english_output_when_locale_is_en():
     agent.plan_outline()
 
     assert llm.messages is not None
+    system_prompt = llm.messages[0]["content"]
     user_prompt = llm.messages[1]["content"]
 
+    assert "You are an expert writer of \"future forecast reports\"" in system_prompt
+    assert "Return the report outline as JSON in this format:" in system_prompt
+    assert "你是一个" not in system_prompt
+    assert "[Forecast scenario]" in user_prompt
+    assert "Review this simulated future from a bird's-eye view:" in user_prompt
     assert "Return the report title, summary, and section titles/descriptions in English." in user_prompt
     assert "Keep wording concrete, readable, and directly aligned with the simulation requirement." in user_prompt
+    assert "【预测场景设定】" not in user_prompt
 
 
 def test_plan_outline_english_progress_messages_are_localized():

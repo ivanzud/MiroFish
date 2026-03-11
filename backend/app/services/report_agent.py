@@ -623,6 +623,53 @@ PLAN_SYSTEM_PROMPT = """\
 
 注意：sections数组最少2个，最多5个元素！"""
 
+PLAN_SYSTEM_PROMPT_EN = """\
+You are an expert writer of "future forecast reports" with a bird's-eye view of the simulated world. You can inspect each agent's behavior, statements, and interactions.
+
+[Core framing]
+We built a simulated world and injected a specific "simulation requirement" as the driving condition. The evolution of that world is a forecast of what could happen in the future. You are not looking at ordinary experimental data. You are observing a rehearsal of the future.
+
+[Your task]
+Write a "future forecast report" that answers:
+1. What happened in the simulated future under the given condition?
+2. How did different agents and groups react and act?
+3. What future trends and risks does this simulation reveal?
+
+[Report positioning]
+- This is a simulation-based forecast report about what may happen next.
+- Focus on predicted outcomes: event direction, audience reactions, emergent behavior, and potential risks.
+- Agent behavior in the simulation is evidence about likely future human behavior.
+- Do not turn this into a report about the current real-world situation.
+- Do not write a generic public-opinion summary.
+
+[Title and summary requirements]
+- The title and summary must directly reflect the user's simulation requirement and should reuse the core object, product, event, or audience terms from that requirement when possible.
+- The title must be concise, concrete, and easy to understand at a glance.
+- Prefer clear phrasing such as "XX analysis and forecast", "XX audience forecast", or "XX trend outlook".
+- Avoid vague, literary, overly academic, or theatrically dramatic wording.
+- Do not use abstract metaphors or exaggerated phrasing unrelated to the user's question, such as "silence", "collapse", "epic", "elegy", or "endgame".
+- If the user's question is specific, the title must stay specific instead of drifting into grand narratives.
+
+[Section count limits]
+- Use at least 2 sections and at most 5 sections.
+- Do not create subsections.
+- Keep each section focused on the most important forecast findings.
+- Design the section structure based on the forecast itself.
+
+Return the report outline as JSON in this format:
+{
+    "title": "Report title",
+    "summary": "One-sentence summary of the core forecast finding",
+    "sections": [
+        {
+            "title": "Section title",
+            "description": "Section description"
+        }
+    ]
+}
+
+Important: the sections array must contain at least 2 and at most 5 items."""
+
 PLAN_USER_PROMPT_TEMPLATE = """\
 【预测场景设定】
 我们向模拟世界注入的变量（模拟需求）：{simulation_requirement}
@@ -649,6 +696,34 @@ PLAN_USER_PROMPT_TEMPLATE = """\
 3. 如果模拟需求是在预测某个产品、方案、游戏、事件或人群，就在标题里明确点出该对象。
 
 【再次提醒】报告章节数量：最少2个，最多5个，内容要精炼聚焦于核心预测发现。"""
+
+PLAN_USER_PROMPT_TEMPLATE_EN = """\
+[Forecast scenario]
+Injected variable (simulation requirement): {simulation_requirement}
+
+[Simulation scale]
+- Number of entities involved: {total_nodes}
+- Number of relationships created: {total_edges}
+- Entity type distribution: {entity_types}
+- Number of active agents: {total_entities}
+
+[Sample future facts observed in the simulation]
+{related_facts_json}
+
+Review this simulated future from a bird's-eye view:
+1. What kind of future state emerged under the given condition?
+2. How did different audiences and agents react and act?
+3. What future trends are worth paying attention to?
+
+Design the most suitable report section structure based on the forecast.
+
+Additional requirements:
+1. The report title must be immediately understandable to a general reader, and it must make clear which simulation requirement it answers.
+2. The report summary must explain the core finding in one plain-language sentence instead of a slogan.
+3. If the simulation predicts a product, plan, game, event, or audience, name that object directly in the title.
+
+[Reminder]
+Use at least 2 sections and at most 5 sections. Keep the content concise and focused on the core forecast findings."""
 
 # ── 章节生成 prompt ──
 
@@ -1523,8 +1598,9 @@ class ReportAgent:
         if progress_callback:
             progress_callback("planning", 30, self._text("Generating the report outline...", "正在生成报告大纲..."))
         
-        system_prompt = PLAN_SYSTEM_PROMPT
-        user_prompt = PLAN_USER_PROMPT_TEMPLATE.format(
+        system_prompt = self._text(PLAN_SYSTEM_PROMPT_EN, PLAN_SYSTEM_PROMPT)
+        user_prompt_template = self._text(PLAN_USER_PROMPT_TEMPLATE_EN, PLAN_USER_PROMPT_TEMPLATE)
+        user_prompt = user_prompt_template.format(
             simulation_requirement=self.simulation_requirement,
             total_nodes=context.get('graph_statistics', {}).get('total_nodes', 0),
             total_edges=context.get('graph_statistics', {}).get('total_edges', 0),
