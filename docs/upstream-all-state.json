@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T12:49:06.007452+00:00",
-  "generated_at": "2026-03-11T12:49:06.007452+00:00",
+  "captured_at": "2026-03-11T12:53:28.360295+00:00",
+  "generated_at": "2026-03-11T12:53:28.360295+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -521,7 +521,24 @@
       "author": "zhuhw19",
       "body_excerpt": "✘ Image ghcr.io/666ghj/mirofish:latest Error Get \"https://ghcr.io/v2/\": EOF 7.9s Error response from daemon: Get \"https://ghcr.io/v2/\": EOF",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 107,
+        "status": "covered",
+        "summary": "Docker deployment now reads `MIROFISH_IMAGE` from `.env` or the shell, so GHCR pull failures can be worked around with a mirror/private registry override instead of editing `docker-compose.yml`.",
+        "local_refs": [
+          "docker-compose.yml",
+          ".env.example",
+          "README.md",
+          "README-EN.md",
+          "README-JA.md",
+          "README-KO.md"
+        ],
+        "validation": [
+          "docker compose config"
+        ],
+        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+      }
     },
     {
       "number": 96,

@@ -334,7 +334,10 @@ This path creates `.tmp-test-venv/` on demand and installs only the packages nee
 # 1. Configure environment variables (same as source deployment)
 cp .env.example .env
 
-# 2. Pull image and start
+# 2. Optional: override the container image if GHCR is slow or blocked
+# MIROFISH_IMAGE=ghcr.nju.edu.cn/666ghj/mirofish:latest
+
+# 3. Pull image and start
 docker compose up -d
 ```
 
@@ -345,7 +348,11 @@ You can also open the `Backend API` panel in the home screen or the Step 1 / Ste
 
 For backend-side cross-origin control, you can also set `CORS_ALLOWED_ORIGINS` (comma-separated) plus optional `CORS_ALLOW_METHODS` / `CORS_ALLOW_HEADERS`. The default remains permissive (`*`) for backward compatibility, so these variables are only needed when you want to restrict which frontend origins may call `/api/*`.
 
-> Mirror address for faster pulling is provided as comments in `docker-compose.yml`, replace if needed.
+`docker-compose.yml` now reads `MIROFISH_IMAGE`, so you can switch to a registry mirror or a private fork image through `.env` or a one-shot shell override instead of editing the compose file.
+
+```bash
+MIROFISH_IMAGE=ghcr.nju.edu.cn/666ghj/mirofish:latest docker compose up -d
+```
 
 ## 📬 Join the Conversation
 

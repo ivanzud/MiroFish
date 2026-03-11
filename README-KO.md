@@ -195,7 +195,10 @@ npm run frontend  # 프런트엔드만 실행
 # 1. 환경 변수 설정 (소스코드 배포와 동일)
 cp .env.example .env
 
-# 2. 이미지 가져오기 및 실행
+# 2. 선택: GHCR 속도가 느리거나 실패하면 이미지 주소를 덮어쓰기
+# MIROFISH_IMAGE=ghcr.nju.edu.cn/666ghj/mirofish:latest
+
+# 3. 이미지 가져오기 및 실행
 docker compose up -d
 ```
 
@@ -203,7 +206,11 @@ docker compose up -d
 
 프런트엔드와 백엔드를 서로 다른 호스트나 포트에 배포한다면 프런트엔드에서 `VITE_API_BASE_URL` 을 명시적으로 설정하세요.
 
-> 더 빠른 이미지 풀링을 위한 미러 주소가 `docker-compose.yml` 주석에 포함되어 있으니 필요에 맞게 바꿔 사용할 수 있습니다.
+`docker-compose.yml` 이 이제 `MIROFISH_IMAGE` 를 읽으므로 `.env` 나 단일 실행 명령으로 미러/사설 레지스트리 이미지를 선택할 수 있습니다. compose 파일을 직접 수정할 필요가 없습니다.
+
+```bash
+MIROFISH_IMAGE=ghcr.nju.edu.cn/666ghj/mirofish:latest docker compose up -d
+```
 
 ## 📬 커뮤니티 및 문의
 

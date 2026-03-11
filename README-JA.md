@@ -193,7 +193,10 @@ npm run frontend  # フロントエンドのみ起動
 # 1. 環境変数を設定（ソースデプロイと同様）
 cp .env.example .env
 
-# 2. イメージをプルして起動
+# 2. 任意: GHCR が遅い/失敗する場合はイメージを上書き
+# MIROFISH_IMAGE=ghcr.nju.edu.cn/666ghj/mirofish:latest
+
+# 3. イメージをプルして起動
 docker compose up -d
 ```
 
@@ -201,7 +204,11 @@ docker compose up -d
 
 フロントエンドとバックエンドを別ホストまたは別ポートで運用する場合は、フロントエンド側で `VITE_API_BASE_URL` を明示設定してください。
 
-> 高速プル用のミラーアドレスが `docker-compose.yml` にコメントとして記載されています。必要に応じて差し替えてください。
+`docker-compose.yml` は `MIROFISH_IMAGE` を読むようになったため、`.env` または単発コマンドでミラー/私有レジストリへ切り替えられます。compose ファイルを手編集する必要はありません。
+
+```bash
+MIROFISH_IMAGE=ghcr.nju.edu.cn/666ghj/mirofish:latest docker compose up -d
+```
 
 ## 📬 コミュニティに参加
 

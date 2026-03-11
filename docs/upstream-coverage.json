@@ -280,6 +280,23 @@
       "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
     },
     {
+      "number": 107,
+      "status": "covered",
+      "summary": "Docker deployment now reads `MIROFISH_IMAGE` from `.env` or the shell, so GHCR pull failures can be worked around with a mirror/private registry override instead of editing `docker-compose.yml`.",
+      "local_refs": [
+        "docker-compose.yml",
+        ".env.example",
+        "README.md",
+        "README-EN.md",
+        "README-JA.md",
+        "README-KO.md"
+      ],
+      "validation": [
+        "docker compose config"
+      ],
+      "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+    },
+    {
       "number": 110,
       "status": "covered",
       "summary": "The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.",

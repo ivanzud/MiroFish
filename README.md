@@ -340,7 +340,10 @@ npm run test:backend:lite
 # 1. 配置环境变量（同源码部署）
 cp .env.example .env
 
-# 2. 拉取镜像并启动
+# 2. 可选：如果 GHCR 拉取较慢或失败，可先覆盖镜像地址
+# MIROFISH_IMAGE=ghcr.nju.edu.cn/666ghj/mirofish:latest
+
+# 3. 拉取镜像并启动
 docker compose up -d
 ```
 
@@ -351,7 +354,11 @@ docker compose up -d
 
 如果你是前后端跨域部署，并且希望限制允许访问 `/api/*` 的前端来源，也可以设置后端环境变量 `CORS_ALLOWED_ORIGINS`（逗号分隔），并按需补充 `CORS_ALLOW_METHODS` / `CORS_ALLOW_HEADERS`。为兼容现有部署，默认行为仍然是允许所有来源 `*`。
 
-> 在 `docker-compose.yml` 中已通过注释提供加速镜像地址，可按需替换
+`docker-compose.yml` 现在会读取 `MIROFISH_IMAGE`，因此可以直接通过 `.env` 或单次命令切换到镜像源/私有仓库，无需手动修改 compose 文件。
+
+```bash
+MIROFISH_IMAGE=ghcr.nju.edu.cn/666ghj/mirofish:latest docker compose up -d
+```
 
 ## 📬 更多交流
 
