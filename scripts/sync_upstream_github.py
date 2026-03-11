@@ -24,6 +24,7 @@ RECENT_COMMENT_LIMIT = 3
 GH_API_MAX_ATTEMPTS = 3
 DEFAULT_API_TIMEOUT = int(os.environ.get("MIROFISH_GITHUB_SYNC_TIMEOUT", "30"))
 REQUEST_TIMEOUT = DEFAULT_API_TIMEOUT
+DEFAULT_STALE_CACHE_HOURS = int(os.environ.get("MIROFISH_GITHUB_SYNC_STALE_HOURS", "24"))
 
 
 def has_github_token() -> bool:
@@ -365,6 +366,37 @@ def write_summary(
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def load_cached_snapshot(path: Path, repo: str, state: str) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+    if not isinstance(payload, dict):
+        return None
+    if payload.get("repo") != repo or payload.get("state") != state:
+        return None
+
+    return payload
+
+
+def snapshot_is_fresh(payload: dict[str, Any], stale_after_hours: int) -> bool:
+    captured_at = payload.get("captured_at")
+    if not captured_at or stale_after_hours < 0:
+        return False
+
+    try:
+        captured = datetime.fromisoformat(str(captured_at).replace("Z", "+00:00"))
+    except ValueError:
+        return False
+
+    age_seconds = (datetime.now(timezone.utc) - captured.astimezone(timezone.utc)).total_seconds()
+    return age_seconds <= stale_after_hours * 3600
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", default="666ghj/MiroFish", help="owner/repo to inspect")
@@ -395,6 +427,15 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional git remote name used to annotate whether upstream PR refs are mirrored into the fork",
     )
+    parser.add_argument(
+        "--stale-cache-hours",
+        type=int,
+        default=DEFAULT_STALE_CACHE_HOURS,
+        help=(
+            "If refresh hits a GitHub rate limit, reuse an existing snapshot captured within this many hours "
+            "instead of failing. Set to -1 to disable stale cache fallback."
+        ),
+    )
     return parser
 
 
@@ -404,17 +445,40 @@ def main() -> int:
     global REQUEST_TIMEOUT
     REQUEST_TIMEOUT = max(1, args.timeout)
 
+    output_path = Path(args.output)
+    summary_path = Path(args.summary)
+    cached_payload = load_cached_snapshot(output_path, args.repo, args.state)
+
     owner, name = args.repo.split("/", 1)
-    issue_items = github_api_paginated(
-        f"/repos/{owner}/{name}/issues",
-        {"state": args.state, "sort": "updated", "direction": "desc"},
-        args.limit,
-    )
-    pr_items = github_api_paginated(
-        f"/repos/{owner}/{name}/pulls",
-        {"state": args.state, "sort": "updated", "direction": "desc"},
-        args.limit,
-    )
+    try:
+        issue_items = github_api_paginated(
+            f"/repos/{owner}/{name}/issues",
+            {"state": args.state, "sort": "updated", "direction": "desc"},
+            args.limit,
+        )
+        pr_items = github_api_paginated(
+            f"/repos/{owner}/{name}/pulls",
+            {"state": args.state, "sort": "updated", "direction": "desc"},
+            args.limit,
+        )
+    except RuntimeError as exc:
+        rate_limited = "rate limit" in str(exc).lower()
+        if rate_limited and cached_payload and snapshot_is_fresh(cached_payload, args.stale_cache_hours):
+            issues = cached_payload.get("issues") or []
+            prs = cached_payload.get("pull_requests") or []
+            if isinstance(issues, list) and isinstance(prs, list):
+                write_summary(summary_path, args.repo, args.state, issues, prs, cached_payload.get("fork_remote"))
+                print(
+                    f"warning: {exc}; reusing fresh cached snapshot from {output_path} "
+                    f"(captured_at={cached_payload.get('captured_at')})",
+                    file=sys.stderr,
+                )
+                print(
+                    f"Reused cached snapshot with {len(issues)} issues and {len(prs)} pull requests "
+                    f"from {args.repo} into {os.path.relpath(output_path)}"
+                )
+                return 0
+        raise
 
     issues = [compact_issue(item) for item in issue_items if "pull_request" not in item]
     pr_details = hydrate_pull_requests(owner, name, pr_items)
@@ -439,10 +503,9 @@ def main() -> int:
             "not_mirrored": len(prs) - mirrored_total,
         }
 
-    output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    write_summary(Path(args.summary), args.repo, args.state, issues, prs, args.fork_remote)
+    write_summary(summary_path, args.repo, args.state, issues, prs, args.fork_remote)
 
     print(
         f"Captured {len(issues)} issues and {len(prs)} pull requests from {args.repo} "

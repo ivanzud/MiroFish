@@ -1,4 +1,7 @@
 import unittest
+import io
+import json
+import tempfile
 from pathlib import Path
 from unittest.mock import patch
 import importlib.util
@@ -33,6 +36,22 @@ class SyncUpstreamGithubTests(unittest.TestCase):
 
         self.assertEqual(args.output, "docs/upstream-open-state.json")
         self.assertEqual(args.summary, "docs/upstream-open-summary.md")
+
+    def test_snapshot_is_fresh_accepts_recent_capture(self):
+        payload = {"captured_at": "2026-03-11T08:30:00+00:00"}
+
+        with patch.object(sync_upstream_github, "datetime") as mocked_datetime:
+            mocked_datetime.now.return_value = __import__("datetime").datetime(2026, 3, 11, 9, 0, tzinfo=__import__("datetime").timezone.utc)
+            mocked_datetime.fromisoformat = __import__("datetime").datetime.fromisoformat
+            self.assertTrue(sync_upstream_github.snapshot_is_fresh(payload, 24))
+
+    def test_snapshot_is_fresh_rejects_old_capture(self):
+        payload = {"captured_at": "2026-03-09T08:30:00+00:00"}
+
+        with patch.object(sync_upstream_github, "datetime") as mocked_datetime:
+            mocked_datetime.now.return_value = __import__("datetime").datetime(2026, 3, 11, 9, 0, tzinfo=__import__("datetime").timezone.utc)
+            mocked_datetime.fromisoformat = __import__("datetime").datetime.fromisoformat
+            self.assertFalse(sync_upstream_github.snapshot_is_fresh(payload, 24))
 
     def test_normalize_excerpt_collapses_whitespace_and_truncates(self):
         excerpt = sync_upstream_github.normalize_excerpt(" line 1\n\nline\t2  " * 20, limit=30)
@@ -132,6 +151,144 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(RuntimeError, "log into gh"):
                 sync_upstream_github.fetch_json("https://api.github.com/repos/test/repo/issues")
+
+    def test_main_reuses_recent_cached_snapshot_on_rate_limit(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir) / "state.json"
+            summary_path = Path(tmpdir) / "summary.md"
+            cached_payload = {
+                "repo": "666ghj/MiroFish",
+                "state": "open",
+                "captured_at": "2026-03-11T08:30:00+00:00",
+                "fork_remote": "origin",
+                "issues": [
+                    {
+                        "number": 1,
+                        "title": "Issue",
+                        "url": "https://example.test/issues/1",
+                        "state": "open",
+                        "created_at": "2026-03-10T00:00:00Z",
+                        "updated_at": "2026-03-11T00:00:00Z",
+                        "closed_at": None,
+                        "labels": [],
+                        "author": "alice",
+                        "body_excerpt": "Issue body",
+                        "comment_count": 0,
+                        "recent_comments": [],
+                    }
+                ],
+                "pull_requests": [
+                    {
+                        "number": 2,
+                        "title": "PR",
+                        "url": "https://example.test/pull/2",
+                        "state": "open",
+                        "created_at": "2026-03-10T00:00:00Z",
+                        "updated_at": "2026-03-11T00:00:00Z",
+                        "closed_at": None,
+                        "merged_at": None,
+                        "head": "feature",
+                        "head_sha": "abc123",
+                        "head_repo": "fork/repo",
+                        "head_clone_url": "https://example.test/fork/repo.git",
+                        "base": "main",
+                        "base_repo": "666ghj/MiroFish",
+                        "draft": False,
+                        "mergeable_state": "clean",
+                        "labels": [],
+                        "author": "bob",
+                        "body_excerpt": "PR body",
+                        "comment_count": 0,
+                        "review_comment_count": 0,
+                        "recent_comments": [],
+                        "fork_mirrored": True,
+                        "fork_mirror_ref": "origin/mirror/upstream-pr-2",
+                    }
+                ],
+            }
+            output_path.write_text(json.dumps(cached_payload), encoding="utf-8")
+
+            stderr = io.StringIO()
+            stdout = io.StringIO()
+            rate_limit_error = RuntimeError("GitHub API rate limit exceeded. Set GITHUB_TOKEN or GH_TOKEN.")
+
+            with (
+                patch.object(
+                    sync_upstream_github,
+                    "build_parser",
+                    return_value=sync_upstream_github.build_parser(),
+                ),
+                patch.object(
+                    sync_upstream_github.sys,
+                    "argv",
+                    [
+                        "sync_upstream_github.py",
+                        "--repo",
+                        "666ghj/MiroFish",
+                        "--state",
+                        "open",
+                        "--output",
+                        str(output_path),
+                        "--summary",
+                        str(summary_path),
+                        "--fork-remote",
+                        "origin",
+                    ],
+                ),
+                patch.object(sync_upstream_github, "github_api_paginated", side_effect=rate_limit_error),
+                patch("sys.stderr", stderr),
+                patch("sys.stdout", stdout),
+                patch.object(sync_upstream_github, "datetime") as mocked_datetime,
+            ):
+                mocked_datetime.now.return_value = __import__("datetime").datetime(2026, 3, 11, 9, 0, tzinfo=__import__("datetime").timezone.utc)
+                mocked_datetime.fromisoformat = __import__("datetime").datetime.fromisoformat
+                result = sync_upstream_github.main()
+
+            self.assertEqual(result, 0)
+            self.assertTrue(summary_path.exists())
+            self.assertIn("reusing fresh cached snapshot", stderr.getvalue())
+            self.assertIn("Reused cached snapshot", stdout.getvalue())
+
+    def test_main_raises_on_rate_limit_when_cache_is_stale(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir) / "state.json"
+            output_path.write_text(
+                json.dumps(
+                    {
+                        "repo": "666ghj/MiroFish",
+                        "state": "open",
+                        "captured_at": "2026-03-01T08:30:00+00:00",
+                        "issues": [],
+                        "pull_requests": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            rate_limit_error = RuntimeError("GitHub API rate limit exceeded. Set GITHUB_TOKEN or GH_TOKEN.")
+            with (
+                patch.object(
+                    sync_upstream_github.sys,
+                    "argv",
+                    [
+                        "sync_upstream_github.py",
+                        "--repo",
+                        "666ghj/MiroFish",
+                        "--state",
+                        "open",
+                        "--output",
+                        str(output_path),
+                        "--summary",
+                        str(Path(tmpdir) / "summary.md"),
+                    ],
+                ),
+                patch.object(sync_upstream_github, "github_api_paginated", side_effect=rate_limit_error),
+                patch.object(sync_upstream_github, "datetime") as mocked_datetime,
+            ):
+                mocked_datetime.now.return_value = __import__("datetime").datetime(2026, 3, 11, 9, 0, tzinfo=__import__("datetime").timezone.utc)
+                mocked_datetime.fromisoformat = __import__("datetime").datetime.fromisoformat
+                with self.assertRaisesRegex(RuntimeError, "rate limit exceeded"):
+                    sync_upstream_github.main()
 
     def test_fetch_json_via_gh_retries_transient_failures(self):
         transient = subprocess.CalledProcessError(
