@@ -2657,7 +2657,7 @@ Formatting constraints:
 - Use plain-text paragraphs separated by blank lines
 - Do not use Markdown headings (such as #, ##, ###)
 - Do not use divider lines (such as ---, ***)
-- Use quotation marks when quoting interviewees directly
+- Use standard English quotation marks when quoting interviewees directly
 - You may use **bold** for key phrases, but avoid other Markdown syntax"""
             user_prompt = f"""Interview topic: {interview_requirement}
 

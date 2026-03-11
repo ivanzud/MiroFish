@@ -729,5 +729,6 @@ def test_generate_interview_summary_uses_english_wrappers_in_english_mode():
     assert summary == "Summary complete."
     assert "Write the summary entirely in natural English" in captured["messages"][0]["content"]
     assert "translate it into fluent English before quoting or summarizing it" in captured["messages"][0]["content"]
+    assert "Use standard English quotation marks when quoting interviewees directly" in captured["messages"][0]["content"]
     assert "[Alice (Unknown)]" in captured["messages"][1]["content"]
     assert "【Alice（Unknown）】" not in captured["messages"][1]["content"]
