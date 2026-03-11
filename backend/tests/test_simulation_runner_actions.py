@@ -367,3 +367,103 @@ def test_format_process_exit_error_keeps_generic_message_for_other_failures():
     )
 
     assert error == "Process exited with code 2. Error: ValueError: invalid simulation config"
+
+
+def test_cleanup_simulation_logs_can_render_english_missing_directory_message(tmp_path):
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+    original_run_state_dir = runner.RUN_STATE_DIR
+    runner.RUN_STATE_DIR = str(tmp_path)
+
+    try:
+        result = runner.cleanup_simulation_logs("sim-cleanup-missing", locale="en")
+        assert result == {
+            "success": True,
+            "message": "The simulation directory does not exist and does not need cleanup",
+        }
+    finally:
+        runner.RUN_STATE_DIR = original_run_state_dir
+
+
+def test_cleanup_simulation_logs_localizes_delete_failures_in_english(tmp_path):
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+    original_run_state_dir = runner.RUN_STATE_DIR
+    runner.RUN_STATE_DIR = str(tmp_path)
+
+    simulation_dir = tmp_path / "sim-cleanup-errors"
+    simulation_dir.mkdir()
+    target_file = simulation_dir / "run_state.json"
+    target_file.write_text("{}", encoding="utf-8")
+
+    real_remove = module.os.remove
+
+    def fake_remove(path):
+        if Path(path) == target_file:
+            raise PermissionError("permission denied")
+        return real_remove(path)
+
+    try:
+        with mock.patch.object(module.os, "remove", side_effect=fake_remove):
+            result = runner.cleanup_simulation_logs("sim-cleanup-errors", locale="en")
+
+        assert result["success"] is False
+        assert result["errors"] == [
+            "Failed to delete run_state.json: permission denied",
+        ]
+    finally:
+        runner.RUN_STATE_DIR = original_run_state_dir
+
+
+def test_cleanup_all_simulations_persists_english_shutdown_error(tmp_path):
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+    original_run_state_dir = runner.RUN_STATE_DIR
+    original_processes = runner._processes.copy()
+    original_action_queues = runner._action_queues.copy()
+    original_stdout_files = runner._stdout_files.copy()
+    original_stderr_files = runner._stderr_files.copy()
+    original_graph_memory_enabled = runner._graph_memory_enabled.copy()
+    original_cleanup_done = runner._cleanup_done
+    runner.RUN_STATE_DIR = str(tmp_path)
+    runner._processes = {}
+    runner._action_queues = {}
+    runner._stdout_files = {}
+    runner._stderr_files = {}
+    runner._graph_memory_enabled = {}
+    runner._cleanup_done = False
+
+    state = module.SimulationRunState(
+        simulation_id="sim-shutdown-en",
+        locale="en",
+        runner_status=module.RunnerStatus.RUNNING,
+        twitter_running=True,
+        reddit_running=True,
+    )
+    runner._save_run_state(state)
+
+    class FakeProcess:
+        pid = 5150
+
+        def poll(self):
+            return None
+
+    runner._processes["sim-shutdown-en"] = FakeProcess()
+
+    try:
+        with mock.patch.object(runner, "_terminate_process", return_value=None):
+            with mock.patch.object(module.ZepGraphMemoryManager, "stop_all", return_value=None):
+                runner.cleanup_all_simulations()
+
+        updated = runner.get_run_state("sim-shutdown-en")
+        assert updated is not None
+        assert updated.runner_status == module.RunnerStatus.STOPPED
+        assert updated.error == "The server is shutting down, so the simulation was stopped"
+    finally:
+        runner.RUN_STATE_DIR = original_run_state_dir
+        runner._processes = original_processes
+        runner._action_queues = original_action_queues
+        runner._stdout_files = original_stdout_files
+        runner._stderr_files = original_stderr_files
+        runner._graph_memory_enabled = original_graph_memory_enabled
+        runner._cleanup_done = original_cleanup_done

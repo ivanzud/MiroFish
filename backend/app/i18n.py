@@ -508,6 +508,22 @@ TRANSLATIONS = {
         "zh": "模拟运行失败：下载 HuggingFace 模型或资源时出现网络错误。请检查当前机器是否能访问 huggingface.co，并确认代理/VPN 配置后重试。",
         "en": "The simulation run failed while downloading HuggingFace models or assets. Check that this machine can reach huggingface.co, then verify your proxy/VPN settings and retry.",
     },
+    "simulation.cleanup_dir_missing": {
+        "zh": "模拟目录不存在，无需清理",
+        "en": "The simulation directory does not exist and does not need cleanup",
+    },
+    "simulation.cleanup_delete_failed": {
+        "zh": "删除 {target} 失败: {details}",
+        "en": "Failed to delete {target}: {details}",
+    },
+    "simulation.cleanup_completed": {
+        "zh": "清理模拟日志完成: {simulation_id}, 删除文件: {cleaned_files}",
+        "en": "Simulation log cleanup completed: {simulation_id}, deleted files: {cleaned_files}",
+    },
+    "simulation.stopped_server_shutdown": {
+        "zh": "服务器关闭，模拟被终止",
+        "en": "The server is shutting down, so the simulation was stopped",
+    },
 }
 
 

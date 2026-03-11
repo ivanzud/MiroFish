@@ -345,6 +345,19 @@ class SimulationRunner:
             logger.error(f"加载运行状态失败: {str(e)}")
             return None
 
+    @classmethod
+    def _resolve_locale_for_simulation(
+        cls,
+        simulation_id: str,
+        locale: str | None = None,
+    ) -> str:
+        if locale in {"zh", "en"}:
+            return locale
+        state = cls.get_run_state(simulation_id)
+        if state and state.locale in {"zh", "en"}:
+            return state.locale
+        return get_locale(locale)
+
     @staticmethod
     def _simulation_dependencies_available() -> bool:
         return (
@@ -1195,7 +1208,11 @@ class SimulationRunner:
         return result
     
     @classmethod
-    def cleanup_simulation_logs(cls, simulation_id: str) -> Dict[str, Any]:
+    def cleanup_simulation_logs(
+        cls,
+        simulation_id: str,
+        locale: str | None = None,
+    ) -> Dict[str, Any]:
         """
         清理模拟的运行日志（用于强制重新开始模拟）
         
@@ -1217,12 +1234,14 @@ class SimulationRunner:
         Returns:
             清理结果信息
         """
-        import shutil
-        
+        resolved_locale = cls._resolve_locale_for_simulation(simulation_id, locale)
         sim_dir = os.path.join(cls.RUN_STATE_DIR, simulation_id)
         
         if not os.path.exists(sim_dir):
-            return {"success": True, "message": "模拟目录不存在，无需清理"}
+            return {
+                "success": True,
+                "message": tr("simulation.cleanup_dir_missing", resolved_locale),
+            }
         
         cleaned_files = []
         errors = []
@@ -1249,7 +1268,14 @@ class SimulationRunner:
                     os.remove(file_path)
                     cleaned_files.append(filename)
                 except Exception as e:
-                    errors.append(f"删除 {filename} 失败: {str(e)}")
+                    errors.append(
+                        tr(
+                            "simulation.cleanup_delete_failed",
+                            resolved_locale,
+                            target=filename,
+                            details=str(e),
+                        )
+                    )
         
         # 清理平台目录中的动作日志
         for dir_name in dirs_to_clean:
@@ -1261,13 +1287,27 @@ class SimulationRunner:
                         os.remove(actions_file)
                         cleaned_files.append(f"{dir_name}/actions.jsonl")
                     except Exception as e:
-                        errors.append(f"删除 {dir_name}/actions.jsonl 失败: {str(e)}")
+                        errors.append(
+                            tr(
+                                "simulation.cleanup_delete_failed",
+                                resolved_locale,
+                                target=f"{dir_name}/actions.jsonl",
+                                details=str(e),
+                            )
+                        )
         
         # 清理内存中的运行状态
         if simulation_id in cls._run_states:
             del cls._run_states[simulation_id]
         
-        logger.info(f"清理模拟日志完成: {simulation_id}, 删除文件: {cleaned_files}")
+        logger.info(
+            tr(
+                "simulation.cleanup_completed",
+                resolved_locale,
+                simulation_id=simulation_id,
+                cleaned_files=cleaned_files,
+            )
+        )
         
         return {
             "success": len(errors) == 0,
@@ -1327,12 +1367,13 @@ class SimulationRunner:
                     
                     # 更新 run_state.json
                     state = cls.get_run_state(simulation_id)
+                    state_locale = cls._resolve_locale_for_simulation(simulation_id)
                     if state:
                         state.runner_status = RunnerStatus.STOPPED
                         state.twitter_running = False
                         state.reddit_running = False
                         state.completed_at = datetime.now().isoformat()
-                        state.error = "服务器关闭，模拟被终止"
+                        state.error = tr("simulation.stopped_server_shutdown", state_locale)
                         cls._save_run_state(state)
                     
                     # 同时更新 state.json，将状态设为 stopped
