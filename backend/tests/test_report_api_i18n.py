@@ -26,6 +26,7 @@ sys.modules.setdefault("zep_cloud", fake_zep_cloud)
 sys.modules.setdefault("zep_cloud.client", fake_zep_client)
 sys.modules.setdefault("zep_cloud.external_clients.ontology", fake_zep_ontology)
 
+from app.api import report as report_api
 from app.api import report_bp
 from app.services.report_agent import ReportStatus
 
@@ -85,7 +86,8 @@ def test_generate_status_completed_message_is_localized(monkeypatch):
         status=ReportStatus.COMPLETED,
     )
     monkeypatch.setattr(
-        "app.api.report.ReportManager.get_report_by_simulation",
+        report_api.ReportManager,
+        "get_report_by_simulation",
         lambda simulation_id: completed_report,
     )
 
@@ -106,7 +108,8 @@ def test_generate_status_translates_task_progress_message(monkeypatch):
     client = app.test_client()
 
     monkeypatch.setattr(
-        "app.api.report.TaskManager.get_task",
+        report_api.TaskManager,
+        "get_task",
         lambda self, task_id: SimpleNamespace(
             to_dict=lambda: {
                 "task_id": task_id,
@@ -133,7 +136,8 @@ def test_report_progress_message_is_localized(monkeypatch):
     client = app.test_client()
 
     monkeypatch.setattr(
-        "app.api.report.ReportManager.get_progress",
+        report_api.ReportManager,
+        "get_progress",
         lambda report_id: {
             "status": "generating",
             "progress": 45,
@@ -155,7 +159,7 @@ def test_missing_report_errors_are_localized(monkeypatch):
     app = create_report_test_app()
     client = app.test_client()
 
-    monkeypatch.setattr("app.api.report.ReportManager.get_report", lambda report_id: None)
+    monkeypatch.setattr(report_api.ReportManager, "get_report", lambda report_id: None)
 
     response = client.get(
         "/api/report/report_missing",
@@ -171,11 +175,13 @@ def test_chat_requires_message_in_english(monkeypatch):
     client = app.test_client()
 
     monkeypatch.setattr(
-        "app.api.report.SimulationManager.get_simulation",
+        report_api.SimulationManager,
+        "get_simulation",
         lambda self, simulation_id: SimpleNamespace(project_id="proj_123", graph_id="graph_123"),
     )
     monkeypatch.setattr(
-        "app.api.report.ProjectManager.get_project",
+        report_api.ProjectManager,
+        "get_project",
         lambda project_id: SimpleNamespace(graph_id="graph_123", simulation_requirement="Need a report"),
     )
 
@@ -195,7 +201,8 @@ def test_missing_report_section_error_is_localized(monkeypatch, tmp_path):
 
     missing_path = tmp_path / "section_01.md"
     monkeypatch.setattr(
-        "app.api.report.ReportManager._get_section_path",
+        report_api.ReportManager,
+        "_get_section_path",
         lambda report_id, section_index: str(missing_path),
     )
 
@@ -213,12 +220,12 @@ def test_generate_status_exception_logs_english_context(monkeypatch):
     client = app.test_client()
     logger = FakeLogger()
 
-    monkeypatch.setattr("app.api.report.logger", logger)
+    monkeypatch.setattr(report_api, "logger", logger)
 
     def boom(self, task_id):
         raise RuntimeError("status exploded")
 
-    monkeypatch.setattr("app.api.report.TaskManager.get_task", boom)
+    monkeypatch.setattr(report_api.TaskManager, "get_task", boom)
 
     response = client.post(
         "/api/report/generate/status",
@@ -236,12 +243,12 @@ def test_get_report_exception_logs_english_context(monkeypatch):
     client = app.test_client()
     logger = FakeLogger()
 
-    monkeypatch.setattr("app.api.report.logger", logger)
+    monkeypatch.setattr(report_api, "logger", logger)
 
     def boom(report_id):
         raise RuntimeError("report exploded")
 
-    monkeypatch.setattr("app.api.report.ReportManager.get_report", boom)
+    monkeypatch.setattr(report_api.ReportManager, "get_report", boom)
 
     response = client.get(
         "/api/report/report_123",
