@@ -23,6 +23,7 @@ logger = get_logger('mirofish.api.simulation')
 
 RUN_STATUS_DETAIL_DEFAULT_LIMIT = 200
 RUN_STATUS_DETAIL_MAX_LIMIT = 1000
+RUN_STATUS_DETAIL_RECENT_ACTIONS_LIMIT = 200
 
 
 # Interview prompt 优化前缀
@@ -1874,8 +1875,9 @@ def get_run_status_detail(simulation_id: str):
         
         # 获取当前轮次的动作（recent_actions 只展示最新一轮）
         current_round = run_state.current_round
-        recent_actions = SimulationRunner.get_all_actions(
+        recent_actions = SimulationRunner.get_actions(
             simulation_id=simulation_id,
+            limit=RUN_STATUS_DETAIL_RECENT_ACTIONS_LIMIT,
             platform=platform_filter,
             round_num=current_round,
         ) if current_round > 0 else []

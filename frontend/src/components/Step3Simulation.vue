@@ -305,6 +305,7 @@ import {
   getTimelineAvailableActions,
   getTimelinePlatformName,
 } from './simulationTimeline'
+import { mergeLiveActions } from './liveActionBuffer'
 import { shouldAutoStartSimulation } from './simulationReplay'
 
 const props = defineProps({
@@ -658,25 +659,15 @@ const fetchRunStatusDetail = async () => {
     const res = await getRunStatusDetail(props.simulationId, params)
     
     if (res.success && res.data) {
-      const serverActions = res.data.all_actions || []
-      
-      // 增量添加新动作（去重）
-      serverActions.forEach(action => {
-        // 生成唯一ID
-        const actionId = action.id || `${action.timestamp}-${action.platform}-${action.agent_id}-${action.action_type}`
-        
-        if (!actionIds.value.has(actionId)) {
-          actionIds.value.add(actionId)
-          allActions.value.push({
-            ...action,
-            _uniqueId: actionId
-          })
-        }
-
-        if (action.timestamp && action.timestamp > latestActionTimestamp.value) {
-          latestActionTimestamp.value = action.timestamp
-        }
+      const merged = mergeLiveActions({
+        existingActions: allActions.value,
+        existingIds: actionIds.value,
+        incomingActions: res.data.all_actions || [],
+        latestActionTimestamp: latestActionTimestamp.value,
       })
+      allActions.value = merged.actions
+      actionIds.value = merged.actionIds
+      latestActionTimestamp.value = merged.latestActionTimestamp
       
       // 不自动滚动，让用户自由查看时间轴
       // 新动作会在底部追加

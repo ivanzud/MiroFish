@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T14:02:48.031238+00:00`
+- Captured: `2026-03-11T14:04:40.487154+00:00`
 - Issues: `85` total (`open=36`, `closed=49`)
 - Pull requests: `48` total (`open=34`, `closed=14`)
 - Mirrored in `origin`: `48` of `48` PR refs
@@ -10,7 +10,7 @@
 
 ## Recently Updated Issues
 
-- #142 [open] 这个方向最后商业化落地应用的点是什么呢 (no labels)
+- #142 [open] 这个方向最后商业化落地应用的点是什么呢 (question)
   - local coverage [no_action]: Upstream issue #142 asks about long-term commercialization direction rather than reporting a reproducible bug or scoped feature request, so there is no local implementation task attached to it.
 - #64 [open] 一直卡在上传文件错误：Request failed with status code 500 (no labels)
   - local coverage [covered]: Upload and graph-build failures now surface structured per-file parser/config validation errors instead of collapsing common deployment or document-ingest problems into a generic 500.
