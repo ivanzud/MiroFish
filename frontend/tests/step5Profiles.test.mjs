@@ -156,6 +156,26 @@ test('formatInterviewFailureMessage normalizes timeout and env-closed backend er
     formatInterviewFailureMessage('Waiting for Interview response timed out: 300s', t),
     'step5.interviewTimeoutError:{"message":"Waiting for Interview response timed out: 300s"}'
   )
+
+  assert.equal(
+    formatInterviewFailureMessage('等待批量Interview响应超时: 300s', t),
+    'step5.interviewTimeoutError:{"message":"等待批量Interview响应超时: 300s"}'
+  )
+
+  assert.equal(
+    formatInterviewFailureMessage('等待全局Interview响应超时: 300s', t),
+    'step5.interviewTimeoutError:{"message":"等待全局Interview响应超时: 300s"}'
+  )
+
+  assert.equal(
+    formatInterviewFailureMessage('Timed out while waiting for the batch interview response: 300s', t),
+    'step5.interviewTimeoutError:{"message":"Timed out while waiting for the batch interview response: 300s"}'
+  )
+
+  assert.equal(
+    formatInterviewFailureMessage('Timed out while waiting for the global interview response: 300s', t),
+    'step5.interviewTimeoutError:{"message":"Timed out while waiting for the global interview response: 300s"}'
+  )
 })
 
 test('summarizeInterviewTimeoutBudget explains single and batch budgets', () => {

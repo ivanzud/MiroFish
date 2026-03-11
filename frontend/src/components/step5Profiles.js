@@ -104,9 +104,10 @@ export const formatAgentRole = (profile, fallbackRole, t) => {
 }
 
 const isTimeoutMessage = (message) => /timeout|timed out/i.test(message)
-const INTERVIEW_TIMEOUT_PREFIXES = [
-  '等待Interview响应超时',
-  'Waiting for Interview response timed out',
+const INTERVIEW_TIMEOUT_PATTERNS = [
+  /^等待(?:批量|全局)?Interview响应超时/,
+  /^Waiting for (?:batch |all-agent |global )?Interview response timed out/i,
+  /^Timed out while waiting for the (?:batch |global )?interview response/i,
 ]
 const ENV_CLOSED_PATTERNS = [
   /模拟环境未运行或已关闭/,
@@ -116,7 +117,7 @@ const ENV_CLOSED_PATTERNS = [
 ]
 
 const isInterviewTimeoutMessage = (message) =>
-  INTERVIEW_TIMEOUT_PREFIXES.some((prefix) => message.includes(prefix)) || isTimeoutMessage(message)
+  INTERVIEW_TIMEOUT_PATTERNS.some((pattern) => pattern.test(message)) || isTimeoutMessage(message)
 
 const isClosedEnvironmentMessage = (message) =>
   ENV_CLOSED_PATTERNS.some((pattern) => pattern.test(message))
