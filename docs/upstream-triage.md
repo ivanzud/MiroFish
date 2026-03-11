@@ -10,6 +10,7 @@ Last refreshed: `2026-03-11`
 
 ## Landed on this branch
 
+- `#81` Configurable frontend API timeout: low-risk support for slow local/OpenAI-compatible backends such as Ollama.
 - `#115` Use SPDX license string: safe metadata-only cherry-pick.
 - `#116` Upgrade GitHub Actions: safe workflow-only dependency bump.
 - `#125` Improve new-project network error diagnostics: safe single-file frontend error-message improvement.

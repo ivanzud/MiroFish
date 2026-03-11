@@ -13,10 +13,15 @@ const resolveBaseURL = () => {
   return ''
 }
 
+const resolveTimeout = () => {
+  const envTimeout = Number.parseInt(import.meta.env.VITE_API_TIMEOUT, 10)
+  return Number.isFinite(envTimeout) && envTimeout > 0 ? envTimeout : 300000
+}
+
 // 创建axios实例
 const service = axios.create({
   baseURL: resolveBaseURL(),
-  timeout: 300000, // 5分钟超时（本体生成可能需要较长时间）
+  timeout: resolveTimeout(), // 可配置超时时间，默认5分钟（本地大模型可能需要更长时间）
   headers: {
     'Content-Type': 'application/json'
   }
