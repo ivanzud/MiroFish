@@ -1926,7 +1926,12 @@ Select up to {max_agents} of the most suitable agents and explain why."""
             return selected_agents, valid_indices, reasoning
             
         except Exception as e:
-            logger.warning(f"LLM选择Agent失败，使用默认选择: {e}")
+            self._log(
+                "warning",
+                f"LLM选择Agent失败，使用默认选择: {e}",
+                f"LLM agent selection failed; using the default selection: {e}",
+                locale,
+            )
             # 降级：选择前N个
             selected = profiles[:max_agents]
             indices = list(range(min(max_agents, len(profiles))))
@@ -2010,7 +2015,12 @@ Generate 3-5 interview questions."""
             )
             
         except Exception as e:
-            logger.warning(f"生成采访问题失败: {e}")
+            self._log(
+                "warning",
+                f"生成采访问题失败: {e}",
+                f"Failed to generate interview questions: {e}",
+                locale,
+            )
             return default_questions
     
     def _generate_interview_summary(
@@ -2086,7 +2096,12 @@ Generate the interview summary."""
             return summary
             
         except Exception as e:
-            logger.warning(f"生成采访摘要失败: {e}")
+            self._log(
+                "warning",
+                f"生成采访摘要失败: {e}",
+                f"Failed to generate the interview summary: {e}",
+                locale,
+            )
             # 降级：简单拼接
             if locale == "en":
                 return f"Interviewed {len(interviews)} participants, including: " + ", ".join(

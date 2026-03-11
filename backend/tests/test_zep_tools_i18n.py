@@ -298,10 +298,11 @@ def test_tool_result_renderers_localize_deterministic_wrappers_in_english():
     assert "### [Entities involved]" in rendered_panorama
 
 
-def test_select_agents_for_interview_localizes_prompts_and_fallback_reasoning_in_english():
+def test_select_agents_for_interview_localizes_prompts_fallback_reasoning_and_logs_in_english(monkeypatch):
     app = Flask(__name__)
     service = _make_service()
     captured = {}
+    fake_logger = FakeLogger()
 
     class FakeLLM:
         def chat_json(self, messages, temperature):
@@ -310,6 +311,7 @@ def test_select_agents_for_interview_localizes_prompts_and_fallback_reasoning_in
 
     service._llm_client = FakeLLM()
     profiles = [{"username": "alice", "bio": "", "interested_topics": []}]
+    monkeypatch.setattr(zep_tools_module, "logger", fake_logger)
 
     with app.test_request_context(headers={"X-Locale": "en"}):
         selected, indices, reasoning = service._select_agents_for_interview(
@@ -325,12 +327,17 @@ def test_select_agents_for_interview_localizes_prompts_and_fallback_reasoning_in
     assert "You are an expert interview planner." in captured["messages"][0]["content"]
     assert "Simulation background:\nNot provided" in captured["messages"][1]["content"]
     assert '"profession": "Unknown"' in captured["messages"][1]["content"]
+    assert any(
+        "LLM agent selection failed; using the default selection: planner unavailable" in message
+        for _, message in fake_logger.messages
+    )
 
 
-def test_generate_interview_questions_localizes_prompts_and_fallbacks_in_english():
+def test_generate_interview_questions_localizes_prompts_fallbacks_and_logs_in_english(monkeypatch):
     app = Flask(__name__)
     service = _make_service()
     captured = {}
+    fake_logger = FakeLogger()
 
     class FakeLLM:
         def chat_json(self, messages, temperature):
@@ -338,6 +345,7 @@ def test_generate_interview_questions_localizes_prompts_and_fallbacks_in_english
             raise RuntimeError("question generator unavailable")
 
     service._llm_client = FakeLLM()
+    monkeypatch.setattr(zep_tools_module, "logger", fake_logger)
 
     with app.test_request_context(headers={"X-Locale": "en"}):
         questions = service._generate_interview_questions(
@@ -354,11 +362,16 @@ def test_generate_interview_questions_localizes_prompts_and_fallbacks_in_english
     assert "You are a professional interviewer." in captured["messages"][0]["content"]
     assert "Simulation background: Not provided" in captured["messages"][1]["content"]
     assert "Interviewee roles: Unknown" in captured["messages"][1]["content"]
+    assert any(
+        "Failed to generate interview questions: question generator unavailable" in message
+        for _, message in fake_logger.messages
+    )
 
 
-def test_generate_interview_summary_localizes_empty_and_fallback_copy_in_english():
+def test_generate_interview_summary_localizes_empty_fallback_copy_and_logs_in_english(monkeypatch):
     app = Flask(__name__)
     service = _make_service()
+    fake_logger = FakeLogger()
 
     with app.test_request_context(headers={"X-Locale": "en"}):
         assert service._generate_interview_summary([], "Understand the reaction") == "No interviews were completed"
@@ -368,6 +381,7 @@ def test_generate_interview_summary_localizes_empty_and_fallback_copy_in_english
             raise RuntimeError("summary generator unavailable")
 
     service._llm_client = FakeLLM()
+    monkeypatch.setattr(zep_tools_module, "logger", fake_logger)
     interviews = [
         AgentInterview(
             agent_name="Alice",
@@ -383,3 +397,7 @@ def test_generate_interview_summary_localizes_empty_and_fallback_copy_in_english
         summary = service._generate_interview_summary(interviews, "Understand the reaction")
 
     assert summary == "Interviewed 1 participants, including: Alice"
+    assert any(
+        "Failed to generate the interview summary: summary generator unavailable" in message
+        for _, message in fake_logger.messages
+    )
