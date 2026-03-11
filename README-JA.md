@@ -156,7 +156,10 @@ OpenAI-compatible 設定として認識されたかを確認するには:
 #### 2. 依存関係のインストール
 
 ```bash
-# すべての依存関係をワンクリックでインストール（ルート + フロントエンド + バックエンド）
+# 推奨: コア依存関係をインストール（ルート + フロントエンド + バックエンド）
+npm run setup:core
+
+# 後方互換エイリアス（setup:core と同じ）
 npm run setup:all
 
 # Step 3 / Step 5 のシミュレーションが必要な場合のみ任意の OASIS ランタイムを追加
@@ -169,12 +172,14 @@ npm run setup:backend:simulation
 # Node依存関係をインストール（ルート + フロントエンド）
 npm run setup
 
-# Pythonコア依存関係をインストール（バックエンド、仮想環境を自動作成）
+# Python コア依存関係をインストール（バックエンド、仮想環境を自動作成）
 npm run setup:backend
 
 # OASIS シミュレーションランタイム用の任意依存関係をインストール
 npm run setup:backend:simulation
 ```
+
+`setup:core` は `setup` と `setup:backend` を順番に実行する推奨ショートカットです。`setup:all` は後方互換エイリアスとしてそのまま利用できます。
 
 `setup:backend` は現在、グラフ構築・レポート生成・OpenAI-compatible バックエンド接続に必要なコア依存関係のみをインストールします。Step 3 / Step 5 で使う `oasis` ランタイムコードは `backend/oasis` に vendoring されており、任意のシミュレーション導入では実行時に必要な明示的パッケージだけを追加します。
 

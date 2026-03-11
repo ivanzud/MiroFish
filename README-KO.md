@@ -158,7 +158,10 @@ OpenAI-compatible 설정이 실제로 인식됐는지 확인하려면:
 #### 2) 의존성 설치
 
 ```bash
-# 모든 의존성 한 번에 설치 (루트 + 프런트엔드 + 백엔드)
+# 권장: 코어 의존성 설치 (루트 + 프런트엔드 + 백엔드)
+npm run setup:core
+
+# 하위 호환 별칭 (setup:core 와 동일)
 npm run setup:all
 
 # Step 3 / Step 5 시뮬레이션이 필요할 때만 선택적 OASIS 런타임 설치
@@ -177,6 +180,8 @@ npm run setup:backend
 # OASIS 시뮬레이션 런타임용 선택 의존성 설치
 npm run setup:backend:simulation
 ```
+
+`setup:core` 는 `setup` 과 `setup:backend` 를 순서대로 실행하는 권장 단축 명령입니다. `setup:all` 은 같은 동작을 유지하는 하위 호환 별칭입니다.
 
 `setup:backend` 는 이제 그래프 구축, 보고서 생성, OpenAI-compatible 백엔드 연결에 필요한 핵심 의존성만 설치합니다. Step 3 / Step 5 에서 사용하는 `oasis` 런타임 코드는 `backend/oasis` 에 vendoring 되어 있고, 선택적 시뮬레이션 설치는 실제 런타임에 필요한 명시적 패키지만 추가합니다.
 
