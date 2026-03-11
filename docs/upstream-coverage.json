@@ -709,6 +709,35 @@
         "triage diff review",
         "git diff --stat HEAD..upstream/pr/141"
       ]
+    },
+    {
+      "number": 143,
+      "status": "landed",
+      "summary": "Landed locally as a repo-native docs cleanup: the Shanda logo alt text now uses the correct URL-encoded `666ghj%2FMiroFish` slug across all README variants, not just the primary Chinese README.",
+      "local_refs": [
+        "README.md",
+        "README-EN.md",
+        "README-JA.md",
+        "README-KO.md",
+        "origin/mirror/upstream-pr-143"
+      ],
+      "validation": [
+        "documentation review",
+        "rg -n \"666ghj%2MiroFish|666ghj%2FMiroFish\" README.md README-EN.md README-JA.md README-KO.md"
+      ]
+    },
+    {
+      "number": 144,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "origin/mirror/upstream-pr-144"
+      ],
+      "validation": [
+        "triage diff review",
+        "git diff --stat HEAD...upstream/pr-144"
+      ]
     }
   ]
 }

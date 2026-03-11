@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T14:34:49.881824+00:00",
-  "generated_at": "2026-03-11T14:34:49.881824+00:00",
+  "captured_at": "2026-03-11T14:41:35.652644+00:00",
+  "generated_at": "2026-03-11T14:41:35.652644+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -10,11 +10,11 @@
       "closed": 49
     },
     "pull_requests": {
-      "open": 34,
+      "open": 36,
       "closed": 14
     },
     "mirrored_pull_requests": {
-      "mirrored": 48,
+      "mirrored": 50,
       "not_mirrored": 0
     }
   },
@@ -2632,12 +2632,99 @@
   ],
   "pull_requests": [
     {
+      "number": 144,
+      "title": "feat(kg): add dual-mode knowledge graph support",
+      "url": "https://github.com/666ghj/MiroFish/pull/144",
+      "state": "open",
+      "created_at": "2026-03-11T14:39:08Z",
+      "updated_at": "2026-03-11T14:41:00Z",
+      "closed_at": null,
+      "merged_at": null,
+      "head": "feat/local-knowledge-graph",
+      "head_sha": "9523c5d3e60027a52de994549463fc3cda7d6e37",
+      "head_repo": "huamingjie0815/MiroFish",
+      "head_clone_url": "https://github.com/huamingjie0815/MiroFish.git",
+      "base": "main",
+      "base_repo": "666ghj/MiroFish",
+      "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "Memory Layer",
+        "size:XXL"
+      ],
+      "author": "huamingjie0815",
+      "body_excerpt": "## Summary - Add kg_adapter for dual-mode knowledge graph (cloud/local) - Support switching between Zep Cloud and local Graphiti + Neo4j - Improve entity extraction and report agent robustness - Add test_kg_adapter.py with unit tests ## Test plan - [ ] Test cloud mode with Zep Cloud - [ ] Test local mode with Graphiti + Neo4j - [ ] Run unit tests 🤖 Generated with [Claude Code](https://claude.com/…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-144",
+      "local_coverage": {
+        "number": 144,
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "origin/mirror/upstream-pr-144"
+        ],
+        "validation": [
+          "triage diff review",
+          "git diff --stat HEAD...upstream/pr-144"
+        ]
+      }
+    },
+    {
+      "number": 143,
+      "title": "docs: fix README alt text URL encoding",
+      "url": "https://github.com/666ghj/MiroFish/pull/143",
+      "state": "open",
+      "created_at": "2026-03-11T14:37:42Z",
+      "updated_at": "2026-03-11T14:39:04Z",
+      "closed_at": null,
+      "merged_at": null,
+      "head": "docs/urlEncoding",
+      "head_sha": "ecf6a84a3b471583cb5a436f9ef83c72e24c65b2",
+      "head_repo": "fishwww-ww/MiroFish",
+      "head_clone_url": "https://github.com/fishwww-ww/MiroFish.git",
+      "base": "main",
+      "base_repo": "666ghj/MiroFish",
+      "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:XS"
+      ],
+      "author": "fishwww-ww",
+      "body_excerpt": "## Summary Fix the Shanda image alt text in README.md by changing 666ghj%2MiroFish to 666ghj%2FMiroFish. ## Details 666ghj%2MiroFish is not a valid URL-encoded representation, so it cannot be decoded correctly. Using 666ghj%2FMiroFish correctly encodes the slash and can be properly decoded to 666ghj/ MiroFish. ## Impact Documentation-only change. No code or runtime behavior is affected.",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-143",
+      "local_coverage": {
+        "number": 143,
+        "status": "landed",
+        "summary": "Landed locally as a repo-native docs cleanup: the Shanda logo alt text now uses the correct URL-encoded `666ghj%2FMiroFish` slug across all README variants, not just the primary Chinese README.",
+        "local_refs": [
+          "README.md",
+          "README-EN.md",
+          "README-JA.md",
+          "README-KO.md",
+          "origin/mirror/upstream-pr-143"
+        ],
+        "validation": [
+          "documentation review",
+          "rg -n \"666ghj%2MiroFish|666ghj%2FMiroFish\" README.md README-EN.md README-JA.md README-KO.md"
+        ]
+      }
+    },
+    {
       "number": 141,
       "title": "feat: add entity deduplication after graph building",
       "url": "https://github.com/666ghj/MiroFish/pull/141",
       "state": "open",
       "created_at": "2026-03-11T13:38:51Z",
-      "updated_at": "2026-03-11T14:24:39Z",
+      "updated_at": "2026-03-11T14:37:16Z",
       "closed_at": null,
       "merged_at": null,
       "head": "feature/entity-deduplication",
@@ -2653,7 +2740,7 @@
         "size:XL"
       ],
       "author": "Stayfoool",
-      "body_excerpt": "## Summary - Add entity deduplication service that identifies and merges duplicate nodes in the knowledge graph after building (e.g. \"特朗普\" vs \"美国总统特朗普\") - When merging duplicate nodes, migrates all edges from removed nodes to the primary node before deletion, preserving graph connectivity - Three-layer filtering: name similarity pre-filter → type compatibility check → LLM confirmation - Integrate…",
+      "body_excerpt": "Hi @666ghj I noticed that during graph building, Zep sometimes creates duplicate entity nodes for the same real-world entity (e.g. \"特朗普\" and \"美国总统特朗普\" appear as separate nodes). This affects the accuracy of the knowledge graph. This PR adds an automatic entity deduplication step after graph building, using name similarity pre-filtering + type compatibility check + LLM confirmation to identify and…",
       "comment_count": 0,
       "review_comment_count": 0,
       "recent_comments": [],
