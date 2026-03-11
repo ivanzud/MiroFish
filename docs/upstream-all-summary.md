@@ -2,21 +2,19 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T10:50:44.691201+00:00`
-- Issues: `83` total (`open=36`, `closed=47`)
+- Captured: `2026-03-11T10:56:39.783557+00:00`
+- Issues: `82` total (`open=34`, `closed=48`)
 - Pull requests: `47` total (`open=33`, `closed=14`)
 - Mirrored in `origin`: `34` of `47` PR refs
 
 ## Recently Updated Issues
 
-- #138 [open] 生成的报告让人看不懂 (question)
+- #138 [closed] 生成的报告让人看不懂 (question)
   - 生成的报告感觉有点太偏题了，看不懂😭 ，比如我写了一个游戏的设计方案，预测这个游戏的受众群体将会是什么，给我的报告题目是《未来受众群体生态的静默与解体：一项基于模拟的预测报告》
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @huamingjie0815! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 感谢反馈！这个问题我找到原因了 😊 **根本原因**：报告标题生成的 [Prompt 模板](https://github.com/666ghj/MiroFish/blob/985f89f49acbb44ee14d9d6…
 - #135 [open] 报错，Zep图谱构建失败 (no labels)
   - Graph build task failed: Traceback (most recent call last): File "/app/backend/app/api/graph.py", line 418, in build_task builder.set_ontology(graph_id, ontology) File "/app/backend/app/services/graph_builder.py", line 230, in set_ontology attr_name = safe_attr_name(attr_def["name"]) # 使用安全名称 ~~~~~~~~^^^^^^^^ TypeError: string indices must be integers, not 'str'
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @rheeh! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这个错误是因为 `attr_def` 应该是字典格式 `{"name": "attr_name", ...}`，但实际收到的是字符串。 **根本原因**：LLM 生成的 ontology 中，`attributes` 字段可能返回了简单的…
-- #134 [open] 别再交“学费”了，一步到位才是最省钱的 (no labels)
-  - 你以为用复杂的脚本搭个 VPS 就能掌控一切？现实是，面对公网晚高峰 20% 的丢包率和无差别的 TCP 阻断，你所有的伪装协议都不堪一击。一旦 IP 被墙，寻找新机器、重置环境的成本远超买一个现成服务。 WgetCloud 是“折腾党”的最终归宿。我们通过全线 BGP 中转 + 双向 IEPL 专线，从物理层面上抹平了网络波动与封锁风险。把专业底层的运维交出去，别让修梯子占用了你写代码、做产品和思考商业模式的核心精力。 点击下方链接注册新用户即可享受全员无门槛8折优惠券： ### [WgetCloud官网链接：wgetcloud.org](https://invite.wgetcloud.ltd/auth/register?code=jll8) 以下为晚高峰测速： ![image](https://github.com/cadencando/SSSSRV2RayTrojanClash/…
 - #133 [open] 本地部署，启动已经显示成功了，访问却失败 (question)
   - 前后端启动都显示成功了，0.0.0.0:5001无法访问，提示404。前端0.0.0.0:3000虽然可以访问，但是一到这个界面就会报错 <img width="2550" height="1233" alt="Image" src="https://github.com/user-attachments/assets/032cf0ac-78ae-406d-831d-da5b9a28d5a0" />，看了项目也没有报错日志，请问这是什么问题呢
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @Axing93! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这是一个常见的前后端连接配置问题。 **后端 5001 返回 404 是正常的** — [根路径 `/` 未定义端点](https://github.com/666ghj/MiroFish/issues/68)，实际 API 通过具体…
@@ -36,6 +34,9 @@
 - #106 [open] 能否采用除了zep的别的知识图谱 (no labels)
   - 如题所示，今天在跑的时候发现zep的免费额度被耗光了，能否添加使用本地部署的memv作为知识图谱
   - latest comment by `addisjeams`: 对，一开始半天都是网络报错，后来才发现是这个问题。必须要申请zep
+- #109 [closed] 纯小白看到新闻后本机部署，但似乎Zep额度用完后不知道接下来咋办了 (question)
+  - <img width="1242" height="707" alt="Image" src="https://github.com/user-attachments/assets/c3322506-4644-4194-bf60-760ba929d415" /> 作者你好，看到你的新闻之后，怀着巨大的好奇心本地部署了一下。 用的 Google 反重力很快就部署成功，完全是代码小白。 我只是把自己公众号和 AI 对话的几个 MD 文件传上去，然后 Zep API 在第三轮开始模拟阶段很快就报错，如截图所示。 请问我是升级付费Zep呢，还是等3月底重置，不想再来一次呀，的确某个环节内存飙升在Win系统下，起初就是感兴趣想体验下投喂自己的资料后（写了十多年的公众号和AI对话后梳理的一些MD文档），预测下你的系统和我今年会做的事会不会有一些预测的重合，感觉值得一试，但是碰到这个问题，期待回复解决…
+  - latest comment by `xingjia10086`: 以下是 claude 给的方案： 立即恢复运行的方法 最快的方式是直接补充当前 API 的额度，或者在配置文件/环境变量里替换成另一个有余额的 Key，重启程序即可从中断处继续（前提是程序支持断点续跑）。 如果暂时没有额度，可以考虑的替代方案 换一个 Provider：如果你原来用的是 OpenAI，可以临时切到 Anthropic、Google Gemini、DeepSeek、阿里云百炼等，接口格式大多兼容 OpenAI SDK，改动量很小。 用本地模型顶上：用 Olla…
 
 ## Recently Updated Pull Requests
 

@@ -1,12 +1,12 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T10:50:44.691201+00:00",
-  "generated_at": "2026-03-11T10:50:44.691201+00:00",
+  "captured_at": "2026-03-11T10:56:39.783557+00:00",
+  "generated_at": "2026-03-11T10:56:39.783557+00:00",
   "counts": {
     "issues": {
-      "open": 36,
-      "closed": 47
+      "closed": 48,
+      "open": 34
     },
     "pull_requests": {
       "closed": 14,
@@ -22,10 +22,10 @@
       "number": 138,
       "title": "生成的报告让人看不懂",
       "url": "https://github.com/666ghj/MiroFish/issues/138",
-      "state": "open",
+      "state": "closed",
       "created_at": "2026-03-11T09:53:19Z",
-      "updated_at": "2026-03-11T09:56:26Z",
-      "closed_at": null,
+      "updated_at": "2026-03-11T10:55:48Z",
+      "closed_at": "2026-03-11T10:55:48Z",
       "labels": [
         "question"
       ],
@@ -63,20 +63,6 @@
           "body_excerpt": "<!-- Greeting --> Hi @rheeh! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这个错误是因为 `attr_def` 应该是字典格式 `{\"name\": \"attr_name\", ...}`，但实际收到的是字符串。 **根本原因**：LLM 生成的 ontology 中，`attributes` 字段可能返回了简单的…"
         }
       ]
-    },
-    {
-      "number": 134,
-      "title": "别再交“学费”了，一步到位才是最省钱的",
-      "url": "https://github.com/666ghj/MiroFish/issues/134",
-      "state": "open",
-      "created_at": "2026-03-11T08:27:29Z",
-      "updated_at": "2026-03-11T08:27:29Z",
-      "closed_at": null,
-      "labels": [],
-      "author": "LeslieJess",
-      "body_excerpt": "你以为用复杂的脚本搭个 VPS 就能掌控一切？现实是，面对公网晚高峰 20% 的丢包率和无差别的 TCP 阻断，你所有的伪装协议都不堪一击。一旦 IP 被墙，寻找新机器、重置环境的成本远超买一个现成服务。 WgetCloud 是“折腾党”的最终归宿。我们通过全线 BGP 中转 + 双向 IEPL 专线，从物理层面上抹平了网络波动与封锁风险。把专业底层的运维交出去，别让修梯子占用了你写代码、做产品和思考商业模式的核心精力。 点击下方链接注册新用户即可享受全员无门槛8折优惠券： ### [WgetCloud官网链接：wgetcloud.org](https://invite.wgetcloud.ltd/auth/register?code=jll8) 以下为晚高峰测速： ![image](https://github.com/cadencando/SSSSRV2RayTrojanClash/…",
-      "comment_count": 0,
-      "recent_comments": []
     },
     {
       "number": 133,
