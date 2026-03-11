@@ -1,12 +1,12 @@
 {
-  "cycle": 8,
+  "cycle": 9,
   "mode": "standard",
   "test_first": true,
   "repo_profile_path": null,
   "generator_empty_streak": 0,
   "last_selected_source": "beads",
   "claimed_work": null,
-  "queue_refresh_count": 8,
+  "queue_refresh_count": 9,
   "pinned_queue": null,
   "pinned_queue_file": null,
   "pinned_queue_index": 0,
@@ -15,12 +15,13 @@
   "unblock_depth": 0,
   "unblock_failures": 0,
   "unblock_chain": [],
-  "last_completed_issue": "upstream-intake-refresh",
+  "last_completed_issue": "mirofish-kcba",
   "last_validation_commands": [
-    "cd backend && uv run pytest -q tests/test_llm_env.py",
+    "cd backend && uv run pytest -q tests/test_openai_compat_services.py",
+    "python3 -m compileall backend/app/services/simulation_config_generator.py backend/tests/test_openai_compat_services.py",
     "bash ./scripts/test_backend_lite.sh"
   ],
   "last_upstream_snapshot": "docs/upstream-all-state.json",
-  "last_cycle_timestamp": "2026-03-11T21:58:57Z",
-  "last_cycle_head": "fa25d0fbbda774a14419e991460c420840fae6d9"
+  "last_cycle_timestamp": "2026-03-11T22:12:26Z",
+  "last_cycle_head": "ce0ac89e97c4a9496e4436352d93c283077a6482"
 }

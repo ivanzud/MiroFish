@@ -15,6 +15,7 @@ from app.services.oasis_profile_generator import OasisAgentProfile, OasisProfile
 from app.services.graph_builder import GraphBuilderService
 from app.services import simulation_config_generator as simulation_config_generator_module
 from app.services.simulation_config_generator import SimulationConfigGenerator
+from app.services.simulation_config_generator import EventConfig
 from app.services.zep_entity_reader import ZepEntityReader
 from app.services.zep_graph_memory_updater import (
     AgentActivity,
@@ -503,6 +504,54 @@ def test_simulation_config_generator_logs_english_truncated_output_warning(monke
 
     assert result["content"] == '{"time_config": {"total_simulation_hours": 12}}'
     assert warning_messages == ["LLM output was truncated; attempting to repair JSON..."]
+
+
+def test_simulation_config_generator_localizes_unknown_entity_labels_in_context():
+    generator = SimulationConfigGenerator.__new__(SimulationConfigGenerator)
+    generator.locale = "zh"
+    generator.ENTITIES_PER_TYPE_DISPLAY = 20
+    generator.ENTITY_SUMMARY_LENGTH = 300
+
+    summary = generator._summarize_entities(
+        [
+            SimpleNamespace(
+                name="未命名实体",
+                summary="一段摘要",
+                get_entity_type=lambda: None,
+            )
+        ]
+    )
+
+    assert "### 未知 (1个)" in summary
+    assert "- 未命名实体: 一段摘要" in summary
+
+
+def test_simulation_config_generator_localizes_unknown_defaults_in_agent_configs_and_posts():
+    generator = SimulationConfigGenerator.__new__(SimulationConfigGenerator)
+    generator.locale = "zh"
+    generator.AGENT_SUMMARY_LENGTH = 300
+    generator._call_llm_with_retry = lambda prompt, system_prompt: {}
+
+    entity = SimpleNamespace(
+        uuid="entity-1",
+        name="匿名角色",
+        summary="背景摘要",
+        get_entity_type=lambda: None,
+    )
+
+    configs = generator._generate_agent_configs_batch(
+        context="背景",
+        entities=[entity],
+        start_idx=0,
+        simulation_requirement="测试需求",
+    )
+    assigned = generator._assign_initial_post_agents(
+        EventConfig(initial_posts=[{"content": "测试帖子"}]),
+        configs,
+    )
+
+    assert configs[0].entity_type == "未知"
+    assert assigned.initial_posts[0]["poster_type"] == "未知"
 
 
 def test_zep_services_missing_key_support_english_request_locale(monkeypatch):

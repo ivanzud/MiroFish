@@ -480,6 +480,9 @@ class SimulationConfigGenerator:
             )
         
         return "\n".join(context_parts)
+
+    def _unknown_label(self) -> str:
+        return self._tr("Unknown", "未知")
     
     def _summarize_entities(self, entities: List[EntityNode]) -> str:
         """生成实体摘要"""
@@ -488,7 +491,7 @@ class SimulationConfigGenerator:
         # 按类型分组
         by_type: Dict[str, List[EntityNode]] = {}
         for e in entities:
-            t = e.get_entity_type() or "Unknown"
+            t = e.get_entity_type() or self._unknown_label()
             if t not in by_type:
                 by_type[t] = []
             by_type[t].append(e)
@@ -810,14 +813,15 @@ Field notes:
         """生成事件配置"""
         
         # 获取可用的实体类型列表，供 LLM 参考
+        unknown_label = self._unknown_label()
         entity_types_available = list(set(
-            e.get_entity_type() or "Unknown" for e in entities
+            e.get_entity_type() or unknown_label for e in entities
         ))
         
         # 为每种类型列出代表性实体名称
         type_examples = {}
         for e in entities:
-            etype = e.get_entity_type() or "Unknown"
+            etype = e.get_entity_type() or unknown_label
             if etype not in type_examples:
                 type_examples[etype] = []
             if len(type_examples[etype]) < 3:
@@ -947,6 +951,7 @@ Return JSON only (no markdown):
         if not event_config.initial_posts:
             return event_config
         
+        unknown_label = self._unknown_label()
         # 按实体类型建立 agent 索引
         agents_by_type: Dict[str, List[AgentActivityConfig]] = {}
         for agent in agent_configs:
@@ -1015,7 +1020,7 @@ Return JSON only (no markdown):
             
             updated_posts.append({
                 "content": content,
-                "poster_type": post.get("poster_type", "Unknown"),
+                "poster_type": post.get("poster_type", unknown_label),
                 "poster_agent_id": matched_agent_id
             })
 
@@ -1039,13 +1044,14 @@ Return JSON only (no markdown):
         """分批生成Agent配置"""
         
         # 构建实体信息（使用配置的摘要长度）
+        unknown_label = self._unknown_label()
         entity_list = []
         summary_len = self.AGENT_SUMMARY_LENGTH
         for i, e in enumerate(entities):
             entity_list.append({
                 "agent_id": start_idx + i,
                 "entity_name": e.name,
-                "entity_type": e.get_entity_type() or "Unknown",
+                "entity_type": e.get_entity_type() or unknown_label,
                 "summary": e.summary[:summary_len] if e.summary else ""
             })
         
@@ -1080,7 +1086,7 @@ Return JSON only (no markdown):
                 agent_id=agent_id,
                 entity_uuid=entity.uuid,
                 entity_name=entity.name,
-                entity_type=entity.get_entity_type() or "Unknown",
+                entity_type=entity.get_entity_type() or unknown_label,
                 activity_level=cfg.get("activity_level", 0.5),
                 posts_per_hour=cfg.get("posts_per_hour", 0.5),
                 comments_per_hour=cfg.get("comments_per_hour", 1.0),
@@ -1181,7 +1187,7 @@ Return JSON only (no markdown):
     
     def _generate_agent_config_by_rule(self, entity: EntityNode) -> Dict[str, Any]:
         """基于规则生成单个Agent配置（中国人作息）"""
-        entity_type = (entity.get_entity_type() or "Unknown").lower()
+        entity_type = (entity.get_entity_type() or self._unknown_label()).lower()
         
         if entity_type in ["university", "governmentagency", "ngo"]:
             # 官方机构：工作时间活动，低频率，高影响力

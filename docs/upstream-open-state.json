@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T22:05:29.356236+00:00",
-  "generated_at": "2026-03-11T22:05:29.356236+00:00",
+  "captured_at": "2026-03-11T22:12:07.206476+00:00",
+  "generated_at": "2026-03-11T22:12:07.206476+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -465,7 +465,7 @@
       "local_coverage": {
         "number": 117,
         "status": "covered",
-        "summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, graph-build worker progress, report/interview parsing, and Step 5 interview fallbacks: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, GraphBuilderService now persists English task-status strings for its initial worker milestones, Step 4 tool-output parsers accept both Chinese and English markers, and zep_tools now localizes deterministic interview-selection/question/summary fallback copy in English mode.",
+        "summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, graph-build worker progress, report/interview parsing, Step 5 interview fallbacks, and simulation-config placeholder labels: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, GraphBuilderService now persists English task-status strings for its initial worker milestones, Step 4 tool-output parsers accept both Chinese and English markers, zep_tools localizes deterministic interview-selection/question/summary fallback copy in English mode, and SimulationConfigGenerator now routes unknown entity/poster fallback labels through the active locale instead of leaking hardcoded English `Unknown` into zh-mode config output.",
         "local_refs": [
           "frontend/src/components/Step2EnvSetup.vue",
           "frontend/src/components/Step3Simulation.vue",
@@ -477,14 +477,17 @@
           "frontend/src/components/step5Profiles.js",
           "frontend/src/components/simulationTimeline.js",
           "backend/app/services/zep_tools.py",
+          "backend/app/services/simulation_config_generator.py",
           "frontend/src/i18n/locales/en.js",
           "frontend/src/i18n/locales/zh.js",
           "backend/tests/test_graph_builder.py",
+          "backend/tests/test_openai_compat_services.py",
           "frontend/tests/simulationLogMessages.test.mjs",
           "backend/tests/test_zep_tools_i18n.py"
         ],
         "validation": [
           "backend/tests/test_graph_builder.py",
+          "backend/tests/test_openai_compat_services.py",
           "frontend/tests/reportParsers.test.mjs",
           "frontend/tests/simulationLogMessages.test.mjs",
           "frontend/tests/simulationTimeline.test.mjs",
@@ -497,9 +500,9 @@
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
       },
       "local_status": "covered",
-      "local_summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, graph-build worker progress, report/interview parsing, and Step 5 interview fallbacks: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, GraphBuilderService now persists English task-status strings for its initial worker milestones, Step 4 tool-output parsers accept both Chinese and English markers, and zep_tools now localizes deterministic interview-selection/question/summary fallback copy in English mode.",
+      "local_summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, graph-build worker progress, report/interview parsing, Step 5 interview fallbacks, and simulation-config placeholder labels: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, GraphBuilderService now persists English task-status strings for its initial worker milestones, Step 4 tool-output parsers accept both Chinese and English markers, zep_tools localizes deterministic interview-selection/question/summary fallback copy in English mode, and SimulationConfigGenerator now routes unknown entity/poster fallback labels through the active locale instead of leaking hardcoded English `Unknown` into zh-mode config output.",
       "triage_status": "covered",
-      "summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, graph-build worker progress, report/interview parsing, and Step 5 interview fallbacks: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, GraphBuilderService now persists English task-status strings for its initial worker milestones, Step 4 tool-output parsers accept both Chinese and English markers, and zep_tools now localizes deterministic interview-selection/question/summary fallback copy in English mode.",
+      "summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, graph-build worker progress, report/interview parsing, Step 5 interview fallbacks, and simulation-config placeholder labels: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, GraphBuilderService now persists English task-status strings for its initial worker milestones, Step 4 tool-output parsers accept both Chinese and English markers, zep_tools localizes deterministic interview-selection/question/summary fallback copy in English mode, and SimulationConfigGenerator now routes unknown entity/poster fallback labels through the active locale instead of leaking hardcoded English `Unknown` into zh-mode config output.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 8,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/8"
