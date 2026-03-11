@@ -108,6 +108,46 @@ def test_validate_and_process_normalizes_string_and_invalid_ontology_items():
     ]
 
 
+def test_validate_and_process_normalizes_zep_schema_names():
+    generator = OntologyGenerator(llm_client=object())
+
+    result = generator._validate_and_process(
+        {
+            "entity_types": [
+                {"name": "university_student", "description": "Student actor"},
+                {"name": "govAgency", "description": "Agency actor"},
+                {"name": "person", "description": "fallback"},
+                {"name": "organization", "description": "fallback"},
+            ],
+            "edge_types": [
+                {
+                    "name": "worksFor",
+                    "description": "Employment relationship",
+                    "source_targets": [
+                        {"source": "university_student", "target": "govAgency"},
+                    ],
+                }
+            ],
+        }
+    )
+
+    entity_names = {entity["name"] for entity in result["entity_types"]}
+    assert "UniversityStudent" in entity_names
+    assert "GovAgency" in entity_names
+    assert "Person" in entity_names
+    assert "Organization" in entity_names
+    assert result["edge_types"] == [
+        {
+            "name": "WORKS_FOR",
+            "description": "Employment relationship",
+            "source_targets": [
+                {"source": "UniversityStudent", "target": "GovAgency"},
+            ],
+            "attributes": [],
+        }
+    ]
+
+
 def test_generate_requests_english_analysis_summary_when_locale_is_en():
     llm = FakeLLM()
     generator = OntologyGenerator(llm_client=llm, locale="en")

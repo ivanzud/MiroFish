@@ -4,6 +4,7 @@
 """
 
 import json
+import re
 from typing import Dict, Any, List, Optional
 from ..utils.llm_client import LLMClient
 
@@ -462,6 +463,8 @@ Please design entity types and relationship types suitable for this social-opini
                 }
             if not isinstance(entity, dict):
                 continue
+            if entity.get("name"):
+                entity["name"] = self._to_pascal_case(entity["name"])
             if "attributes" not in entity:
                 entity["attributes"] = []
             if "examples" not in entity:
@@ -482,8 +485,17 @@ Please design entity types and relationship types suitable for this social-opini
                 }
             if not isinstance(edge, dict):
                 continue
+            if edge.get("name"):
+                edge["name"] = self._to_screaming_snake_case(edge["name"])
             if "source_targets" not in edge:
                 edge["source_targets"] = []
+            for source_target in edge["source_targets"]:
+                if not isinstance(source_target, dict):
+                    continue
+                if source_target.get("source"):
+                    source_target["source"] = self._to_pascal_case(source_target["source"])
+                if source_target.get("target"):
+                    source_target["target"] = self._to_pascal_case(source_target["target"])
             if "attributes" not in edge:
                 edge["attributes"] = []
             if len(edge.get("description", "")) > 100:
@@ -550,6 +562,32 @@ Please design entity types and relationship types suitable for this social-opini
             result["edge_types"] = result["edge_types"][:MAX_EDGE_TYPES]
         
         return result
+
+    @staticmethod
+    def _to_pascal_case(value: Any) -> str:
+        text = str(value).strip()
+        if not text:
+            return ""
+
+        normalized = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", text)
+        parts = [part for part in re.split(r"[^A-Za-z0-9]+", normalized) if part]
+        converted = []
+        for part in parts:
+            if part.isupper() or part.islower():
+                converted.append(part.lower().capitalize())
+            else:
+                converted.append(part[:1].upper() + part[1:])
+        return "".join(converted)
+
+    @staticmethod
+    def _to_screaming_snake_case(value: Any) -> str:
+        text = str(value).strip()
+        if not text:
+            return ""
+
+        normalized = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", text)
+        parts = [part.upper() for part in re.split(r"[^A-Za-z0-9]+", normalized) if part]
+        return "_".join(parts)
     
     def generate_python_code(self, ontology: Dict[str, Any]) -> str:
         """
