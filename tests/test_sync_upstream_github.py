@@ -536,6 +536,109 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(sorted(mirrors), [145])
         self.assertEqual(mirrors[145]["number"], 12)
 
+    def test_sync_fork_issue_mirror_closes_closed_upstream_issue(self):
+        issue = {
+            "number": 145,
+            "title": "Duplicate entity nodes",
+            "url": "https://example.test/issues/145",
+            "state": "closed",
+            "updated_at": "2026-03-11T15:00:00Z",
+            "labels": [],
+            "author": "alice",
+            "body_excerpt": "Body",
+            "recent_comments": [],
+        }
+        current = {
+            "number": 8,
+            "title": "[Upstream #145] Duplicate entity nodes",
+            "body": sync_upstream_github.build_mirror_issue_body(
+                "666ghj/MiroFish",
+                {**issue, "state": "open"},
+            ),
+            "state": "OPEN",
+        }
+
+        with patch.object(sync_upstream_github, "run_gh_command") as mocked_run:
+            sync_upstream_github.sync_fork_issue_mirror(
+                "ivanzud/MiroFish",
+                "666ghj/MiroFish",
+                issue,
+                current,
+            )
+
+        self.assertEqual(mocked_run.call_args_list[0].args[0][:4], ["issue", "edit", "-R", "ivanzud/MiroFish"])
+        self.assertEqual(
+            mocked_run.call_args_list[1].args[0],
+            ["issue", "close", "-R", "ivanzud/MiroFish", "8", "--reason", "completed"],
+        )
+
+    def test_sync_fork_issue_mirror_closes_new_closed_issue_after_create(self):
+        issue = {
+            "number": 145,
+            "title": "Duplicate entity nodes",
+            "url": "https://example.test/issues/145",
+            "state": "closed",
+            "updated_at": "2026-03-11T15:00:00Z",
+            "labels": [],
+            "author": "alice",
+            "body_excerpt": "Body",
+            "recent_comments": [],
+        }
+
+        with patch.object(
+            sync_upstream_github,
+            "run_gh_command",
+            side_effect=["https://github.com/ivanzud/MiroFish/issues/88\n", ""],
+        ) as mocked_run:
+            sync_upstream_github.sync_fork_issue_mirror(
+                "ivanzud/MiroFish",
+                "666ghj/MiroFish",
+                issue,
+                None,
+            )
+
+        self.assertEqual(mocked_run.call_args_list[0].args[0][:4], ["issue", "create", "-R", "ivanzud/MiroFish"])
+        self.assertEqual(
+            mocked_run.call_args_list[1].args[0],
+            ["issue", "close", "-R", "ivanzud/MiroFish", "88", "--reason", "completed"],
+        )
+
+    def test_sync_fork_issue_mirror_reopens_when_upstream_reopens(self):
+        issue = {
+            "number": 145,
+            "title": "Duplicate entity nodes",
+            "url": "https://example.test/issues/145",
+            "state": "open",
+            "updated_at": "2026-03-11T15:00:00Z",
+            "labels": [],
+            "author": "alice",
+            "body_excerpt": "Body",
+            "recent_comments": [],
+        }
+        current = {
+            "number": 8,
+            "title": "[Upstream #145] Duplicate entity nodes",
+            "body": sync_upstream_github.build_mirror_issue_body(
+                "666ghj/MiroFish",
+                {**issue, "state": "closed"},
+            ),
+            "state": "CLOSED",
+        }
+
+        with patch.object(sync_upstream_github, "run_gh_command") as mocked_run:
+            sync_upstream_github.sync_fork_issue_mirror(
+                "ivanzud/MiroFish",
+                "666ghj/MiroFish",
+                issue,
+                current,
+            )
+
+        self.assertEqual(mocked_run.call_args_list[0].args[0][:4], ["issue", "edit", "-R", "ivanzud/MiroFish"])
+        self.assertEqual(
+            mocked_run.call_args_list[1].args[0],
+            ["issue", "reopen", "-R", "ivanzud/MiroFish", "8"],
+        )
+
     def test_mirror_issues_to_fork_creates_and_updates_issue_mirrors(self):
         issues = [
             {
@@ -567,6 +670,7 @@ class SyncUpstreamGithubTests(unittest.TestCase):
                 "title": "[Upstream #133] stale title",
                 "body": "stale body",
                 "url": "https://example.test/issues/7",
+                "state": "OPEN",
             }
         }
         existing_after = {
@@ -575,12 +679,14 @@ class SyncUpstreamGithubTests(unittest.TestCase):
                 "title": "[Upstream #133] Backend root confusion",
                 "body": sync_upstream_github.build_mirror_issue_body("666ghj/MiroFish", issues[1]),
                 "url": "https://example.test/issues/7",
+                "state": "OPEN",
             },
             145: {
                 "number": 8,
                 "title": "[Upstream #145] Duplicate entity nodes",
                 "body": sync_upstream_github.build_mirror_issue_body("666ghj/MiroFish", issues[0]),
                 "url": "https://example.test/issues/8",
+                "state": "OPEN",
             },
         }
 

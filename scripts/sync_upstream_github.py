@@ -478,6 +478,24 @@ def run_gh_command(args: list[str], input_text: str | None = None) -> str:
     return result.stdout
 
 
+def normalize_issue_state(state: object) -> str:
+    lowered = str(state or "").strip().lower()
+    if lowered in {"closed", "open"}:
+        return lowered
+    return "open"
+
+
+def extract_issue_number_from_gh_output(output: str | None) -> int | None:
+    if not output:
+        return None
+
+    match = re.search(r"/issues/(\d+)(?:\s|$)", output.strip())
+    if not match:
+        return None
+
+    return int(match.group(1))
+
+
 def list_fork_issue_mirrors(fork_repo: str, upstream_repo: str) -> dict[int, dict[str, object]]:
     payload = run_gh_command(
         [
@@ -508,6 +526,99 @@ def list_fork_issue_mirrors(fork_repo: str, upstream_repo: str) -> dict[int, dic
     return mirrors
 
 
+def sync_fork_issue_mirror(
+    fork_repo: str,
+    upstream_repo: str,
+    issue: dict[str, object],
+    current: dict[str, object] | None,
+) -> None:
+    desired_title = build_mirror_issue_title(issue)
+    desired_body = build_mirror_issue_body(upstream_repo, issue)
+    desired_state = normalize_issue_state(issue.get("state"))
+
+    if current is None:
+        created_output = run_gh_command(
+            [
+                "issue",
+                "create",
+                "-R",
+                fork_repo,
+                "--title",
+                desired_title,
+                "--body-file",
+                "-",
+            ],
+            input_text=desired_body,
+        )
+        if desired_state == "closed":
+            created_number = extract_issue_number_from_gh_output(created_output)
+            if created_number is None:
+                refreshed = list_fork_issue_mirrors(fork_repo, upstream_repo)
+                created_issue = refreshed.get(int(issue["number"]))
+                if created_issue is None:
+                    raise RuntimeError(
+                        f"Created fork issue mirror for upstream #{issue['number']} but could not resolve its issue number"
+                    )
+                created_number = int(created_issue["number"])
+            run_gh_command(
+                [
+                    "issue",
+                    "close",
+                    "-R",
+                    fork_repo,
+                    str(created_number),
+                    "--reason",
+                    "completed",
+                ]
+            )
+        return
+
+    current_number = str(current["number"])
+    current_state = normalize_issue_state(current.get("state"))
+    if current.get("title") != desired_title or (current.get("body") or "").rstrip() != desired_body.rstrip():
+        run_gh_command(
+            [
+                "issue",
+                "edit",
+                "-R",
+                fork_repo,
+                current_number,
+                "--title",
+                desired_title,
+                "--body-file",
+                "-",
+            ],
+            input_text=desired_body,
+        )
+
+    if current_state == desired_state:
+        return
+
+    if desired_state == "open":
+        run_gh_command(
+            [
+                "issue",
+                "reopen",
+                "-R",
+                fork_repo,
+                current_number,
+            ]
+        )
+        return
+
+    run_gh_command(
+        [
+            "issue",
+            "close",
+            "-R",
+            fork_repo,
+            current_number,
+            "--reason",
+            "completed",
+        ]
+    )
+
+
 def attach_fork_issue_mirror_metadata(
     issues: list[dict[str, object]],
     fork_issue_map: dict[int, dict[str, object]],
@@ -535,41 +646,11 @@ def mirror_issues_to_fork(
 ) -> list[dict[str, object]]:
     existing = list_fork_issue_mirrors(fork_repo, upstream_repo)
     for issue in issues:
-        desired_title = build_mirror_issue_title(issue)
-        desired_body = build_mirror_issue_body(upstream_repo, issue)
-        current = existing.get(int(issue["number"]))
-        if current is None:
-            run_gh_command(
-                [
-                    "issue",
-                    "create",
-                    "-R",
-                    fork_repo,
-                    "--title",
-                    desired_title,
-                    "--body-file",
-                    "-",
-                ],
-                input_text=desired_body,
-            )
-            continue
-
-        if current.get("title") == desired_title and (current.get("body") or "").rstrip() == desired_body.rstrip():
-            continue
-
-        run_gh_command(
-            [
-                "issue",
-                "edit",
-                "-R",
-                fork_repo,
-                str(current["number"]),
-                "--title",
-                desired_title,
-                "--body-file",
-                "-",
-            ],
-            input_text=desired_body,
+        sync_fork_issue_mirror(
+            fork_repo,
+            upstream_repo,
+            issue,
+            existing.get(int(issue["number"])),
         )
 
     return attach_fork_issue_mirror_metadata(
