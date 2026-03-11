@@ -60,7 +60,8 @@ Example:
 ```env
 OPENAI_API_KEY=your_api_key
 OPENAI_BASE_URL=https://api.openai.com/v1
-OPENAI_MODEL=gpt-4.1
+OPENAI_API_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-4.1-mini
 
 ZEP_API_KEY=your_zep_key
 ```
@@ -73,14 +74,31 @@ LLM_BASE_URL=https://api.openai.com/v1
 LLM_MODEL_NAME=gpt-4.1
 ```
 
-This also works with OpenAI-compatible gateways such as DashScope, LM Studio, Ollama, or self-hosted proxies if they expose the same API surface.
+The backend accepts both the project-specific `LLM_*` variables and the standard `OPENAI_*` aliases, so you can point MiroFish directly at OpenAI, Codex-compatible gateways, LM Studio, Ollama, DashScope, or any other OpenAI-compatible backend without extra code changes or a separate `LLM_PROVIDER` flag.
+
+Common compatible backend examples:
+
+```env
+# OpenAI / Codex-compatible gateway
+OPENAI_API_KEY=your_api_key
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_API_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-4.1-mini
+
+# Alibaba DashScope Coding Plan
+OPENAI_API_KEY=your_dashscope_key
+OPENAI_API_BASE_URL=https://coding.dashscope.aliyuncs.com/v1
+OPENAI_MODEL=qwen3.5-plus
+```
 
 How to verify that MiroFish detected the direct OpenAI-compatible path:
 
 - Visit `http://localhost:5001/health` to confirm the backend is running.
 - Or run `npm run check:backend-config` to print the same non-sensitive config-status JSON without starting the server.
 - Then open `http://localhost:5001/api/graph/config/status`. The JSON payload should report `llm.backend_mode = openai_compatible`.
-- `summary.llm.sources` shows whether MiroFish resolved `LLM_*` or `OPENAI_*` variables, so you can confirm that a Codex/OpenAI-compatible gateway is wired correctly without adding `LLM_PROVIDER`.
+- `summary.llm.sources` shows whether MiroFish resolved `LLM_*` or `OPENAI_*` variables and whether the active base URL came from `OPENAI_BASE_URL` or `OPENAI_API_BASE_URL`, so you can confirm that a Codex/OpenAI-compatible gateway is wired correctly without adding `LLM_PROVIDER`.
+
+If `http://localhost:5001` returns `404`, that usually does not mean the backend failed to start. The backend root is API-only; use `http://localhost:5001/health` for a health check instead.
 
 ## Workflow
 
