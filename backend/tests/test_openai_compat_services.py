@@ -16,7 +16,11 @@ from app.services.graph_builder import GraphBuilderService
 from app.services import simulation_config_generator as simulation_config_generator_module
 from app.services.simulation_config_generator import SimulationConfigGenerator
 from app.services.zep_entity_reader import ZepEntityReader
-from app.services.zep_graph_memory_updater import AgentActivity, ZepGraphMemoryUpdater
+from app.services.zep_graph_memory_updater import (
+    AgentActivity,
+    ZepGraphMemoryManager,
+    ZepGraphMemoryUpdater,
+)
 from app.services.zep_tools import ZepToolsService
 
 
@@ -495,3 +499,79 @@ def test_agent_activity_episode_text_respects_english_locale():
         activity.to_episode_text()
         == 'Alice: quoted Bob\'s post "Launch day is tomorrow", adding: "I agree"'
     )
+
+
+def test_zep_graph_memory_updater_localizes_english_runtime_logs(monkeypatch):
+    info_messages = []
+    warning_messages = []
+    error_messages = []
+    debug_messages = []
+
+    fake_logger = SimpleNamespace(
+        info=info_messages.append,
+        warning=warning_messages.append,
+        error=error_messages.append,
+        debug=debug_messages.append,
+    )
+    monkeypatch.setattr("app.services.zep_graph_memory_updater.logger", fake_logger)
+    monkeypatch.setattr("app.services.zep_graph_memory_updater.Config.ZEP_API_KEY", "zep-test-key")
+
+    add_calls = []
+
+    class FakeGraph:
+        def add(self, **kwargs):
+            add_calls.append(kwargs)
+
+    class FakeThread:
+        def __init__(self, target, daemon, name):
+            self.target = target
+            self.daemon = daemon
+            self.name = name
+
+        def start(self):
+            return None
+
+        def is_alive(self):
+            return False
+
+        def join(self, timeout=None):
+            return None
+
+    monkeypatch.setattr(
+        "app.services.zep_graph_memory_updater.Zep",
+        lambda api_key: SimpleNamespace(graph=FakeGraph()),
+    )
+    monkeypatch.setattr("app.services.zep_graph_memory_updater.threading.Thread", FakeThread)
+
+    activity = AgentActivity(
+        platform="twitter",
+        agent_id=1,
+        agent_name="Alice",
+        action_type="CREATE_POST",
+        action_args={"content": "Launch day"},
+        round_num=1,
+        timestamp="2026-03-11T12:00:00",
+        locale="en",
+    )
+
+    updater = ZepGraphMemoryUpdater("graph_123", locale="en")
+    updater.start()
+    updater.add_activity(activity)
+    updater._send_batch_activities([activity], "twitter")
+    updater.stop()
+
+    ZepGraphMemoryManager._updaters = {}
+    ZepGraphMemoryManager._stop_all_done = False
+    ZepGraphMemoryManager.create_updater("sim-1", "graph_456", locale="en")
+    ZepGraphMemoryManager.stop_updater("sim-1")
+
+    combined_messages = info_messages + warning_messages + error_messages + debug_messages
+
+    assert add_calls
+    assert any("ZepGraphMemoryUpdater initialized" in message for message in info_messages)
+    assert any("ZepGraphMemoryUpdater started" in message for message in info_messages)
+    assert any("Queued Zep activity" in message for message in debug_messages)
+    assert any("Sent 1 World 1 activities to graph graph_123" in message for message in info_messages)
+    assert any("Created graph memory updater: simulation_id=sim-1, graph_id=graph_456" in message for message in info_messages)
+    assert any("Stopped graph memory updater: simulation_id=sim-1" in message for message in info_messages)
+    assert all(not any("\u4e00" <= ch <= "\u9fff" for ch in message) for message in combined_messages)
