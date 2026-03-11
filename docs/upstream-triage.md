@@ -33,6 +33,7 @@ Last refreshed: `2026-03-11`
 - `#126` Safe subset landed locally: backend config now exposes structured validation helpers and a non-sensitive config summary, while malformed numeric env vars no longer crash module import before validation can report them.
 - `#119` Safe subset landed locally: the frontend now has a persisted `中文` / `English` language toggle for the home shell, main workflow header, and history modal, while API calls include `X-Locale` for future backend localization without forcing the larger upstream backend/UI refactor onto this branch.
 - Follow-up localization work now also covers the graph-build process view and the Step 3 simulation monitor, so English mode is no longer limited to the shell/history surfaces while broader Step 4/5 and backend-message localization remains open.
+- Follow-up localization work now also covers the Step 4 report-generation shell and report view chrome, including retry/error/status copy and the report-page header controls, so English mode stays coherent through report generation while deeper Step 4/5 content localization remains open.
 - OpenAI-compatible backend aliases now work in the standalone simulation runners too, so `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` can be used directly outside the Flask app path.
 - Objective 7 verification status: backend config, standalone runners, and both READMEs now explicitly support direct OpenAI / Codex-compatible / OpenAI-compatible backends without requiring a project-specific raw-key-only setup.
 - Backend config now also accepts `OPENAI_API_BASE_URL`, matching the environment variable exported by the standalone simulation runners and some OpenAI-compatible tooling, with regression coverage in the lightweight backend test path.
@@ -40,6 +41,7 @@ Last refreshed: `2026-03-11`
 - Upstream issue `#32` is now covered end-to-end locally: when an OpenAI-compatible backend rejects `response_format={"type":"json_object"}`, `OasisProfileGenerator` and `SimulationConfigGenerator` retry without JSON mode and still parse the returned JSON payload. That closes the remaining high-signal backend compatibility gap for direct Codex/OpenAI-compatible setups.
 - `#114` Fix API base URL fallback is already superseded locally by the current frontend API client, which now falls back to the runtime origin and also supports `VITE_API_TIMEOUT`.
 - `#93` Hardcoded frontend API base URL is now fully addressed locally: `Process.vue` uses the shared frontend API resolver instead of embedding a separate `http://localhost:5001` fallback in network-error messages.
+- `#101` Robust JSON helper utilities are now mirrored into the fork for visibility, but the upstream branch predates substantial local/frontend/backend hardening on this branch; a blind cherry-pick would effectively revert large amounts of newer work, and the useful intent is already covered locally by broader JSON payload extraction and compatibility fixes.
 
 ## Deferred for later review
 
@@ -78,6 +80,6 @@ Last refreshed: `2026-03-11`
 ## Practical mirror strategy for the fork
 
 - Mirror the highest-signal upstream PR branches to the fork when they are under active review.
-- Fork visibility now includes `origin/mirror/upstream-pr-105`, `origin/mirror/upstream-pr-108`, `origin/mirror/upstream-pr-118`, `origin/mirror/upstream-pr-126`, `origin/mirror/upstream-pr-130`, `origin/mirror/upstream-pr-131`, and `origin/mirror/upstream-pr-132` in addition to the previously mirrored review branches.
+- Fork visibility now includes `origin/mirror/upstream-pr-101`, `origin/mirror/upstream-pr-105`, `origin/mirror/upstream-pr-108`, `origin/mirror/upstream-pr-118`, `origin/mirror/upstream-pr-126`, `origin/mirror/upstream-pr-130`, `origin/mirror/upstream-pr-131`, and `origin/mirror/upstream-pr-132` in addition to the previously mirrored review branches.
 - Keep detailed execution tracking in local beads issues to avoid spamming the fork with every upstream item.
 - Use `scripts/sync_upstream_github.py` to refresh a machine-readable snapshot and a concise markdown summary before each new evolve pass.

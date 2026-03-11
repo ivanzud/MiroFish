@@ -58,7 +58,7 @@
                       <path d="M12 2a10 10 0 0 1 10 10" stroke-width="4" stroke="#4B5563" stroke-linecap="round"></path>
                     </svg>
                   </div>
-                  <span class="loading-text">正在生成{{ section.title }}...</span>
+                  <span class="loading-text">{{ t('step4.sectionGenerating', { title: section.title }) }}</span>
                 </div>
               </div>
             </div>
@@ -74,10 +74,10 @@
               <circle cx="12" cy="16" r="1"></circle>
             </svg>
           </div>
-          <h2 class="failed-title">Report generation failed</h2>
+          <h2 class="failed-title">{{ t('step4.failedTitle') }}</h2>
           <p class="failed-text">{{ failureMessage }}</p>
           <button class="retry-report-btn" :disabled="isRetrying || !simulationId" @click="retryReportGeneration">
-            <span>{{ isRetrying ? 'Retrying...' : 'Retry report generation' }}</span>
+            <span>{{ isRetrying ? t('step4.retrying') : t('step4.retryReport') }}</span>
           </button>
         </div>
 
@@ -88,7 +88,7 @@
             <div class="waiting-ring"></div>
             <div class="waiting-ring"></div>
           </div>
-          <span class="waiting-text">Waiting for Report Agent...</span>
+          <span class="waiting-text">{{ t('step4.waitingForAgent') }}</span>
         </div>
       </div>
 
@@ -105,15 +105,15 @@
         <div class="workflow-overview" v-if="agentLogs.length > 0 || reportOutline || isFailed">
           <div class="workflow-metrics">
             <div class="metric">
-              <span class="metric-label">Sections</span>
+              <span class="metric-label">{{ t('step4.metrics.sections') }}</span>
               <span class="metric-value mono">{{ completedSections }}/{{ totalSections }}</span>
             </div>
             <div class="metric">
-              <span class="metric-label">Elapsed</span>
+              <span class="metric-label">{{ t('step4.metrics.elapsed') }}</span>
               <span class="metric-value mono">{{ formatElapsedTime }}</span>
             </div>
             <div class="metric">
-              <span class="metric-label">Tools</span>
+              <span class="metric-label">{{ t('step4.metrics.tools') }}</span>
               <span class="metric-value mono">{{ totalToolCalls }}</span>
             </div>
             <div class="metric metric-right">
@@ -123,11 +123,11 @@
 
           <div v-if="isFailed" class="failure-banner">
             <div class="failure-banner-copy">
-              <span class="failure-banner-title">Generation stopped</span>
+              <span class="failure-banner-title">{{ t('step4.generationStopped') }}</span>
               <span class="failure-banner-text">{{ failureMessage }}</span>
             </div>
             <button class="failure-banner-btn" :disabled="isRetrying || !simulationId" @click="retryReportGeneration">
-              {{ isRetrying ? 'Retrying...' : 'Retry' }}
+              {{ isRetrying ? t('step4.retrying') : t('step4.retryShort') }}
             </button>
           </div>
 
@@ -155,7 +155,7 @@
 
           <!-- Next Step Button - 在完成后显示 -->
           <button v-if="isComplete" class="next-step-btn" @click="goToInteraction">
-            <span>进入深度互动</span>
+            <span>{{ t('step4.goToInteraction') }}</span>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
@@ -192,11 +192,11 @@
                   <!-- Report Start -->
                   <template v-if="log.action === 'report_start'">
                     <div class="info-row">
-                      <span class="info-key">Simulation</span>
+                      <span class="info-key">{{ t('step4.simulation') }}</span>
                       <span class="info-val mono">{{ log.details?.simulation_id }}</span>
                     </div>
                     <div class="info-row" v-if="log.details?.simulation_requirement">
-                      <span class="info-key">Requirement</span>
+                      <span class="info-key">{{ t('step4.requirement') }}</span>
                       <span class="info-val">{{ log.details.simulation_requirement }}</span>
                     </div>
                   </template>
@@ -208,7 +208,7 @@
                   <template v-if="log.action === 'planning_complete'">
                     <div class="status-message success">{{ log.details?.message }}</div>
                     <div class="outline-badge" v-if="log.details?.outline">
-                      {{ log.details.outline.sections?.length || 0 }} sections planned
+                      {{ t('step4.sectionsPlanned', { count: log.details.outline.sections?.length || 0 }) }}
                     </div>
                   </template>
 
@@ -335,10 +335,10 @@
                     <div class="llm-meta">
                       <span class="meta-tag">Iteration {{ log.details?.iteration }}</span>
                       <span class="meta-tag" :class="{ active: log.details?.has_tool_calls }">
-                        Tools: {{ log.details?.has_tool_calls ? 'Yes' : 'No' }}
+                        {{ t('step4.toolsLabel') }}: {{ log.details?.has_tool_calls ? t('step4.yes') : t('step4.no') }}
                       </span>
                       <span class="meta-tag" :class="{ active: log.details?.has_final_answer, 'final-answer': log.details?.has_final_answer }">
-                        Final: {{ log.details?.has_final_answer ? 'Yes' : 'No' }}
+                        {{ t('step4.finalLabel') }}: {{ log.details?.has_final_answer ? t('step4.yes') : t('step4.no') }}
                       </span>
                     </div>
                     <!-- 当是最终答案时，显示特殊提示 -->
@@ -346,7 +346,7 @@
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
-                      <span>Section "{{ log.section_title }}" content generated</span>
+                      <span>{{ t('step4.sectionContentGenerated', { title: log.section_title }) }}</span>
                     </div>
                     <div v-if="expandedLogs.has(log.timestamp) && log.details?.response" class="llm-content">
                       <pre>{{ log.details.response }}</pre>
@@ -360,7 +360,7 @@
                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                         <polyline points="22 4 12 14.01 9 11.01"></polyline>
                       </svg>
-                      <span>Report Generation Complete</span>
+                      <span>{{ t('step4.reportGenerationComplete') }}</span>
                     </div>
                   </template>
                 </div>
@@ -373,17 +373,17 @@
                   <div class="footer-actions">
                     <!-- Tool Call: Show/Hide Params -->
                     <button v-if="log.action === 'tool_call' && log.details?.parameters" class="action-btn" @click.stop="toggleLogExpand(log)">
-                      {{ expandedLogs.has(log.timestamp) ? 'Hide Params' : 'Show Params' }}
+                      {{ expandedLogs.has(log.timestamp) ? t('step4.hideParams') : t('step4.showParams') }}
                     </button>
                     
                     <!-- Tool Result: Raw/Structured View -->
                     <button v-if="log.action === 'tool_result'" class="action-btn" @click.stop="toggleRawResult(log.timestamp, $event)">
-                      {{ showRawResult[log.timestamp] ? 'Structured View' : 'Raw Output' }}
+                      {{ showRawResult[log.timestamp] ? t('step4.structuredView') : t('step4.rawOutput') }}
                     </button>
                     
                     <!-- LLM Response: Show/Hide Response -->
                     <button v-if="log.action === 'llm_response' && log.details?.response" class="action-btn" @click.stop="toggleLogExpand(log)">
-                      {{ expandedLogs.has(log.timestamp) ? 'Hide Response' : 'Show Response' }}
+                      {{ expandedLogs.has(log.timestamp) ? t('step4.hideResponse') : t('step4.showResponse') }}
                     </button>
                   </div>
                 </div>
@@ -394,7 +394,7 @@
           <!-- Empty State -->
           <div v-if="agentLogs.length === 0 && !isComplete && !isFailed" class="workflow-empty">
             <div class="empty-pulse"></div>
-            <span>Waiting for agent activity...</span>
+            <span>{{ t('step4.waitingForActivity') }}</span>
           </div>
         </div>
       </div>
@@ -403,7 +403,7 @@
     <!-- Bottom Console Logs -->
     <div class="console-logs">
       <div class="log-header">
-        <span class="log-title">CONSOLE OUTPUT</span>
+        <span class="log-title">{{ t('step4.consoleOutput') }}</span>
         <span class="log-id">{{ reportId || 'NO_REPORT' }}</span>
       </div>
       <div class="log-content" ref="logContent">
@@ -418,9 +418,11 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, h, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { generateReport, getAgentLog, getConsoleLog, getReport } from '../api/report'
 
 const router = useRouter()
+const { t } = useI18n()
 
 const props = defineProps({
   reportId: String,
@@ -468,7 +470,7 @@ const retryReportGeneration = async () => {
   if (!props.simulationId || isRetrying.value) return
 
   isRetrying.value = true
-  addLog(`重新生成报告: ${props.simulationId}`)
+  addLog(t('step4.retryLog', { id: props.simulationId }))
 
   try {
     const res = await generateReport({
@@ -481,9 +483,9 @@ const retryReportGeneration = async () => {
       return
     }
 
-    addLog(`重新生成报告失败: ${res.error || '未知错误'}`)
+    addLog(t('step4.retryFailed', { message: res.error || t('process.unknownError') }))
   } catch (err) {
-    addLog(`重新生成报告异常: ${err.message}`)
+    addLog(t('step4.retryException', { message: err.message }))
   } finally {
     isRetrying.value = false
   }
@@ -1790,16 +1792,16 @@ const statusClass = computed(() => {
 })
 
 const statusText = computed(() => {
-  if (isFailed.value) return 'Failed'
-  if (isComplete.value) return 'Completed'
-  if (agentLogs.value.length > 0) return 'Generating...'
-  return 'Waiting'
+  if (isFailed.value) return t('step4.status.failed')
+  if (isComplete.value) return t('step4.status.completed')
+  if (agentLogs.value.length > 0) return t('step4.status.generating')
+  return t('step4.status.waiting')
 })
 
 const isFailed = computed(() => reportStatus.value === 'failed')
 
 const failureMessage = computed(() => {
-  return reportError.value || 'The backend stopped before the report finished. Retry with the same simulation to generate a fresh report.'
+  return reportError.value || t('step4.failureFallback')
 })
 
 const totalSections = computed(() => {
@@ -1865,7 +1867,7 @@ const activeStep = computed(() => {
   if (doneSteps.length > 0) return doneSteps[doneSteps.length - 1]
   
   // 否则返回第一个步骤
-  return steps[0] || { noLabel: '--', title: '等待开始', status: 'todo', meta: '' }
+  return steps[0] || { noLabel: '--', title: t('step4.waitingToStart'), status: 'todo', meta: '' }
 })
 
 const workflowSteps = computed(() => {
@@ -1876,9 +1878,9 @@ const workflowSteps = computed(() => {
   steps.push({
     key: 'planning',
     noLabel: 'PL',
-    title: 'Planning / Outline',
+    title: t('step4.planningOutline'),
     status: planningStatus,
-    meta: planningStatus === 'active' ? 'IN PROGRESS' : ''
+    meta: planningStatus === 'active' ? t('step4.inProgress') : ''
   })
 
   // Sections (if outline exists)
@@ -1894,7 +1896,7 @@ const workflowSteps = computed(() => {
       noLabel: String(idx).padStart(2, '0'),
       title: section.title,
       status,
-      meta: status === 'active' ? 'IN PROGRESS' : ''
+      meta: status === 'active' ? t('step4.inProgress') : ''
     })
   })
 
@@ -1903,9 +1905,9 @@ const workflowSteps = computed(() => {
   steps.push({
     key: 'complete',
     noLabel: 'OK',
-    title: 'Complete',
+    title: t('step4.complete'),
     status: completeStatus,
-    meta: completeStatus === 'active' ? 'FINALIZING' : ''
+    meta: completeStatus === 'active' ? t('step4.finalizing') : ''
   })
 
   return steps
@@ -2080,16 +2082,16 @@ const getConnectorClass = (log, idx, total) => {
 
 const getActionLabel = (action) => {
   const labels = {
-    'report_start': 'Report Started',
-    'planning_start': 'Planning',
-    'planning_complete': 'Plan Complete',
-    'section_start': 'Section Start',
-    'section_content': 'Content Ready',
-    'section_complete': 'Section Done',
-    'tool_call': 'Tool Call',
-    'tool_result': 'Tool Result',
-    'llm_response': 'LLM Response',
-    'report_complete': 'Complete'
+    'report_start': t('step4.actions.reportStart'),
+    'planning_start': t('step4.actions.planning'),
+    'planning_complete': t('step4.actions.planComplete'),
+    'section_start': t('step4.actions.sectionStart'),
+    'section_content': t('step4.actions.contentReady'),
+    'section_complete': t('step4.actions.sectionDone'),
+    'tool_call': t('step4.actions.toolCall'),
+    'tool_result': t('step4.actions.toolResult'),
+    'llm_response': t('step4.actions.llmResponse'),
+    'report_complete': t('step4.actions.complete')
   }
   return labels[action] || action
 }
@@ -2269,7 +2271,7 @@ const stopPolling = () => {
 // Lifecycle
 onMounted(() => {
   if (props.reportId) {
-    addLog(`Report Agent initialized: ${props.reportId}`)
+    addLog(t('step4.reportAgentInitialized', { id: props.reportId }))
     startPolling()
   }
 })
