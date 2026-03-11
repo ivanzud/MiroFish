@@ -88,6 +88,22 @@ class SequenceSectionLLM(FakeLLM):
         return self.responses.pop(0)
 
 
+class SequenceChatLLM(FakeLLM):
+    def __init__(self, responses):
+        super().__init__()
+        self.responses = list(responses)
+        self.calls = []
+
+    def chat(self, messages, temperature, max_tokens=None, response_format=None):
+        snapshot = [{"role": item["role"], "content": item["content"]} for item in messages]
+        self.calls.append(snapshot)
+        self.messages = snapshot
+        self.temperature = temperature
+        if not self.responses:
+            raise AssertionError("SequenceChatLLM ran out of scripted responses")
+        return self.responses.pop(0)
+
+
 class FakeZepTools:
     def get_simulation_context(self, graph_id, simulation_requirement):
         return {
@@ -402,3 +418,53 @@ def test_generate_report_localizes_console_log_messages_in_english(tmp_path, mon
     assert "Section saved: report_en_console/section_01.md" in console_output
     assert "Full report assembled: report_en_console" in console_output
     assert "Report generation completed: report_en_console" in console_output
+
+
+def test_chat_localizes_english_scaffolding_without_report(monkeypatch):
+    llm = SequenceChatLLM([
+        '<tool_call>{"name":"quick_search","parameters":{"query":"audience","limit":1}}</tool_call>',
+        "Final answer in English",
+    ])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    monkeypatch.setattr(ReportManager, "get_report_by_simulation", lambda simulation_id: None)
+    monkeypatch.setattr(agent, "_execute_tool", lambda tool_name, parameters: "audience evidence")
+
+    result = agent.chat("Summarize the current audience outlook")
+
+    assert result["response"] == "Final answer in English"
+    assert "(No report available yet)" in llm.calls[0][0]["content"]
+    assert "（暂无报告）" not in llm.calls[0][0]["content"]
+
+    observation_prompt = llm.calls[1][-1]["content"]
+    assert "[Tool quick_search result]" in observation_prompt
+    assert "Please answer the question concisely." in observation_prompt
+    assert "[quick_search结果]" not in observation_prompt
+
+
+def test_chat_localizes_english_truncated_report_marker(monkeypatch):
+    llm = SequenceChatLLM(["Final answer in English"])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+    report = type("ReportStub", (), {"markdown_content": "A" * 15010})()
+
+    monkeypatch.setattr(ReportManager, "get_report_by_simulation", lambda simulation_id: report)
+
+    agent.chat("Summarize the current audience outlook")
+
+    system_prompt = llm.calls[0][0]["content"]
+    assert "... [Report content truncated] ..." in system_prompt
+    assert "... [报告内容已截断] ..." not in system_prompt

@@ -890,9 +890,6 @@ CHAT_SYSTEM_PROMPT_TEMPLATE = """\
 - 优先给出结论，再解释原因
 - 最终回答必须使用 {report_language}"""
 
-CHAT_OBSERVATION_SUFFIX = "\n\n请简洁回答问题。"
-
-
 # ═══════════════════════════════════════════════════════════════
 # ReportAgent 主类
 # ═══════════════════════════════════════════════════════════════
@@ -1036,6 +1033,27 @@ class ReportAgent:
         return (
             self._text("(The response was empty)", "（响应为空）"),
             self._text("Please continue generating the content.", "请继续生成内容。"),
+        )
+
+    def _chat_report_placeholder(self) -> str:
+        return self._text("(No report available yet)", "（暂无报告）")
+
+    def _chat_report_truncated_marker(self) -> str:
+        return self._text(
+            "\n\n... [Report content truncated] ...",
+            "\n\n... [报告内容已截断] ...",
+        )
+
+    def _chat_tool_observation(self, tool_name: str, result: str) -> str:
+        return self._text(
+            f"[Tool {tool_name} result]\n{result}",
+            f"[{tool_name}结果]\n{result}",
+        )
+
+    def _chat_observation_suffix(self) -> str:
+        return self._text(
+            "\n\nPlease answer the question concisely.",
+            "\n\n请简洁回答问题。",
         )
 
     def _react_conflict_retry_message(self) -> str:
@@ -2231,13 +2249,13 @@ class ReportAgent:
                 # 限制报告长度，避免上下文过长
                 report_content = report.markdown_content[:15000]
                 if len(report.markdown_content) > 15000:
-                    report_content += "\n\n... [报告内容已截断] ..."
+                    report_content += self._chat_report_truncated_marker()
         except Exception as e:
             self._log("warning", "Failed to load report content: %s", "获取报告内容失败: %s", e)
-        
+
         system_prompt = CHAT_SYSTEM_PROMPT_TEMPLATE.format(
             simulation_requirement=self.simulation_requirement,
-            report_content=report_content if report_content else "（暂无报告）",
+            report_content=report_content if report_content else self._chat_report_placeholder(),
             tools_description=self._get_tools_description(),
             report_language=self._report_language_name(),
         )
@@ -2293,10 +2311,13 @@ class ReportAgent:
             
             # 将结果添加到消息
             messages.append({"role": "assistant", "content": response})
-            observation = "\n".join([f"[{r['tool']}结果]\n{r['result']}" for r in tool_results])
+            observation = "\n".join(
+                self._chat_tool_observation(r["tool"], r["result"])
+                for r in tool_results
+            )
             messages.append({
                 "role": "user",
-                "content": observation + CHAT_OBSERVATION_SUFFIX
+                "content": observation + self._chat_observation_suffix()
             })
         
         # 达到最大迭代，获取最终响应
