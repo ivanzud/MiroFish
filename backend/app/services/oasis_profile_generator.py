@@ -1031,63 +1031,120 @@ Important:
         
         if entity_type_lower in ["student", "alumni"]:
             return {
-                "bio": f"{entity_type} with interests in academics and social issues.",
-                "persona": f"{entity_name} is a {entity_type.lower()} who is actively engaged in academic and social discussions. They enjoy sharing perspectives and connecting with peers.",
+                "bio": self._text(
+                    f"{entity_type} with interests in academics and social issues.",
+                    f"关注学术与社会议题的{entity_type}",
+                ),
+                "persona": self._text(
+                    (
+                        f"{entity_name} is a {entity_type.lower()} who is actively engaged in academic "
+                        "and social discussions. They enjoy sharing perspectives and connecting with peers."
+                    ),
+                    f"{entity_name}是一名积极参与学术与社会讨论的{entity_type}，乐于分享观点并与同伴交流。",
+                ),
                 "age": random.randint(18, 30),
                 "gender": random.choice(["male", "female"]),
                 "mbti": random.choice(self.MBTI_TYPES),
                 "country": random.choice(self.COUNTRIES),
-                "profession": "Student",
-                "interested_topics": ["Education", "Social Issues", "Technology"],
+                "profession": self._text("Student", "学生"),
+                "interested_topics": self._text(
+                    ["Education", "Social Issues", "Technology"],
+                    ["教育", "社会议题", "科技"],
+                ),
             }
         
         elif entity_type_lower in ["publicfigure", "expert", "faculty"]:
             return {
-                "bio": f"Expert and thought leader in their field.",
-                "persona": f"{entity_name} is a recognized {entity_type.lower()} who shares insights and opinions on important matters. They are known for their expertise and influence in public discourse.",
+                "bio": self._text(
+                    "Expert and thought leader in their field.",
+                    "所在领域的专家与意见领袖。",
+                ),
+                "persona": self._text(
+                    (
+                        f"{entity_name} is a recognized {entity_type.lower()} who shares insights and opinions "
+                        "on important matters. They are known for their expertise and influence in public discourse."
+                    ),
+                    f"{entity_name}是一位受到认可的{entity_type}，会围绕重要议题分享见解与观点，并因其专业能力与公共影响力而受到关注。",
+                ),
                 "age": random.randint(35, 60),
                 "gender": random.choice(["male", "female"]),
                 "mbti": random.choice(["ENTJ", "INTJ", "ENTP", "INTP"]),
                 "country": random.choice(self.COUNTRIES),
-                "profession": entity_attributes.get("occupation", "Expert"),
-                "interested_topics": ["Politics", "Economics", "Culture & Society"],
+                "profession": entity_attributes.get("occupation") or self._text("Expert", "专家"),
+                "interested_topics": self._text(
+                    ["Politics", "Economics", "Culture & Society"],
+                    ["政治", "经济", "社会文化"],
+                ),
             }
         
         elif entity_type_lower in ["mediaoutlet", "socialmediaplatform"]:
             return {
-                "bio": f"Official account for {entity_name}. News and updates.",
-                "persona": f"{entity_name} is a media entity that reports news and facilitates public discourse. The account shares timely updates and engages with the audience on current events.",
+                "bio": self._text(
+                    f"Official account for {entity_name}. News and updates.",
+                    f"{entity_name}的官方账号，发布新闻与动态。",
+                ),
+                "persona": self._text(
+                    (
+                        f"{entity_name} is a media entity that reports news and facilitates public discourse. "
+                        "The account shares timely updates and engages with the audience on current events."
+                    ),
+                    f"{entity_name}是一个报道新闻并促进公共讨论的媒体主体，该账号会及时发布动态并与受众互动。",
+                ),
                 "age": 30,  # 机构虚拟年龄
                 "gender": "other",  # 机构使用other
                 "mbti": "ISTJ",  # 机构风格：严谨保守
                 "country": self._default_country(),
-                "profession": "Media",
-                "interested_topics": ["General News", "Current Events", "Public Affairs"],
+                "profession": self._text("Media", "媒体"),
+                "interested_topics": self._text(
+                    ["General News", "Current Events", "Public Affairs"],
+                    ["综合新闻", "时事动态", "公共事务"],
+                ),
             }
         
         elif entity_type_lower in ["university", "governmentagency", "ngo", "organization"]:
             return {
-                "bio": f"Official account of {entity_name}.",
-                "persona": f"{entity_name} is an institutional entity that communicates official positions, announcements, and engages with stakeholders on relevant matters.",
+                "bio": self._text(
+                    f"Official account of {entity_name}.",
+                    f"{entity_name}的官方账号。",
+                ),
+                "persona": self._text(
+                    (
+                        f"{entity_name} is an institutional entity that communicates official positions, "
+                        "announcements, and engages with stakeholders on relevant matters."
+                    ),
+                    f"{entity_name}是一个机构主体，会发布官方立场与公告，并围绕相关事务与利益相关方互动。",
+                ),
                 "age": 30,  # 机构虚拟年龄
                 "gender": "other",  # 机构使用other
                 "mbti": "ISTJ",  # 机构风格：严谨保守
                 "country": self._default_country(),
                 "profession": entity_type,
-                "interested_topics": ["Public Policy", "Community", "Official Announcements"],
+                "interested_topics": self._text(
+                    ["Public Policy", "Community", "Official Announcements"],
+                    ["公共政策", "社区事务", "官方公告"],
+                ),
             }
         
         else:
             # 默认人设
             return {
-                "bio": entity_summary[:150] if entity_summary else f"{entity_type}: {entity_name}",
-                "persona": entity_summary or f"{entity_name} is a {entity_type.lower()} participating in social discussions.",
+                "bio": entity_summary[:150] if entity_summary else self._text(
+                    f"{entity_type}: {entity_name}",
+                    f"{entity_type}：{entity_name}",
+                ),
+                "persona": entity_summary or self._text(
+                    f"{entity_name} is a {entity_type.lower()} participating in social discussions.",
+                    f"{entity_name}是一名参与社会讨论的{entity_type}。",
+                ),
                 "age": random.randint(25, 50),
                 "gender": random.choice(["male", "female"]),
                 "mbti": random.choice(self.MBTI_TYPES),
                 "country": random.choice(self.COUNTRIES),
                 "profession": entity_type,
-                "interested_topics": ["General", "Social Issues"],
+                "interested_topics": self._text(
+                    ["General", "Social Issues"],
+                    ["综合", "社会议题"],
+                ),
             }
     
     def set_graph_id(self, graph_id: str):

@@ -153,6 +153,43 @@ def test_oasis_profile_generator_english_rule_based_group_profile_uses_english_c
     )
 
     assert profile["country"] == "China"
+    assert profile["bio"] == "Official account of Example University."
+    assert profile["persona"].startswith("Example University is an institutional entity")
+    assert profile["interested_topics"] == ["Public Policy", "Community", "Official Announcements"]
+
+
+def test_oasis_profile_generator_rule_based_group_profile_uses_zh_copy():
+    generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+    generator.locale = "zh"
+
+    profile = generator._generate_profile_rule_based(
+        entity_name="示例大学",
+        entity_type="University",
+        entity_summary="一所研究型大学。",
+        entity_attributes={},
+    )
+
+    assert profile["country"] == "中国"
+    assert profile["bio"] == "示例大学的官方账号。"
+    assert profile["persona"].startswith("示例大学是一个机构主体")
+    assert profile["interested_topics"] == ["公共政策", "社区事务", "官方公告"]
+
+
+def test_oasis_profile_generator_rule_based_student_profile_localizes_copy():
+    generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+    generator.locale = "zh"
+
+    profile = generator._generate_profile_rule_based(
+        entity_name="小王",
+        entity_type="Student",
+        entity_summary="",
+        entity_attributes={},
+    )
+
+    assert profile["bio"] == "关注学术与社会议题的Student"
+    assert profile["persona"].startswith("小王是一名积极参与学术与社会讨论的Student")
+    assert profile["profession"] == "学生"
+    assert profile["interested_topics"] == ["教育", "社会议题", "科技"]
 
 
 def test_oasis_profile_generator_save_profiles_defaults_country_by_locale(tmp_path):
