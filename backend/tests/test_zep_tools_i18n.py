@@ -515,6 +515,45 @@ def test_generate_interview_questions_localizes_prompts_fallbacks_and_logs_in_en
     )
 
 
+def test_generate_sub_queries_localizes_prompts_and_fallbacks_in_english(monkeypatch):
+    app = Flask(__name__)
+    service = _make_service()
+    captured = {}
+    fake_logger = FakeLogger()
+
+    class FakeLLM:
+        def chat_json(self, messages, temperature):
+            captured["messages"] = messages
+            raise RuntimeError("sub-query planner unavailable")
+
+    service._llm_client = FakeLLM()
+    monkeypatch.setattr(zep_tools_module, "logger", fake_logger)
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        result = service._generate_sub_queries(
+            query="How will the narrative change?",
+            simulation_requirement="Track public reaction over two weeks",
+            report_context="Recent posts show rising skepticism.",
+            max_queries=4,
+        )
+
+    assert result == [
+        "How will the narrative change?",
+        "Who are the main actors related to How will the narrative change?",
+        "What are the causes and impacts of How will the narrative change?",
+        "How is How will the narrative change likely to evolve?",
+    ]
+    assert "You are an expert question analyst." in captured["messages"][0]["content"]
+    assert "Simulation background:\nTrack public reaction over two weeks" in captured["messages"][1]["content"]
+    assert "Report context:\nRecent posts show rising skepticism." in captured["messages"][1]["content"]
+    assert "Break the following question into 4 focused sub-questions" in captured["messages"][1]["content"]
+    assert "返回JSON格式" not in captured["messages"][0]["content"]
+    assert any(
+        "Failed to generate sub-queries: sub-query planner unavailable" in message
+        for _, message in fake_logger.messages
+    )
+
+
 def test_generate_interview_summary_localizes_empty_fallback_copy_and_logs_in_english(monkeypatch):
     app = Flask(__name__)
     service = _make_service()

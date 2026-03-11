@@ -1687,7 +1687,30 @@ class ZepToolsService:
         
         将复杂问题分解为多个可以独立检索的子问题
         """
-        system_prompt = """你是一个专业的问题分析专家。你的任务是将一个复杂问题分解为多个可以在模拟世界中独立观察的子问题。
+        locale = self._locale()
+        if locale == "en":
+            system_prompt = """You are an expert question analyst. Break a complex question into multiple focused sub-questions that can be observed independently inside the simulation world.
+
+Requirements:
+1. Each sub-question should be specific enough to map to agent behavior, events, or observable changes in the simulation.
+2. Cover different dimensions of the main question when possible (for example who, what, why, how, when, where).
+3. Keep each sub-question relevant to the simulation scenario.
+4. Return JSON in the form {"sub_queries": ["Sub-question 1", "Sub-question 2", ...]}."""
+            simulation_background = simulation_requirement or "Not provided"
+            context_prefix = (
+                f"\n\nReport context:\n{report_context[:500]}"
+                if report_context
+                else ""
+            )
+            user_prompt = (
+                f"Simulation background:\n{simulation_background}"
+                f"{context_prefix}\n\n"
+                f"Break the following question into {max_queries} focused sub-questions:\n"
+                f"{query}\n\n"
+                "Return only the JSON object."
+            )
+        else:
+            system_prompt = """你是一个专业的问题分析专家。你的任务是将一个复杂问题分解为多个可以在模拟世界中独立观察的子问题。
 
 要求：
 1. 每个子问题应该足够具体，可以在模拟世界中找到相关的Agent行为或事件
@@ -1695,7 +1718,7 @@ class ZepToolsService:
 3. 子问题应该与模拟场景相关
 4. 返回JSON格式：{"sub_queries": ["子问题1", "子问题2", ...]}"""
 
-        user_prompt = f"""模拟需求背景：
+            user_prompt = f"""模拟需求背景：
 {simulation_requirement}
 
 {f"报告上下文：{report_context[:500]}" if report_context else ""}
@@ -1726,6 +1749,15 @@ class ZepToolsService:
                 self._locale(),
             )
             # 降级：返回基于原问题的变体
+            if locale == "en":
+                normalized_query = query.rstrip("?.!").strip() or query
+                return [
+                    query,
+                    f"Who are the main actors related to {normalized_query}?",
+                    f"What are the causes and impacts of {normalized_query}?",
+                    f"How is {normalized_query} likely to evolve?",
+                ][:max_queries]
+
             return [
                 query,
                 f"{query} 的主要参与者",
