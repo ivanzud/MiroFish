@@ -282,7 +282,7 @@ npm run setup:backend:simulation
 
 `setup:backend` now installs only the core graph/report/OpenAI-compatible backend dependencies. The upstream `oasis` runtime code used by Step 3 / Step 5 is now vendored directly under `backend/oasis`, and the optional simulation install keeps only the explicit runtime dependencies, so the default path no longer pulls the high-risk `camel-oasis -> unstructured==0.13.7` chain.
 
-Known limitation: in the current Python 3.13 environment, `npm run setup:backend:simulation` can still fail because `camel-ai -> tiktoken==0.7.0` falls back to a source build and requires a Rust compiler. The core backend path is unaffected; for actual Step 3 / Step 5 simulation runs, use Python 3.11/3.12 or install Rust until that upstream dependency chain changes.
+Known limitation: `npm run setup:backend:simulation` now fails fast on Python 3.13+ when Rust is not installed, because the current `camel-ai -> tiktoken==0.7.0` chain still falls back to a source build there. The core backend path is unaffected; for actual Step 3 / Step 5 simulation runs, use Python 3.11/3.12 or install Rust before running that command.
 
 #### 3. Start Services
 

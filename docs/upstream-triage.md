@@ -67,6 +67,8 @@ Last refreshed: `2026-03-11`
 - After the latest Step 5 / graph-panel localization pass, the main remaining localization gaps are backend-generated content, agent/profile payload text, and other runtime data that arrives in Chinese from the backend or models rather than from frontend chrome.
 - `#108` Windows installer packaging is now mirrored into the fork for visibility, but it remains a large Windows-specific feature addition (`installer/build.ps1`, Inno Setup flow, release packaging) and is not a safe blind cherry-pick for this branch.
 - `#118` RAGflow backend support is now mirrored into the fork for visibility, but it is a large dual-backend feature branch touching graph APIs, config, and simulation services, so it needs a dedicated design/review pass instead of a low-risk merge.
+- `#108` review outcome on March 11: the proposed Windows packaging flow is currently not repo-compatible as written. It starts the backend with `app.py` instead of the existing `run.py` entry path, launches the frontend dev server instead of serving the built frontend, and rebundles the already-landed ARM64 Docker workflow change from `#103`, so it should be treated as a fresh packaging design task rather than cherry-picked.
+- `#118` review outcome on March 11: the RAGflow branch is not safe to land as-is because it introduces a second graph backend across build/read/simulation/delete paths without targeted regression tests, assumes specific RAGflow API response shapes, and would need careful rebasing against the newer local config-validation and API-error handling work already on this branch.
 - `#87` and `#86` GitHub Actions-only PRs are superseded locally by the current Docker workflow: their diffs would either partially duplicate already-landed upgrades or regress this branch by removing the ARM64/cache changes that came from `#103`.
 - `#100` Relative frontend API base URL fallback is superseded locally by the current API client, which already falls back to the runtime origin and respects `VITE_API_BASE_URL`.
 - `#72` Markdown-fence cleanup for JSON responses is superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`.
@@ -110,6 +112,8 @@ Last refreshed: `2026-03-11`
 - `cd backend && uv lock` succeeds after the simulation-manifest cutover and removes `camel-oasis`, `unstructured`, and related unused transitive packages from `backend/uv.lock`.
 - `cd backend && uv run pytest -q` is currently blocked in this environment because dependency resolution reaches `tiktoken`, which attempts a source build and fails without a Rust compiler.
 - `cd backend && uv sync --extra simulation --frozen` is still blocked on March 11, 2026 in this Python 3.13 environment because `camel-ai` pulls `tiktoken==0.7.0`, which falls back to a source build and fails without a Rust compiler; the blocker is now independent of `camel-oasis` / `unstructured`.
+- `python3 -m unittest tests/test_setup_backend_simulation.py` passes after adding a repo-level simulation-install guard that explicitly blocks Python 3.13+ without Rust before `uv sync --extra simulation` runs.
+- `python3 scripts/setup_backend_simulation.py` now fails fast on this March 11, 2026 Python 3.13 environment with a direct Python-version/Rust prerequisite message instead of disappearing into the downstream `camel-ai -> tiktoken` source-build failure.
 
 ## Snapshot artifacts
 
