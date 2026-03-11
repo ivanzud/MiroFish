@@ -338,3 +338,19 @@ def script_message(key: str, locale: str = "zh", **params) -> str:
         raise KeyError(f"Unknown script message key: {key}")
     template = translations["en"] if locale == "en" else translations["zh"]
     return template.format(**params)
+
+
+def load_dotenv_if_available(path: str) -> bool:
+    """Best-effort .env loading for script entrypoints.
+
+    The simulation helper scripts should still be able to print ``--help`` and
+    basic argument validation output when optional runtime dependencies have not
+    been installed yet.
+    """
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return False
+
+    load_dotenv(path)
+    return True

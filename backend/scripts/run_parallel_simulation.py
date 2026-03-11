@@ -78,6 +78,7 @@ from typing import Dict, Any, List, Optional, Tuple
 
 from llm_env import (
     apply_openai_compat_env,
+    load_dotenv_if_available,
     missing_api_key_message,
     resolve_standard_llm_env,
     resolve_standard_model_name,
@@ -97,19 +98,22 @@ _project_root = os.path.abspath(os.path.join(_backend_dir, '..'))
 sys.path.insert(0, _scripts_dir)
 sys.path.insert(0, _backend_dir)
 
-# 加载项目根目录的 .env 文件（包含 LLM_API_KEY 等配置）
-from dotenv import load_dotenv
 SCRIPT_LOCALE = "en" if os.environ.get("MIROFISH_LOCALE", "").lower().startswith("en") else "zh"
-_env_file = os.path.join(_project_root, '.env')
-if os.path.exists(_env_file):
-    load_dotenv(_env_file)
-    print(script_message("env_loaded", SCRIPT_LOCALE, path=_env_file))
-else:
-    # 尝试加载 backend/.env
-    _backend_env = os.path.join(_backend_dir, '.env')
-    if os.path.exists(_backend_env):
-        load_dotenv(_backend_env)
-        print(script_message("env_loaded", SCRIPT_LOCALE, path=_backend_env))
+
+
+def _load_env_file() -> None:
+    env_file = os.path.join(_project_root, ".env")
+    if os.path.exists(env_file):
+        if load_dotenv_if_available(env_file):
+            print(script_message("env_loaded", SCRIPT_LOCALE, path=env_file))
+        return
+
+    backend_env = os.path.join(_backend_dir, ".env")
+    if os.path.exists(backend_env) and load_dotenv_if_available(backend_env):
+        print(script_message("env_loaded", SCRIPT_LOCALE, path=backend_env))
+
+
+_load_env_file()
 
 
 def _t(zh: str, en: str) -> str:
@@ -170,50 +174,74 @@ def init_logging_for_simulation(simulation_dir: str):
 
 from action_logger import SimulationLogManager, PlatformActionLogger
 
-try:
-    from camel.models import ModelFactory
-    from camel.types import ModelPlatformType
-    import oasis
-    from oasis import (
-        ActionType,
-        LLMAction,
-        ManualAction,
-        generate_twitter_agent_graph,
-        generate_reddit_agent_graph
-    )
-except ImportError as e:
-    print(script_message("missing_dependency", SCRIPT_LOCALE, dependency=e))
-    print(script_message("install_simulation_deps_npm", SCRIPT_LOCALE))
-    print(script_message("install_simulation_deps_uv", SCRIPT_LOCALE))
-    sys.exit(1)
+ModelFactory = None
+ModelPlatformType = None
+ActionType = None
+LLMAction = None
+ManualAction = None
+generate_twitter_agent_graph = None
+generate_reddit_agent_graph = None
+oasis = None
+TWITTER_ACTIONS = None
+REDDIT_ACTIONS = None
 
 
-# Twitter可用动作（不包含INTERVIEW，INTERVIEW只能通过ManualAction手动触发）
-TWITTER_ACTIONS = [
-    ActionType.CREATE_POST,
-    ActionType.LIKE_POST,
-    ActionType.REPOST,
-    ActionType.FOLLOW,
-    ActionType.DO_NOTHING,
-    ActionType.QUOTE_POST,
-]
+def _load_simulation_dependencies() -> None:
+    global ModelFactory, ModelPlatformType, ActionType, LLMAction, ManualAction
+    global generate_twitter_agent_graph, generate_reddit_agent_graph, oasis
+    global TWITTER_ACTIONS, REDDIT_ACTIONS
 
-# Reddit可用动作（不包含INTERVIEW，INTERVIEW只能通过ManualAction手动触发）
-REDDIT_ACTIONS = [
-    ActionType.LIKE_POST,
-    ActionType.DISLIKE_POST,
-    ActionType.CREATE_POST,
-    ActionType.CREATE_COMMENT,
-    ActionType.LIKE_COMMENT,
-    ActionType.DISLIKE_COMMENT,
-    ActionType.SEARCH_POSTS,
-    ActionType.SEARCH_USER,
-    ActionType.TREND,
-    ActionType.REFRESH,
-    ActionType.DO_NOTHING,
-    ActionType.FOLLOW,
-    ActionType.MUTE,
-]
+    if ModelFactory is not None:
+        return
+
+    try:
+        from camel.models import ModelFactory as _ModelFactory
+        from camel.types import ModelPlatformType as _ModelPlatformType
+        import oasis as _oasis
+        from oasis import (
+            ActionType as _ActionType,
+            LLMAction as _LLMAction,
+            ManualAction as _ManualAction,
+            generate_twitter_agent_graph as _generate_twitter_agent_graph,
+            generate_reddit_agent_graph as _generate_reddit_agent_graph,
+        )
+    except ImportError as e:
+        print(script_message("missing_dependency", SCRIPT_LOCALE, dependency=e))
+        print(script_message("install_simulation_deps_npm", SCRIPT_LOCALE))
+        print(script_message("install_simulation_deps_uv", SCRIPT_LOCALE))
+        sys.exit(1)
+
+    ModelFactory = _ModelFactory
+    ModelPlatformType = _ModelPlatformType
+    ActionType = _ActionType
+    LLMAction = _LLMAction
+    ManualAction = _ManualAction
+    generate_twitter_agent_graph = _generate_twitter_agent_graph
+    generate_reddit_agent_graph = _generate_reddit_agent_graph
+    oasis = _oasis
+    TWITTER_ACTIONS = [
+        ActionType.CREATE_POST,
+        ActionType.LIKE_POST,
+        ActionType.REPOST,
+        ActionType.FOLLOW,
+        ActionType.DO_NOTHING,
+        ActionType.QUOTE_POST,
+    ]
+    REDDIT_ACTIONS = [
+        ActionType.LIKE_POST,
+        ActionType.DISLIKE_POST,
+        ActionType.CREATE_POST,
+        ActionType.CREATE_COMMENT,
+        ActionType.LIKE_COMMENT,
+        ActionType.DISLIKE_COMMENT,
+        ActionType.SEARCH_POSTS,
+        ActionType.SEARCH_USER,
+        ActionType.TREND,
+        ActionType.REFRESH,
+        ActionType.DO_NOTHING,
+        ActionType.FOLLOW,
+        ActionType.MUTE,
+    ]
 
 
 # IPC相关常量
@@ -1071,6 +1099,7 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
         config: 模拟配置字典
         use_boost: 是否使用加速 LLM 配置（如果可用）
     """
+    _load_simulation_dependencies()
     # 检查是否有加速配置
     boost_api_key = os.environ.get("LLM_BOOST_API_KEY", "")
     boost_base_url = os.environ.get("LLM_BOOST_BASE_URL", "")
@@ -1195,6 +1224,7 @@ async def run_twitter_simulation(
     Returns:
         PlatformSimulation: 包含env和agent_graph的结果对象
     """
+    _load_simulation_dependencies()
     result = PlatformSimulation()
     
     def log_info(msg):
@@ -1411,6 +1441,7 @@ async def run_reddit_simulation(
     Returns:
         PlatformSimulation: 包含env和agent_graph的结果对象
     """
+    _load_simulation_dependencies()
     result = PlatformSimulation()
     
     def log_info(msg):
@@ -1655,7 +1686,8 @@ async def main():
     if not os.path.exists(args.config):
         print(script_message("config_missing", SCRIPT_LOCALE, path=args.config))
         sys.exit(1)
-    
+
+    _load_simulation_dependencies()
     config = load_config(args.config)
     simulation_dir = os.path.dirname(args.config) or "."
     wait_for_commands = not args.no_wait
@@ -1828,11 +1860,13 @@ def setup_signal_handlers(loop=None):
 
 if __name__ == "__main__":
     setup_signal_handlers()
+    should_print_exit_message = True
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         print(script_message("program_interrupted", SCRIPT_LOCALE))
-    except SystemExit:
+    except SystemExit as exc:
+        should_print_exit_message = exc.code not in (0, None)
         pass
     finally:
         # 清理 multiprocessing 资源跟踪器（防止退出时的警告）
@@ -1841,4 +1875,5 @@ if __name__ == "__main__":
             resource_tracker._resource_tracker._stop()
         except Exception:
             pass
-        print(script_message("process_exited", SCRIPT_LOCALE))
+        if should_print_exit_message:
+            print(script_message("process_exited", SCRIPT_LOCALE))

@@ -36,16 +36,6 @@ _project_root = os.path.abspath(os.path.join(_backend_dir, '..'))
 sys.path.insert(0, _scripts_dir)
 sys.path.insert(0, _backend_dir)
 
-# 加载项目根目录的 .env 文件（包含 LLM_API_KEY 等配置）
-from dotenv import load_dotenv
-_env_file = os.path.join(_project_root, '.env')
-if os.path.exists(_env_file):
-    load_dotenv(_env_file)
-else:
-    _backend_env = os.path.join(_backend_dir, '.env')
-    if os.path.exists(_backend_env):
-        load_dotenv(_backend_env)
-
 SCRIPT_LOCALE = "en" if os.environ.get("MIROFISH_LOCALE", "").lower().startswith("en") else "zh"
 
 
@@ -56,10 +46,26 @@ def _t(zh: str, en: str) -> str:
 import re
 from llm_env import (
     apply_openai_compat_env,
+    load_dotenv_if_available,
     missing_api_key_message,
     resolve_standard_llm_env,
     script_message,
 )
+
+
+def _load_env_file() -> None:
+    """Load a repo .env file when python-dotenv is available."""
+    env_file = os.path.join(_project_root, ".env")
+    if os.path.exists(env_file):
+        load_dotenv_if_available(env_file)
+        return
+
+    backend_env = os.path.join(_backend_dir, ".env")
+    if os.path.exists(backend_env):
+        load_dotenv_if_available(backend_env)
+
+
+_load_env_file()
 
 
 class UnicodeFormatter(logging.Formatter):
@@ -127,21 +133,45 @@ def setup_oasis_logging(log_dir: str):
         logger.propagate = False
 
 
-try:
-    from camel.models import ModelFactory
-    from camel.types import ModelPlatformType
-    import oasis
-    from oasis import (
-        ActionType,
-        LLMAction,
-        ManualAction,
-        generate_twitter_agent_graph
-    )
-except ImportError as e:
-    print(script_message("missing_dependency", SCRIPT_LOCALE, dependency=e))
-    print(script_message("install_simulation_deps_npm", SCRIPT_LOCALE))
-    print(script_message("install_simulation_deps_uv", SCRIPT_LOCALE))
-    sys.exit(1)
+ModelFactory = None
+ModelPlatformType = None
+ActionType = None
+LLMAction = None
+ManualAction = None
+generate_twitter_agent_graph = None
+oasis = None
+
+
+def _load_simulation_dependencies() -> None:
+    global ModelFactory, ModelPlatformType, ActionType, LLMAction, ManualAction
+    global generate_twitter_agent_graph, oasis
+
+    if ModelFactory is not None:
+        return
+
+    try:
+        from camel.models import ModelFactory as _ModelFactory
+        from camel.types import ModelPlatformType as _ModelPlatformType
+        import oasis as _oasis
+        from oasis import (
+            ActionType as _ActionType,
+            LLMAction as _LLMAction,
+            ManualAction as _ManualAction,
+            generate_twitter_agent_graph as _generate_twitter_agent_graph,
+        )
+    except ImportError as e:
+        print(script_message("missing_dependency", SCRIPT_LOCALE, dependency=e))
+        print(script_message("install_simulation_deps_npm", SCRIPT_LOCALE))
+        print(script_message("install_simulation_deps_uv", SCRIPT_LOCALE))
+        sys.exit(1)
+
+    ModelFactory = _ModelFactory
+    ModelPlatformType = _ModelPlatformType
+    ActionType = _ActionType
+    LLMAction = _LLMAction
+    ManualAction = _ManualAction
+    generate_twitter_agent_graph = _generate_twitter_agent_graph
+    oasis = _oasis
 
 
 # IPC相关常量
@@ -416,17 +446,7 @@ class IPCHandler:
 
 class TwitterSimulationRunner:
     """Twitter模拟运行器"""
-    
-    # Twitter可用动作（不包含INTERVIEW，INTERVIEW只能通过ManualAction手动触发）
-    AVAILABLE_ACTIONS = [
-        ActionType.CREATE_POST,
-        ActionType.LIKE_POST,
-        ActionType.REPOST,
-        ActionType.FOLLOW,
-        ActionType.DO_NOTHING,
-        ActionType.QUOTE_POST,
-    ]
-    
+
     def __init__(self, config_path: str, wait_for_commands: bool = True):
         """
         初始化模拟运行器
@@ -435,6 +455,7 @@ class TwitterSimulationRunner:
             config_path: 配置文件路径 (simulation_config.json)
             wait_for_commands: 模拟完成后是否等待命令（默认True）
         """
+        _load_simulation_dependencies()
         self.config_path = config_path
         self.config = self._load_config()
         self.simulation_dir = os.path.dirname(config_path)
@@ -455,6 +476,17 @@ class TwitterSimulationRunner:
     def _get_db_path(self) -> str:
         """获取数据库路径"""
         return os.path.join(self.simulation_dir, "twitter_simulation.db")
+
+    @staticmethod
+    def available_actions():
+        return [
+            ActionType.CREATE_POST,
+            ActionType.LIKE_POST,
+            ActionType.REPOST,
+            ActionType.FOLLOW,
+            ActionType.DO_NOTHING,
+            ActionType.QUOTE_POST,
+        ]
     
     def _create_model(self):
         """
@@ -617,7 +649,7 @@ class TwitterSimulationRunner:
         self.agent_graph = await generate_twitter_agent_graph(
             profile_path=profile_path,
             model=model,
-            available_actions=self.AVAILABLE_ACTIONS,
+            available_actions=self.available_actions(),
         )
         
         # 数据库路径
@@ -820,11 +852,14 @@ def setup_signal_handlers():
 
 if __name__ == "__main__":
     setup_signal_handlers()
+    should_print_exit_message = True
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         print(script_message("program_interrupted", SCRIPT_LOCALE))
-    except SystemExit:
+    except SystemExit as exc:
+        should_print_exit_message = exc.code not in (0, None)
         pass
     finally:
-        print(script_message("process_exited", SCRIPT_LOCALE))
+        if should_print_exit_message:
+            print(script_message("process_exited", SCRIPT_LOCALE))
