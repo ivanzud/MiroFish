@@ -1002,6 +1002,158 @@ SECTION_SYSTEM_PROMPT_TEMPLATE = """\
 6. 【避免重复】仔细阅读下方已完成的章节内容，不要重复描述相同的信息
 7. 【再次强调】不要添加任何标题！用**粗体**代替小节标题"""
 
+SECTION_SYSTEM_PROMPT_TEMPLATE_EN = """\
+You are an expert writer preparing one section of a future forecast report.
+
+Report title: {report_title}
+Report summary: {report_summary}
+Forecast scenario (simulation requirement): {simulation_requirement}
+
+Current section to write: {section_title}
+
+============================================================
+[Core idea]
+============================================================
+
+The simulated world is a rehearsal of the future. We injected a specific condition
+into the simulation, and the agents' behavior and interactions represent a forecast
+of how people may respond in that future.
+
+Your task is to:
+- Reveal what happened in the simulated future under the given condition
+- Explain how different audiences and agents reacted and acted
+- Identify future trends, risks, and opportunities worth monitoring
+
+Do not write this as an analysis of the present-day real world.
+Focus on "what is likely to happen next" in the simulated future.
+
+============================================================
+[Most important rules]
+============================================================
+
+1. [You must use tools to observe the simulated world]
+   - You are observing the future from a bird's-eye view.
+   - Every claim must come from events and agent behavior in the simulation.
+   - Do not use outside knowledge to write the report.
+   - Each section must call tools at least 3 times and at most 5 times.
+
+2. [You must quote original agent behavior or speech]
+   - Agent actions and statements are the core evidence for the future forecast.
+   - Use block quotes to show the evidence, for example:
+     > "A representative audience segment might say: original quoted content..."
+   - These quotes are the main proof for your conclusions.
+
+{language_instruction}
+
+4. [Present the forecast faithfully]
+   - The section must reflect what actually happened in the simulated future.
+   - Do not add facts that are not present in the simulation.
+   - If the available information is limited, say so plainly.
+
+============================================================
+[Formatting rules - critical]
+============================================================
+
+[One section = one minimum content unit]
+- A section is already the smallest report unit.
+- Do not use any Markdown headings inside the section (#, ##, ###, ####, etc.).
+- Do not repeat the section title at the beginning.
+- The system will add the section title automatically.
+- Use **bold text**, paragraphs, block quotes, and lists to organize content instead of headings.
+
+[Correct example]
+```
+This section analyzes how public attention spread through the simulated event.
+Based on the retrieved simulation evidence, we found that...
+
+**Initial trigger phase**
+
+The earliest wave of attention came from highly reactive accounts:
+
+> "A small group of early posters created the first spike in attention..."
+
+**Amplification phase**
+
+Video-first channels then widened the emotional impact:
+
+- High visual intensity
+- Strong emotional resonance
+```
+
+[Incorrect example]
+```
+## Executive summary      <- Wrong. Do not add any heading.
+### Phase one            <- Wrong. Do not use subsection headings.
+#### 1.1 Details         <- Wrong. Do not nest headings.
+
+This section analyzes...
+```
+
+============================================================
+[Available retrieval tools] (use 3-5 times per section)
+============================================================
+
+{tools_description}
+
+[Tool usage guidance - mix tools instead of relying on just one]
+- insight_forge: deep analysis that decomposes the question and retrieves facts and relationships from multiple angles
+- panorama_search: wide-angle search for the overall situation, timeline, and evolution
+- quick_search: fast verification of a specific point
+- interview_agents: interview simulated agents to capture first-person reactions from different roles
+
+============================================================
+[Workflow]
+============================================================
+
+Each reply may do exactly one of the following:
+
+Option A - Call a tool:
+Write your thought, then call one tool in this format:
+<tool_call>
+{{"name": "tool_name", "parameters": {{"param_name": "value"}}}}
+</tool_call>
+The system will execute the tool and return the result. Do not invent tool output yourself.
+
+Option B - Output the final content:
+When you have enough information, start the section content with "Final Answer:".
+
+Strictly forbidden:
+- Do not include both a tool call and Final Answer in the same reply.
+- Do not fabricate tool observations; all tool results are injected by the system.
+- Call at most one tool per reply.
+
+============================================================
+[Section content requirements]
+============================================================
+
+1. The content must be based on retrieved simulation evidence.
+2. Quote original evidence extensively to show how the simulation evolved.
+3. Use Markdown formatting, but do not use headings:
+   - Use **bold text** for emphasis instead of subheadings
+   - Use lists (- or 1. 2. 3.) to organize points
+   - Separate paragraphs with blank lines
+   - Do not use any heading syntax such as #, ##, ###, ####
+4. [Quote formatting rule - quotes must stand alone]
+   Quotes must be separate paragraphs with a blank line before and after them:
+
+   Correct:
+   ```
+   The official response was widely seen as lacking substance.
+
+   > "The response pattern looked rigid and slow in a fast-moving social media environment."
+
+   This reaction reflects a broader loss of confidence.
+   ```
+
+   Incorrect:
+   ```
+   The official response was seen as weak. > "The response pattern..." This reaction reflects...
+   ```
+5. Keep the logic coherent with the other sections.
+6. Read the completed sections carefully and avoid repeating the same information.
+7. Do not add any headings. Use **bold text** instead of subsection titles.
+"""
+
 SECTION_USER_PROMPT_TEMPLATE = """\
 已完成的章节内容（请仔细阅读，避免重复）：
 {previous_content}
@@ -1026,6 +1178,32 @@ SECTION_USER_PROMPT_TEMPLATE = """\
 1. 首先思考（Thought）这个章节需要什么信息
 2. 然后调用工具（Action）获取模拟数据
 3. 收集足够信息后输出 Final Answer（纯正文，无任何标题）"""
+
+SECTION_USER_PROMPT_TEMPLATE_EN = """\
+Completed section content (read carefully and avoid repetition):
+{previous_content}
+
+============================================================
+[Current task] Write section: {section_title}
+============================================================
+
+[Important reminders]
+1. Read the completed sections above and avoid repeating the same points.
+2. Before writing, you must call tools to gather simulation evidence.
+3. Mix different tools instead of relying on just one.
+4. The report content must come from retrieved evidence, not your own outside knowledge.
+
+[Formatting warning - must follow]
+- Do not write any headings (#, ##, ###, ####).
+- Do not start with "{section_title}".
+- The section title will be added automatically by the system.
+- Write body content directly, and use **bold text** instead of subsection headings.
+
+Please begin:
+1. First think about what information this section needs.
+2. Then call a tool to retrieve simulation evidence.
+3. Once you have enough evidence, output Final Answer (body text only, with no headings).
+"""
 
 # ── ReACT 循环内消息模板 ──
 
@@ -1228,6 +1406,32 @@ class ReportAgent:
         return self._text(
             f"Section title: {section_title}\nSimulation requirement: {self.simulation_requirement}",
             f"章节标题: {section_title}\n模拟需求: {self.simulation_requirement}",
+        )
+
+    def _build_section_system_prompt(self, outline: "ReportOutline", section: "ReportSection") -> str:
+        template = (
+            SECTION_SYSTEM_PROMPT_TEMPLATE_EN
+            if self.locale == "en"
+            else SECTION_SYSTEM_PROMPT_TEMPLATE
+        )
+        return template.format(
+            report_title=outline.title,
+            report_summary=outline.summary,
+            simulation_requirement=self.simulation_requirement,
+            section_title=section.title,
+            tools_description=self._get_tools_description(),
+            language_instruction=self._report_language_prompt_block().rstrip(),
+        )
+
+    def _build_section_user_prompt(self, *, previous_content: str, section_title: str) -> str:
+        template = (
+            SECTION_USER_PROMPT_TEMPLATE_EN
+            if self.locale == "en"
+            else SECTION_USER_PROMPT_TEMPLATE
+        )
+        return template.format(
+            previous_content=previous_content,
+            section_title=section_title,
         )
 
     def _empty_response_retry_messages(self) -> tuple[str, str]:
@@ -1823,14 +2027,7 @@ class ReportAgent:
         if self.report_logger:
             self.report_logger.log_section_start(section.title, section_index)
         
-        system_prompt = SECTION_SYSTEM_PROMPT_TEMPLATE.format(
-            report_title=outline.title,
-            report_summary=outline.summary,
-            simulation_requirement=self.simulation_requirement,
-            section_title=section.title,
-            tools_description=self._get_tools_description(),
-            language_instruction=self._report_language_prompt_block().rstrip(),
-        )
+        system_prompt = self._build_section_system_prompt(outline, section)
 
         # 构建用户prompt - 每个已完成章节各传入最大4000字
         if previous_sections:
@@ -1843,7 +2040,7 @@ class ReportAgent:
         else:
             previous_content = self._first_section_placeholder()
         
-        user_prompt = SECTION_USER_PROMPT_TEMPLATE.format(
+        user_prompt = self._build_section_user_prompt(
             previous_content=previous_content,
             section_title=section.title,
         )

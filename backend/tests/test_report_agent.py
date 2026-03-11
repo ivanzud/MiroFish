@@ -364,6 +364,16 @@ def test_generate_section_localizes_english_react_loop_messages(monkeypatch):
 
     assert content == "Final English section body"
     assert progress_updates[0] == ("generating", 0, "Deep retrieval and drafting in progress (0/5)")
+    initial_system_prompt = llm.calls[0][0]["content"]
+    initial_user_prompt = llm.calls[0][1]["content"]
+    assert "You are an expert writer preparing one section of a future forecast report." in initial_system_prompt
+    assert "[Core idea]" in initial_system_prompt
+    assert "Each section must call tools at least 3 times and at most 5 times." in initial_system_prompt
+    assert "你是一个「未来预测报告」的撰写专家" not in initial_system_prompt
+    assert "Completed section content (read carefully and avoid repetition):" in initial_user_prompt
+    assert "[Current task] Write section: Audience Outlook" in initial_user_prompt
+    assert "Then call a tool to retrieve simulation evidence." in initial_user_prompt
+    assert "【当前任务】撰写章节" not in initial_user_prompt
     assert "(This is the first section)" in llm.calls[0][1]["content"]
     assert observed_contexts[0] == (
         "quick_search",
