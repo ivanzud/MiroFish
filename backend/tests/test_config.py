@@ -70,3 +70,17 @@ def test_validate_comprehensive_reports_debug_warning_and_safe_summary(monkeypat
     assert summary["zep"]["configured"] is True
     assert "api_key" not in str(summary).lower()
     assert config_module.validate_on_startup() is True
+
+
+def test_validate_comprehensive_can_render_english_messages(monkeypatch):
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("ZEP_API_KEY", raising=False)
+    monkeypatch.setenv("OASIS_DEFAULT_MAX_ROUNDS", "bad-value")
+
+    config_module = load_config_module()
+    result = config_module.Config.validate_comprehensive(locale="en")
+
+    assert "LLM_API_KEY / OPENAI_API_KEY is not configured" in result.errors
+    assert "ZEP_API_KEY is not configured" in result.errors
+    assert "OASIS_DEFAULT_MAX_ROUNDS must be a valid number, current value: bad-value" in result.errors

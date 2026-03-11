@@ -35,6 +35,11 @@ def apply_openai_compat_env(api_key: str, base_url: str) -> None:
         os.environ["OPENAI_API_BASE_URL"] = base_url
 
 
-def missing_api_key_message() -> str:
+def missing_api_key_message(locale: str = "zh") -> str:
     """Return a consistent missing-key message for OpenAI-compatible env aliases."""
+    if locale == "en":
+        return (
+            "Missing API key configuration. Set LLM_API_KEY or OPENAI_API_KEY "
+            "in the project root .env file."
+        )
     return "缺少 API Key 配置，请在项目根目录 .env 文件中设置 LLM_API_KEY 或 OPENAI_API_KEY"

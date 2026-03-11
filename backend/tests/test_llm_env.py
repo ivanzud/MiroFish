@@ -59,3 +59,12 @@ def test_missing_api_key_message_mentions_openai_alias(monkeypatch):
     assert llm_env.missing_api_key_message() == (
         "缺少 API Key 配置，请在项目根目录 .env 文件中设置 LLM_API_KEY 或 OPENAI_API_KEY"
     )
+
+
+def test_missing_api_key_message_supports_english(monkeypatch):
+    llm_env = load_llm_env_module()
+
+    assert llm_env.missing_api_key_message("en") == (
+        "Missing API key configuration. Set LLM_API_KEY or OPENAI_API_KEY "
+        "in the project root .env file."
+    )

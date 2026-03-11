@@ -10,6 +10,11 @@ from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
+try:
+    from .i18n import tr
+except ImportError:  # pragma: no cover - compatibility for direct module loading in tests
+    from app.i18n import tr
+
 # 加载项目根目录的 .env 文件
 # 路径: MiroFish/.env (相对于 backend/app/config.py)
 project_root_env = os.path.join(os.path.dirname(__file__), '../../.env')
@@ -139,52 +144,55 @@ class Config:
     REPORT_AGENT_TEMPERATURE = _float_env('REPORT_AGENT_TEMPERATURE', 0.5)
 
     @classmethod
-    def validate(cls):
+    def validate(cls, locale='zh'):
         """验证必要配置"""
-        return cls.validate_comprehensive().errors
+        return cls.validate_comprehensive(locale=locale).errors
 
     @classmethod
-    def validate_comprehensive(cls):
+    def validate_comprehensive(cls, locale='zh'):
         """Validate configuration without changing startup behavior."""
         result = ConfigValidationResult()
 
         if not cls.LLM_API_KEY:
-            result.add_error("LLM_API_KEY / OPENAI_API_KEY 未配置")
+            result.add_error(tr("config.key_missing", locale, name="LLM_API_KEY / OPENAI_API_KEY"))
         if not cls.ZEP_API_KEY:
-            result.add_error("ZEP_API_KEY 未配置")
+            result.add_error(tr("config.key_missing", locale, name="ZEP_API_KEY"))
 
         cls._validate_url(
             result,
             "LLM_BASE_URL / OPENAI_BASE_URL / OPENAI_API_BASE_URL",
             cls.LLM_BASE_URL,
+            locale=locale,
         )
-        cls._validate_numeric_env(result, "LLM_MAX_TOKENS", minimum=1)
-        cls._validate_numeric_env(result, "OASIS_DEFAULT_MAX_ROUNDS", minimum=1)
-        cls._validate_numeric_env(result, "REPORT_AGENT_MAX_TOOL_CALLS", minimum=1)
-        cls._validate_numeric_env(result, "REPORT_AGENT_MAX_REFLECTION_ROUNDS", minimum=0)
+        cls._validate_numeric_env(result, "LLM_MAX_TOKENS", minimum=1, locale=locale)
+        cls._validate_numeric_env(result, "OASIS_DEFAULT_MAX_ROUNDS", minimum=1, locale=locale)
+        cls._validate_numeric_env(result, "REPORT_AGENT_MAX_TOOL_CALLS", minimum=1, locale=locale)
+        cls._validate_numeric_env(result, "REPORT_AGENT_MAX_REFLECTION_ROUNDS", minimum=0, locale=locale)
         cls._validate_numeric_env(
             result,
             "REPORT_AGENT_TEMPERATURE",
             minimum=0,
             maximum=2,
             parser=float,
+            locale=locale,
         )
-        cls._validate_numeric_env(result, "ZEP_RETRY_MAX_ATTEMPTS", minimum=1)
+        cls._validate_numeric_env(result, "ZEP_RETRY_MAX_ATTEMPTS", minimum=1, locale=locale)
         cls._validate_numeric_env(
             result,
             "ZEP_RETRY_BASE_DELAY_SECONDS",
             minimum=0,
             parser=float,
+            locale=locale,
         )
 
         if cls.DEBUG:
-            result.add_warning("FLASK_DEBUG=True; 不建议在生产环境启用 DEBUG")
+            result.add_warning(tr("config.debug_warning", locale))
         if cls.SECRET_KEY == 'mirofish-secret-key':
-            result.add_warning("SECRET_KEY 使用默认值；生产环境应覆盖")
+            result.add_warning(tr("config.secret_key_warning", locale))
         if not os.path.isdir(cls.UPLOAD_FOLDER):
-            result.add_info(f"UPLOAD_FOLDER 尚不存在，将在运行时按需创建: {cls.UPLOAD_FOLDER}")
+            result.add_info(tr("config.upload_folder_info", locale, path=cls.UPLOAD_FOLDER))
         if cls.LLM_MODEL_NAME:
-            result.add_info(f"LLM_MODEL_NAME={cls.LLM_MODEL_NAME}")
+            result.add_info(tr("config.model_info", locale, model=cls.LLM_MODEL_NAME))
 
         return result
 
@@ -216,31 +224,31 @@ class Config:
         }
 
     @classmethod
-    def _validate_url(cls, result, name, value):
+    def _validate_url(cls, result, name, value, locale='zh'):
         if not value:
-            result.add_error(f"{name} 未配置")
+            result.add_error(tr("config.key_missing", locale, name=name))
             return
         parsed = urlparse(value)
         if parsed.scheme not in {'http', 'https'}:
-            result.add_error(f"{name} 必须使用 http/https: {value}")
+            result.add_error(tr("config.url_invalid_scheme", locale, name=name, value=value))
             return
         if not parsed.netloc:
-            result.add_error(f"{name} 缺少主机名: {value}")
+            result.add_error(tr("config.url_missing_host", locale, name=name, value=value))
 
     @classmethod
-    def _validate_numeric_env(cls, result, name, minimum=None, maximum=None, parser=int):
+    def _validate_numeric_env(cls, result, name, minimum=None, maximum=None, parser=int, locale='zh'):
         raw_value = os.environ.get(name)
         if raw_value in (None, ''):
             return
         try:
             value = parser(raw_value)
         except (TypeError, ValueError):
-            result.add_error(f"{name} 必须是合法数字，当前值: {raw_value}")
+            result.add_error(tr("config.numeric_invalid", locale, name=name, value=raw_value))
             return
         if minimum is not None and value < minimum:
-            result.add_error(f"{name} 必须 >= {minimum}，当前值: {raw_value}")
+            result.add_error(tr("config.numeric_min", locale, name=name, minimum=minimum, value=raw_value))
         if maximum is not None and value > maximum:
-            result.add_error(f"{name} 必须 <= {maximum}，当前值: {raw_value}")
+            result.add_error(tr("config.numeric_max", locale, name=name, maximum=maximum, value=raw_value))
 
 
 def validate_on_startup():

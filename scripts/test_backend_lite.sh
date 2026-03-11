@@ -18,6 +18,7 @@ fi
 
 "${VENV_DIR}/bin/pytest" \
   "${ROOT_DIR}/backend/tests/test_config.py" \
+  "${ROOT_DIR}/backend/tests/test_i18n.py" \
   "${ROOT_DIR}/backend/tests/test_llm_env.py" \
   "${ROOT_DIR}/backend/tests/test_llm_client.py" \
   "${ROOT_DIR}/backend/tests/test_graph_builder.py" \
