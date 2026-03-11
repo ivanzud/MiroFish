@@ -41,8 +41,8 @@ TRANSLATIONS = {
         "en": "FLASK_DEBUG=True; DEBUG should not be enabled in production",
     },
     "config.secret_key_warning": {
-        "zh": "SECRET_KEY 使用默认值；生产环境应覆盖",
-        "en": "SECRET_KEY is using the default value; override it in production",
+        "zh": "SECRET_KEY 未配置；当前进程正在使用临时随机值，生产环境应显式配置",
+        "en": "SECRET_KEY is not configured; a temporary random key is being used for this process, so production deployments should set it explicitly",
     },
     "config.upload_folder_info": {
         "zh": "UPLOAD_FOLDER 尚不存在，将在运行时按需创建: {path}",

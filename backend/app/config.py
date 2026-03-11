@@ -4,6 +4,7 @@
 """
 
 import os
+import secrets
 from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urlparse
@@ -74,6 +75,22 @@ def _csv_env(name, default=None):
     return [item.strip() for item in raw_value.split(',') if item.strip()]
 
 
+def _bool_env(name, default=False):
+    """Parse boolean environment variables using common truthy spellings."""
+    raw_value = os.environ.get(name)
+    if raw_value in (None, ''):
+        return default
+    return raw_value.strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
+def _load_secret_key():
+    """Use the configured SECRET_KEY or generate an ephemeral fallback."""
+    configured = os.environ.get('SECRET_KEY')
+    if configured not in (None, ''):
+        return configured, False
+    return secrets.token_hex(32), True
+
+
 @dataclass
 class ConfigValidationResult:
     """Structured config validation output."""
@@ -110,8 +127,8 @@ class Config:
     """Flask配置类"""
     
     # Flask配置
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'mirofish-secret-key')
-    DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
+    SECRET_KEY, SECRET_KEY_IS_GENERATED = _load_secret_key()
+    DEBUG = _bool_env('FLASK_DEBUG', default=False)
     CORS_ALLOWED_ORIGINS = _csv_env('CORS_ALLOWED_ORIGINS', default=['*'])
     CORS_ALLOW_METHODS = _csv_env(
         'CORS_ALLOW_METHODS',
@@ -219,7 +236,7 @@ class Config:
 
         if cls.DEBUG:
             result.add_warning(tr("config.debug_warning", locale))
-        if cls.SECRET_KEY == 'mirofish-secret-key':
+        if cls.SECRET_KEY_IS_GENERATED:
             result.add_warning(tr("config.secret_key_warning", locale))
         if not os.path.isdir(cls.UPLOAD_FOLDER):
             result.add_info(tr("config.upload_folder_info", locale, path=cls.UPLOAD_FOLDER))
@@ -285,6 +302,9 @@ class Config:
                 'temperature': cls.REPORT_AGENT_TEMPERATURE,
             },
             'debug': cls.DEBUG,
+            'security': {
+                'secret_key_source': 'generated' if cls.SECRET_KEY_IS_GENERATED else 'env',
+            },
         }
 
     @classmethod

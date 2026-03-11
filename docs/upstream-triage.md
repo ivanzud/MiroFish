@@ -103,7 +103,7 @@ Last refreshed: `2026-03-11`
 
 ## Deferred for later review
 
-- `#105` Remaining risky subset: default `DEBUG=False`, non-static `SECRET_KEY` generation, and stricter CORS defaults/configuration are still deferred because they can change local/dev or deployed behavior and need a compatibility review before landing.
+- `#105` Follow-up review is now closed locally: this branch adopted the remaining low-risk config defaults (`DEBUG=False` by default plus generated fallback `SECRET_KEY`) with regression coverage, while intentionally preserving permissive default CORS origins for backward compatibility instead of blindly copying the upstream behavior change.
 - `#119` Remaining scope is still deferred: most step-level workflow components and backend-generated error text remain Chinese-first, so broader localization should be handled as a follow-up instead of continuing to splice a large, drifting upstream PR into this branch.
 - After the latest Step 5 / graph-panel localization pass, the main remaining localization gaps are backend-generated content, agent/profile payload text, and other runtime data that arrives in Chinese from the backend or models rather than from frontend chrome.
 - `#108` Windows installer packaging is now mirrored into the fork for visibility, but it remains a large Windows-specific feature addition (`installer/build.ps1`, Inno Setup flow, release packaging) and is not a safe blind cherry-pick for this branch.

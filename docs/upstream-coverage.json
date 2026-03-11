@@ -395,7 +395,7 @@
     {
       "number": 105,
       "status": "partial",
-      "summary": "Safe subset landed locally for JSON error sanitization and parser logging, but the behavior-changing `DEBUG`, `SECRET_KEY`, and stricter default CORS pieces remain deferred for compatibility review."
+      "summary": "Local coverage now includes the error-handling hardening, env-driven CORS controls, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior; only the stricter default CORS-origin policy remains intentionally deferred for backward compatibility."
     },
     {
       "number": 108,

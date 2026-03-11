@@ -442,7 +442,22 @@
           "url": "https://github.com/666ghj/MiroFish/issues/42#issuecomment-4025501526",
           "body_excerpt": "你的Zep的API够用吗 ？"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 42,
+        "status": "covered",
+        "summary": "Step 3 detailed run polling is now incremental and bounded, so the frontend no longer re-downloads the entire simulation timeline every few seconds as a run grows.",
+        "local_refs": [
+          "backend/app/api/simulation.py",
+          "frontend/src/components/Step3Simulation.vue",
+          "frontend/src/components/simulationTimeline.js"
+        ],
+        "validation": [
+          "scripts/test_backend_lite.sh",
+          "frontend: npm test",
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 84,
@@ -1163,7 +1178,20 @@
           "url": "https://github.com/666ghj/MiroFish/issues/69#issuecomment-3875973660",
           "body_excerpt": "<!-- Answer --> MiroFish 支持对接任何兼容 OpenAI SDK 格式的 LLM API，比如 OpenAI、Azure OpenAI、阿里云百炼（qwen-plus）、以及本地自部署的 OpenAI 兼容模型等。你只需要在 .env 配置文件中填写对应的 LLM_API_KEY、LLM_BASE_URL 和 LLM_MODEL_NAME，就可以切换不同的模型接口。例如官方推荐的配置是阿里云百炼的 qwen-plus 模型，也可以直接用 OpenAI…"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 69,
+        "status": "covered",
+        "summary": "Both READMEs now explicitly document direct OpenAI-compatible usage through either `LLM_*` or `OPENAI_*` environment variables, with examples for Codex/OpenAI-compatible gateways, DashScope, LM Studio, and Ollama.",
+        "local_refs": [
+          "README.md",
+          "README-EN.md",
+          ".env.example"
+        ],
+        "validation": [
+          "documentation review"
+        ]
+      }
     },
     {
       "number": 37,
@@ -2478,7 +2506,7 @@
       "local_coverage": {
         "number": 105,
         "status": "partial",
-        "summary": "Safe subset landed locally for JSON error sanitization and parser logging, but the behavior-changing `DEBUG`, `SECRET_KEY`, and stricter default CORS pieces remain deferred for compatibility review."
+        "summary": "Local coverage now includes the error-handling hardening, env-driven CORS controls, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior; only the stricter default CORS-origin policy remains intentionally deferred for backward compatibility."
       }
     },
     {

@@ -62,19 +62,35 @@ def test_validate_comprehensive_reports_debug_warning_and_safe_summary(monkeypat
     monkeypatch.setenv("LLM_API_KEY", "test-key")
     monkeypatch.setenv("ZEP_API_KEY", "zep-key")
     monkeypatch.setenv("FLASK_DEBUG", "True")
+    monkeypatch.delenv("SECRET_KEY", raising=False)
 
     config_module = load_config_module()
     result = config_module.Config.validate_comprehensive()
     summary = config_module.Config.get_config_summary()
 
     assert any("DEBUG" in warning for warning in result.warnings)
+    assert any("SECRET_KEY" in warning for warning in result.warnings)
     assert summary["llm"]["configured"] is True
     assert summary["zep"]["configured"] is True
     assert summary["cors"]["allowed_origins"] == ["*"]
     assert summary["simulation"]["interview_timeouts"]["single_seconds"] == 120.0
+    assert summary["security"]["secret_key_source"] == "generated"
     assert "test-key" not in str(summary)
     assert "zep-key" not in str(summary)
+    assert "mirofish-secret-key" not in config_module.Config.SECRET_KEY
     assert config_module.validate_on_startup() is True
+
+
+def test_config_defaults_to_debug_off_and_uses_explicit_secret_key(monkeypatch):
+    monkeypatch.setenv("SECRET_KEY", "configured-secret")
+    monkeypatch.delenv("FLASK_DEBUG", raising=False)
+
+    config_module = load_config_module()
+
+    assert config_module.Config.DEBUG is False
+    assert config_module.Config.SECRET_KEY == "configured-secret"
+    assert config_module.Config.SECRET_KEY_IS_GENERATED is False
+    assert config_module.Config.get_config_summary()["security"]["secret_key_source"] == "env"
 
 
 def test_validate_comprehensive_can_render_english_messages(monkeypatch):
