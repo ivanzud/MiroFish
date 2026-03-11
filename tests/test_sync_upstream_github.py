@@ -135,6 +135,30 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(payload, {"ok": True})
         self.assertEqual(mocked.call_count, 2)
         mocked_sleep.assert_called_once_with(1)
+        self.assertEqual(mocked.call_args.kwargs["timeout"], sync_upstream_github.REQUEST_TIMEOUT)
+
+    def test_fetch_json_via_gh_sets_subprocess_timeout(self):
+        success = type("Completed", (), {"stdout": '{"ok": true}'})()
+
+        with patch.object(sync_upstream_github.subprocess, "run", return_value=success) as mocked:
+            payload = sync_upstream_github.fetch_json_via_gh("https://api.github.com/repos/test/repo/pulls/101")
+
+        self.assertEqual(payload, {"ok": True})
+        self.assertEqual(mocked.call_args.kwargs["timeout"], sync_upstream_github.REQUEST_TIMEOUT)
+
+    def test_fetch_json_via_http_sets_request_timeout(self):
+        response = type("Response", (), {"__enter__": lambda self: self, "__exit__": lambda *args: None, "read": lambda self: b'{"ok": true}'})()
+
+        with patch("urllib.request.urlopen", return_value=response) as mocked:
+            payload = sync_upstream_github._fetch_json_via_http("https://api.github.com/repos/test/repo/issues")
+
+        self.assertEqual(payload, {"ok": True})
+        self.assertEqual(mocked.call_args.kwargs["timeout"], sync_upstream_github.REQUEST_TIMEOUT)
+
+    def test_fetch_json_via_http_wraps_timeout(self):
+        with patch("urllib.request.urlopen", side_effect=TimeoutError("timed out")):
+            with self.assertRaisesRegex(RuntimeError, "timed out after"):
+                sync_upstream_github._fetch_json_via_http("https://api.github.com/repos/test/repo/issues")
 
     def test_github_api_paginated_collects_multiple_pages(self):
         responses = [

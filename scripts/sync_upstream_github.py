@@ -22,6 +22,8 @@ BODY_EXCERPT_LIMIT = 400
 COMMENT_EXCERPT_LIMIT = 240
 RECENT_COMMENT_LIMIT = 3
 GH_API_MAX_ATTEMPTS = 3
+DEFAULT_API_TIMEOUT = int(os.environ.get("MIROFISH_GITHUB_SYNC_TIMEOUT", "30"))
+REQUEST_TIMEOUT = DEFAULT_API_TIMEOUT
 
 
 def has_github_token() -> bool:
@@ -75,8 +77,16 @@ def fetch_json_via_gh(url: str) -> object:
                 check=True,
                 capture_output=True,
                 text=True,
+                timeout=REQUEST_TIMEOUT,
             )
             return json.loads(result.stdout)
+        except subprocess.TimeoutExpired as exc:
+            last_error = RuntimeError(
+                f"gh api timed out for {endpoint} after {REQUEST_TIMEOUT}s"
+            )
+            if attempt >= GH_API_MAX_ATTEMPTS:
+                raise last_error from exc
+            time.sleep(attempt)
         except subprocess.CalledProcessError as exc:
             details = (exc.stderr or exc.stdout or "").strip() or f"exit status {exc.returncode}"
             last_error = RuntimeError(f"gh api failed for {endpoint}: {details}")
@@ -96,8 +106,12 @@ def _fetch_json_via_http(url: str) -> object:
 
     request = urllib.request.Request(url, headers=headers)
     try:
-        with urllib.request.urlopen(request) as response:
+        with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT) as response:
             return json.load(response)
+    except TimeoutError as exc:
+        raise RuntimeError(
+            f"GitHub API request timed out after {REQUEST_TIMEOUT}s for {url}"
+        ) from exc
     except HTTPError as exc:
         if exc.code == 403 and "rate limit" in str(exc).lower():
             raise RuntimeError(
@@ -356,6 +370,12 @@ def main() -> int:
     parser.add_argument("--repo", default="666ghj/MiroFish", help="owner/repo to inspect")
     parser.add_argument("--state", default="open", help="GitHub state filter (open, closed, or all)")
     parser.add_argument("--limit", type=int, default=500, help="Maximum items to fetch per collection")
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=DEFAULT_API_TIMEOUT,
+        help="Timeout in seconds for each gh/http request",
+    )
     parser.add_argument("--output", required=True, help="Path to write machine-readable JSON")
     parser.add_argument("--summary", required=True, help="Path to write markdown summary")
     parser.add_argument(
@@ -364,6 +384,8 @@ def main() -> int:
         help="Optional git remote name used to annotate whether upstream PR refs are mirrored into the fork",
     )
     args = parser.parse_args()
+    global REQUEST_TIMEOUT
+    REQUEST_TIMEOUT = max(1, args.timeout)
 
     owner, name = args.repo.split("/", 1)
     issue_items = github_api_paginated(
