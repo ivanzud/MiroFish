@@ -13,6 +13,19 @@
       ]
     },
     {
+      "number": 149,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-nja`: the new Step 3 stall report currently includes only a screenshot of \"Waiting for agent actions\", so the next pass should reproduce it and map it against existing simulation-stall/env-liveness fixes before landing a targeted change.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-open-state.json",
+        "docs/upstream-triage.md"
+      ],
+      "validation": [
+        "tracking only"
+      ]
+    },
+    {
       "number": 17,
       "status": "tracked",
       "summary": "Tracked locally in beads as `mirofish-77h`: a future multi-run consensus workflow should reuse a shared Step 1/2 setup, orchestrate repeated Step 3 runs, and synthesize a consensus/divergence report in Step 4.",

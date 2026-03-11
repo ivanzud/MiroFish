@@ -70,6 +70,8 @@ class SyncUpstreamGithubTests(unittest.TestCase):
 
         self.assertEqual(compacted["local_coverage"]["status"], "covered")
         self.assertEqual(compacted["local_coverage"]["summary"], "Auth failures are sanitized")
+        self.assertEqual(compacted["local_status"], "covered")
+        self.assertEqual(compacted["local_summary"], "Auth failures are sanitized")
 
     def test_build_mirror_issue_body_includes_markers_and_local_coverage(self):
         body = sync_upstream_github.build_mirror_issue_body(
@@ -168,7 +170,18 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         )
 
         self.assertEqual(compacted["local_coverage"]["status"], "landed")
+        self.assertEqual(compacted["local_status"], "landed")
+        self.assertEqual(compacted["local_summary"], "Diagnostics landed locally")
         self.assertEqual(compacted["fork_mirror_ref"], "origin/mirror/upstream-pr-125")
+
+    def test_attach_local_coverage_promotes_status_fields(self):
+        attached = sync_upstream_github.attach_local_coverage(
+            [{"number": 145, "title": "Duplicate entity nodes"}],
+            {145: {"number": 145, "status": "tracked", "summary": "Tracked in beads"}},
+        )
+
+        self.assertEqual(attached[0]["local_status"], "tracked")
+        self.assertEqual(attached[0]["local_summary"], "Tracked in beads")
 
     def test_write_summary_includes_local_coverage_notes(self):
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -355,6 +355,22 @@ def load_local_pr_coverage(path: Path | None) -> dict[int, dict[str, object]]:
     return load_local_coverage_entries(path, "pull_requests")
 
 
+def attach_local_coverage_fields(
+    item: dict[str, object],
+    local_coverage: dict[str, object] | None,
+) -> dict[str, object]:
+    if not local_coverage:
+        return item
+
+    enriched = dict(item)
+    enriched["local_coverage"] = local_coverage
+    enriched["local_status"] = str(local_coverage.get("status") or "covered")
+    enriched["local_summary"] = str(
+        local_coverage.get("summary") or "covered locally on this branch"
+    )
+    return enriched
+
+
 def compact_issue(
     issue: dict[str, object],
     coverage_map: dict[int, dict[str, object]] | None = None,
@@ -375,9 +391,7 @@ def compact_issue(
         "recent_comments": fetch_recent_comments(issue.get("comments_url")) if comment_count else [],
     }
     local_coverage = (coverage_map or {}).get(int(issue["number"]))
-    if local_coverage:
-        compacted["local_coverage"] = local_coverage
-    return compacted
+    return attach_local_coverage_fields(compacted, local_coverage)
 
 
 def compact_issues(
@@ -705,9 +719,7 @@ def compact_pr(
         "fork_mirror_ref": fork_mirror_ref,
     }
     local_coverage = (coverage_map or {}).get(number)
-    if local_coverage:
-        compacted["local_coverage"] = local_coverage
-    return compacted
+    return attach_local_coverage_fields(compacted, local_coverage)
 
 
 def compact_pull_requests(
@@ -825,9 +837,7 @@ def attach_local_coverage(
             continue
         enriched = dict(item)
         local_coverage = (coverage_map or {}).get(number)
-        if local_coverage:
-            enriched["local_coverage"] = local_coverage
-        attached.append(enriched)
+        attached.append(attach_local_coverage_fields(enriched, local_coverage))
     return attached
 
 
