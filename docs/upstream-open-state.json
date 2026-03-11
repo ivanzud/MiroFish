@@ -1,8 +1,9 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T11:50:44.955760+00:00",
-  "generated_at": "2026-03-11T11:50:44.955760+00:00",
+  "captured_at": "2026-03-11T11:56:13.717482+00:00",
+  "generated_at": "2026-03-11T11:56:13.717482+00:00",
+  "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
       "open": 36
@@ -50,7 +51,22 @@
           "url": "https://github.com/666ghj/MiroFish/issues/139#issuecomment-4038479566",
           "body_excerpt": "<!-- Answer --> The `401 unauthorized` error indicates a Zep Cloud API authentication issue. Here are the most likely causes and solutions: **1. Version Bug** — If you're using MiroFish v0.1.0, there's a [known authentication bug](https://…"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 139,
+        "status": "covered",
+        "summary": "Graph-build task failures now classify Zep 401/unauthorized responses into a concise ZEP_API_KEY guidance message and strip embedded traceback noise before returning task payload errors.",
+        "local_refs": [
+          "backend/app/services/graph_builder.py",
+          "backend/tests/test_graph_builder.py",
+          "backend/tests/test_graph_upload_api.py"
+        ],
+        "validation": [
+          "backend/tests/test_graph_builder.py::test_format_user_facing_error_maps_embedded_traceback_auth_failures",
+          "backend/tests/test_graph_upload_api.py::test_build_graph_task_persists_sanitized_zep_auth_error"
+        ],
+        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+      }
     },
     {
       "number": 135,
@@ -96,7 +112,20 @@
           "url": "https://github.com/666ghj/MiroFish/issues/133#issuecomment-4037175500",
           "body_excerpt": "<!-- Greeting --> Hi @Axing93! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这是一个常见的前后端连接配置问题。 **后端 5001 返回 404 是正常的** — [根路径 `/` 未定义端点](https://github.com/666ghj/MiroFish/issues/68)，实际 API 通过具体…"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 133,
+        "status": "covered",
+        "summary": "The backend root path `/` plus `/health` and `/healthz` now return a small JSON status payload with the live API prefixes, so local or Docker users no longer need to infer backend health from a bare 404.",
+        "local_refs": [
+          "backend/app/__init__.py",
+          "backend/tests/test_app_routes.py"
+        ],
+        "validation": [
+          "backend/tests/test_app_routes.py::test_root_and_health_endpoints_expose_backend_status"
+        ],
+        "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+      }
     },
     {
       "number": 117,

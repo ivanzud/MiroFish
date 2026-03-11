@@ -22,6 +22,80 @@ sync_upstream_github = load_module()
 
 
 class SyncUpstreamGithubTests(unittest.TestCase):
+    def test_load_local_issue_coverage_reads_machine_readable_map(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            coverage_path = Path(tmpdir) / "coverage.json"
+            coverage_path.write_text(
+                json.dumps(
+                    {
+                        "issues": [
+                            {"number": 133, "status": "covered", "summary": "Root endpoint returns backend status"},
+                            {"number": 139, "status": "covered", "summary": "Zep auth errors are sanitized"},
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            coverage = sync_upstream_github.load_local_issue_coverage(coverage_path)
+
+        self.assertEqual(sorted(coverage), [133, 139])
+        self.assertEqual(coverage[139]["status"], "covered")
+
+    def test_compact_issue_includes_local_coverage_when_available(self):
+        issue = {
+            "number": 139,
+            "title": "Graph build task failed",
+            "html_url": "https://example.test/issues/139",
+            "state": "open",
+            "created_at": "2026-03-10T00:00:00Z",
+            "updated_at": "2026-03-11T00:00:00Z",
+            "labels": [],
+            "user": {"login": "alice"},
+            "body": "provider traceback",
+            "comments": 0,
+        }
+
+        compacted = sync_upstream_github.compact_issue(
+            issue,
+            {139: {"number": 139, "status": "covered", "summary": "Auth failures are sanitized"}},
+        )
+
+        self.assertEqual(compacted["local_coverage"]["status"], "covered")
+        self.assertEqual(compacted["local_coverage"]["summary"], "Auth failures are sanitized")
+
+    def test_write_summary_includes_local_coverage_notes(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "summary.md"
+            sync_upstream_github.write_summary(
+                summary_path,
+                "666ghj/MiroFish",
+                "open",
+                [
+                    {
+                        "number": 133,
+                        "title": "Backend access confusion",
+                        "state": "open",
+                        "labels": ["question"],
+                        "body_excerpt": "Backend root returned 404",
+                        "recent_comments": [],
+                        "local_coverage": {
+                            "number": 133,
+                            "status": "covered",
+                            "summary": "Root and health endpoints now return backend status JSON",
+                        },
+                    }
+                ],
+                [],
+                coverage_map_path="docs/upstream-coverage.json",
+                captured_at="2026-03-11T09:00:00+00:00",
+            )
+
+            summary = summary_path.read_text(encoding="utf-8")
+
+        self.assertIn("Local issue coverage map: `docs/upstream-coverage.json`", summary)
+        self.assertIn("local coverage [covered]: Root and health endpoints now return backend status JSON", summary)
+
     def test_build_parser_accepts_legacy_output_flag_names(self):
         args = sync_upstream_github.build_parser().parse_args(
             [

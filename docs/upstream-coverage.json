@@ -1,0 +1,34 @@
+{
+  "repo": "666ghj/MiroFish",
+  "captured_at": "2026-03-11T11:55:00+00:00",
+  "issues": [
+    {
+      "number": 133,
+      "status": "covered",
+      "summary": "The backend root path `/` plus `/health` and `/healthz` now return a small JSON status payload with the live API prefixes, so local or Docker users no longer need to infer backend health from a bare 404.",
+      "local_refs": [
+        "backend/app/__init__.py",
+        "backend/tests/test_app_routes.py"
+      ],
+      "validation": [
+        "backend/tests/test_app_routes.py::test_root_and_health_endpoints_expose_backend_status"
+      ],
+      "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+    },
+    {
+      "number": 139,
+      "status": "covered",
+      "summary": "Graph-build task failures now classify Zep 401/unauthorized responses into a concise ZEP_API_KEY guidance message and strip embedded traceback noise before returning task payload errors.",
+      "local_refs": [
+        "backend/app/services/graph_builder.py",
+        "backend/tests/test_graph_builder.py",
+        "backend/tests/test_graph_upload_api.py"
+      ],
+      "validation": [
+        "backend/tests/test_graph_builder.py::test_format_user_facing_error_maps_embedded_traceback_auth_failures",
+        "backend/tests/test_graph_upload_api.py::test_build_graph_task_persists_sanitized_zep_auth_error"
+      ],
+      "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+    }
+  ]
+}

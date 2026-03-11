@@ -279,9 +279,35 @@ def list_mirrored_pull_request_numbers(remote: str) -> set[int]:
     return mirrored
 
 
-def compact_issue(issue: dict[str, object]) -> dict[str, object]:
+def load_local_issue_coverage(path: Path | None) -> dict[int, dict[str, object]]:
+    if path is None or not path.exists():
+        return {}
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+    entries = payload.get("issues", []) if isinstance(payload, dict) else []
+    if not isinstance(entries, list):
+        return {}
+
+    coverage_map: dict[int, dict[str, object]] = {}
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        number = entry.get("number")
+        if isinstance(number, int):
+            coverage_map[number] = entry
+    return coverage_map
+
+
+def compact_issue(
+    issue: dict[str, object],
+    coverage_map: dict[int, dict[str, object]] | None = None,
+) -> dict[str, object]:
     comment_count = int(issue.get("comments") or 0)
-    return {
+    compacted = {
         "number": issue["number"],
         "title": issue["title"],
         "url": issue["html_url"],
@@ -295,10 +321,22 @@ def compact_issue(issue: dict[str, object]) -> dict[str, object]:
         "comment_count": comment_count,
         "recent_comments": fetch_recent_comments(issue.get("comments_url")) if comment_count else [],
     }
+    local_coverage = (coverage_map or {}).get(int(issue["number"]))
+    if local_coverage:
+        compacted["local_coverage"] = local_coverage
+    return compacted
 
 
-def compact_issues(issue_items: list[dict[str, object]], max_workers: int) -> list[dict[str, object]]:
-    return parallel_ordered_map(issue_items, compact_issue, max_workers=max_workers)
+def compact_issues(
+    issue_items: list[dict[str, object]],
+    max_workers: int,
+    coverage_map: dict[int, dict[str, object]] | None = None,
+) -> list[dict[str, object]]:
+    return parallel_ordered_map(
+        issue_items,
+        lambda item: compact_issue(item, coverage_map),
+        max_workers=max_workers,
+    )
 
 
 def compact_pr(
@@ -376,6 +414,7 @@ def write_summary(
     prs: list[dict[str, object]],
     fork_remote: str | None = None,
     captured_at: str | None = None,
+    coverage_map_path: str | None = None,
 ) -> None:
     issue_counts = summarize_counts(issues)
     pr_counts = summarize_counts(prs)
@@ -391,11 +430,18 @@ def write_summary(
     ]
     if fork_remote:
         lines.append(f"- Mirrored in `{fork_remote}`: `{mirrored_count}` of `{len(prs)}` PR refs")
+    if coverage_map_path:
+        lines.append(f"- Local issue coverage map: `{coverage_map_path}`")
     lines.extend(["", "## Recently Updated Issues", ""])
 
     for issue in issues[:10]:
         labels = ", ".join(issue["labels"]) if issue["labels"] else "no labels"
         lines.append(f"- #{issue['number']} [{issue['state']}] {issue['title']} ({labels})")
+        local_coverage = issue.get("local_coverage") or {}
+        if local_coverage:
+            status = local_coverage.get("status") or "covered"
+            summary = local_coverage.get("summary") or "covered locally on this branch"
+            lines.append(f"  - local coverage [{status}]: {summary}")
         if issue.get("body_excerpt"):
             lines.append(f"  - {issue['body_excerpt']}")
         if issue.get("recent_comments"):
@@ -485,6 +531,7 @@ def try_reuse_cached_snapshot(
         prs,
         cached_payload.get("fork_remote"),
         captured_at=captured_at,
+        coverage_map_path=cached_payload.get("coverage_map_path"),
     )
     print(
         f"warning: {exc}; reusing fresh cached snapshot from "
@@ -574,6 +621,14 @@ def build_parser() -> argparse.ArgumentParser:
             "Lower this if GitHub starts rate limiting aggressively."
         ),
     )
+    parser.add_argument(
+        "--coverage-map",
+        default="docs/upstream-coverage.json",
+        help=(
+            "Optional machine-readable JSON file describing upstream issues already covered locally. "
+            "Defaults to docs/upstream-coverage.json when present."
+        ),
+    )
     return parser
 
 
@@ -586,6 +641,8 @@ def main() -> int:
 
     output_path = Path(args.output)
     summary_path = Path(args.summary)
+    coverage_map_path = Path(args.coverage_map) if args.coverage_map else None
+    coverage_map = load_local_issue_coverage(coverage_map_path)
     cached_payload = load_cached_snapshot(output_path, args.repo, args.state)
     if cached_payload is not None:
         cached_payload["_cache_path"] = str(output_path)
@@ -619,6 +676,7 @@ def main() -> int:
             issues = compact_issues(
                 [item for item in issue_items if "pull_request" not in item],
                 max_workers=max_workers,
+                coverage_map=coverage_map,
             )
             pr_details = hydrate_pull_requests(owner, name, pr_items, max_workers=max_workers)
             mirrored_pr_numbers = (
@@ -647,6 +705,7 @@ def main() -> int:
             "state": args.state,
             "captured_at": captured_at,
             "generated_at": captured_at,
+            "coverage_map_path": str(coverage_map_path) if coverage_map_path and coverage_map_path.exists() else None,
             "counts": {
                 "issues": summarize_counts(issues),
                 "pull_requests": summarize_counts(prs),
@@ -672,6 +731,7 @@ def main() -> int:
             prs,
             args.fork_remote,
             captured_at=captured_at,
+            coverage_map_path=str(coverage_map_path) if coverage_map_path and coverage_map_path.exists() else None,
         )
 
     print(
