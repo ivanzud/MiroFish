@@ -41,6 +41,7 @@ Last refreshed: `2026-03-11`
 - Upstream issue `#32` is now covered end-to-end locally: when an OpenAI-compatible backend rejects `response_format={"type":"json_object"}`, `OasisProfileGenerator` and `SimulationConfigGenerator` retry without JSON mode and still parse the returned JSON payload. That closes the remaining high-signal backend compatibility gap for direct Codex/OpenAI-compatible setups.
 - `#114` Fix API base URL fallback is already superseded locally by the current frontend API client, which now falls back to the runtime origin and also supports `VITE_API_TIMEOUT`.
 - `#93` Hardcoded frontend API base URL is now fully addressed locally: `Process.vue` uses the shared frontend API resolver instead of embedding a separate `http://localhost:5001` fallback in network-error messages.
+- Upstream issue `#133` is now addressed locally: when the frontend is served on the documented default port `3000` without an explicit `VITE_API_BASE_URL`, it now auto-targets backend port `5001` on the same host instead of calling the frontend origin and failing in dual-port Docker/local deployments. The READMEs now also point users to `http://localhost:5001/health` instead of expecting the backend root to serve a page.
 - `#101` Robust JSON helper utilities are now mirrored into the fork for visibility, but the upstream branch predates substantial local/frontend/backend hardening on this branch; a blind cherry-pick would effectively revert large amounts of newer work, and the useful intent is already covered locally by broader JSON payload extraction and compatibility fixes.
 
 ## Deferred for later review
@@ -68,7 +69,9 @@ Last refreshed: `2026-03-11`
 - `./.tmp-test-venv/bin/pytest backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes with targeted regression coverage for context-length handling and transient Zep retry behavior.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_ontology_generator.py backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes after landing the ontology validation hardening and exception-scope cleanup.
 - `python3 -m unittest tests/test_sync_upstream_github.py` passes after teaching the sync script to hydrate per-PR details, so the local JSON/markdown snapshots now include real `mergeable_state` metadata instead of `unknown` placeholders.
-- `python3 scripts/sync_upstream_github.py --state open ...` and `--state all ...` refreshed the local snapshots again on March 11, 2026; the full-history capture currently shows `32` open upstream issues, `33` open upstream PRs, and `14` closed upstream PRs.
+- `python3 scripts/sync_upstream_github.py --state open ...` and `--state all ...` refreshed the local snapshots again on March 11, 2026; the full-history capture currently shows `33` open upstream issues, `33` open upstream PRs, and `14` closed upstream PRs (`47` total PRs in the full snapshot).
+- `cd frontend && npm test` passes with new coverage for the frontend API base URL resolver, including the default `3000 -> 5001` dual-port deployment fallback.
+- `cd frontend && npm run build` passes after restoring dual-port frontend/backend compatibility for the default local and Docker topology.
 - `cd backend && uv run pytest -q` is currently blocked in this environment because dependency resolution reaches `tiktoken`, which attempts a source build and fails without a Rust compiler.
 
 ## Snapshot artifacts

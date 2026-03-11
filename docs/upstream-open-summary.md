@@ -2,12 +2,13 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T07:45:21.099037+00:00`
-- Issues: `32` total (`open=32`, `closed=0`)
+- Captured: `2026-03-11T07:49:19.057406+00:00`
+- Issues: `33` total (`open=33`, `closed=0`)
 - Pull requests: `33` total (`open=33`, `closed=0`)
 
 ## Recently Updated Issues
 
+- #133 [open] 本地部署，启动已经显示成功了，访问却失败 (question)
 - #117 [open] ### Feature Request: English Language Support (enhancement)
 - #110 [open] 阿里云百炼 API 调用异常：付费计划（Coding Plan）非千文模型及大模型API中转站的API均失效，仅免费额度模型或coding plan的千文模型可用 (LLM API)
 - #64 [open] 一直卡在上传文件错误：Request failed with status code 500 (no labels)
@@ -17,7 +18,6 @@
 - #107 [open] 镜像问题 (no labels)
 - #99 [open] Docker镜像没有arm版本 (enhancement)
 - #93 [open] `frontend/src/api/index.js`中的`baseURL`不应该硬编码 (enhancement)
-- #92 [open] Upgrade GitHub Actions (enhancement)
 
 ## Recently Updated Pull Requests
 

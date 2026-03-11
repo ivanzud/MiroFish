@@ -1,16 +1,11 @@
 import axios from 'axios'
+import { resolveBaseURL as resolveApiBaseURL } from './baseUrl'
 
 export const resolveBaseURL = () => {
-  const envBaseURL = import.meta.env.VITE_API_BASE_URL
-  if (envBaseURL && envBaseURL.trim()) {
-    return envBaseURL
-  }
-
-  if (typeof window !== 'undefined' && window.location) {
-    return window.location.origin
-  }
-
-  return ''
+  return resolveApiBaseURL({
+    envBaseURL: import.meta.env.VITE_API_BASE_URL,
+    location: typeof window !== 'undefined' ? window.location : undefined
+  })
 }
 
 const getApiLocale = () => {

@@ -1,16 +1,29 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T07:45:21.098429+00:00",
+  "captured_at": "2026-03-11T07:49:19.056772+00:00",
   "counts": {
     "issues": {
-      "open": 32
+      "open": 33
     },
     "pull_requests": {
       "open": 33
     }
   },
   "issues": [
+    {
+      "number": 133,
+      "title": "本地部署，启动已经显示成功了，访问却失败",
+      "url": "https://github.com/666ghj/MiroFish/issues/133",
+      "state": "open",
+      "created_at": "2026-03-11T07:45:16Z",
+      "updated_at": "2026-03-11T07:47:36Z",
+      "closed_at": null,
+      "labels": [
+        "question"
+      ],
+      "author": "Axing93"
+    },
     {
       "number": 117,
       "title": "### Feature Request: English Language Support",

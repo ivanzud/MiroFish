@@ -267,6 +267,8 @@ npm run dev
 - 前端：`http://localhost:3000`
 - 后端 API：`http://localhost:5001`
 
+默认前后端双端口部署时，前端会自动访问同主机的 `5001` 端口后端。后端根路径仅提供 API，快速健康检查请访问 `http://localhost:5001/health`。
+
 **单独启动：**
 
 ```bash
@@ -295,6 +297,8 @@ docker compose up -d
 ```
 
 默认会读取根目录下的 `.env`，并映射端口 `3000（前端）/5001（后端）`
+
+如果前后端部署在不同主机或不同端口，请为前端显式设置 `VITE_API_BASE_URL`。
 
 > 在 `docker-compose.yml` 中已通过注释提供加速镜像地址，可按需替换
 

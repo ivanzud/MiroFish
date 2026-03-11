@@ -267,6 +267,8 @@ npm run dev
 - Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:5001`
 
+If you use the default dual-port layout, the frontend auto-targets backend port `5001` on the same host. The backend root is API-only; use `http://localhost:5001/health` for a quick health check.
+
 **Start Individually:**
 
 ```bash
@@ -295,6 +297,8 @@ docker compose up -d
 ```
 
 Reads `.env` from root directory by default, maps ports `3000 (frontend) / 5001 (backend)`
+
+If you deploy frontend and backend on different hosts or ports, set `VITE_API_BASE_URL` for the frontend explicitly.
 
 > Mirror address for faster pulling is provided as comments in `docker-compose.yml`, replace if needed.
 

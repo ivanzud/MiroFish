@@ -2,12 +2,13 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T07:45:30.702681+00:00`
-- Issues: `79` total (`open=32`, `closed=47`)
+- Captured: `2026-03-11T07:49:28.871457+00:00`
+- Issues: `80` total (`open=33`, `closed=47`)
 - Pull requests: `47` total (`open=33`, `closed=14`)
 
 ## Recently Updated Issues
 
+- #133 [open] 本地部署，启动已经显示成功了，访问却失败 (question)
 - #121 [closed] 卡在了Exception in handleNewProject: Network Error (question)
 - #123 [closed] プリセット業界知識RAGの導入（方式3: ローカルファイル注入） (no labels)
 - #117 [open] ### Feature Request: English Language Support (enhancement)
@@ -17,7 +18,6 @@
 - #109 [closed] 纯小白看到新闻后本机部署，但似乎Zep额度用完后不知道接下来咋办了 (question)
 - #42 [open] 项目在3/5开始模拟时会消耗大量内存 (no labels)
 - #84 [open] 报告生成失败，请问有没有办法重新生成？ (question)
-- #107 [open] 镜像问题 (no labels)
 
 ## Recently Updated Pull Requests
 
