@@ -67,6 +67,10 @@ class GraphBuilderService:
         self.task_manager = TaskManager()
         self.logger = get_logger('mirofish.graph_builder')
 
+    def _task_message(self, key: str, **kwargs: Any) -> str:
+        """Build a localized task-progress message for persisted worker state."""
+        return tr(key, self.locale, **kwargs)
+
     @staticmethod
     def _is_retryable_zep_error(error: Exception) -> bool:
         """Return whether a Zep operation failure looks transient and safe to retry."""
@@ -451,7 +455,7 @@ class GraphBuilderService:
                 task_id,
                 status=TaskStatus.PROCESSING,
                 progress=5,
-                message="开始构建图谱..."
+                message=self._task_message("graph.build_started_worker"),
             )
             
             # 1. 创建图谱
@@ -459,7 +463,7 @@ class GraphBuilderService:
             self.task_manager.update_task(
                 task_id,
                 progress=10,
-                message=f"图谱已创建: {graph_id}"
+                message=self._task_message("graph.build_graph_created", graph_id=graph_id),
             )
             
             # 2. 设置本体
@@ -467,7 +471,7 @@ class GraphBuilderService:
             self.task_manager.update_task(
                 task_id,
                 progress=15,
-                message="本体已设置"
+                message=self._task_message("graph.build_ontology_set"),
             )
             
             # 3. 文本分块
@@ -476,7 +480,7 @@ class GraphBuilderService:
             self.task_manager.update_task(
                 task_id,
                 progress=20,
-                message=f"文本已分割为 {total_chunks} 个块"
+                message=self._task_message("graph.build_chunks_split", total_chunks=total_chunks),
             )
             
             # 4. 分批发送数据
@@ -493,7 +497,7 @@ class GraphBuilderService:
             self.task_manager.update_task(
                 task_id,
                 progress=60,
-                message="等待Zep处理数据..."
+                message=self._task_message("graph.build_waiting_for_zep"),
             )
             
             self._wait_for_episodes(
@@ -509,7 +513,7 @@ class GraphBuilderService:
             self.task_manager.update_task(
                 task_id,
                 progress=90,
-                message="获取图谱信息..."
+                message=self._task_message("graph.build_fetching_graph_info"),
             )
             
             graph_info = self._get_graph_info(graph_id)

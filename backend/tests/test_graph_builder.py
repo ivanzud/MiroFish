@@ -266,6 +266,75 @@ def test_wait_for_episodes_without_entries_uses_english_progress_message(graph_b
     assert progress_updates == [("No waiting required (no episodes)", 1.0)]
 
 
+def test_build_graph_worker_uses_english_task_messages(graph_builder_module, monkeypatch):
+    service = build_service(graph_builder_module)
+    service.locale = "en"
+    updates = []
+    completions = []
+
+    class FakeTaskManager:
+        def update_task(self, task_id, **kwargs):
+            updates.append((task_id, kwargs))
+
+        def complete_task(self, task_id, result, locale=None):
+            completions.append((task_id, result, locale))
+
+        def fail_task(self, task_id, error, locale=None):
+            raise AssertionError(f"worker unexpectedly failed: {error}")
+
+    service.task_manager = FakeTaskManager()
+    service.create_graph = lambda graph_name: "graph-en-123"
+    service.set_ontology = lambda graph_id, ontology: None
+    service.add_text_batches = lambda graph_id, chunks, batch_size, progress_callback: ["episode-1", "episode-2"]
+    service._wait_for_episodes = lambda episode_uuids, progress_callback: None
+    service._get_graph_info = lambda graph_id: graph_builder_module.GraphInfo(
+        graph_id=graph_id,
+        node_count=3,
+        edge_count=2,
+        entity_types=["Person"],
+    )
+    monkeypatch.setattr(
+        graph_builder_module.TextProcessor,
+        "split_text",
+        lambda text, chunk_size, chunk_overlap: ["chunk-1", "chunk-2", "chunk-3"],
+    )
+
+    service._build_graph_worker(
+        "task-en-1",
+        "example text",
+        {"entity_types": [], "edge_types": []},
+        "English graph",
+        500,
+        50,
+        2,
+    )
+
+    assert [item[1]["message"] for item in updates] == [
+        "Starting graph build...",
+        "Graph created: graph-en-123",
+        "Ontology configured",
+        "Text split into 3 chunk(s)",
+        "Waiting for Zep to process the data...",
+        "Fetching graph info...",
+    ]
+    assert completions == [
+        (
+            "task-en-1",
+            {
+                "graph_id": "graph-en-123",
+                "graph_info": {
+                    "graph_id": "graph-en-123",
+                    "node_count": 3,
+                    "edge_count": 2,
+                    "entity_types": ["Person"],
+                },
+                "chunks_processed": 3,
+            },
+            "en",
+        )
+    ]
+
+
 def test_set_ontology_accepts_string_attribute_definitions(graph_builder_module):
     service = build_service(graph_builder_module)
     captured = {}
