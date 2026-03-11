@@ -17,6 +17,15 @@ else:
     load_dotenv(override=True)
 
 
+def _env(*names, default=None):
+    """Return the first configured environment variable from the provided aliases."""
+    for name in names:
+        value = os.environ.get(name)
+        if value not in (None, ''):
+            return value
+    return default
+
+
 class Config:
     """Flask配置类"""
     
@@ -28,9 +37,9 @@ class Config:
     JSON_AS_ASCII = False
     
     # LLM配置（统一使用OpenAI格式）
-    LLM_API_KEY = os.environ.get('LLM_API_KEY')
-    LLM_BASE_URL = os.environ.get('LLM_BASE_URL', 'https://api.openai.com/v1')
-    LLM_MODEL_NAME = os.environ.get('LLM_MODEL_NAME', 'gpt-4o-mini')
+    LLM_API_KEY = _env('LLM_API_KEY', 'OPENAI_API_KEY')
+    LLM_BASE_URL = _env('LLM_BASE_URL', 'OPENAI_BASE_URL', default='https://api.openai.com/v1')
+    LLM_MODEL_NAME = _env('LLM_MODEL_NAME', 'OPENAI_MODEL', default='gpt-4o-mini')
     
     # Zep配置
     ZEP_API_KEY = os.environ.get('ZEP_API_KEY')
@@ -68,8 +77,7 @@ class Config:
         """验证必要配置"""
         errors = []
         if not cls.LLM_API_KEY:
-            errors.append("LLM_API_KEY 未配置")
+            errors.append("LLM_API_KEY / OPENAI_API_KEY 未配置")
         if not cls.ZEP_API_KEY:
             errors.append("ZEP_API_KEY 未配置")
         return errors
-

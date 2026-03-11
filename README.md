@@ -116,6 +116,7 @@ cp .env.example .env
 
 ```env
 # LLM API配置（支持 OpenAI SDK 格式的任意 LLM API）
+# 也支持直接使用 OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_MODEL
 # 推荐使用阿里百炼平台qwen-plus模型：https://bailian.console.aliyun.com/
 # 注意消耗较大，可先进行小于40轮的模拟尝试
 LLM_API_KEY=your_api_key
@@ -126,6 +127,8 @@ LLM_MODEL_NAME=qwen-plus
 # 每月免费额度即可支撑简单使用：https://app.getzep.com/
 ZEP_API_KEY=your_zep_api_key
 ```
+
+说明：后端现在同时识别项目内的 `LLM_*` 配置和标准 `OPENAI_*` 配置，因此可直接接入 OpenAI、Codex 兼容网关、LM Studio、Ollama 等 OpenAI-compatible 服务。
 
 #### 2. 安装依赖
 

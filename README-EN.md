@@ -116,6 +116,7 @@ cp .env.example .env
 
 ```env
 # LLM API Configuration (supports any LLM API with OpenAI SDK format)
+# Standard OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_MODEL aliases also work
 # Recommended: Alibaba Qwen-plus model via Bailian Platform: https://bailian.console.aliyun.com/
 # High consumption, try simulations with fewer than 40 rounds first
 LLM_API_KEY=your_api_key
@@ -126,6 +127,8 @@ LLM_MODEL_NAME=qwen-plus
 # Free monthly quota is sufficient for simple usage: https://app.getzep.com/
 ZEP_API_KEY=your_zep_api_key
 ```
+
+The backend now accepts both the project-specific `LLM_*` variables and the standard `OPENAI_*` aliases, so you can point MiroFish directly at OpenAI, Codex-compatible gateways, LM Studio, Ollama, or other OpenAI-compatible backends without extra code changes.
 
 #### 2. Install Dependencies
 

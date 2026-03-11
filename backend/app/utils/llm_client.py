@@ -25,7 +25,7 @@ class LLMClient:
         self.model = model or Config.LLM_MODEL_NAME
         
         if not self.api_key:
-            raise ValueError("LLM_API_KEY 未配置")
+            raise ValueError("LLM_API_KEY / OPENAI_API_KEY 未配置")
         
         self.client = OpenAI(
             api_key=self.api_key,
@@ -62,10 +62,37 @@ class LLMClient:
             kwargs["response_format"] = response_format
         
         response = self.client.chat.completions.create(**kwargs)
-        content = response.choices[0].message.content
-        # 部分模型（如MiniMax M2.5）会在content中包含<think>思考内容，需要移除
-        content = re.sub(r'<think>[\s\S]*?</think>', '', content).strip()
+        content = response.choices[0].message.content or ""
+        # 部分模型会在 content 中夹带 <think>...</think>，且标签大小写不固定
+        content = re.sub(r'<think\b[^>]*>[\s\S]*?</think>', '', content, flags=re.IGNORECASE).strip()
         return content
+
+    @staticmethod
+    def _extract_json_payload(response_text: str) -> str:
+        """从混合文本中提取可解析的 JSON 负载。"""
+        text = (response_text or "").strip().lstrip('\ufeff')
+
+        text = re.sub(r'^```(?:json)?\s*\n?', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'\n?```\s*$', '', text)
+        text = text.strip()
+
+        try:
+            json.loads(text)
+            return text
+        except json.JSONDecodeError:
+            pass
+
+        start = text.find('{')
+        end = text.rfind('}')
+        if start != -1 and end != -1 and end > start:
+            candidate = text[start:end + 1].strip()
+            try:
+                json.loads(candidate)
+                return candidate
+            except json.JSONDecodeError:
+                pass
+
+        return text
     
     def chat_json(
         self,
@@ -88,16 +115,11 @@ class LLMClient:
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
-            response_format={"type": "json_object"}
+            # 不设置 response_format，以兼容 LM Studio / Ollama 等仅支持纯文本 JSON 输出的后端
         )
-        # 清理markdown代码块标记
-        cleaned_response = response.strip()
-        cleaned_response = re.sub(r'^```(?:json)?\s*\n?', '', cleaned_response, flags=re.IGNORECASE)
-        cleaned_response = re.sub(r'\n?```\s*$', '', cleaned_response)
-        cleaned_response = cleaned_response.strip()
+        cleaned_response = self._extract_json_payload(response)
 
         try:
             return json.loads(cleaned_response)
         except json.JSONDecodeError:
             raise ValueError(f"LLM返回的JSON格式无效: {cleaned_response}")
-
