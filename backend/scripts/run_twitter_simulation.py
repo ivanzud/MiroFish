@@ -431,15 +431,19 @@ class IPCHandler:
             self.send_response(
                 command_id,
                 "completed",
-                result={"message": _t("环境即将关闭", "The environment is shutting down")},
+                result={"message": script_message("close_command_ack", SCRIPT_LOCALE)},
             )
             return False
-        
+
         else:
             self.send_response(
                 command_id,
                 "failed",
-                error=_t(f"未知命令类型: {command_type}", f"Unknown command type: {command_type}"),
+                error=script_message(
+                    "unknown_command",
+                    SCRIPT_LOCALE,
+                    command_type=command_type,
+                ),
             )
             return True
 

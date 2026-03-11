@@ -111,6 +111,10 @@ def test_script_message_supports_english_runtime_strings():
     assert llm_env.script_message("batch_interview_completed", "en", count=3) == (
         "  Batch interview completed: 3 agents"
     )
+    assert llm_env.script_message("close_command_ack", "en") == "The environment is shutting down"
+    assert llm_env.script_message("unknown_command", "en", command_type="mystery") == (
+        "Unknown command type: mystery"
+    )
     assert llm_env.script_message("no_valid_agents", "en") == "No valid agents were found"
     assert llm_env.script_message("no_successful_interviews", "en") == (
         "No interviews completed successfully"
@@ -169,6 +173,10 @@ def test_script_message_defaults_to_chinese_runtime_strings():
         "错误: 配置文件不存在: /tmp/config.json"
     )
     assert llm_env.script_message("unknown_error") == "未知错误"
+    assert llm_env.script_message("close_command_ack") == "环境即将关闭"
+    assert llm_env.script_message("unknown_command", command_type="mystery") == (
+        "未知命令类型: mystery"
+    )
     assert llm_env.script_message("install_simulation_deps_uv") == (
         "或在 backend 目录执行: `uv sync --extra simulation`"
     )

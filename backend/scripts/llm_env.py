@@ -113,6 +113,14 @@ SCRIPT_MESSAGES = {
         "zh": "收到关闭环境命令",
         "en": "Received close-environment command",
     },
+    "close_command_ack": {
+        "zh": "环境即将关闭",
+        "en": "The environment is shutting down",
+    },
+    "unknown_command": {
+        "zh": "未知命令类型: {command_type}",
+        "en": "Unknown command type: {command_type}",
+    },
     "llm_config": {
         "zh": "LLM配置: model={model}, base_url={base_url}...",
         "en": "LLM config: model={model}, base_url={base_url}...",
