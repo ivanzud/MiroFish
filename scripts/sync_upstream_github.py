@@ -4,6 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
+import errno
+import fcntl
 import json
 import os
 import re
@@ -315,6 +318,7 @@ def write_summary(
     issues: list[dict[str, object]],
     prs: list[dict[str, object]],
     fork_remote: str | None = None,
+    captured_at: str | None = None,
 ) -> None:
     issue_counts = summarize_counts(issues)
     pr_counts = summarize_counts(prs)
@@ -324,7 +328,7 @@ def write_summary(
         "",
         f"- Repository: `{repo}`",
         f"- State filter: `{state}`",
-        f"- Captured: `{datetime.now(timezone.utc).isoformat()}`",
+        f"- Captured: `{captured_at or datetime.now(timezone.utc).isoformat()}`",
         f"- Issues: `{len(issues)}` total (`open={issue_counts.get('open', 0)}`, `closed={issue_counts.get('closed', 0)}`)",
         f"- Pull requests: `{len(prs)}` total (`open={pr_counts.get('open', 0)}`, `closed={pr_counts.get('closed', 0)}`)",
     ]
@@ -384,7 +388,7 @@ def load_cached_snapshot(path: Path, repo: str, state: str) -> dict[str, Any] | 
 
 
 def snapshot_is_fresh(payload: dict[str, Any], stale_after_hours: int) -> bool:
-    captured_at = payload.get("captured_at")
+    captured_at = payload.get("captured_at") or payload.get("generated_at")
     if not captured_at or stale_after_hours < 0:
         return False
 
@@ -395,6 +399,34 @@ def snapshot_is_fresh(payload: dict[str, Any], stale_after_hours: int) -> bool:
 
     age_seconds = (datetime.now(timezone.utc) - captured.astimezone(timezone.utc)).total_seconds()
     return age_seconds <= stale_after_hours * 3600
+
+
+def lock_path_for(output_path: Path, repo: str) -> Path:
+    repo_slug = re.sub(r"[^A-Za-z0-9._-]+", "-", repo)
+    repo_root = output_path.resolve().parents[1]
+    return repo_root / ".agents" / "upstream-sync-locks" / f"{repo_slug}.lock"
+
+
+@contextlib.contextmanager
+def repo_lock(output_path: Path, repo: str):
+    lock_path = lock_path_for(output_path, repo)
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(lock_path, "w", encoding="utf-8") as lock_file:
+        try:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError as exc:
+            if exc.errno in (errno.EACCES, errno.EAGAIN):
+                raise RuntimeError(
+                    f"Another sync_upstream_github.py run is already refreshing {repo}. "
+                    "Wait for it to finish and rerun sequentially."
+                ) from exc
+            raise
+        lock_file.write(str(os.getpid()))
+        lock_file.flush()
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -448,64 +480,84 @@ def main() -> int:
     output_path = Path(args.output)
     summary_path = Path(args.summary)
     cached_payload = load_cached_snapshot(output_path, args.repo, args.state)
-
     owner, name = args.repo.split("/", 1)
-    try:
-        issue_items = github_api_paginated(
-            f"/repos/{owner}/{name}/issues",
-            {"state": args.state, "sort": "updated", "direction": "desc"},
-            args.limit,
-        )
-        pr_items = github_api_paginated(
-            f"/repos/{owner}/{name}/pulls",
-            {"state": args.state, "sort": "updated", "direction": "desc"},
-            args.limit,
-        )
-    except RuntimeError as exc:
-        rate_limited = "rate limit" in str(exc).lower()
-        if rate_limited and cached_payload and snapshot_is_fresh(cached_payload, args.stale_cache_hours):
-            issues = cached_payload.get("issues") or []
-            prs = cached_payload.get("pull_requests") or []
-            if isinstance(issues, list) and isinstance(prs, list):
-                write_summary(summary_path, args.repo, args.state, issues, prs, cached_payload.get("fork_remote"))
-                print(
-                    f"warning: {exc}; reusing fresh cached snapshot from {output_path} "
-                    f"(captured_at={cached_payload.get('captured_at')})",
-                    file=sys.stderr,
-                )
-                print(
-                    f"Reused cached snapshot with {len(issues)} issues and {len(prs)} pull requests "
-                    f"from {args.repo} into {os.path.relpath(output_path)}"
-                )
-                return 0
-        raise
 
-    issues = [compact_issue(item) for item in issue_items if "pull_request" not in item]
-    pr_details = hydrate_pull_requests(owner, name, pr_items)
-    mirrored_pr_numbers = list_mirrored_pull_request_numbers(args.fork_remote) if args.fork_remote else None
-    prs = [compact_pr(item, mirrored_pr_numbers, args.fork_remote) for item in pr_details]
-    payload = {
-        "repo": args.repo,
-        "state": args.state,
-        "captured_at": datetime.now(timezone.utc).isoformat(),
-        "counts": {
-            "issues": summarize_counts(issues),
-            "pull_requests": summarize_counts(prs),
-        },
-        "issues": issues,
-        "pull_requests": prs,
-    }
-    if args.fork_remote:
-        mirrored_total = sum(1 for pr in prs if pr["fork_mirrored"])
-        payload["fork_remote"] = args.fork_remote
-        payload["counts"]["mirrored_pull_requests"] = {
-            "mirrored": mirrored_total,
-            "not_mirrored": len(prs) - mirrored_total,
+    with repo_lock(output_path, args.repo):
+        try:
+            issue_items = github_api_paginated(
+                f"/repos/{owner}/{name}/issues",
+                {"state": args.state, "sort": "updated", "direction": "desc"},
+                args.limit,
+            )
+            pr_items = github_api_paginated(
+                f"/repos/{owner}/{name}/pulls",
+                {"state": args.state, "sort": "updated", "direction": "desc"},
+                args.limit,
+            )
+        except RuntimeError as exc:
+            rate_limited = "rate limit" in str(exc).lower()
+            if rate_limited and cached_payload and snapshot_is_fresh(cached_payload, args.stale_cache_hours):
+                issues = cached_payload.get("issues") or []
+                prs = cached_payload.get("pull_requests") or []
+                captured_at = cached_payload.get("captured_at") or cached_payload.get("generated_at")
+                if isinstance(issues, list) and isinstance(prs, list):
+                    write_summary(
+                        summary_path,
+                        args.repo,
+                        args.state,
+                        issues,
+                        prs,
+                        cached_payload.get("fork_remote"),
+                        captured_at=captured_at,
+                    )
+                    print(
+                        f"warning: {exc}; reusing fresh cached snapshot from {output_path} "
+                        f"(captured_at={captured_at})",
+                        file=sys.stderr,
+                    )
+                    print(
+                        f"Reused cached snapshot with {len(issues)} issues and {len(prs)} pull requests "
+                        f"from {args.repo} into {os.path.relpath(output_path)}"
+                    )
+                    return 0
+            raise
+
+        issues = [compact_issue(item) for item in issue_items if "pull_request" not in item]
+        pr_details = hydrate_pull_requests(owner, name, pr_items)
+        mirrored_pr_numbers = list_mirrored_pull_request_numbers(args.fork_remote) if args.fork_remote else None
+        prs = [compact_pr(item, mirrored_pr_numbers, args.fork_remote) for item in pr_details]
+        captured_at = datetime.now(timezone.utc).isoformat()
+        payload = {
+            "repo": args.repo,
+            "state": args.state,
+            "captured_at": captured_at,
+            "generated_at": captured_at,
+            "counts": {
+                "issues": summarize_counts(issues),
+                "pull_requests": summarize_counts(prs),
+            },
+            "issues": issues,
+            "pull_requests": prs,
         }
+        if args.fork_remote:
+            mirrored_total = sum(1 for pr in prs if pr["fork_mirrored"])
+            payload["fork_remote"] = args.fork_remote
+            payload["counts"]["mirrored_pull_requests"] = {
+                "mirrored": mirrored_total,
+                "not_mirrored": len(prs) - mirrored_total,
+            }
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    write_summary(summary_path, args.repo, args.state, issues, prs, args.fork_remote)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        write_summary(
+            summary_path,
+            args.repo,
+            args.state,
+            issues,
+            prs,
+            args.fork_remote,
+            captured_at=captured_at,
+        )
 
     print(
         f"Captured {len(issues)} issues and {len(prs)} pull requests from {args.repo} "
