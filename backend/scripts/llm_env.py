@@ -5,6 +5,18 @@ from __future__ import annotations
 import os
 
 SCRIPT_MESSAGES = {
+    "missing_dependency": {
+        "zh": "错误: 缺少依赖 {dependency}",
+        "en": "Error: missing dependency {dependency}",
+    },
+    "install_simulation_deps_npm": {
+        "zh": "请先安装可选仿真依赖: `npm run setup:backend:simulation`",
+        "en": "Install the optional simulation dependencies first: `npm run setup:backend:simulation`",
+    },
+    "install_simulation_deps_uv": {
+        "zh": "或在 backend 目录执行: `uv sync --extra simulation`",
+        "en": "Or run `uv sync --extra simulation` inside the backend directory",
+    },
     "env_loaded": {
         "zh": "已加载环境配置: {path}",
         "en": "Loaded environment configuration: {path}",
@@ -81,6 +93,14 @@ SCRIPT_MESSAGES = {
         "zh": "  警告: 无法获取Agent {agent_id}: {error}",
         "en": "  Warning: failed to load agent {agent_id}: {error}",
     },
+    "no_valid_agents": {
+        "zh": "没有有效的Agent",
+        "en": "No valid agents were found",
+    },
+    "no_successful_interviews": {
+        "zh": "没有成功的采访",
+        "en": "No interviews completed successfully",
+    },
     "interview_result_read_failed": {
         "zh": "  读取Interview结果失败: {error}",
         "en": "  Failed to read interview result: {error}",
@@ -96,6 +116,22 @@ SCRIPT_MESSAGES = {
     "llm_config": {
         "zh": "LLM配置: model={model}, base_url={base_url}...",
         "en": "LLM config: model={model}, base_url={base_url}...",
+    },
+    "llm_config_with_label": {
+        "zh": "{label} model={model}, base_url={base_url}...",
+        "en": "{label} model={model}, base_url={base_url}...",
+    },
+    "default_base_url": {
+        "zh": "默认",
+        "en": "default",
+    },
+    "default_llm_label": {
+        "zh": "[通用LLM]",
+        "en": "[default LLM]",
+    },
+    "boost_llm_label": {
+        "zh": "[加速LLM]",
+        "en": "[boost LLM]",
     },
     "runner_title": {
         "zh": "OASIS {platform}模拟",

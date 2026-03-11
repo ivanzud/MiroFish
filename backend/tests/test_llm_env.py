@@ -96,11 +96,24 @@ def test_missing_api_key_message_supports_english(monkeypatch):
 def test_script_message_supports_english_runtime_strings():
     llm_env = load_llm_env_module()
 
+    assert llm_env.script_message("missing_dependency", "en", dependency="camel") == (
+        "Error: missing dependency camel"
+    )
     assert llm_env.script_message("profile_missing", "en", path="/tmp/profile.json") == (
         "Error: profile file does not exist: /tmp/profile.json"
     )
+    assert llm_env.script_message("install_simulation_deps_npm", "en") == (
+        "Install the optional simulation dependencies first: `npm run setup:backend:simulation`"
+    )
+    assert llm_env.script_message("default_llm_label", "en") == "[default LLM]"
+    assert llm_env.script_message("boost_llm_label", "en") == "[boost LLM]"
+    assert llm_env.script_message("default_base_url", "en") == "default"
     assert llm_env.script_message("batch_interview_completed", "en", count=3) == (
         "  Batch interview completed: 3 agents"
+    )
+    assert llm_env.script_message("no_valid_agents", "en") == "No valid agents were found"
+    assert llm_env.script_message("no_successful_interviews", "en") == (
+        "No interviews completed successfully"
     )
     assert llm_env.script_message("runner_title", "en", platform="Twitter") == (
         "OASIS Twitter simulation"
@@ -111,14 +124,28 @@ def test_script_message_supports_english_runtime_strings():
     assert llm_env.script_message("llm_config", "en", model="gpt-4.1-mini", base_url="default") == (
         "LLM config: model=gpt-4.1-mini, base_url=default..."
     )
+    assert llm_env.script_message(
+        "llm_config_with_label",
+        "en",
+        label="[boost LLM]",
+        model="gpt-4.1-mini",
+        base_url="default",
+    ) == "[boost LLM] model=gpt-4.1-mini, base_url=default..."
 
 
 def test_script_message_defaults_to_chinese_runtime_strings():
     llm_env = load_llm_env_module()
 
+    assert llm_env.script_message("missing_dependency", dependency="camel") == "错误: 缺少依赖 camel"
     assert llm_env.script_message("config_missing", path="/tmp/config.json") == (
         "错误: 配置文件不存在: /tmp/config.json"
     )
     assert llm_env.script_message("unknown_error") == "未知错误"
+    assert llm_env.script_message("install_simulation_deps_uv") == (
+        "或在 backend 目录执行: `uv sync --extra simulation`"
+    )
+    assert llm_env.script_message("default_llm_label") == "[通用LLM]"
+    assert llm_env.script_message("boost_llm_label") == "[加速LLM]"
+    assert llm_env.script_message("default_base_url") == "默认"
     assert llm_env.script_message("supported_commands") == "支持的命令: interview, batch_interview, close_env"
     assert llm_env.script_message("wait_mode", state="启用") == "等待命令模式: 启用"

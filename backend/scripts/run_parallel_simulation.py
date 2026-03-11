@@ -182,15 +182,9 @@ try:
         generate_reddit_agent_graph
     )
 except ImportError as e:
-    print(_t(f"错误: 缺少依赖 {e}", f"Error: missing dependency {e}"))
-    print(_t(
-        "请先安装可选仿真依赖: `npm run setup:backend:simulation`",
-        "Install the optional simulation dependencies first: `npm run setup:backend:simulation`",
-    ))
-    print(_t(
-        "或在 backend 目录执行: `uv sync --extra simulation`",
-        "Or run `uv sync --extra simulation` inside the backend directory",
-    ))
+    print(script_message("missing_dependency", SCRIPT_LOCALE, dependency=e))
+    print(script_message("install_simulation_deps_npm", SCRIPT_LOCALE))
+    print(script_message("install_simulation_deps_uv", SCRIPT_LOCALE))
     sys.exit(1)
 
 
@@ -567,7 +561,7 @@ class ParallelIPCHandler:
             self.send_response(
                 command_id,
                 "failed",
-                error=_t("没有成功的采访", "No interviews completed successfully"),
+                error=script_message("no_successful_interviews", SCRIPT_LOCALE),
             )
             return False
     
@@ -1072,11 +1066,11 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
         llm_api_key = boost_api_key
         llm_base_url = boost_base_url
         llm_model = boost_model or resolve_standard_model_name()
-        config_label = "[加速LLM]"
+        config_label = script_message("boost_llm_label", SCRIPT_LOCALE)
     else:
         # 使用通用配置
         llm_api_key, llm_base_url, llm_model = resolve_standard_llm_env()
-        config_label = "[通用LLM]"
+        config_label = script_message("default_llm_label", SCRIPT_LOCALE)
     
     # 如果 .env 中没有模型名，则使用 config 作为备用
     if not llm_model:
@@ -1086,9 +1080,17 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
     apply_openai_compat_env(llm_api_key, llm_base_url, llm_model)
 
     if not os.environ.get("OPENAI_API_KEY"):
-        raise ValueError(missing_api_key_message())
+        raise ValueError(missing_api_key_message(SCRIPT_LOCALE))
 
-    print(f"{config_label} model={llm_model}, base_url={llm_base_url[:40] if llm_base_url else '默认'}...")
+    print(
+        script_message(
+            "llm_config_with_label",
+            SCRIPT_LOCALE,
+            label=config_label,
+            model=llm_model,
+            base_url=llm_base_url[:40] if llm_base_url else script_message("default_base_url", SCRIPT_LOCALE),
+        )
+    )
     
     return ModelFactory.create(
         model_platform=ModelPlatformType.OPENAI,

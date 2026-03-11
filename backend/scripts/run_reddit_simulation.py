@@ -138,15 +138,9 @@ try:
         generate_reddit_agent_graph
     )
 except ImportError as e:
-    print(_t(f"错误: 缺少依赖 {e}", f"Error: missing dependency {e}"))
-    print(_t(
-        "请先安装可选仿真依赖: `npm run setup:backend:simulation`",
-        "Install the optional simulation dependencies first: `npm run setup:backend:simulation`",
-    ))
-    print(_t(
-        "或在 backend 目录执行: `uv sync --extra simulation`",
-        "Or run `uv sync --extra simulation` inside the backend directory",
-    ))
+    print(script_message("missing_dependency", SCRIPT_LOCALE, dependency=e))
+    print(script_message("install_simulation_deps_npm", SCRIPT_LOCALE))
+    print(script_message("install_simulation_deps_uv", SCRIPT_LOCALE))
     sys.exit(1)
 
 
@@ -301,7 +295,7 @@ class IPCHandler:
                 self.send_response(
                     command_id,
                     "failed",
-                    error=_t("没有有效的Agent", "No valid agents were found"),
+                    error=script_message("no_valid_agents", SCRIPT_LOCALE),
                 )
                 return False
             
@@ -489,14 +483,14 @@ class RedditSimulationRunner:
         apply_openai_compat_env(llm_api_key, llm_base_url, llm_model)
         
         if not os.environ.get("OPENAI_API_KEY"):
-            raise ValueError(missing_api_key_message())
+            raise ValueError(missing_api_key_message(SCRIPT_LOCALE))
 
         print(
             script_message(
                 "llm_config",
                 SCRIPT_LOCALE,
                 model=llm_model,
-                base_url=llm_base_url[:40] if llm_base_url else _t("默认", "default"),
+                base_url=llm_base_url[:40] if llm_base_url else script_message("default_base_url", SCRIPT_LOCALE),
             )
         )
         
