@@ -32,6 +32,32 @@ def allowed_file(filename: str) -> bool:
     return ext in Config.ALLOWED_EXTENSIONS
 
 
+def _document_error_entry(
+    *,
+    locale: str,
+    filename: str,
+    code: str,
+    message_key: str,
+    details: str | None = None,
+) -> dict[str, object]:
+    entry: dict[str, object] = {
+        "filename": filename,
+        "code": code,
+        "message": tr(
+            message_key,
+            locale,
+            filename=filename,
+            details=details or "",
+            extensions=", ".join(sorted(Config.ALLOWED_EXTENSIONS)),
+        ),
+    }
+    if details:
+        entry["details"] = details
+    if code == "unsupported_file_type":
+        entry["supported_extensions"] = sorted(Config.ALLOWED_EXTENSIONS)
+    return entry
+
+
 # ============== 项目管理接口 ==============
 
 @graph_bp.route('/project/<project_id>', methods=['GET'])
@@ -208,26 +234,74 @@ def generate_ontology():
         # 保存文件并提取文本
         document_texts = []
         all_text = ""
-        
+        file_errors = []
+
         for file in uploaded_files:
-            if file and file.filename and allowed_file(file.filename):
-                # 保存文件到项目目录
-                file_info = ProjectManager.save_file_to_project(
-                    project.project_id, 
-                    file, 
-                    file.filename
+            if not file or not file.filename:
+                continue
+
+            if not allowed_file(file.filename):
+                file_errors.append(
+                    _document_error_entry(
+                        locale=locale,
+                        filename=file.filename,
+                        code="unsupported_file_type",
+                        message_key="graph.unsupported_file_type",
+                    )
                 )
-                project.files.append({
-                    "filename": file_info["original_filename"],
-                    "size": file_info["size"]
-                })
-                
-                # 提取文本
+                continue
+
+            # 保存文件到项目目录
+            file_info = ProjectManager.save_file_to_project(
+                project.project_id,
+                file,
+                file.filename
+            )
+            project.files.append({
+                "filename": file_info["original_filename"],
+                "size": file_info["size"]
+            })
+
+            try:
                 text = FileParser.extract_text(file_info["path"])
-                text = TextProcessor.preprocess_text(text)
-                document_texts.append(text)
-                all_text += f"\n\n=== {file_info['original_filename']} ===\n{text}"
-        
+            except Exception as exc:
+                logger.warning("文档解析失败 %s: %s", file_info["original_filename"], exc)
+                file_errors.append(
+                    _document_error_entry(
+                        locale=locale,
+                        filename=file_info["original_filename"],
+                        code="document_parse_failed",
+                        message_key="graph.document_parse_failed",
+                        details=str(exc),
+                    )
+                )
+                continue
+
+            text = TextProcessor.preprocess_text(text)
+            if not text:
+                file_errors.append(
+                    _document_error_entry(
+                        locale=locale,
+                        filename=file_info["original_filename"],
+                        code="document_empty_after_parse",
+                        message_key="graph.document_empty_after_parse",
+                    )
+                )
+                continue
+
+            document_texts.append(text)
+            all_text += f"\n\n=== {file_info['original_filename']} ===\n{text}"
+
+        if file_errors:
+            ProjectManager.delete_project(project.project_id)
+            return jsonify({
+                "success": False,
+                "error": tr("graph.document_processing_failed", locale, count=len(file_errors)),
+                "data": {
+                    "file_errors": file_errors,
+                }
+            }), 400
+
         if not document_texts:
             ProjectManager.delete_project(project.project_id)
             return jsonify({

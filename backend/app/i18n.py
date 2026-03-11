@@ -76,6 +76,22 @@ TRANSLATIONS = {
         "zh": "请至少上传一个文档文件",
         "en": "Please upload at least one document file",
     },
+    "graph.document_processing_failed": {
+        "zh": "{count} 个文档处理失败，请根据返回的文件错误信息修正后重试",
+        "en": "{count} document(s) could not be processed. Fix the reported file issues and retry.",
+    },
+    "graph.unsupported_file_type": {
+        "zh": "文件 {filename} 的格式不受支持。当前仅支持: {extensions}",
+        "en": "File {filename} is not supported. Supported formats: {extensions}",
+    },
+    "graph.document_parse_failed": {
+        "zh": "文件 {filename} 解析失败: {details}",
+        "en": "Failed to parse file {filename}: {details}",
+    },
+    "graph.document_empty_after_parse": {
+        "zh": "文件 {filename} 未提取到可用文本内容",
+        "en": "File {filename} did not yield any usable text",
+    },
     "graph.no_processed_documents": {
         "zh": "没有成功处理任何文档，请检查文件格式",
         "en": "No documents were processed successfully. Check the file format.",

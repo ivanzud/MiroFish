@@ -22,6 +22,7 @@ fi
   "${ROOT_DIR}/backend/tests/test_i18n.py" \
   "${ROOT_DIR}/backend/tests/test_llm_env.py" \
   "${ROOT_DIR}/backend/tests/test_llm_client.py" \
+  "${ROOT_DIR}/backend/tests/test_graph_upload_api.py" \
   "${ROOT_DIR}/backend/tests/test_graph_builder.py" \
   "${ROOT_DIR}/backend/tests/test_report_agent.py" \
   "${ROOT_DIR}/backend/tests/test_simulation_runner_actions.py" \
