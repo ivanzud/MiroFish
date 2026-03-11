@@ -58,6 +58,22 @@ def _document_error_entry(
     return entry
 
 
+def _backend_config_error_response(locale: str):
+    """Return a consistent non-sensitive config error payload for graph endpoints."""
+    validation = Config.validate_comprehensive(locale=locale)
+    if validation.is_valid:
+        return None
+
+    return jsonify({
+        "success": False,
+        "error": tr("api.backend_config_incomplete", locale, details="; ".join(validation.errors)),
+        "data": {
+            "validation": validation.to_dict(),
+            "summary": Config.get_config_summary(),
+        }
+    }), 503
+
+
 # ============== 项目管理接口 ==============
 
 @graph_bp.route('/project/<project_id>', methods=['GET'])
@@ -148,26 +164,18 @@ def reset_project(project_id: str):
 def get_backend_config_status():
     """Return non-sensitive backend configuration status for frontend diagnostics."""
     locale = get_locale()
+    config_error = _backend_config_error_response(locale)
+    if config_error is not None:
+        return config_error
+
     validation = Config.validate_comprehensive(locale=locale)
-    summary = Config.get_config_summary()
-
-    if validation.is_valid:
-        return jsonify({
-            "success": True,
-            "data": {
-                "validation": validation.to_dict(),
-                "summary": summary,
-            }
-        })
-
     return jsonify({
-        "success": False,
-        "error": tr("api.backend_config_incomplete", locale, details="; ".join(validation.errors)),
+        "success": True,
         "data": {
             "validation": validation.to_dict(),
-            "summary": summary,
+            "summary": Config.get_config_summary(),
         }
-    }), 503
+    })
 
 
 # ============== 接口1：上传文件并生成本体 ==============
@@ -203,6 +211,10 @@ def generate_ontology():
     try:
         locale = get_locale()
         logger.info("=== 开始生成本体定义 ===")
+
+        config_error = _backend_config_error_response(locale)
+        if config_error is not None:
+            return config_error
         
         # 获取参数
         simulation_requirement = request.form.get('simulation_requirement', '')
@@ -381,17 +393,10 @@ def build_graph():
     try:
         locale = get_locale()
         logger.info("=== 开始构建图谱 ===")
-        
-        # 检查配置
-        errors = []
-        if not Config.ZEP_API_KEY:
-            errors.append(tr("graph.zep_key_missing", locale))
-        if errors:
-            logger.error(f"配置错误: {errors}")
-            return jsonify({
-                "success": False,
-                "error": tr("graph.config_error", locale, details="; ".join(errors))
-            }), 500
+
+        config_error = _backend_config_error_response(locale)
+        if config_error is not None:
+            return config_error
         
         # 解析请求
         data = request.get_json() or {}

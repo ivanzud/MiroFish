@@ -7,6 +7,27 @@ from pathlib import Path
 from flask import Flask
 
 
+class FakeValidationResult:
+    def __init__(self, errors=None):
+        self.errors = list(errors or [])
+        self.warnings = []
+        self.info = []
+
+    @property
+    def is_valid(self):
+        return not self.errors
+
+    def to_dict(self):
+        return {
+            "is_valid": self.is_valid,
+            "errors": self.errors,
+            "warnings": self.warnings,
+            "info": self.info,
+            "error_count": len(self.errors),
+            "warning_count": len(self.warnings),
+        }
+
+
 def load_graph_blueprint(monkeypatch):
     for name in (
         "app.api",
@@ -22,6 +43,8 @@ def load_graph_blueprint(monkeypatch):
     report_stub = types.ModuleType("app.api.report")
     graph_builder_stub = types.ModuleType("app.services.graph_builder")
     ontology_stub = types.ModuleType("app.services.ontology_generator")
+    zep_cloud_stub = types.ModuleType("zep_cloud")
+    zep_cloud_client_stub = types.ModuleType("zep_cloud.client")
 
     class DummyGraphBuilderService:
         pass
@@ -35,11 +58,17 @@ def load_graph_blueprint(monkeypatch):
 
     graph_builder_stub.GraphBuilderService = DummyGraphBuilderService
     ontology_stub.OntologyGenerator = DummyOntologyGenerator
+    zep_cloud_client_stub.Zep = object
+    zep_cloud_stub.EpisodeData = object
+    zep_cloud_stub.EntityEdgeSourceTarget = object
+    zep_cloud_stub.InternalServerError = Exception
 
     monkeypatch.setitem(sys.modules, "app.api.simulation", simulation_stub)
     monkeypatch.setitem(sys.modules, "app.api.report", report_stub)
     monkeypatch.setitem(sys.modules, "app.services.graph_builder", graph_builder_stub)
     monkeypatch.setitem(sys.modules, "app.services.ontology_generator", ontology_stub)
+    monkeypatch.setitem(sys.modules, "zep_cloud", zep_cloud_stub)
+    monkeypatch.setitem(sys.modules, "zep_cloud.client", zep_cloud_client_stub)
 
     api_module = importlib.import_module("app.api")
     graph_module = importlib.import_module("app.api.graph")
@@ -52,6 +81,19 @@ def create_graph_test_client(monkeypatch, tmp_path):
         graph_module.ProjectManager,
         "PROJECTS_DIR",
         str(tmp_path / "projects"),
+    )
+    monkeypatch.setattr(
+        graph_module.Config,
+        "validate_comprehensive",
+        lambda locale="zh": FakeValidationResult(),
+    )
+    monkeypatch.setattr(
+        graph_module.Config,
+        "get_config_summary",
+        lambda: {
+            "llm": {"configured": True},
+            "zep": {"configured": True},
+        },
     )
 
     app = Flask(__name__)
@@ -119,3 +161,48 @@ def test_generate_ontology_reports_unsupported_extensions_in_english(monkeypatch
         }
     ]
 
+
+def test_generate_ontology_returns_backend_config_validation_when_env_is_missing(monkeypatch, tmp_path):
+    client, graph_module = create_graph_test_client(monkeypatch, tmp_path)
+    invalid_validation = FakeValidationResult(
+        errors=[
+            "LLM_API_KEY / OPENAI_API_KEY is not configured",
+            "ZEP_API_KEY is not configured",
+        ]
+    )
+    monkeypatch.setattr(
+        graph_module.Config,
+        "validate_comprehensive",
+        lambda locale="zh": invalid_validation,
+    )
+    monkeypatch.setattr(
+        graph_module.Config,
+        "get_config_summary",
+        lambda: {
+            "llm": {"configured": False},
+            "zep": {"configured": False},
+        },
+    )
+
+    response = client.post(
+        "/api/graph/ontology/generate",
+        headers={"X-Locale": "en"},
+        data={
+            "simulation_requirement": "predict audience",
+            "files": (io.BytesIO(b"hello"), "sample.txt"),
+        },
+        content_type="multipart/form-data",
+    )
+    payload = response.get_json()
+
+    assert response.status_code == 503
+    assert payload["success"] is False
+    assert "Backend configuration is incomplete:" in payload["error"]
+    assert payload["data"]["validation"]["is_valid"] is False
+    assert "LLM_API_KEY / OPENAI_API_KEY is not configured" in payload["data"]["validation"]["errors"]
+    assert "ZEP_API_KEY is not configured" in payload["data"]["validation"]["errors"]
+    assert payload["data"]["summary"]["llm"]["configured"] is False
+    assert payload["data"]["summary"]["zep"]["configured"] is False
+
+    projects_dir = Path(graph_module.ProjectManager.PROJECTS_DIR)
+    assert not any(projects_dir.iterdir()) if projects_dir.exists() else True
