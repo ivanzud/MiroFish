@@ -3,6 +3,18 @@
   "captured_at": "2026-03-11T13:19:00+00:00",
   "issues": [
     {
+      "number": 17,
+      "status": "tracked",
+      "summary": "Tracked locally in beads as `mirofish-77h`: a future multi-run consensus workflow should reuse a shared Step 1/2 setup, orchestrate repeated Step 3 runs, and synthesize a consensus/divergence report in Step 4.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-triage.md"
+      ],
+      "validation": [
+        "tracking only"
+      ]
+    },
+    {
       "number": 14,
       "status": "covered",
       "summary": "Step 3 now stops polling and surfaces backend failure text when the simulation runner reports `failed`, so the UI no longer hangs indefinitely.",
@@ -117,8 +129,9 @@
     {
       "number": 62,
       "status": "partial",
-      "summary": "The Step 5 timeout complaint now has an explicit local mitigation: interviews derive adaptive timeout budgets from the frontend request window, the UI shows the effective single-agent and current survey-batch budget, and the docs/env template expose timeout knobs for slower local models. The broader issue's other feature requests remain separate follow-up work.",
+      "summary": "The Step 5 timeout complaint now has an explicit local mitigation: interviews derive adaptive timeout budgets from the frontend request window, the UI shows the effective single-agent and current survey-batch budget, and the docs/env template expose timeout knobs for slower local models. The broader issue's remaining workflow requests are now tracked separately in beads as `mirofish-as6`.",
       "local_refs": [
+        ".beads/issues.jsonl",
         "frontend/src/api/timeout.js",
         "frontend/src/components/Step5Interaction.vue",
         "frontend/src/components/step5Profiles.js",
@@ -332,6 +345,65 @@
       "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
     },
     {
+      "number": 54,
+      "status": "no_action",
+      "summary": "Upstream issue #54 is positive feedback rather than a reproducible bug or scoped feature request, so there is no local implementation task attached to it.",
+      "local_refs": [
+        "docs/upstream-open-state.json"
+      ],
+      "validation": [
+        "triage only"
+      ]
+    },
+    {
+      "number": 55,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-8eg`: local graph backend alternatives such as Neo4j support need a deliberate backend-abstraction design pass instead of a blind merge of third-party code.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-triage.md"
+      ],
+      "validation": [
+        "tracking only"
+      ]
+    },
+    {
+      "number": 56,
+      "status": "reference",
+      "summary": "Upstream issue #56 is a community discussion thread collecting localized Zep alternatives. It is retained as reference material while any concrete backend-abstraction work stays tracked under `mirofish-8eg`.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-open-state.json"
+      ],
+      "validation": [
+        "triage only"
+      ]
+    },
+    {
+      "number": 76,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-8eg`: RAGflow support remains a backend-abstraction/rebase task and is not safe to land via the stale upstream branch without targeted regression coverage.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-triage.md"
+      ],
+      "validation": [
+        "tracking only"
+      ]
+    },
+    {
+      "number": 106,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-8eg`: requests for non-Zep graph backends are preserved locally, but implementing them safely requires a fresh graph-backend abstraction instead of wiring another provider into current graph/simulation flows ad hoc.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-triage.md"
+      ],
+      "validation": [
+        "tracking only"
+      ]
+    },
+    {
       "number": 110,
       "status": "covered",
       "summary": "The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.",
@@ -412,6 +484,17 @@
         "backend/tests/test_graph_upload_api.py::test_build_graph_task_persists_sanitized_zep_auth_error"
       ],
       "notes": "Fork issue mirroring is blocked because ivanzud/MiroFish has GitHub issues disabled."
+    },
+    {
+      "number": 140,
+      "status": "no_action",
+      "summary": "Upstream issue #140 is general project commentary rather than an actionable defect report or scoped feature request, so it does not require local implementation work.",
+      "local_refs": [
+        "docs/upstream-open-state.json"
+      ],
+      "validation": [
+        "triage only"
+      ]
     },
     {
       "number": 69,

@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T13:33:33.598738+00:00",
-  "generated_at": "2026-03-11T13:33:33.598738+00:00",
+  "captured_at": "2026-03-11T13:38:20.985084+00:00",
+  "generated_at": "2026-03-11T13:38:20.985084+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -75,7 +75,18 @@
       "author": "p20061",
       "body_excerpt": "",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 140,
+        "status": "no_action",
+        "summary": "Upstream issue #140 is general project commentary rather than an actionable defect report or scoped feature request, so it does not require local implementation work.",
+        "local_refs": [
+          "docs/upstream-open-state.json"
+        ],
+        "validation": [
+          "triage only"
+        ]
+      }
     },
     {
       "number": 138,
@@ -385,7 +396,19 @@
           "url": "https://github.com/666ghj/MiroFish/issues/106#issuecomment-4028182818",
           "body_excerpt": "作者写的很明确 必须依靠ZEP哈 我也碰到一样的问题 没办法 只能换一个KEY"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 106,
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-8eg`: requests for non-Zep graph backends are preserved locally, but implementing them safely requires a fresh graph-backend abstraction instead of wiring another provider into current graph/simulation flows ad hoc.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "docs/upstream-triage.md"
+        ],
+        "validation": [
+          "tracking only"
+        ]
+      }
     },
     {
       "number": 109,
@@ -879,7 +902,19 @@
           "url": "https://github.com/666ghj/MiroFish/issues/56#issuecomment-3788822532",
           "body_excerpt": "> 好多小伙伴虽然实现了，但是效果一般啊，很多效果都没达到zep的 是的，可以再广泛的调研一下，agent记忆方面的论文很多"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 56,
+        "status": "reference",
+        "summary": "Upstream issue #56 is a community discussion thread collecting localized Zep alternatives. It is retained as reference material while any concrete backend-abstraction work stays tracked under `mirofish-8eg`.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "docs/upstream-open-state.json"
+        ],
+        "validation": [
+          "triage only"
+        ]
+      }
     },
     {
       "number": 48,
@@ -1077,7 +1112,19 @@
           "url": "https://github.com/666ghj/MiroFish/issues/76#issuecomment-3976629901",
           "body_excerpt": "感谢反馈，我近期看一下是否合适"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 76,
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-8eg`: RAGflow support remains a backend-abstraction/rebase task and is not safe to land via the stale upstream branch without targeted regression coverage.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "docs/upstream-triage.md"
+        ],
+        "validation": [
+          "tracking only"
+        ]
+      }
     },
     {
       "number": 71,
@@ -1435,8 +1482,9 @@
       "local_coverage": {
         "number": 62,
         "status": "partial",
-        "summary": "The Step 5 timeout complaint now has an explicit local mitigation: interviews derive adaptive timeout budgets from the frontend request window, the UI shows the effective single-agent and current survey-batch budget, and the docs/env template expose timeout knobs for slower local models. The broader issue's other feature requests remain separate follow-up work.",
+        "summary": "The Step 5 timeout complaint now has an explicit local mitigation: interviews derive adaptive timeout budgets from the frontend request window, the UI shows the effective single-agent and current survey-batch budget, and the docs/env template expose timeout knobs for slower local models. The broader issue's remaining workflow requests are now tracked separately in beads as `mirofish-as6`.",
         "local_refs": [
+          ".beads/issues.jsonl",
           "frontend/src/api/timeout.js",
           "frontend/src/components/Step5Interaction.vue",
           "frontend/src/components/step5Profiles.js",
@@ -1655,7 +1703,19 @@
           "url": "https://github.com/666ghj/MiroFish/issues/55#issuecomment-3788527267",
           "body_excerpt": "厉害👍，网络上确实有一些本地化的实现方式，如果你愿意的话，可以把你的方法提pr出来，我们会把所有本地化的方案都放在首页供大家参考的。"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 55,
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-8eg`: local graph backend alternatives such as Neo4j support need a deliberate backend-abstraction design pass instead of a blind merge of third-party code.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "docs/upstream-triage.md"
+        ],
+        "validation": [
+          "tracking only"
+        ]
+      }
     },
     {
       "number": 53,
@@ -1698,7 +1758,18 @@
       "author": "zb2947244682",
       "body_excerpt": "太喜欢你这个项目了！给了我巨大的帮助！ 我正好也在研究这个方向。",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 54,
+        "status": "no_action",
+        "summary": "Upstream issue #54 is positive feedback rather than a reproducible bug or scoped feature request, so there is no local implementation task attached to it.",
+        "local_refs": [
+          "docs/upstream-open-state.json"
+        ],
+        "validation": [
+          "triage only"
+        ]
+      }
     },
     {
       "number": 52,
@@ -2442,7 +2513,19 @@
       "author": "tt-a1i",
       "body_excerpt": "## 背景 我觉得这个项目做的很棒，很有意思，这两天跑了几轮，发现单次仿真的结果可能比较受模型偏好的影响？——同样的输入材料，换个模型，结论可能会有差异。这让我在想：有没有办法让预测结果更稳定、更可信？ ## 想法 核心思路是：**同一份材料跑多次仿真，然后在报告阶段做\"共识提取 + 分歧分析\"**。 具体来说： 1. **固定 Step1/2**：图谱构建和环境配置只跑一次，作为多次仿真的共享基础 2. **Step3 跑 2-3 次**：每次可以用不同的随机种子，或者稍微调整一些参数（比如 temperature） 3. **Step4 做元报告**： - 把\"多次都出现的结论\"作为**共识**（可信度高） - 把\"只在某一次出现的走向\"列为**分歧情景**，并尝试分析触发条件 4. **不同步骤用不同模型**： - 结构化抽取（本体/实体/配置 JSON）用格式稳定、指令遵从强的模…",
       "comment_count": 0,
-      "recent_comments": []
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 17,
+        "status": "tracked",
+        "summary": "Tracked locally in beads as `mirofish-77h`: a future multi-run consensus workflow should reuse a shared Step 1/2 setup, orchestrate repeated Step 3 runs, and synthesize a consensus/divergence report in Step 4.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "docs/upstream-triage.md"
+        ],
+        "validation": [
+          "tracking only"
+        ]
+      }
     },
     {
       "number": 16,
