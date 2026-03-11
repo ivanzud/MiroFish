@@ -1269,6 +1269,35 @@ CHAT_SYSTEM_PROMPT_TEMPLATE = """\
 - 优先给出结论，再解释原因
 - 最终回答必须使用 {report_language}"""
 
+CHAT_SYSTEM_PROMPT_TEMPLATE_EN = """\
+You are a concise and efficient simulation-forecast assistant.
+
+[Background]
+Forecast condition: {simulation_requirement}
+
+[Generated analysis report]
+{report_content}
+
+[Rules]
+1. Prefer answering from the report content above.
+2. Answer directly and avoid long internal monologues.
+3. Call tools only when the report does not contain enough information.
+4. Keep the answer concise, clear, and well structured.
+
+[Available tools] (use only when needed, at most 1-2 calls)
+{tools_description}
+
+[Tool call format]
+<tool_call>
+{{"name": "tool_name", "parameters": {{"parameter_name": "parameter_value"}}}}
+</tool_call>
+
+[Answer style]
+- Be concise and direct.
+- Use > block quotes for key supporting content when helpful.
+- Lead with the conclusion, then explain why.
+- The final answer must be written in {report_language}"""
+
 # ═══════════════════════════════════════════════════════════════
 # ReportAgent 主类
 # ═══════════════════════════════════════════════════════════════
@@ -1465,6 +1494,19 @@ class ReportAgent:
         return self._text(
             "(The assistant returned an empty response. Please try again.)",
             "（助手返回了空响应，请重试。）",
+        )
+
+    def _build_chat_system_prompt(self, *, report_content: str) -> str:
+        template = (
+            CHAT_SYSTEM_PROMPT_TEMPLATE_EN
+            if self.locale == "en"
+            else CHAT_SYSTEM_PROMPT_TEMPLATE
+        )
+        return template.format(
+            simulation_requirement=self.simulation_requirement,
+            report_content=report_content if report_content else self._chat_report_placeholder(),
+            tools_description=self._get_tools_description(),
+            report_language=self._report_language_name(),
         )
 
     def _react_conflict_retry_message(self) -> str:
@@ -2641,12 +2683,7 @@ class ReportAgent:
         except Exception as e:
             self._log("warning", "Failed to load report content: %s", "获取报告内容失败: %s", e)
 
-        system_prompt = CHAT_SYSTEM_PROMPT_TEMPLATE.format(
-            simulation_requirement=self.simulation_requirement,
-            report_content=report_content if report_content else self._chat_report_placeholder(),
-            tools_description=self._get_tools_description(),
-            report_language=self._report_language_name(),
-        )
+        system_prompt = self._build_chat_system_prompt(report_content=report_content)
 
         # 构建消息
         messages = [{"role": "system", "content": system_prompt}]

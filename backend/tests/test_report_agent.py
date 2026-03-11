@@ -542,6 +542,30 @@ def test_chat_localizes_english_scaffolding_without_report(monkeypatch):
     assert "[quick_search结果]" not in observation_prompt
 
 
+def test_chat_localizes_english_system_prompt_template(monkeypatch):
+    llm = SequenceChatLLM(["Final answer in English"])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    monkeypatch.setattr(ReportManager, "get_report_by_simulation", lambda simulation_id: None)
+
+    agent.chat("Summarize the current audience outlook")
+
+    system_prompt = llm.calls[0][0]["content"]
+    assert "You are a concise and efficient simulation-forecast assistant." in system_prompt
+    assert "[Rules]" in system_prompt
+    assert '[Tool call format]' in system_prompt
+    assert '"name": "tool_name"' in system_prompt
+    assert "你是一个简洁高效的模拟预测助手" not in system_prompt
+    assert "工具名称" not in system_prompt
+
+
 def test_chat_localizes_english_truncated_report_marker(monkeypatch):
     llm = SequenceChatLLM(["Final answer in English"])
     agent = ReportAgent(
