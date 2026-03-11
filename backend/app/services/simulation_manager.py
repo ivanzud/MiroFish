@@ -272,12 +272,12 @@ class SimulationManager:
             
             # ========== 阶段1: 读取并过滤实体 ==========
             if progress_callback:
-                progress_callback("reading", 0, "正在连接Zep图谱...")
+                progress_callback("reading", 0, tr("simulation.prepare_connecting_graph", locale))
             
             reader = ZepEntityReader()
             
             if progress_callback:
-                progress_callback("reading", 30, "正在读取节点数据...")
+                progress_callback("reading", 30, tr("simulation.prepare_reading_nodes", locale))
             
             filtered = reader.filter_defined_entities(
                 graph_id=state.graph_id,
@@ -291,7 +291,7 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "reading", 100, 
-                    f"完成，共 {filtered.filtered_count} 个实体",
+                    tr("simulation.prepare_entities_completed", locale, count=filtered.filtered_count),
                     current=filtered.filtered_count,
                     total=filtered.filtered_count
                 )
@@ -308,7 +308,7 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "generating_profiles", 0, 
-                    "开始生成...",
+                    tr("simulation.prepare_generation_starting", locale),
                     current=0,
                     total=total_entities
                 )
@@ -354,7 +354,7 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "generating_profiles", 95, 
-                    "保存Profile文件...",
+                    tr("simulation.prepare_saving_profiles", locale),
                     current=total_entities,
                     total=total_entities
                 )
@@ -377,7 +377,7 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "generating_profiles", 100, 
-                    f"完成，共 {len(profiles)} 个Profile",
+                    tr("simulation.prepare_profiles_completed", locale, count=len(profiles)),
                     current=len(profiles),
                     total=len(profiles)
                 )
@@ -386,7 +386,7 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "generating_config", 0, 
-                    "正在分析模拟需求...",
+                    tr("simulation.prepare_analyzing_requirement", locale),
                     current=0,
                     total=3
                 )
@@ -396,7 +396,7 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "generating_config", 30, 
-                    "正在调用LLM生成配置...",
+                    tr("simulation.prepare_generating_config", locale),
                     current=1,
                     total=3
                 )
@@ -415,7 +415,7 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "generating_config", 70, 
-                    "正在保存配置文件...",
+                    tr("simulation.prepare_saving_config", locale),
                     current=2,
                     total=3
                 )
@@ -431,7 +431,7 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "generating_config", 100, 
-                    "配置生成完成",
+                    tr("simulation.prepare_config_completed", locale),
                     current=3,
                     total=3
                 )

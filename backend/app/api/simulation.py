@@ -60,6 +60,10 @@ SIMULATION_PROGRESS_MESSAGE_MAP = {
     "配置生成完成": "Configuration generation completed",
 }
 
+
+def _simulation_stage_name(stage: str, locale: str | None = None) -> str:
+    return tr(f"simulation.prepare_stage_{stage}", locale) if stage in SIMULATION_STAGE_NAMES_EN else stage
+
 SIMULATION_ERROR_CONTEXTS_EN = {
     "获取图谱实体失败": "Failed to get graph entities",
     "获取实体详情失败": "Failed to get entity details",
@@ -132,9 +136,10 @@ def _translate_prepare_task_payload(locale: str, payload: dict | None) -> dict |
     if isinstance(progress_detail, dict):
         translated_detail = dict(progress_detail)
         stage = translated_detail.get("current_stage")
-        translated_detail["current_stage_name"] = SIMULATION_STAGE_LABELS_EN.get(
-            stage,
-            translated_detail.get("current_stage_name"),
+        translated_detail["current_stage_name"] = (
+            _simulation_stage_name(stage, locale)
+            if stage
+            else translated_detail.get("current_stage_name")
         )
         translated_detail["item_description"] = _translate_simulation_progress_message(
             locale,
@@ -649,7 +654,7 @@ def prepare_simulation():
                     task_id,
                     status=TaskStatus.PROCESSING,
                     progress=0,
-                    message="开始准备模拟环境..."
+                    message=tr("simulation.prepare_initializing", locale)
                 )
                 
                 # 准备模拟（带进度回调）
@@ -670,10 +675,10 @@ def prepare_simulation():
                     
                     # 构建详细进度信息
                     stage_names = {
-                        "reading": "读取图谱实体",
-                        "generating_profiles": "生成Agent人设",
-                        "generating_config": "生成模拟配置",
-                        "copying_scripts": "准备模拟脚本"
+                        "reading": _simulation_stage_name("reading", locale),
+                        "generating_profiles": _simulation_stage_name("generating_profiles", locale),
+                        "generating_config": _simulation_stage_name("generating_config", locale),
+                        "copying_scripts": _simulation_stage_name("copying_scripts", locale),
                     }
                     
                     stage_index = list(stage_weights.keys()).index(stage) + 1 if stage in stage_weights else 1

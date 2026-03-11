@@ -572,6 +572,66 @@ TRANSLATIONS = {
         "zh": "任务已完成（准备工作已存在）",
         "en": "The task is already complete because preparation already exists",
     },
+    "simulation.prepare_stage_reading": {
+        "zh": "读取图谱实体",
+        "en": "Reading graph entities",
+    },
+    "simulation.prepare_stage_generating_profiles": {
+        "zh": "生成Agent人设",
+        "en": "Generating agent profiles",
+    },
+    "simulation.prepare_stage_generating_config": {
+        "zh": "生成模拟配置",
+        "en": "Generating simulation config",
+    },
+    "simulation.prepare_stage_copying_scripts": {
+        "zh": "准备模拟脚本",
+        "en": "Preparing simulation scripts",
+    },
+    "simulation.prepare_initializing": {
+        "zh": "开始准备模拟环境...",
+        "en": "Preparing the simulation environment...",
+    },
+    "simulation.prepare_connecting_graph": {
+        "zh": "正在连接Zep图谱...",
+        "en": "Connecting to the Zep graph...",
+    },
+    "simulation.prepare_reading_nodes": {
+        "zh": "正在读取节点数据...",
+        "en": "Reading node data...",
+    },
+    "simulation.prepare_entities_completed": {
+        "zh": "完成，共 {count} 个实体",
+        "en": "Completed with {count} entities",
+    },
+    "simulation.prepare_generation_starting": {
+        "zh": "开始生成...",
+        "en": "Starting generation...",
+    },
+    "simulation.prepare_saving_profiles": {
+        "zh": "保存Profile文件...",
+        "en": "Saving profile files...",
+    },
+    "simulation.prepare_profiles_completed": {
+        "zh": "完成，共 {count} 个Profile",
+        "en": "Completed with {count} profiles",
+    },
+    "simulation.prepare_analyzing_requirement": {
+        "zh": "正在分析模拟需求...",
+        "en": "Analyzing the simulation requirement...",
+    },
+    "simulation.prepare_generating_config": {
+        "zh": "正在调用LLM生成配置...",
+        "en": "Calling the LLM to generate the config...",
+    },
+    "simulation.prepare_saving_config": {
+        "zh": "正在保存配置文件...",
+        "en": "Saving the config file...",
+    },
+    "simulation.prepare_config_completed": {
+        "zh": "配置生成完成",
+        "en": "Configuration generation completed",
+    },
     "simulation.run_instructions_activate_env": {
         "zh": "1. 激活conda环境: conda activate MiroFish",
         "en": "1. Activate the conda environment: conda activate MiroFish",

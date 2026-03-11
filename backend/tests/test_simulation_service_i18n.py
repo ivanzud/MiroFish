@@ -78,6 +78,77 @@ def test_prepare_simulation_empty_entities_uses_explicit_locale(tmp_path, monkey
     assert result.error == "No matching entities were found. Check that the graph was built correctly."
 
 
+def test_prepare_simulation_progress_messages_use_explicit_locale(tmp_path, monkeypatch):
+    monkeypatch.setattr(SimulationManager, "SIMULATION_DATA_DIR", str(tmp_path))
+
+    manager = SimulationManager()
+    state = manager.create_simulation(
+        project_id="project-1",
+        graph_id="graph-1",
+    )
+
+    monkeypatch.setattr(
+        "app.services.simulation_manager.ZepEntityReader",
+        lambda: SimpleNamespace(
+            filter_defined_entities=lambda **kwargs: SimpleNamespace(
+                filtered_count=2,
+                entity_types={"Person"},
+                entities=[{"id": "a"}, {"id": "b"}],
+            )
+        ),
+    )
+
+    class FakeProfileGenerator:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def generate_profiles_from_entities(self, entities, progress_callback, **kwargs):
+            progress_callback(1, 2, "Profile 1")
+            progress_callback(2, 2, "Profile 2")
+            return [{"name": "A"}, {"name": "B"}]
+
+        def save_profiles(self, **kwargs):
+            return None
+
+    class FakeConfig:
+        generation_reasoning = "done"
+
+        def to_json(self):
+            return "{}"
+
+    class FakeConfigGenerator:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def generate_config(self, **kwargs):
+            return FakeConfig()
+
+    monkeypatch.setattr("app.services.simulation_manager.OasisProfileGenerator", FakeProfileGenerator)
+    monkeypatch.setattr("app.services.simulation_manager.SimulationConfigGenerator", FakeConfigGenerator)
+
+    events = []
+
+    manager.prepare_simulation(
+        simulation_id=state.simulation_id,
+        simulation_requirement="predict something",
+        document_text="context",
+        locale="en",
+        progress_callback=lambda stage, progress, message, **kwargs: events.append((stage, progress, message, kwargs)),
+    )
+
+    messages = [message for _, _, message, _ in events]
+    assert "Connecting to the Zep graph..." in messages
+    assert "Reading node data..." in messages
+    assert "Completed with 2 entities" in messages
+    assert "Starting generation..." in messages
+    assert "Saving profile files..." in messages
+    assert "Completed with 2 profiles" in messages
+    assert "Analyzing the simulation requirement..." in messages
+    assert "Calling the LLM to generate the config..." in messages
+    assert "Saving the config file..." in messages
+    assert "Configuration generation completed" in messages
+
+
 def test_stop_simulation_not_running_uses_english_request_locale(monkeypatch):
     app = Flask(__name__)
 

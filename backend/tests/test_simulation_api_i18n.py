@@ -185,6 +185,42 @@ def test_prepare_status_translates_task_progress_payload(monkeypatch):
     assert payload["progress_detail"]["item_description"] == "Connecting to the Zep graph..."
 
 
+def test_prepare_status_keeps_english_task_progress_payload(monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    class FakeTask:
+        def to_dict(self):
+            return {
+                "task_id": "task_123",
+                "status": "processing",
+                "progress": 35,
+                "message": "[1/4] Reading graph entities: Connecting to the Zep graph...",
+                "progress_detail": {
+                    "current_stage": "reading",
+                    "current_stage_name": "Reading graph entities",
+                    "item_description": "Connecting to the Zep graph...",
+                },
+            }
+
+    monkeypatch.setattr(
+        "app.models.task.TaskManager.get_task",
+        lambda self, task_id: FakeTask(),
+    )
+
+    response = client.post(
+        "/api/simulation/prepare/status",
+        json={"task_id": "task_123"},
+        headers={"X-Locale": "en"},
+    )
+
+    payload = response.get_json()["data"]
+    assert response.status_code == 200
+    assert payload["message"] == "[1/4] Reading graph entities: Connecting to the Zep graph..."
+    assert payload["progress_detail"]["current_stage_name"] == "Reading graph entities"
+    assert payload["progress_detail"]["item_description"] == "Connecting to the Zep graph..."
+
+
 def test_prepare_requires_existing_simulation_in_english(monkeypatch):
     app = create_simulation_test_app()
     client = app.test_client()
