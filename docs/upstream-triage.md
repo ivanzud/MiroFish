@@ -14,6 +14,7 @@ Last refreshed: `2026-03-11`
 - `#104` Make Vite dev proxy target configurable with `VITE_API_BASE_URL`: removes another hardcoded localhost assumption for custom backend hosts and ports.
 - `#115` Use SPDX license string: safe metadata-only cherry-pick.
 - `#116` Upgrade GitHub Actions: safe workflow-only dependency bump.
+- `#103` Upgrade Docker image workflow for ARM64 builds: safe workflow-only cherry-pick adding `linux/arm64` image output and GitHub Actions cache configuration.
 - `#125` Improve new-project network error diagnostics: safe single-file frontend error-message improvement.
 - `#122` Remove `response_format={"type":"json_object"}` from `chat_json()`: improves compatibility with LM Studio and Ollama-style backends.
 - `#124` Robust JSON payload extraction: safe parsing hardening plus regression tests.
@@ -38,6 +39,8 @@ Last refreshed: `2026-03-11`
 
 - `#105` Remaining risky subset: default `DEBUG=False`, non-static `SECRET_KEY` generation, and stricter CORS defaults/configuration are still deferred because they can change local/dev or deployed behavior and need a compatibility review before landing.
 - `#82` Dependency-only CVE patch is deferred for coordinated review because the open PR only edits `backend/requirements.txt`, while this repo also depends on `backend/pyproject.toml` and `backend/uv.lock`; landing it blindly would leave dependency state inconsistent.
+- `#100` Relative frontend API base URL fallback is superseded locally by the current API client, which already falls back to the runtime origin and respects `VITE_API_BASE_URL`.
+- `#72` Markdown-fence cleanup for JSON responses is superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`.
 ## Validation status
 
 - `python3 -m unittest tests/test_sync_upstream_github.py` passes for the GitHub sync script pagination/state summary logic.
