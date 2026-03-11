@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T21:40:48.205758+00:00",
-  "generated_at": "2026-03-11T21:40:48.205758+00:00",
+  "captured_at": "2026-03-11T21:49:20.066098+00:00",
+  "generated_at": "2026-03-11T21:49:20.066098+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -465,10 +465,11 @@
       "local_coverage": {
         "number": 117,
         "status": "covered",
-        "summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, report/interview parsing, and Step 5 interview fallbacks: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, Step 4 tool-output parsers accept both Chinese and English markers, and zep_tools now localizes deterministic interview-selection/question/summary fallback copy in English mode.",
+        "summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, graph-build worker progress, report/interview parsing, and Step 5 interview fallbacks: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, GraphBuilderService now persists English task-status strings for its initial worker milestones, Step 4 tool-output parsers accept both Chinese and English markers, and zep_tools now localizes deterministic interview-selection/question/summary fallback copy in English mode.",
         "local_refs": [
           "frontend/src/components/Step2EnvSetup.vue",
           "frontend/src/components/Step3Simulation.vue",
+          "backend/app/services/graph_builder.py",
           "frontend/src/components/Step4Report.vue",
           "frontend/src/components/Step5Interaction.vue",
           "frontend/src/components/reportParsers.js",
@@ -478,10 +479,12 @@
           "backend/app/services/zep_tools.py",
           "frontend/src/i18n/locales/en.js",
           "frontend/src/i18n/locales/zh.js",
+          "backend/tests/test_graph_builder.py",
           "frontend/tests/simulationLogMessages.test.mjs",
           "backend/tests/test_zep_tools_i18n.py"
         ],
         "validation": [
+          "backend/tests/test_graph_builder.py",
           "frontend/tests/reportParsers.test.mjs",
           "frontend/tests/simulationLogMessages.test.mjs",
           "frontend/tests/simulationTimeline.test.mjs",
@@ -494,9 +497,9 @@
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
       },
       "local_status": "covered",
-      "local_summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, report/interview parsing, and Step 5 interview fallbacks: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, Step 4 tool-output parsers accept both Chinese and English markers, and zep_tools now localizes deterministic interview-selection/question/summary fallback copy in English mode.",
+      "local_summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, graph-build worker progress, report/interview parsing, and Step 5 interview fallbacks: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, GraphBuilderService now persists English task-status strings for its initial worker milestones, Step 4 tool-output parsers accept both Chinese and English markers, and zep_tools now localizes deterministic interview-selection/question/summary fallback copy in English mode.",
       "triage_status": "covered",
-      "summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, report/interview parsing, and Step 5 interview fallbacks: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, Step 4 tool-output parsers accept both Chinese and English markers, and zep_tools now localizes deterministic interview-selection/question/summary fallback copy in English mode.",
+      "summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, graph-build worker progress, report/interview parsing, and Step 5 interview fallbacks: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, GraphBuilderService now persists English task-status strings for its initial worker milestones, Step 4 tool-output parsers accept both Chinese and English markers, and zep_tools now localizes deterministic interview-selection/question/summary fallback copy in English mode.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 8,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/8"
@@ -2555,10 +2558,11 @@
       "local_coverage": {
         "number": 119,
         "status": "partial",
-        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, and English-mode Oasis profile prompt empty-state fallbacks, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
+        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, and English-localized GraphBuilderService worker progress strings, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
         "local_refs": [
           "frontend/src/views/MainView.vue",
           "frontend/src/views/mainViewLogMessages.js",
+          "backend/app/services/graph_builder.py",
           "frontend/src/components/Step4Report.vue",
           "frontend/src/components/reportParsers.js",
           "backend/app/services/report_agent.py",
@@ -2566,6 +2570,7 @@
           "backend/app/services/oasis_profile_generator.py",
           "frontend/src/i18n/locales/en.js",
           "frontend/src/i18n/locales/zh.js",
+          "backend/tests/test_graph_builder.py",
           "backend/tests/test_report_agent.py",
           "backend/tests/test_openai_compat_services.py",
           "frontend/tests/mainViewLogMessages.test.mjs",
@@ -2573,6 +2578,7 @@
           "backend/tests/test_zep_tools_i18n.py"
         ],
         "validation": [
+          "uv run --project backend pytest -q backend/tests/test_graph_builder.py backend/tests/test_graph_upload_api.py",
           "uv run --project backend pytest -q backend/tests/test_report_agent.py",
           "uv run --project backend pytest -q backend/tests/test_openai_compat_services.py",
           "backend/tests/test_zep_tools_i18n.py",
@@ -2582,9 +2588,9 @@
         ]
       },
       "local_status": "partial",
-      "local_summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, and English-mode Oasis profile prompt empty-state fallbacks, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
+      "local_summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, and English-localized GraphBuilderService worker progress strings, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
       "triage_status": "partial",
-      "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, and English-mode Oasis profile prompt empty-state fallbacks, but broader backend/runtime localization remains a follow-up instead of a blind merge."
+      "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, and English-localized GraphBuilderService worker progress strings, but broader backend/runtime localization remains a follow-up instead of a blind merge."
     },
     {
       "number": 118,

@@ -531,3 +531,55 @@ def test_chat_localizes_english_truncated_report_marker(monkeypatch):
     system_prompt = llm.calls[0][0]["content"]
     assert "... [Report content truncated] ..." in system_prompt
     assert "... [报告内容已截断] ..." not in system_prompt
+
+
+def test_chat_returns_localized_fallback_when_initial_response_is_none(monkeypatch):
+    llm = SequenceChatLLM([None])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    monkeypatch.setattr(ReportManager, "get_report_by_simulation", lambda simulation_id: None)
+
+    result = agent.chat("Summarize the current audience outlook")
+
+    assert result == {
+        "response": "(The assistant returned an empty response. Please try again.)",
+        "tool_calls": [],
+        "sources": [],
+    }
+
+
+def test_chat_returns_default_locale_fallback_when_final_response_is_none(monkeypatch):
+    llm = SequenceChatLLM([
+        '<tool_call>{"name":"quick_search","parameters":{"query":"受众","limit":1}}</tool_call>',
+        None,
+    ])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="预测这个游戏的受众群体会是什么样",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    monkeypatch.setattr(ReportManager, "get_report_by_simulation", lambda simulation_id: None)
+    monkeypatch.setattr(agent, "_execute_tool", lambda tool_name, parameters: "受众证据")
+
+    result = agent.chat("总结一下当前受众走向")
+
+    assert result == {
+        "response": "（助手返回了空响应，请重试。）",
+        "tool_calls": [
+            {
+                "name": "quick_search",
+                "parameters": {"query": "受众", "limit": 1},
+            }
+        ],
+        "sources": ["受众"],
+    }

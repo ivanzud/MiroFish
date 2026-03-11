@@ -1131,6 +1131,12 @@ class ReportAgent:
             "\n\n请简洁回答问题。",
         )
 
+    def _chat_empty_response_text(self) -> str:
+        return self._text(
+            "(The assistant returned an empty response. Please try again.)",
+            "（助手返回了空响应，请重试。）",
+        )
+
     def _react_conflict_retry_message(self) -> str:
         return self._text(
             "Format error: your reply included both a tool call and Final Answer, which is not allowed.\n"
@@ -2363,6 +2369,19 @@ class ReportAgent:
                 messages=messages,
                 temperature=0.5
             )
+
+            if response is None:
+                self._log(
+                    "warning",
+                    "Report Agent chat iteration %s returned None; using the empty-response fallback",
+                    "Report Agent 对话第 %s 轮返回 None，改用空响应兜底提示",
+                    iteration + 1,
+                )
+                return {
+                    "response": self._chat_empty_response_text(),
+                    "tool_calls": tool_calls_made,
+                    "sources": [tc.get("parameters", {}).get("query", "") for tc in tool_calls_made]
+                }
             
             # 解析工具调用
             tool_calls = self._parse_tool_calls(response)
@@ -2406,6 +2425,14 @@ class ReportAgent:
             messages=messages,
             temperature=0.5
         )
+
+        if final_response is None:
+            self._log(
+                "warning",
+                "Report Agent chat final response returned None; using the empty-response fallback",
+                "Report Agent 对话最终响应返回 None，改用空响应兜底提示",
+            )
+            final_response = self._chat_empty_response_text()
         
         # 清理响应
         clean_response = re.sub(r'<tool_call>.*?</tool_call>', '', final_response, flags=re.DOTALL)
