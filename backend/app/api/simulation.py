@@ -450,7 +450,15 @@ def _check_simulation_prepared(simulation_id: str, locale: str | None = None) ->
         config_generated = state_data.get("config_generated", False)
         
         # 详细日志
-        logger.debug(f"检测模拟准备状态: {simulation_id}, status={status}, config_generated={config_generated}")
+        logger.debug(
+            tr(
+                "simulation.prepare_check_status",
+                resolved_locale,
+                simulation_id=simulation_id,
+                status=status,
+                config_generated=config_generated,
+            )
+        )
         
         # 如果 config_generated=True 且文件存在，认为准备完成
         # 以下状态都说明准备工作已完成：
@@ -480,12 +488,32 @@ def _check_simulation_prepared(simulation_id: str, locale: str | None = None) ->
                     state_data["updated_at"] = datetime.now().isoformat()
                     with open(state_file, 'w', encoding='utf-8') as f:
                         json.dump(state_data, f, ensure_ascii=False, indent=2)
-                    logger.info(f"自动更新模拟状态: {simulation_id} preparing -> ready")
+                    logger.info(
+                        tr(
+                            "simulation.prepare_auto_ready",
+                            resolved_locale,
+                            simulation_id=simulation_id,
+                        )
+                    )
                     status = "ready"
                 except Exception as e:
-                    logger.warning(f"自动更新状态失败: {e}")
-            
-            logger.info(f"模拟 {simulation_id} 检测结果: 已准备完成 (status={status}, config_generated={config_generated})")
+                    logger.warning(
+                        tr(
+                            "simulation.prepare_auto_ready_failed",
+                            resolved_locale,
+                            error=str(e),
+                        )
+                    )
+
+            logger.info(
+                tr(
+                    "simulation.prepare_check_ready",
+                    resolved_locale,
+                    simulation_id=simulation_id,
+                    status=status,
+                    config_generated=config_generated,
+                )
+            )
             return True, {
                 "status": status,
                 "entities_count": state_data.get("entities_count", 0),
@@ -497,7 +525,15 @@ def _check_simulation_prepared(simulation_id: str, locale: str | None = None) ->
                 "existing_files": existing_files
             }
         else:
-            logger.warning(f"模拟 {simulation_id} 检测结果: 未准备完成 (status={status}, config_generated={config_generated})")
+            logger.warning(
+                tr(
+                    "simulation.prepare_check_not_ready",
+                    resolved_locale,
+                    simulation_id=simulation_id,
+                    status=status,
+                    config_generated=config_generated,
+                )
+            )
             return False, {
                 "reason": tr(
                     "simulation.prepare_status_not_ready",
@@ -1668,11 +1704,23 @@ def start_simulation():
                         # 进程确实在运行
                         if force:
                             # 强制模式：停止运行中的模拟
-                            logger.info(f"强制模式：停止运行中的模拟 {simulation_id}")
+                            logger.info(
+                                tr(
+                                    "simulation.force_stop_running",
+                                    locale,
+                                    simulation_id=simulation_id,
+                                )
+                            )
                             try:
                                 SimulationRunner.stop_simulation(simulation_id)
                             except Exception as e:
-                                logger.warning(f"停止模拟时出现警告: {str(e)}")
+                                logger.warning(
+                                    tr(
+                                        "simulation.force_stop_warning",
+                                        locale,
+                                        error=str(e),
+                                    )
+                                )
                         else:
                             return jsonify({
                                 "success": False,
@@ -1681,14 +1729,33 @@ def start_simulation():
 
                 # 如果是强制模式，清理运行日志
                 if force:
-                    logger.info(f"强制模式：清理模拟日志 {simulation_id}")
+                    logger.info(
+                        tr(
+                            "simulation.force_cleanup_logs",
+                            locale,
+                            simulation_id=simulation_id,
+                        )
+                    )
                     cleanup_result = SimulationRunner.cleanup_simulation_logs(simulation_id)
                     if not cleanup_result.get("success"):
-                        logger.warning(f"清理日志时出现警告: {cleanup_result.get('errors')}")
+                        logger.warning(
+                            tr(
+                                "simulation.force_cleanup_warning",
+                                locale,
+                                errors=cleanup_result.get("errors"),
+                            )
+                        )
                     force_restarted = True
 
                 # 进程不存在或已结束，重置状态为 ready
-                logger.info(f"模拟 {simulation_id} 准备工作已完成，重置状态为 ready（原状态: {state.status.value}）")
+                logger.info(
+                    tr(
+                        "simulation.reset_ready_after_prepare",
+                        locale,
+                        simulation_id=simulation_id,
+                        status=state.status.value,
+                    )
+                )
                 state.status = SimulationStatus.READY
                 manager._save_simulation_state(state)
             else:
@@ -1715,7 +1782,14 @@ def start_simulation():
                     "error": tr("simulation.graph_memory_requires_graph", locale)
                 }), 400
             
-            logger.info(f"启用图谱记忆更新: simulation_id={simulation_id}, graph_id={graph_id}")
+            logger.info(
+                tr(
+                    "simulation.graph_memory_enable_request",
+                    locale,
+                    simulation_id=simulation_id,
+                    graph_id=graph_id,
+                )
+            )
         
         # 启动模拟
         run_state = SimulationRunner.start_simulation(

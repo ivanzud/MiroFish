@@ -968,6 +968,50 @@ TRANSLATIONS = {
         "zh": "数据库不存在，模拟可能尚未运行",
         "en": "The simulation database does not exist yet. The simulation may not have run for this platform.",
     },
+    "simulation.prepare_check_status": {
+        "zh": "检测模拟准备状态: {simulation_id}, status={status}, config_generated={config_generated}",
+        "en": "Checking simulation prepare state: {simulation_id}, status={status}, config_generated={config_generated}",
+    },
+    "simulation.prepare_auto_ready": {
+        "zh": "自动更新模拟状态: {simulation_id} preparing -> ready",
+        "en": "Auto-updated simulation state: {simulation_id} preparing -> ready",
+    },
+    "simulation.prepare_auto_ready_failed": {
+        "zh": "自动更新状态失败: {error}",
+        "en": "Failed to auto-update the simulation state: {error}",
+    },
+    "simulation.prepare_check_ready": {
+        "zh": "模拟 {simulation_id} 检测结果: 已准备完成 (status={status}, config_generated={config_generated})",
+        "en": "Simulation {simulation_id} prepare check result: ready (status={status}, config_generated={config_generated})",
+    },
+    "simulation.prepare_check_not_ready": {
+        "zh": "模拟 {simulation_id} 检测结果: 未准备完成 (status={status}, config_generated={config_generated})",
+        "en": "Simulation {simulation_id} prepare check result: not ready (status={status}, config_generated={config_generated})",
+    },
+    "simulation.force_stop_running": {
+        "zh": "强制模式：停止运行中的模拟 {simulation_id}",
+        "en": "Force mode: stopping the running simulation {simulation_id}",
+    },
+    "simulation.force_stop_warning": {
+        "zh": "停止模拟时出现警告: {error}",
+        "en": "Stopping the simulation raised a warning: {error}",
+    },
+    "simulation.force_cleanup_logs": {
+        "zh": "强制模式：清理模拟日志 {simulation_id}",
+        "en": "Force mode: cleaning simulation logs for {simulation_id}",
+    },
+    "simulation.force_cleanup_warning": {
+        "zh": "清理日志时出现警告: {errors}",
+        "en": "Cleaning simulation logs raised a warning: {errors}",
+    },
+    "simulation.reset_ready_after_prepare": {
+        "zh": "模拟 {simulation_id} 准备工作已完成，重置状态为 ready（原状态: {status}）",
+        "en": "Simulation {simulation_id} already has prepared assets; resetting state to ready (previous status: {status})",
+    },
+    "simulation.graph_memory_enable_request": {
+        "zh": "启用图谱记忆更新: simulation_id={simulation_id}, graph_id={graph_id}",
+        "en": "Enabling graph-memory updates: simulation_id={simulation_id}, graph_id={graph_id}",
+    },
 }
 
 

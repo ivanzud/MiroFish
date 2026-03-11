@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import sqlite3
 import sys
 from types import ModuleType
@@ -37,6 +38,26 @@ def create_simulation_test_app():
     app = Flask(__name__)
     app.register_blueprint(simulation_bp, url_prefix="/api/simulation")
     return app
+
+
+class FakeLogger:
+    def __init__(self):
+        self.debugs = []
+        self.infos = []
+        self.warnings = []
+        self.errors = []
+
+    def debug(self, message):
+        self.debugs.append(message)
+
+    def info(self, message):
+        self.infos.append(message)
+
+    def warning(self, message):
+        self.warnings.append(message)
+
+    def error(self, message):
+        self.errors.append(message)
 
 
 def test_entities_requires_zep_key_in_english(monkeypatch):
@@ -299,6 +320,106 @@ def test_close_env_passes_locale_and_returns_localized_message(monkeypatch):
     assert response.status_code == 200
     payload = response.get_json()["data"]
     assert payload["message"] == "The environment is already closed"
+
+
+def test_prepare_check_logs_are_localized_when_state_auto_recovers(tmp_path, monkeypatch):
+    simulation_dir = tmp_path / "sim_123"
+    simulation_dir.mkdir()
+    (simulation_dir / "simulation_config.json").write_text("{}", encoding="utf-8")
+    (simulation_dir / "reddit_profiles.json").write_text("[]", encoding="utf-8")
+    (simulation_dir / "twitter_profiles.csv").write_text("username\n", encoding="utf-8")
+    (simulation_dir / "state.json").write_text(
+        json.dumps(
+            {
+                "status": "preparing",
+                "config_generated": True,
+                "entities_count": 2,
+                "entity_types": ["Person"],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(simulation_api.Config, "OASIS_SIMULATION_DATA_DIR", str(tmp_path))
+    logger = FakeLogger()
+    monkeypatch.setattr(simulation_api, "logger", logger)
+
+    is_prepared, info = simulation_api._check_simulation_prepared("sim_123", "en")
+
+    assert is_prepared is True
+    assert info["status"] == "ready"
+    assert logger.debugs == [
+        "Checking simulation prepare state: sim_123, status=preparing, config_generated=True"
+    ]
+    assert logger.infos == [
+        "Auto-updated simulation state: sim_123 preparing -> ready",
+        "Simulation sim_123 prepare check result: ready (status=ready, config_generated=True)",
+    ]
+    state_data = json.loads((simulation_dir / "state.json").read_text(encoding="utf-8"))
+    assert state_data["status"] == "ready"
+
+
+def test_start_force_restart_logs_are_localized(monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    state = SimulationState(
+        simulation_id="sim_123",
+        project_id="proj_123",
+        graph_id="graph_123",
+        status=SimulationStatus.RUNNING,
+    )
+
+    logger = FakeLogger()
+    monkeypatch.setattr(simulation_api, "logger", logger)
+    monkeypatch.setattr(simulation_api.SimulationManager, "get_simulation", lambda self, simulation_id: state)
+    monkeypatch.setattr(simulation_api.SimulationManager, "_save_simulation_state", lambda self, saved: None)
+    monkeypatch.setattr(simulation_api, "_check_simulation_prepared", lambda simulation_id, locale=None: (True, {}))
+
+    class FakeRunnerStatus:
+        value = "running"
+
+    class FakeRunState:
+        runner_status = FakeRunnerStatus()
+
+        def to_dict(self):
+            return {
+                "simulation_id": "sim_123",
+                "runner_status": "running",
+                "process_pid": 99,
+            }
+
+    monkeypatch.setattr(simulation_api.SimulationRunner, "get_run_state", lambda simulation_id: FakeRunState())
+    monkeypatch.setattr(simulation_api.SimulationRunner, "stop_simulation", lambda simulation_id: None)
+    monkeypatch.setattr(
+        simulation_api.SimulationRunner,
+        "cleanup_simulation_logs",
+        lambda simulation_id: {"success": False, "errors": ["log still open"]},
+    )
+    monkeypatch.setattr(
+        simulation_api.SimulationRunner,
+        "start_simulation",
+        lambda **kwargs: FakeRunState(),
+    )
+
+    response = client.post(
+        "/api/simulation/start",
+        json={"simulation_id": "sim_123", "force": True, "enable_graph_memory_update": True},
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()["data"]
+    assert payload["force_restarted"] is True
+    assert payload["graph_memory_update_enabled"] is True
+    assert logger.infos == [
+        "Force mode: stopping the running simulation sim_123",
+        "Force mode: cleaning simulation logs for sim_123",
+        "Simulation sim_123 already has prepared assets; resetting state to ready (previous status: running)",
+        "Enabling graph-memory updates: simulation_id=sim_123, graph_id=graph_123",
+    ]
+    assert logger.warnings == ["Cleaning simulation logs raised a warning: ['log still open']"]
 
 
 def test_interview_endpoint_uses_english_prompt_prefix(monkeypatch):
