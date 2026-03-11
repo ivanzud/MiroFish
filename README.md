@@ -223,7 +223,7 @@ cp .env.example .env
 
 ```env
 # LLM API配置（支持 OpenAI / Codex-compatible / OpenAI SDK 格式的任意 LLM API）
-# 也支持直接使用 OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_MODEL
+# 也支持直接使用 OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_API_BASE_URL / OPENAI_MODEL
 # 推荐使用阿里百炼平台qwen-plus模型：https://bailian.console.aliyun.com/
 # 注意消耗较大，可先进行小于40轮的模拟尝试
 LLM_API_KEY=your_api_key
@@ -237,7 +237,23 @@ LLM_MODEL_NAME=qwen-plus
 ZEP_API_KEY=your_zep_api_key
 ```
 
-说明：后端现在同时识别项目内的 `LLM_*` 配置和标准 `OPENAI_*` 配置，因此可直接接入 OpenAI、Codex 兼容网关、LM Studio、Ollama 等 OpenAI-compatible 服务。
+说明：后端现在同时识别项目内的 `LLM_*` 配置和标准 `OPENAI_*` 配置，因此可直接接入 OpenAI、Codex 兼容网关、LM Studio、Ollama 等 OpenAI-compatible 服务，不需要额外的 `LLM_PROVIDER` 开关。
+
+常见兼容后端示例：
+
+```env
+# OpenAI / Codex-compatible 网关
+OPENAI_API_KEY=your_api_key
+OPENAI_API_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-4.1-mini
+
+# 阿里云百炼 Coding Plan
+OPENAI_API_KEY=your_dashscope_key
+OPENAI_API_BASE_URL=https://coding.dashscope.aliyuncs.com/v1
+OPENAI_MODEL=qwen3.5-plus
+```
+
+如果遇到 `5001` 根路径返回 `404`，那通常不是后端启动失败，而是因为后端只暴露 API 路由；请改用 `http://localhost:5001/health` 检查健康状态。
 
 #### 2. 安装依赖
 

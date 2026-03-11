@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 import urllib.parse
 import urllib.request
 from urllib.error import HTTPError
@@ -20,6 +21,7 @@ from typing import Any
 BODY_EXCERPT_LIMIT = 400
 COMMENT_EXCERPT_LIMIT = 240
 RECENT_COMMENT_LIMIT = 3
+GH_API_MAX_ATTEMPTS = 3
 
 
 def has_github_token() -> bool:
@@ -43,25 +45,50 @@ def can_use_gh_cli() -> bool:
     return result.returncode == 0
 
 
+def _is_retryable_gh_error(message: str) -> bool:
+    lowered = message.lower()
+    markers = (
+        "timeout",
+        "timed out",
+        "connection reset",
+        "tls",
+        "eof",
+        "502",
+        "503",
+        "504",
+        "secondary rate limit",
+    )
+    return any(marker in lowered for marker in markers)
+
+
 def fetch_json_via_gh(url: str) -> object:
     parsed = urllib.parse.urlparse(url)
     endpoint = parsed.path
     if parsed.query:
         endpoint = f"{endpoint}?{parsed.query}"
 
-    result = subprocess.run(
-        ["gh", "api", endpoint],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    return json.loads(result.stdout)
+    last_error: RuntimeError | None = None
+    for attempt in range(1, GH_API_MAX_ATTEMPTS + 1):
+        try:
+            result = subprocess.run(
+                ["gh", "api", endpoint],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            return json.loads(result.stdout)
+        except subprocess.CalledProcessError as exc:
+            details = (exc.stderr or exc.stdout or "").strip() or f"exit status {exc.returncode}"
+            last_error = RuntimeError(f"gh api failed for {endpoint}: {details}")
+            if attempt >= GH_API_MAX_ATTEMPTS or not _is_retryable_gh_error(details):
+                raise last_error from exc
+            time.sleep(attempt)
+
+    assert last_error is not None
+    raise last_error
 
 
-def fetch_json(url: str) -> object:
-    if not has_github_token() and can_use_gh_cli():
-        return fetch_json_via_gh(url)
-
+def _fetch_json_via_http(url: str) -> object:
     headers = {"User-Agent": "mirofish-upstream-sync"}
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
     if token:
@@ -77,6 +104,19 @@ def fetch_json(url: str) -> object:
                 "GitHub API rate limit exceeded. Set GITHUB_TOKEN or GH_TOKEN, or log into gh before running sync."
             ) from exc
         raise
+
+
+def fetch_json(url: str) -> object:
+    if not has_github_token() and can_use_gh_cli():
+        try:
+            return fetch_json_via_gh(url)
+        except RuntimeError as exc:
+            print(
+                f"warning: {exc}; falling back to direct GitHub HTTP request",
+                file=sys.stderr,
+            )
+
+    return _fetch_json_via_http(url)
 
 
 def github_api(path: str, params: dict[str, object]) -> object:

@@ -2,6 +2,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 import importlib.util
+import subprocess
 from urllib.error import HTTPError
 
 
@@ -89,6 +90,18 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(payload, {"ok": True})
         mocked.assert_called_once_with("https://api.github.com/repos/test/repo/issues?state=open")
 
+    def test_fetch_json_falls_back_to_http_when_gh_cli_request_fails(self):
+        with (
+            patch.object(sync_upstream_github, "has_github_token", return_value=False),
+            patch.object(sync_upstream_github, "can_use_gh_cli", return_value=True),
+            patch.object(sync_upstream_github, "fetch_json_via_gh", side_effect=RuntimeError("boom")),
+            patch.object(sync_upstream_github, "_fetch_json_via_http", return_value={"ok": True}) as mocked_http,
+        ):
+            payload = sync_upstream_github.fetch_json("https://api.github.com/repos/test/repo/issues?state=open")
+
+        self.assertEqual(payload, {"ok": True})
+        mocked_http.assert_called_once_with("https://api.github.com/repos/test/repo/issues?state=open")
+
     def test_fetch_json_rate_limit_error_mentions_gh_cli_fallback(self):
         rate_limited = HTTPError(
             url="https://api.github.com/repos/test/repo/issues",
@@ -104,6 +117,24 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(RuntimeError, "log into gh"):
                 sync_upstream_github.fetch_json("https://api.github.com/repos/test/repo/issues")
+
+    def test_fetch_json_via_gh_retries_transient_failures(self):
+        transient = subprocess.CalledProcessError(
+            1,
+            ["gh", "api", "/repos/test/repo/pulls/101"],
+            stderr="HTTP 502 from GitHub",
+        )
+        success = type("Completed", (), {"stdout": '{"ok": true}'})()
+
+        with (
+            patch.object(sync_upstream_github.subprocess, "run", side_effect=[transient, success]) as mocked,
+            patch.object(sync_upstream_github.time, "sleep") as mocked_sleep,
+        ):
+            payload = sync_upstream_github.fetch_json_via_gh("https://api.github.com/repos/test/repo/pulls/101")
+
+        self.assertEqual(payload, {"ok": True})
+        self.assertEqual(mocked.call_count, 2)
+        mocked_sleep.assert_called_once_with(1)
 
     def test_github_api_paginated_collects_multiple_pages(self):
         responses = [

@@ -223,7 +223,7 @@ cp .env.example .env
 
 ```env
 # LLM API Configuration (supports OpenAI, Codex-compatible, and other OpenAI-SDK-compatible backends)
-# Standard OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_MODEL aliases also work
+# Standard OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_API_BASE_URL / OPENAI_MODEL aliases also work
 # Recommended: Alibaba Qwen-plus model via Bailian Platform: https://bailian.console.aliyun.com/
 # High consumption, try simulations with fewer than 40 rounds first
 LLM_API_KEY=your_api_key
@@ -237,7 +237,23 @@ LLM_MODEL_NAME=qwen-plus
 ZEP_API_KEY=your_zep_api_key
 ```
 
-The backend now accepts both the project-specific `LLM_*` variables and the standard `OPENAI_*` aliases, so you can point MiroFish directly at OpenAI, Codex-compatible gateways, LM Studio, Ollama, or other OpenAI-compatible backends without extra code changes.
+The backend now accepts both the project-specific `LLM_*` variables and the standard `OPENAI_*` aliases, so you can point MiroFish directly at OpenAI, Codex-compatible gateways, LM Studio, Ollama, or other OpenAI-compatible backends without extra code changes or a separate `LLM_PROVIDER` flag.
+
+Common compatible backend examples:
+
+```env
+# OpenAI / Codex-compatible gateway
+OPENAI_API_KEY=your_api_key
+OPENAI_API_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-4.1-mini
+
+# Alibaba DashScope Coding Plan
+OPENAI_API_KEY=your_dashscope_key
+OPENAI_API_BASE_URL=https://coding.dashscope.aliyuncs.com/v1
+OPENAI_MODEL=qwen3.5-plus
+```
+
+If `http://localhost:5001` returns `404`, that usually does not mean the backend failed to boot. The backend root is API-only; use `http://localhost:5001/health` for a health check instead.
 
 #### 2. Install Dependencies
 
