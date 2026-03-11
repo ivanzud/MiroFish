@@ -2,6 +2,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 import importlib.util
+from urllib.error import HTTPError
 
 
 def load_module():
@@ -17,6 +18,33 @@ sync_upstream_github = load_module()
 
 
 class SyncUpstreamGithubTests(unittest.TestCase):
+    def test_fetch_json_prefers_authenticated_gh_cli_when_no_token(self):
+        with (
+            patch.object(sync_upstream_github, "has_github_token", return_value=False),
+            patch.object(sync_upstream_github, "can_use_gh_cli", return_value=True),
+            patch.object(sync_upstream_github, "fetch_json_via_gh", return_value={"ok": True}) as mocked,
+        ):
+            payload = sync_upstream_github.fetch_json("https://api.github.com/repos/test/repo/issues?state=open")
+
+        self.assertEqual(payload, {"ok": True})
+        mocked.assert_called_once_with("https://api.github.com/repos/test/repo/issues?state=open")
+
+    def test_fetch_json_rate_limit_error_mentions_gh_cli_fallback(self):
+        rate_limited = HTTPError(
+            url="https://api.github.com/repos/test/repo/issues",
+            code=403,
+            msg="rate limit exceeded",
+            hdrs=None,
+            fp=None,
+        )
+
+        with (
+            patch.object(sync_upstream_github, "has_github_token", return_value=True),
+            patch("urllib.request.urlopen", side_effect=rate_limited),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "log into gh"):
+                sync_upstream_github.fetch_json("https://api.github.com/repos/test/repo/issues")
+
     def test_github_api_paginated_collects_multiple_pages(self):
         responses = [
             [{"number": n} for n in range(1, 101)],

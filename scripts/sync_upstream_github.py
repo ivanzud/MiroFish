@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
+import subprocess
 import sys
 import urllib.parse
 import urllib.request
@@ -15,7 +17,46 @@ from pathlib import Path
 from typing import Any
 
 
+def has_github_token() -> bool:
+    return bool(os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN"))
+
+
+def can_use_gh_cli() -> bool:
+    if shutil.which("gh") is None:
+        return False
+
+    try:
+        result = subprocess.run(
+            ["gh", "auth", "status"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return False
+
+    return result.returncode == 0
+
+
+def fetch_json_via_gh(url: str) -> object:
+    parsed = urllib.parse.urlparse(url)
+    endpoint = parsed.path
+    if parsed.query:
+        endpoint = f"{endpoint}?{parsed.query}"
+
+    result = subprocess.run(
+        ["gh", "api", endpoint],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return json.loads(result.stdout)
+
+
 def fetch_json(url: str) -> object:
+    if not has_github_token() and can_use_gh_cli():
+        return fetch_json_via_gh(url)
+
     headers = {"User-Agent": "mirofish-upstream-sync"}
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
     if token:
@@ -28,7 +69,7 @@ def fetch_json(url: str) -> object:
     except HTTPError as exc:
         if exc.code == 403 and "rate limit" in str(exc).lower():
             raise RuntimeError(
-                "GitHub API rate limit exceeded. Set GITHUB_TOKEN or GH_TOKEN before running sync."
+                "GitHub API rate limit exceeded. Set GITHUB_TOKEN or GH_TOKEN, or log into gh before running sync."
             ) from exc
         raise
 

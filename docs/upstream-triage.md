@@ -39,13 +39,14 @@ Last refreshed: `2026-03-11`
 ## Deferred for later review
 
 - `#105` Remaining risky subset: default `DEBUG=False`, non-static `SECRET_KEY` generation, and stricter CORS defaults/configuration are still deferred because they can change local/dev or deployed behavior and need a compatibility review before landing.
-- `#82` Dependency-only CVE patch is deferred for coordinated review because the open PR only edits `backend/requirements.txt`, while this repo also depends on `backend/pyproject.toml` and `backend/uv.lock`; landing it blindly would leave dependency state inconsistent.
+- `#82` Dependency-only CVE patch cannot be landed as a real fix yet: a coordinated `uv lock --upgrade-package unstructured==0.18.18` attempt fails because `camel-oasis==0.2.5` transitively pins `unstructured==0.13.7`. The upstream PR also only edits `backend/requirements.txt`, so it would leave this repo's dependency state inconsistent even if cherry-picked.
 - `#87` and `#86` GitHub Actions-only PRs are superseded locally by the current Docker workflow: their diffs would either partially duplicate already-landed upgrades or regress this branch by removing the ARM64/cache changes that came from `#103`.
 - `#100` Relative frontend API base URL fallback is superseded locally by the current API client, which already falls back to the runtime origin and respects `VITE_API_BASE_URL`.
 - `#72` Markdown-fence cleanup for JSON responses is superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`.
 ## Validation status
 
 - `python3 -m unittest tests/test_sync_upstream_github.py` passes for the GitHub sync script pagination/state summary logic.
+- `python3 -m unittest tests/test_sync_upstream_github.py` passes after adding a `gh api` fallback path, and the sync script now refreshes upstream snapshots successfully in this environment even when anonymous GitHub API requests are rate-limited.
 - `cd frontend && npm run build` passes after landing `#104` and the prior OpenAI-alias compatibility updates.
 - `cd frontend && npm run build` passes after landing `#15`.
 - `cd frontend && npm run build` passes after adding failed-report retry handling in `Step4Report` for upstream issue `#84`.
@@ -61,7 +62,7 @@ Last refreshed: `2026-03-11`
 
 - `docs/upstream-open-state.json` and `docs/upstream-open-summary.md` remain the fast open-work triage view.
 - `docs/upstream-all-state.json` and `docs/upstream-all-summary.md` now capture the full upstream issue/PR state for historical triage and mirroring decisions.
-- `scripts/sync_upstream_github.py` now supports paginated `--state all` refreshes and uses `GITHUB_TOKEN` / `GH_TOKEN` when available to avoid GitHub API rate-limit failures.
+- `scripts/sync_upstream_github.py` now supports paginated `--state all` refreshes and uses `GITHUB_TOKEN` / `GH_TOKEN` when available; when those env vars are absent but the GitHub CLI is authenticated, it falls back to `gh api` so upstream intake still works under anonymous API rate limits.
 
 ## Practical mirror strategy for the fork
 
