@@ -2,6 +2,7 @@ import importlib
 import json
 import sys
 import types
+from unittest import mock
 
 
 def _load_simulation_runner_module():
@@ -87,3 +88,32 @@ def test_get_all_actions_supports_incremental_windows(tmp_path):
         assert [action.platform for action in incremental] == ["twitter", "reddit"]
     finally:
         runner.RUN_STATE_DIR = original_run_state_dir
+
+
+def test_start_simulation_fails_fast_when_optional_runtime_is_missing(tmp_path):
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+    original_run_state_dir = runner.RUN_STATE_DIR
+    original_scripts_dir = runner.SCRIPTS_DIR
+    runner.RUN_STATE_DIR = str(tmp_path)
+    runner.SCRIPTS_DIR = str(tmp_path)
+
+    simulation_dir = tmp_path / "sim-missing-runtime"
+    simulation_dir.mkdir()
+    (simulation_dir / "simulation_config.json").write_text(
+        json.dumps({"time_config": {"total_simulation_hours": 1, "minutes_per_round": 30}}),
+        encoding="utf-8",
+    )
+    (tmp_path / "run_parallel_simulation.py").write_text("# placeholder", encoding="utf-8")
+
+    try:
+        with mock.patch.object(runner, "_simulation_dependencies_available", return_value=False):
+            try:
+                runner.start_simulation("sim-missing-runtime")
+            except RuntimeError as exc:
+                assert str(exc) == module.SIMULATION_DEPENDENCY_ERROR
+            else:
+                raise AssertionError("expected RuntimeError when optional simulation runtime is missing")
+    finally:
+        runner.RUN_STATE_DIR = original_run_state_dir
+        runner.SCRIPTS_DIR = original_scripts_dir

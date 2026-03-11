@@ -1,0 +1,7 @@
+# Optional OASIS simulation runtime dependencies.
+# Install after requirements.txt when you need Step 3 / Step 5 simulation execution:
+#   pip install -r requirements.txt -r requirements-simulation.txt
+
+-r requirements.txt
+camel-oasis==0.2.5
+camel-ai==0.2.78

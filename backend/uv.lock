@@ -1242,8 +1242,6 @@ name = "mirofish-backend"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "camel-ai" },
-    { name = "camel-oasis" },
     { name = "chardet" },
     { name = "charset-normalizer" },
     { name = "flask" },
@@ -1261,6 +1259,10 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
 ]
+simulation = [
+    { name = "camel-ai" },
+    { name = "camel-oasis" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -1270,8 +1272,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "camel-ai", specifier = "==0.2.78" },
-    { name = "camel-oasis", specifier = "==0.2.5" },
+    { name = "camel-ai", marker = "extra == 'simulation'", specifier = "==0.2.78" },
+    { name = "camel-oasis", marker = "extra == 'simulation'", specifier = "==0.2.5" },
     { name = "chardet", specifier = ">=5.0.0" },
     { name = "charset-normalizer", specifier = ">=3.0.0" },
     { name = "flask", specifier = ">=3.0.0" },
@@ -1285,7 +1287,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "zep-cloud", specifier = "==3.13.0" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["simulation", "dev"]
 
 [package.metadata.requires-dev]
 dev = [

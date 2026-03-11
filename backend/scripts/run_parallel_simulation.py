@@ -177,7 +177,8 @@ try:
     )
 except ImportError as e:
     print(f"错误: 缺少依赖 {e}")
-    print("请先安装: pip install oasis-ai camel-ai")
+    print("请先安装可选仿真依赖: `npm run setup:backend:simulation`")
+    print("或在 backend 目录执行: `uv sync --extra simulation`")
     sys.exit(1)
 
 

@@ -262,6 +262,9 @@ If Step 5 deep interaction frequently times out for single-agent chat, batch sur
 ```bash
 # One-click installation of all dependencies (root + frontend + backend)
 npm run setup:all
+
+# Install the optional OASIS runtime only if you need Step 3 / Step 5 simulations
+npm run setup:backend:simulation
 ```
 
 Or install step by step:
@@ -270,9 +273,14 @@ Or install step by step:
 # Install Node dependencies (root + frontend)
 npm run setup
 
-# Install Python dependencies (backend, auto-creates virtual environment)
+# Install core Python dependencies (backend, auto-creates virtual environment)
 npm run setup:backend
+
+# Install the optional OASIS simulation runtime
+npm run setup:backend:simulation
 ```
+
+`setup:backend` now installs only the core graph/report/OpenAI-compatible backend dependencies so the default environment does not pull the high-risk `camel-oasis -> unstructured==0.13.7` chain. Install the optional simulation runtime only when you need to execute the Step 3 OASIS scripts.
 
 #### 3. Start Services
 

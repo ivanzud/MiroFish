@@ -262,6 +262,9 @@ OPENAI_MODEL=qwen3.5-plus
 ```bash
 # 一键安装所有依赖（根目录 + 前端 + 后端）
 npm run setup:all
+
+# 如需启用 OASIS 仿真运行（Step 3 / Step 5），再额外安装可选仿真依赖
+npm run setup:backend:simulation
 ```
 
 或者分步安装：
@@ -270,9 +273,14 @@ npm run setup:all
 # 安装 Node 依赖（根目录 + 前端）
 npm run setup
 
-# 安装 Python 依赖（后端，自动创建虚拟环境）
+# 安装 Python 核心依赖（后端，自动创建虚拟环境）
 npm run setup:backend
+
+# 安装 OASIS 仿真运行时可选依赖
+npm run setup:backend:simulation
 ```
+
+默认的 `setup:backend` 现在只安装图谱构建、报告生成和 OpenAI 兼容后端所需的核心依赖，用于避免 `camel-oasis -> unstructured==0.13.7` 的高风险传递依赖。只有在需要实际运行 Step 3 仿真脚本时，才需要额外安装可选仿真依赖。
 
 #### 3. 启动服务
 

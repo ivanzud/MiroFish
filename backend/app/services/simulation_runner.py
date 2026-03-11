@@ -12,6 +12,7 @@ import threading
 import subprocess
 import signal
 import atexit
+import importlib.util
 from collections import deque
 from typing import Dict, Any, List, Optional, Union
 from dataclasses import dataclass, field
@@ -25,6 +26,12 @@ from .zep_graph_memory_updater import ZepGraphMemoryManager
 from .simulation_ipc import SimulationIPCClient, CommandType, IPCResponse
 
 logger = get_logger('mirofish.simulation_runner')
+
+SIMULATION_DEPENDENCY_ERROR = (
+    "当前后端未安装可选的 OASIS 仿真运行时依赖。"
+    "请先执行 `npm run setup:backend:simulation`，"
+    "或在 backend 目录执行 `uv sync --extra simulation`。"
+)
 
 # 标记是否已注册清理函数
 _cleanup_registered = False
@@ -294,6 +301,13 @@ class SimulationRunner:
         except Exception as e:
             logger.error(f"加载运行状态失败: {str(e)}")
             return None
+
+    @staticmethod
+    def _simulation_dependencies_available() -> bool:
+        return (
+            importlib.util.find_spec("camel") is not None
+            and importlib.util.find_spec("oasis") is not None
+        )
     
     @classmethod
     def _save_run_state(cls, state: SimulationRunState):
@@ -397,10 +411,12 @@ class SimulationRunner:
             state.reddit_running = True
         
         script_path = os.path.join(cls.SCRIPTS_DIR, script_name)
-        
+
         if not os.path.exists(script_path):
             raise ValueError(f"脚本不存在: {script_path}")
-        
+        if not cls._simulation_dependencies_available():
+            raise RuntimeError(SIMULATION_DEPENDENCY_ERROR)
+
         # 创建动作队列
         action_queue = Queue()
         cls._action_queues[simulation_id] = action_queue
