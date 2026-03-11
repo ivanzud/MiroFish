@@ -382,6 +382,57 @@ class ZepEntityReader:
 
         return merged
 
+    @staticmethod
+    def _deduplicate_related_edges(related_edges: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        deduplicated: List[Dict[str, Any]] = []
+        seen_keys: Set[tuple[str, str, str, str]] = set()
+
+        for edge in related_edges:
+            if not isinstance(edge, dict):
+                continue
+
+            counterpart_uuid = str(
+                edge.get("target_node_uuid")
+                or edge.get("source_node_uuid")
+                or ""
+            )
+            key = (
+                str(edge.get("direction", "")),
+                str(edge.get("edge_name", "")),
+                str(edge.get("fact", "")),
+                counterpart_uuid,
+            )
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            deduplicated.append(edge)
+
+        return deduplicated
+
+    @classmethod
+    def _deduplicate_related_nodes(cls, related_nodes: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        entities = [
+            EntityNode(
+                uuid=str(node.get("uuid", "")),
+                name=str(node.get("name", "")),
+                labels=list(node.get("labels", []) or []),
+                summary=str(node.get("summary", "") or ""),
+                attributes={},
+            )
+            for node in related_nodes
+            if isinstance(node, dict)
+        ]
+        deduplicated_entities = cls._merge_duplicate_entities(entities)
+        return [
+            {
+                "uuid": entity.uuid,
+                "name": entity.name,
+                "labels": entity.labels,
+                "summary": entity.summary,
+            }
+            for entity in deduplicated_entities
+        ]
+
     @classmethod
     def _merge_duplicate_entities(cls, entities: List[EntityNode]) -> List[EntityNode]:
         merged_entities: List[EntityNode] = []
@@ -579,6 +630,10 @@ class ZepEntityReader:
             EntityNode或None
         """
         try:
+            all_nodes = self.get_all_nodes(graph_id)
+            all_edges = self.get_all_edges(graph_id)
+            node_map = {n["uuid"]: n for n in all_nodes}
+
             # 使用重试机制获取节点
             node = self._call_with_retry(
                 func=lambda: self.client.graph.node.get(uuid_=entity_uuid),
@@ -591,57 +646,78 @@ class ZepEntityReader:
             
             if not node:
                 return None
-            
-            # 获取节点的边
-            edges = self.get_node_edges(entity_uuid)
-            
-            # 获取所有节点用于关联查找
-            all_nodes = self.get_all_nodes(graph_id)
-            node_map = {n["uuid"]: n for n in all_nodes}
-            
-            # 处理相关边和节点
-            related_edges = []
-            related_node_uuids = set()
-            
-            for edge in edges:
-                if edge["source_node_uuid"] == entity_uuid:
-                    related_edges.append({
-                        "direction": "outgoing",
-                        "edge_name": edge["name"],
-                        "fact": edge["fact"],
-                        "target_node_uuid": edge["target_node_uuid"],
-                    })
-                    related_node_uuids.add(edge["target_node_uuid"])
-                else:
-                    related_edges.append({
-                        "direction": "incoming",
-                        "edge_name": edge["name"],
-                        "fact": edge["fact"],
-                        "source_node_uuid": edge["source_node_uuid"],
-                    })
-                    related_node_uuids.add(edge["source_node_uuid"])
-            
-            # 获取关联节点信息
-            related_nodes = []
-            for related_uuid in related_node_uuids:
-                if related_uuid in node_map:
-                    related_node = node_map[related_uuid]
-                    related_nodes.append({
-                        "uuid": related_node["uuid"],
-                        "name": related_node["name"],
-                        "labels": related_node["labels"],
-                        "summary": related_node.get("summary", ""),
-                    })
-            
-            return EntityNode(
+
+            requested_node = EntityNode(
                 uuid=getattr(node, 'uuid_', None) or getattr(node, 'uuid', ''),
                 name=node.name or "",
                 labels=node.labels or [],
                 summary=node.summary or "",
                 attributes=node.attributes or {},
-                related_edges=related_edges,
-                related_nodes=related_nodes,
             )
+
+            alias_entities: List[EntityNode] = []
+            for raw_node in all_nodes:
+                candidate = EntityNode(
+                    uuid=raw_node["uuid"],
+                    name=raw_node["name"],
+                    labels=raw_node["labels"],
+                    summary=raw_node.get("summary", ""),
+                    attributes=raw_node.get("attributes", {}),
+                )
+                if candidate.uuid == requested_node.uuid or self._are_duplicate_entities(requested_node, candidate):
+                    alias_entities.append(candidate)
+
+            if not alias_entities:
+                alias_entities.append(requested_node)
+
+            merged_entity = self._merge_duplicate_entities(alias_entities)[0]
+            alias_uuids = {entity.uuid for entity in alias_entities}
+
+            related_edges = []
+            related_node_uuids = set()
+            for edge in all_edges:
+                source_uuid = edge["source_node_uuid"]
+                target_uuid = edge["target_node_uuid"]
+                source_in_alias = source_uuid in alias_uuids
+                target_in_alias = target_uuid in alias_uuids
+
+                if not source_in_alias and not target_in_alias:
+                    continue
+                if source_in_alias and target_in_alias:
+                    continue
+
+                if source_in_alias:
+                    related_edges.append({
+                        "direction": "outgoing",
+                        "edge_name": edge["name"],
+                        "fact": edge["fact"],
+                        "target_node_uuid": target_uuid,
+                    })
+                    related_node_uuids.add(target_uuid)
+                else:
+                    related_edges.append({
+                        "direction": "incoming",
+                        "edge_name": edge["name"],
+                        "fact": edge["fact"],
+                        "source_node_uuid": source_uuid,
+                    })
+                    related_node_uuids.add(source_uuid)
+
+            related_nodes = self._deduplicate_related_nodes(
+                [
+                    {
+                        "uuid": node_map[related_uuid]["uuid"],
+                        "name": node_map[related_uuid]["name"],
+                        "labels": node_map[related_uuid]["labels"],
+                        "summary": node_map[related_uuid].get("summary", ""),
+                    }
+                    for related_uuid in related_node_uuids
+                    if related_uuid in node_map and related_uuid not in alias_uuids
+                ]
+            )
+            merged_entity.related_edges = self._deduplicate_related_edges(related_edges)
+            merged_entity.related_nodes = related_nodes
+            return merged_entity
             
         except Exception as e:
             logger.error(f"获取实体 {entity_uuid} 失败: {str(e)}")

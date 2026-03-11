@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T19:58:17.104753+00:00",
-  "generated_at": "2026-03-11T19:58:17.104753+00:00",
+  "captured_at": "2026-03-11T20:06:03.462003+00:00",
+  "generated_at": "2026-03-11T20:06:03.462003+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -246,7 +246,7 @@
       "local_coverage": {
         "number": 145,
         "status": "partial",
-        "summary": "Repo-native partial mitigations are now landed locally across simulation inputs, backend graph/report/search/statistics surfaces, and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `backend/app/services/graph_builder.py` now collapses the same conservative alias pairs when serving `/api/graph/data/<graph_id>` and remaps duplicate edges to the retained node UUID, `backend/app/services/zep_tools.py` now collapses those aliases when building typed entity lists, Panorama output, InsightForge entity/relationship summaries, QuickSearch/general search results, graph statistics, and entity summaries including relations attached only to alias UUIDs, and `frontend/src/views/processGraphData.js` collapses them while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear as separate entities in the main downstream workflows. Full graph-level persisted deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
+        "summary": "Repo-native partial mitigations are now landed locally across simulation inputs, backend graph/report/search/statistics/detail surfaces, and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `ZepEntityReader.get_entity_with_context()` now merges alias-linked relations and related nodes for the entity-detail API, `backend/app/services/graph_builder.py` now collapses the same conservative alias pairs when serving `/api/graph/data/<graph_id>` and remaps duplicate edges to the retained node UUID, `backend/app/services/zep_tools.py` now collapses those aliases when building typed entity lists, Panorama output, InsightForge entity/relationship summaries, QuickSearch/general search results, graph statistics, and entity summaries including relations attached only to alias UUIDs, and `frontend/src/views/processGraphData.js` collapses them while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear as separate entities in the main downstream workflows. Full graph-level persisted deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
         "local_refs": [
           ".beads/issues.jsonl",
           "docs/upstream-triage.md",
@@ -262,14 +262,14 @@
         ],
         "validation": [
           "cd backend && uv run pytest -q tests/test_graph_builder.py tests/test_zep_entity_reader.py tests/test_zep_tools_dedup.py tests/test_zep_tools_i18n.py",
-          "python3 -m compileall backend/app/services/graph_builder.py backend/app/services/zep_tools.py",
+          "python3 -m compileall backend/app/services/zep_entity_reader.py backend/app/services/graph_builder.py backend/app/services/zep_tools.py",
           "bash ./scripts/test_backend_lite.sh",
           "triage diff review"
         ],
-        "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish. 2026-03-11: Added a third repo-native partial mitigation in backend report/search tooling so conservative alias pairs are collapsed before Step 4/analysis surfaces render entity summaries and relationship chains. 2026-03-11: Added a fourth repo-native partial mitigation in backend graph-data responses so `/api/graph/data/<graph_id>` collapses the same obvious alias pairs and remaps duplicate edges without mutating stored Zep nodes. 2026-03-11: Added a fifth repo-native partial mitigation in QuickSearch/general search results so `search_graph()` and the local-search fallback collapse the same obvious alias pairs, deduplicate summary facts, and remap duplicate edges before report tooling or API callers consume the result payload. 2026-03-11: Added a seventh repo-native partial mitigation in backend graph statistics and entity-summary helpers so alias duplicates no longer inflate stats counts and alias queries resolve to the canonical merged entity payload. 2026-03-11: Added an eighth repo-native partial mitigation in backend entity summaries so alias-linked relations are collected from the full edge set before canonical remapping, which prevents summaries from dropping edges attached only to an alias UUID."
+        "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish. 2026-03-11: Added a third repo-native partial mitigation in backend report/search tooling so conservative alias pairs are collapsed before Step 4/analysis surfaces render entity summaries and relationship chains. 2026-03-11: Added a fourth repo-native partial mitigation in backend graph-data responses so `/api/graph/data/<graph_id>` collapses the same obvious alias pairs and remaps duplicate edges without mutating stored Zep nodes. 2026-03-11: Added a fifth repo-native partial mitigation in QuickSearch/general search results so `search_graph()` and the local-search fallback collapse the same obvious alias pairs, deduplicate summary facts, and remap duplicate edges before report tooling or API callers consume the result payload. 2026-03-11: Added a seventh repo-native partial mitigation in backend graph statistics and entity-summary helpers so alias duplicates no longer inflate stats counts and alias queries resolve to the canonical merged entity payload. 2026-03-11: Added an eighth repo-native partial mitigation in backend entity summaries so alias-linked relations are collected from the full edge set before canonical remapping, which prevents summaries from dropping edges attached only to an alias UUID. 2026-03-11: Added a ninth repo-native partial mitigation in backend entity-detail reads so `get_entity_with_context()` resolves the requested node against its alias group, includes alias-linked relations, and deduplicates related-node payloads."
       },
       "local_status": "partial",
-      "local_summary": "Repo-native partial mitigations are now landed locally across simulation inputs, backend graph/report/search/statistics surfaces, and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `backend/app/services/graph_builder.py` now collapses the same conservative alias pairs when serving `/api/graph/data/<graph_id>` and remaps duplicate edges to the retained node UUID, `backend/app/services/zep_tools.py` now collapses those aliases when building typed entity lists, Panorama output, InsightForge entity/relationship summaries, QuickSearch/general search results, graph statistics, and entity summaries including relations attached only to alias UUIDs, and `frontend/src/views/processGraphData.js` collapses them while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear as separate entities in the main downstream workflows. Full graph-level persisted deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
+      "local_summary": "Repo-native partial mitigations are now landed locally across simulation inputs, backend graph/report/search/statistics/detail surfaces, and the Process graph view: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `ZepEntityReader.get_entity_with_context()` now merges alias-linked relations and related nodes for the entity-detail API, `backend/app/services/graph_builder.py` now collapses the same conservative alias pairs when serving `/api/graph/data/<graph_id>` and remaps duplicate edges to the retained node UUID, `backend/app/services/zep_tools.py` now collapses those aliases when building typed entity lists, Panorama output, InsightForge entity/relationship summaries, QuickSearch/general search results, graph statistics, and entity summaries including relations attached only to alias UUIDs, and `frontend/src/views/processGraphData.js` collapses them while rendering the graph so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear as separate entities in the main downstream workflows. Full graph-level persisted deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 2,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/2"
@@ -3249,20 +3249,24 @@
       "local_coverage": {
         "number": 152,
         "status": "landed",
-        "summary": "Landed locally as a repo-native graph-builder fix: ontology entity type names now normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
+        "summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
         "local_refs": [
+          "backend/app/services/ontology_generator.py",
+          "backend/tests/test_ontology_generator.py",
           "backend/app/services/graph_builder.py",
           "backend/tests/test_graph_builder.py",
           "origin/mirror/upstream-pr-152",
           ".beads/issues.jsonl"
         ],
         "validation": [
+          "cd backend && uv run pytest -q tests/test_ontology_generator.py",
+          "python3 -m compileall backend/app/services/ontology_generator.py backend/tests/test_ontology_generator.py",
           "cd backend && uv run pytest -q tests/test_graph_builder.py",
           "python3 -m compileall backend/app/services/graph_builder.py"
         ]
       },
       "local_status": "landed",
-      "local_summary": "Landed locally as a repo-native graph-builder fix: ontology entity type names now normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema."
+      "local_summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema."
     },
     {
       "number": 151,

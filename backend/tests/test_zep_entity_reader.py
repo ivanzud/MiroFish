@@ -193,3 +193,79 @@ def test_get_node_edges_localizes_english_failure_message(monkeypatch):
         "warning",
         "Failed to fetch edges for node node-12345678: forbidden",
     )
+
+
+def test_get_entity_with_context_includes_alias_linked_relations(monkeypatch):
+    reader = _build_reader()
+    nodes = [
+        {
+            "uuid": "node-short",
+            "name": "特朗普",
+            "labels": ["Entity", "Person"],
+            "summary": "",
+            "attributes": {"source": "short"},
+        },
+        {
+            "uuid": "node-long",
+            "name": "美国总统特朗普",
+            "labels": ["Entity", "Person"],
+            "summary": "更完整的人物摘要。",
+            "attributes": {"title": "president"},
+        },
+        {
+            "uuid": "node-biden",
+            "name": "拜登",
+            "labels": ["Entity", "Person"],
+            "summary": "另一个人物。",
+            "attributes": {},
+        },
+    ]
+    edges = [
+        {
+            "uuid": "edge-1",
+            "name": "met_with",
+            "fact": "美国总统特朗普会见了拜登",
+            "source_node_uuid": "node-long",
+            "target_node_uuid": "node-biden",
+            "attributes": {},
+        }
+    ]
+
+    reader.client = SimpleNamespace(
+        graph=SimpleNamespace(
+            node=SimpleNamespace(
+                get=lambda uuid_: SimpleNamespace(
+                    uuid_=uuid_,
+                    name="特朗普",
+                    labels=["Entity", "Person"],
+                    summary="",
+                    attributes={"source": "short"},
+                )
+            )
+        )
+    )
+    monkeypatch.setattr(reader, "get_all_nodes", lambda graph_id: nodes)
+    monkeypatch.setattr(reader, "get_all_edges", lambda graph_id: edges)
+
+    entity = reader.get_entity_with_context("graph-1", "node-short")
+
+    assert entity is not None
+    assert entity.name == "美国总统特朗普"
+    assert entity.summary == "更完整的人物摘要。"
+    assert entity.attributes == {"source": "short", "title": "president"}
+    assert entity.related_edges == [
+        {
+            "direction": "outgoing",
+            "edge_name": "met_with",
+            "fact": "美国总统特朗普会见了拜登",
+            "target_node_uuid": "node-biden",
+        }
+    ]
+    assert entity.related_nodes == [
+        {
+            "uuid": "node-biden",
+            "name": "拜登",
+            "labels": ["Entity", "Person"],
+            "summary": "另一个人物。",
+        }
+    ]
