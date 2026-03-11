@@ -26,6 +26,7 @@ Last refreshed: `2026-03-11`
 - `#113` Add Japanese README: safe docs-only cherry-pick; normalized cross-links with the other language READMEs while landing it locally.
 - `#73` Sanitize malformed ontology entity/edge items before fallback injection: prevents `_validate_and_process()` crashes on mixed-quality LLM JSON output.
 - `#74` Replace bare `except:` clauses with `except Exception:` in JSON repair and simulation history formatting paths.
+- `#15` Handle failed simulation status in `Step3Simulation`: stop polling and surface an error instead of leaving the UI stuck in a running state.
 - `#105` Safe subset landed locally: API JSON error responses now use a shared helper that hides traceback details unless `DEBUG` is enabled, while still logging full tracebacks server-side; file-parser encoding fallbacks now emit debug logs instead of silently swallowing detector failures.
 - OpenAI-compatible backend aliases now work in the standalone simulation runners too, so `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` can be used directly outside the Flask app path.
 - Objective 7 verification status: backend config, standalone runners, and both READMEs now explicitly support direct OpenAI / Codex-compatible / OpenAI-compatible backends without requiring a project-specific raw-key-only setup.
@@ -38,6 +39,7 @@ Last refreshed: `2026-03-11`
 
 - `python3 -m unittest tests/test_sync_upstream_github.py` passes for the GitHub sync script pagination/state summary logic.
 - `cd frontend && npm run build` passes after landing `#104` and the prior OpenAI-alias compatibility updates.
+- `cd frontend && npm run build` passes after landing `#15`.
 - `npm run test:backend:lite` now provides a repo-native lightweight backend validation path when full `uv` resolution is blocked by Rust/CUDA-heavy dependencies.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_error_handler.py backend/tests/test_llm_client.py backend/tests/test_graph_builder.py backend/tests/test_ontology_generator.py -q` passes after landing the safe subset of `#105`.
 - `./.tmp-test-venv/bin/pytest backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes with targeted regression coverage for context-length handling and transient Zep retry behavior.
