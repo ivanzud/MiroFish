@@ -24,6 +24,10 @@ from ..utils.zep_paging import fetch_all_nodes, fetch_all_edges
 logger = get_logger('mirofish.zep_tools')
 
 
+def _localized_text(locale: str, zh: str, en: str) -> str:
+    return en if locale == "en" else zh
+
+
 @dataclass
 class SearchResult:
     """搜索结果"""
@@ -290,6 +294,7 @@ class AgentInterview:
     question: str  # 采访问题
     response: str  # 采访回答
     key_quotes: List[str] = field(default_factory=list)  # 关键引言
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -304,11 +309,11 @@ class AgentInterview:
     def to_text(self) -> str:
         text = f"**{self.agent_name}** ({self.agent_role})\n"
         # 显示完整的agent_bio，不截断
-        text += f"_简介: {self.agent_bio}_\n\n"
+        text += f"_{_localized_text(self.locale, '简介', 'Bio')}: {self.agent_bio}_\n\n"
         text += f"**Q:** {self.question}\n\n"
         text += f"**A:** {self.response}\n"
         if self.key_quotes:
-            text += "\n**关键引言:**\n"
+            text += f"\n**{_localized_text(self.locale, '关键引言', 'Key quotes')}:**\n"
             for quote in self.key_quotes:
                 # 清理各种引号
                 clean_quote = quote.replace('\u201c', '').replace('\u201d', '').replace('"', '')
@@ -359,6 +364,7 @@ class InterviewResult:
     # 统计
     total_agents: int = 0
     interviewed_count: int = 0
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -375,25 +381,33 @@ class InterviewResult:
     def to_text(self) -> str:
         """转换为详细的文本格式，供LLM理解和报告引用"""
         text_parts = [
-            "## 深度采访报告",
-            f"**采访主题:** {self.interview_topic}",
-            f"**采访人数:** {self.interviewed_count} / {self.total_agents} 位模拟Agent",
-            "\n### 采访对象选择理由",
-            self.selection_reasoning or "（自动选择）",
+            _localized_text(self.locale, "## 深度采访报告", "## In-Depth Interview Report"),
+            f"**{_localized_text(self.locale, '采访主题', 'Interview topic')}:** {self.interview_topic}",
+            (
+                f"**{_localized_text(self.locale, '采访人数', 'Interviewed agents')}:** "
+                f"{self.interviewed_count} / {self.total_agents} "
+                f"{_localized_text(self.locale, '位模拟Agent', 'simulated agents')}"
+            ),
+            f"\n### {_localized_text(self.locale, '采访对象选择理由', 'Why these agents were selected')}",
+            self.selection_reasoning or _localized_text(self.locale, "（自动选择）", "(selected automatically)"),
             "\n---",
-            "\n### 采访实录",
+            f"\n### {_localized_text(self.locale, '采访实录', 'Interview transcripts')}",
         ]
 
         if self.interviews:
             for i, interview in enumerate(self.interviews, 1):
-                text_parts.append(f"\n#### 采访 #{i}: {interview.agent_name}")
+                text_parts.append(
+                    f"\n#### {_localized_text(self.locale, '采访', 'Interview')} #{i}: {interview.agent_name}"
+                )
                 text_parts.append(interview.to_text())
                 text_parts.append("\n---")
         else:
-            text_parts.append("（无采访记录）\n\n---")
+            text_parts.append(f"{_localized_text(self.locale, '（无采访记录）', '(no interview records)')}\n\n---")
 
-        text_parts.append("\n### 采访摘要与核心观点")
-        text_parts.append(self.summary or "（无摘要）")
+        text_parts.append(
+            f"\n### {_localized_text(self.locale, '采访摘要与核心观点', 'Interview summary and key takeaways')}"
+        )
+        text_parts.append(self.summary or _localized_text(self.locale, "（无摘要）", "(no summary)"))
 
         return "\n".join(text_parts)
 
@@ -431,6 +445,14 @@ class ZepToolsService:
         # LLM客户端用于InsightForge生成子问题
         self._llm_client = llm_client
         logger.info("ZepToolsService 初始化完成")
+
+    @staticmethod
+    def _locale() -> str:
+        return get_locale()
+
+    @classmethod
+    def _text(cls, zh: str, en: str, locale: Optional[str] = None) -> str:
+        return _localized_text(locale or cls._locale(), zh, en)
     
     @property
     def llm(self) -> LLMClient:
@@ -1308,10 +1330,12 @@ class ZepToolsService:
         from .simulation_runner import SimulationRunner
         
         logger.info(f"InterviewAgents 深度采访（真实API）: {interview_requirement[:50]}...")
+        locale = self._locale()
         
         result = InterviewResult(
             interview_topic=interview_requirement,
-            interview_questions=custom_questions or []
+            interview_questions=custom_questions or [],
+            locale=locale,
         )
         
         # Step 1: 读取人设文件
@@ -1319,7 +1343,11 @@ class ZepToolsService:
         
         if not profiles:
             logger.warning(f"未找到模拟 {simulation_id} 的人设文件")
-            result.summary = "未找到可采访的Agent人设文件"
+            result.summary = self._text(
+                "未找到可采访的Agent人设文件",
+                "No interviewable agent profiles were found",
+                locale,
+            )
             return result
         
         result.total_agents = len(profiles)
@@ -1388,9 +1416,13 @@ class ZepToolsService:
             
             # 检查API调用是否成功
             if not api_result.get("success", False):
-                error_msg = api_result.get("error", "未知错误")
+                error_msg = api_result.get("error", self._text("未知错误", "Unknown error", locale))
                 logger.warning(f"采访API返回失败: {error_msg}")
-                result.summary = f"采访API调用失败：{error_msg}。请检查OASIS模拟环境状态。"
+                result.summary = self._text(
+                    f"采访API调用失败：{error_msg}。请检查OASIS模拟环境状态。",
+                    f"Interview API call failed: {error_msg}. Check the OASIS simulation environment status.",
+                    locale,
+                )
                 return result
             
             # Step 5: 解析API返回结果，构建AgentInterview对象
@@ -1401,7 +1433,7 @@ class ZepToolsService:
             for i, agent_idx in enumerate(selected_indices):
                 agent = selected_agents[i]
                 agent_name = agent.get("realname", agent.get("username", f"Agent_{agent_idx}"))
-                agent_role = agent.get("profession", "未知")
+                agent_role = agent.get("profession", self._text("未知", "Unknown", locale))
                 agent_bio = agent.get("bio", "")
                 
                 # 获取该Agent在两个平台的采访结果
@@ -1416,9 +1448,14 @@ class ZepToolsService:
                 reddit_response = self._clean_tool_call_response(reddit_response)
 
                 # 始终输出双平台标记
-                twitter_text = twitter_response if twitter_response else "（该平台未获得回复）"
-                reddit_text = reddit_response if reddit_response else "（该平台未获得回复）"
-                response_text = f"【Twitter平台回答】\n{twitter_text}\n\n【Reddit平台回答】\n{reddit_text}"
+                no_reply = self._text("（该平台未获得回复）", "(no reply received from this platform)", locale)
+                twitter_text = twitter_response if twitter_response else no_reply
+                reddit_text = reddit_response if reddit_response else no_reply
+                response_text = self._text(
+                    f"【Twitter平台回答】\n{twitter_text}\n\n【Reddit平台回答】\n{reddit_text}",
+                    f"[Twitter answer]\n{twitter_text}\n\n[Reddit answer]\n{reddit_text}",
+                    locale,
+                )
 
                 # 提取关键引言（从两个平台的回答中）
                 import re
@@ -1454,7 +1491,8 @@ class ZepToolsService:
                     agent_bio=agent_bio[:1000],  # 扩大bio长度限制
                     question=combined_prompt,
                     response=response_text,
-                    key_quotes=key_quotes[:5]
+                    key_quotes=key_quotes[:5],
+                    locale=locale,
                 )
                 result.interviews.append(interview)
             
@@ -1463,13 +1501,21 @@ class ZepToolsService:
         except ValueError as e:
             # 模拟环境未运行
             logger.warning(f"采访API调用失败（环境未运行？）: {e}")
-            result.summary = f"采访失败：{str(e)}。模拟环境可能已关闭，请确保OASIS环境正在运行。"
+            result.summary = self._text(
+                f"采访失败：{str(e)}。模拟环境可能已关闭，请确保OASIS环境正在运行。",
+                f"Interview failed: {str(e)}. The simulation environment may be closed. Make sure the OASIS environment is still running.",
+                locale,
+            )
             return result
         except Exception as e:
             logger.error(f"采访API调用异常: {e}")
             import traceback
             logger.error(traceback.format_exc())
-            result.summary = f"采访过程发生错误：{str(e)}"
+            result.summary = self._text(
+                f"采访过程发生错误：{str(e)}",
+                f"An error occurred during the interview process: {str(e)}",
+                locale,
+            )
             return result
         
         # Step 6: 生成采访摘要

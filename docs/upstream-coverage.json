@@ -681,6 +681,19 @@
       "number": 132,
       "status": "landed",
       "summary": "Landed locally: README architecture overview."
+    },
+    {
+      "number": 141,
+      "status": "not_safe",
+      "summary": "Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.",
+      "local_refs": [
+        "origin/mirror/upstream-pr-141",
+        ".beads/issues.jsonl"
+      ],
+      "validation": [
+        "triage diff review",
+        "git diff --stat HEAD..upstream/pr/141"
+      ]
     }
   ]
 }

@@ -1,18 +1,18 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T13:37:57.311684+00:00",
-  "generated_at": "2026-03-11T13:37:57.311684+00:00",
+  "captured_at": "2026-03-11T13:43:15.485933+00:00",
+  "generated_at": "2026-03-11T13:43:15.485933+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
       "open": 35
     },
     "pull_requests": {
-      "open": 33
+      "open": 34
     },
     "mirrored_pull_requests": {
-      "mirrored": 33,
+      "mirrored": 34,
       "not_mirrored": 0
     }
   },
@@ -1356,6 +1356,48 @@
     }
   ],
   "pull_requests": [
+    {
+      "number": 141,
+      "title": "feat: add entity deduplication after graph building",
+      "url": "https://github.com/666ghj/MiroFish/pull/141",
+      "state": "open",
+      "created_at": "2026-03-11T13:38:51Z",
+      "updated_at": "2026-03-11T13:40:02Z",
+      "closed_at": null,
+      "merged_at": null,
+      "head": "feature/entity-deduplication",
+      "head_sha": "a728540a258804476a7058e21023bf94dfb48026",
+      "head_repo": "Stayfoool/MiroFish",
+      "head_clone_url": "https://github.com/Stayfoool/MiroFish.git",
+      "base": "main",
+      "base_repo": "666ghj/MiroFish",
+      "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "enhancement",
+        "size:XL"
+      ],
+      "author": "Stayfoool",
+      "body_excerpt": "## Summary - Add entity deduplication service that identifies and merges duplicate nodes in the knowledge graph after building (e.g. \"特朗普\" vs \"美国总统特朗普\") - When merging duplicate nodes, migrates all edges from removed nodes to the primary node before deletion, preserving graph connectivity - Three-layer filtering: name similarity pre-filter → type compatibility check → LLM confirmation - Integrate…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-141",
+      "local_coverage": {
+        "number": 141,
+        "status": "not_safe",
+        "summary": "Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.",
+        "local_refs": [
+          "origin/mirror/upstream-pr-141",
+          ".beads/issues.jsonl"
+        ],
+        "validation": [
+          "triage diff review",
+          "git diff --stat HEAD..upstream/pr/141"
+        ]
+      }
+    },
     {
       "number": 105,
       "title": "fix: security improvements and error handling fixes",

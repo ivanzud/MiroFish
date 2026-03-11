@@ -2,10 +2,10 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T13:38:20.985084+00:00`
+- Captured: `2026-03-11T13:43:29.266423+00:00`
 - Issues: `84` total (`open=35`, `closed=49`)
-- Pull requests: `47` total (`open=33`, `closed=14`)
-- Mirrored in `origin`: `34` of `47` PR refs
+- Pull requests: `48` total (`open=34`, `closed=14`)
+- Mirrored in `origin`: `35` of `48` PR refs
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
@@ -46,6 +46,9 @@
 
 ## Recently Updated Pull Requests
 
+- #141 [open, mergeable=clean, mirrored=yes] feat: add entity deduplication after graph building (`feature/entity-deduplication` -> `main`)
+  - local coverage [not_safe]: Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.
+  - ## Summary - Add entity deduplication service that identifies and merges duplicate nodes in the knowledge graph after building (e.g. "特朗普" vs "美国总统特朗普") - When merging duplicate nodes, migrates all edges from removed nodes to the primary node before deletion, preserving graph connectivity - Three-layer filtering: name similarity pre-filter → type compatibility check → LLM confirmation - Integrate…
 - #127 [closed, mergeable=clean, mirrored=yes] Fix potential crash in LLMClient when content is None (`fix/llm-client-none-content` -> `main`)
   - Added `if content is None: return ""` in `backend/app/utils/llm_client.py` to prevent `re.sub` TypeError. --- *Automated PR created by OpenClaw daily-pr routine.*
   - latest comment by `sjhddh`: Closing this PR as it was submitted with an incorrect Git author configuration. Apologies for the noise!
@@ -72,6 +75,3 @@
 - #125 [open, mergeable=clean, mirrored=yes] fix: improve new-project network error diagnostics (`fix/issue-121` -> `main`)
   - local coverage [landed]: Landed locally: improved new-project network error diagnostics in the frontend.
   - ## Summary Improve frontend error feedback when creating a new project so users can quickly diagnose "Network Error" and timeout failures instead of seeing a generic message. ## Changes - Added `formatProjectInitError` in `frontend/src/views/Process.vue` - Distinguish timeout errors and provide actionable hint (reduce file size / check model speed) - Distinguish network errors and show configured…
-- #124 [open, mergeable=clean, mirrored=yes] fix: robust JSON extraction for mixed LLM responses (`fix/issue-64` -> `main`)
-  - local coverage [landed]: Landed locally: robust JSON extraction for mixed LLM responses.
-  - ## SummarynnHarden backend JSON parsing for LLM responses so mixed outputs (markdown fences, pre/post text) are handled more robustly, reducing 500 errors reported during ontology generation.nn## Changesnn- Updated `LLMClient.chat()` to remove `<think ...>...</think>` tags case-insensitivelyn- Added `LLMClient._extract_json_payload()` to normalize and extract JSON from noisy model responsesn- Upd…
