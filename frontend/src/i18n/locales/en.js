@@ -126,6 +126,7 @@ export default {
     simRequirement: 'Simulation Requirement',
     relatedFiles: 'Related Files',
     noRelatedFiles: 'No related files',
+    unknownFile: 'Unknown file',
     playback: 'Playback',
     graphBuildBtn: 'Graph Build',
     envSetupBtn: 'Environment Setup',

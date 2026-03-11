@@ -126,6 +126,7 @@ export default {
     simRequirement: '模拟需求',
     relatedFiles: '关联文件',
     noRelatedFiles: '暂无关联文件',
+    unknownFile: '未知文件',
     playback: '推演回放',
     graphBuildBtn: '图谱构建',
     envSetupBtn: '环境搭建',

@@ -205,6 +205,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { getSimulationHistory } from '../api/simulation'
 import { buildSimulationReplayRoute, hasReplayableSimulationState } from './historyPlayback'
+import { truncateFilename as formatHistoryFilename } from './historyFormatters'
 
 const router = useRouter()
 const route = useRoute()
@@ -393,15 +394,8 @@ const getFileTypeLabel = (filename) => {
 }
 
 // 截断文件名（保留扩展名）
-const truncateFilename = (filename, maxLength) => {
-  if (!filename) return '未知文件'
-  if (filename.length <= maxLength) return filename
-  
-  const ext = filename.includes('.') ? '.' + filename.split('.').pop() : ''
-  const nameWithoutExt = filename.slice(0, filename.length - ext.length)
-  const truncatedName = nameWithoutExt.slice(0, maxLength - ext.length - 3) + '...'
-  return truncatedName + ext
-}
+const truncateFilename = (filename, maxLength) =>
+  formatHistoryFilename(filename, maxLength, t('history.unknownFile'))
 
 // 打开项目详情弹窗
 const navigateToProject = (simulation) => {
