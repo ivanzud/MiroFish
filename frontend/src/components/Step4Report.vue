@@ -431,7 +431,7 @@ import {
 } from './reportParsers.js'
 
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const props = defineProps({
   reportId: String,
@@ -587,39 +587,40 @@ const isLogCollapsed = (log) => {
 // Tool configurations with display names and colors
 const toolConfig = {
   'insight_forge': {
-    name: 'Deep Insight',
+    nameKey: 'step4.toolNames.insightForge',
     color: 'purple',
     icon: 'lightbulb' // 灯泡图标 - 代表洞察
   },
   'panorama_search': {
-    name: 'Panorama Search',
+    nameKey: 'step4.toolNames.panoramaSearch',
     color: 'blue',
     icon: 'globe' // 地球图标 - 代表全景搜索
   },
   'interview_agents': {
-    name: 'Agent Interview',
+    nameKey: 'step4.toolNames.interviewAgents',
     color: 'green',
     icon: 'users' // 用户图标 - 代表对话
   },
   'quick_search': {
-    name: 'Quick Search',
+    nameKey: 'step4.toolNames.quickSearch',
     color: 'orange',
     icon: 'zap' // 闪电图标 - 代表快速
   },
   'get_graph_statistics': {
-    name: 'Graph Stats',
+    nameKey: 'step4.toolNames.graphStats',
     color: 'cyan',
     icon: 'chart' // 图表图标 - 代表统计
   },
   'get_entities_by_type': {
-    name: 'Entity Query',
+    nameKey: 'step4.toolNames.entityQuery',
     color: 'pink',
     icon: 'database' // 数据库图标 - 代表实体
   }
 }
 
 const getToolDisplayName = (toolName) => {
-  return toolConfig[toolName]?.name || toolName
+  const config = toolConfig[toolName]
+  return config?.nameKey ? t(config.nameKey) : toolName
 }
 
 const getToolColor = (toolName) => {
@@ -656,30 +657,30 @@ const InsightDisplay = {
     const formatSize = (length) => {
       if (!length) return ''
       if (length >= 1000) {
-        return `${(length / 1000).toFixed(1)}k chars`
+        return t('step4.toolDisplay.charCountCompact', { count: (length / 1000).toFixed(1) })
       }
-      return `${length} chars`
+      return t('step4.toolDisplay.charCount', { count: length })
     }
     
     return () => h('div', { class: 'insight-display' }, [
       // Header Section - like interview header
       h('div', { class: 'insight-header' }, [
         h('div', { class: 'header-main' }, [
-          h('div', { class: 'header-title' }, 'Deep Insight'),
+          h('div', { class: 'header-title' }, t('step4.toolNames.insightForge')),
           h('div', { class: 'header-stats' }, [
             h('span', { class: 'stat-item' }, [
               h('span', { class: 'stat-value' }, props.result.stats.facts || props.result.facts.length),
-              h('span', { class: 'stat-label' }, 'Facts')
+              h('span', { class: 'stat-label' }, t('step4.toolDisplay.labels.facts'))
             ]),
             h('span', { class: 'stat-divider' }, '/'),
             h('span', { class: 'stat-item' }, [
               h('span', { class: 'stat-value' }, props.result.stats.entities || props.result.entities.length),
-              h('span', { class: 'stat-label' }, 'Entities')
+              h('span', { class: 'stat-label' }, t('step4.toolDisplay.labels.entities'))
             ]),
             h('span', { class: 'stat-divider' }, '/'),
             h('span', { class: 'stat-item' }, [
               h('span', { class: 'stat-value' }, props.result.stats.relationships || props.result.relations.length),
-              h('span', { class: 'stat-label' }, 'Relations')
+              h('span', { class: 'stat-label' }, t('step4.toolDisplay.labels.relations'))
             ]),
             props.resultLength && h('span', { class: 'stat-divider' }, '·'),
             props.resultLength && h('span', { class: 'stat-size' }, formatSize(props.resultLength))
@@ -827,25 +828,25 @@ const PanoramaDisplay = {
     const formatSize = (length) => {
       if (!length) return ''
       if (length >= 1000) {
-        return `${(length / 1000).toFixed(1)}k chars`
+        return t('step4.toolDisplay.charCountCompact', { count: (length / 1000).toFixed(1) })
       }
-      return `${length} chars`
+      return t('step4.toolDisplay.charCount', { count: length })
     }
     
     return () => h('div', { class: 'panorama-display' }, [
       // Header Section
       h('div', { class: 'panorama-header' }, [
         h('div', { class: 'header-main' }, [
-          h('div', { class: 'header-title' }, 'Panorama Search'),
+          h('div', { class: 'header-title' }, t('step4.toolNames.panoramaSearch')),
           h('div', { class: 'header-stats' }, [
             h('span', { class: 'stat-item' }, [
               h('span', { class: 'stat-value' }, props.result.stats.nodes),
-              h('span', { class: 'stat-label' }, 'Nodes')
+              h('span', { class: 'stat-label' }, t('step4.toolDisplay.labels.nodes'))
             ]),
             h('span', { class: 'stat-divider' }, '/'),
             h('span', { class: 'stat-item' }, [
               h('span', { class: 'stat-value' }, props.result.stats.edges),
-              h('span', { class: 'stat-label' }, 'Edges')
+              h('span', { class: 'stat-label' }, t('step4.toolDisplay.labels.edges'))
             ]),
             props.resultLength && h('span', { class: 'stat-divider' }, '·'),
             props.resultLength && h('span', { class: 'stat-size' }, formatSize(props.resultLength))
@@ -962,9 +963,9 @@ const InterviewDisplay = {
     const formatSize = (length) => {
       if (!length) return ''
       if (length >= 1000) {
-        return `${(length / 1000).toFixed(1)}k chars`
+        return t('step4.toolDisplay.charCountCompact', { count: (length / 1000).toFixed(1) })
       }
-      return `${length} chars`
+      return t('step4.toolDisplay.charCount', { count: length })
     }
     
     // Clean quote text - remove leading list numbers to avoid double numbering
@@ -1020,16 +1021,16 @@ const InterviewDisplay = {
       // Header Section
       h('div', { class: 'interview-header' }, [
         h('div', { class: 'header-main' }, [
-          h('div', { class: 'header-title' }, 'Agent Interview'),
+          h('div', { class: 'header-title' }, t('step4.toolNames.interviewAgents')),
           h('div', { class: 'header-stats' }, [
             h('span', { class: 'stat-item' }, [
               h('span', { class: 'stat-value' }, props.result.successCount || props.result.interviews.length),
-              h('span', { class: 'stat-label' }, 'Interviewed')
+              h('span', { class: 'stat-label' }, t('step4.toolDisplay.labels.interviewed'))
             ]),
             props.result.totalCount > 0 && h('span', { class: 'stat-divider' }, '/'),
             props.result.totalCount > 0 && h('span', { class: 'stat-item' }, [
               h('span', { class: 'stat-value' }, props.result.totalCount),
-              h('span', { class: 'stat-label' }, 'Total')
+              h('span', { class: 'stat-label' }, t('step4.toolDisplay.labels.total'))
             ]),
             props.resultLength && h('span', { class: 'stat-divider' }, '·'),
             props.resultLength && h('span', { class: 'stat-size' }, formatSize(props.resultLength))
@@ -1187,20 +1188,20 @@ const QuickSearchDisplay = {
     const formatSize = (length) => {
       if (!length) return ''
       if (length >= 1000) {
-        return `${(length / 1000).toFixed(1)}k chars`
+        return t('step4.toolDisplay.charCountCompact', { count: (length / 1000).toFixed(1) })
       }
-      return `${length} chars`
+      return t('step4.toolDisplay.charCount', { count: length })
     }
     
     return () => h('div', { class: 'quick-search-display' }, [
       // Header Section
       h('div', { class: 'quicksearch-header' }, [
         h('div', { class: 'header-main' }, [
-          h('div', { class: 'header-title' }, 'Quick Search'),
+          h('div', { class: 'header-title' }, t('step4.toolNames.quickSearch')),
           h('div', { class: 'header-stats' }, [
             h('span', { class: 'stat-item' }, [
               h('span', { class: 'stat-value' }, props.result.count || props.result.facts.length),
-              h('span', { class: 'stat-label' }, 'Results')
+              h('span', { class: 'stat-label' }, t('step4.toolDisplay.labels.results'))
             ]),
             props.resultLength && h('span', { class: 'stat-divider' }, '·'),
             props.resultLength && h('span', { class: 'stat-size' }, formatSize(props.resultLength))
@@ -1439,11 +1440,11 @@ const isSectionCompleted = (sectionIndex) => {
 const formatTime = (timestamp) => {
   if (!timestamp) return ''
   try {
-    return new Date(timestamp).toLocaleTimeString('en-US', { 
-      hour12: false, 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
+    return new Date(timestamp).toLocaleTimeString(locale.value === 'zh' ? 'zh-CN' : 'en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
     })
   } catch {
     return ''
@@ -1461,8 +1462,8 @@ const formatParams = (params) => {
 
 const formatResultSize = (length) => {
   if (!length) return ''
-  if (length < 1000) return `${length} chars`
-  return `${(length / 1000).toFixed(1)}k chars`
+  if (length < 1000) return t('step4.toolDisplay.charCount', { count: length })
+  return t('step4.toolDisplay.charCountCompact', { count: (length / 1000).toFixed(1) })
 }
 
 const truncateText = (text, maxLen) => {
