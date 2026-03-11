@@ -37,6 +37,7 @@ Last refreshed: `2026-03-11`
 - Follow-up localization work now also covers the graph-build process view and the Step 3 simulation monitor, so English mode is no longer limited to the shell/history surfaces while broader Step 4/5 and backend-message localization remains open.
 - Follow-up localization work now also covers the Step 4 report-generation shell and report view chrome, including retry/error/status copy and the report-page header controls, so English mode stays coherent through report generation while deeper Step 4/5 content localization remains open.
 - Follow-up localization work now also covers the shared graph panel and the Step 5 deep-interaction workspace chrome: Report Agent chat, agent-selection/survey controls, survey results, graph detail labels, and graph status hints all switch with the persisted `中文` / `English` locale instead of staying Chinese-first.
+- Follow-up localization work now also covers the Step 2 environment-setup view, the Step 3 simulation-run shell, and the Step 5 interaction wrapper view logs/status chrome, so switching to English no longer drops back to hardcoded Chinese in those outer workflow containers while backend/model-generated content remains a separate follow-up.
 - OpenAI-compatible backend aliases now work in the standalone simulation runners too, so `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` can be used directly outside the Flask app path.
 - Objective 7 verification status: backend config, standalone runners, and both READMEs now explicitly support direct OpenAI / Codex-compatible / OpenAI-compatible backends without requiring a project-specific raw-key-only setup.
 - Quick-start docs and `.env.example` now also include explicit OpenAI / Codex-compatible and Alibaba DashScope Coding Plan examples, plus a note that no separate `LLM_PROVIDER` flag is required when using OpenAI-compatible backends.
@@ -83,6 +84,7 @@ Last refreshed: `2026-03-11`
 - `cd frontend && npm test` passes with new coverage for the frontend API base URL resolver, including the default `3000 -> 5001` dual-port deployment fallback.
 - `cd frontend && npm run build` passes after restoring dual-port frontend/backend compatibility for the default local and Docker topology.
 - `cd frontend && npm test -- --runInBand` and `cd frontend && npm run build` both pass after localizing the shared graph panel and Step 5 deep-interaction chrome.
+- `cd frontend && npm test` and `cd frontend && npm run build` both pass after localizing the Step 2/3/5 workflow wrapper views and their runtime log/status copy.
 - `npm run test:backend:lite`, `cd frontend && npm test`, and `cd frontend && npm run build` all pass after adding the backend config-status preflight endpoint plus frontend API-error preservation for the remaining issue `#64` server-deployment diagnostics path.
 - `cd backend && uv run pytest -q` is currently blocked in this environment because dependency resolution reaches `tiktoken`, which attempts a source build and fails without a Rust compiler.
 
