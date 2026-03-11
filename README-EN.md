@@ -257,6 +257,8 @@ If `http://localhost:5001` returns `404`, that usually does not mean the backend
 
 If Step 5 deep interaction frequently times out for single-agent chat, batch surveys, or all-agent interviews, increase both the frontend request timeout `VITE_API_TIMEOUT` (milliseconds) and the backend Interview wait windows `INTERVIEW_AGENT_TIMEOUT_SECONDS`, `INTERVIEW_BATCH_TIMEOUT_SECONDS`, and `INTERVIEW_ALL_TIMEOUT_SECONDS` (seconds).
 
+For a first run, prefer a PDF / Markdown / TXT source under roughly 10k words and keep the simulation around 30 rounds. That lets you verify graph build, environment setup, and backend health before spending more Zep quota or debugging multiple scaling variables at once.
+
 #### 2. Install Dependencies
 
 ```bash

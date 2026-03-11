@@ -1,6 +1,6 @@
 {
   "repo": "666ghj/MiroFish",
-  "captured_at": "2026-03-11T12:40:00+00:00",
+  "captured_at": "2026-03-11T13:19:00+00:00",
   "issues": [
     {
       "number": 14,
@@ -12,6 +12,21 @@
       ],
       "validation": [
         "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 19,
+      "status": "covered",
+      "summary": "The home upload flow and quick-start docs now explicitly recommend starting with smaller source material (roughly 10k words) and about 30 simulation rounds on a first run, reducing avoidable quota burn and onboarding confusion.",
+      "local_refs": [
+        "frontend/src/views/Home.vue",
+        "frontend/src/i18n/locales/zh.js",
+        "frontend/src/i18n/locales/en.js",
+        "README.md",
+        "README-EN.md"
+      ],
+      "validation": [
         "frontend: npm run build"
       ]
     },

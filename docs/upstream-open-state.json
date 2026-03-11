@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T12:59:56.940808+00:00",
-  "generated_at": "2026-03-11T12:59:56.940808+00:00",
+  "captured_at": "2026-03-11T13:19:54.650259+00:00",
+  "generated_at": "2026-03-11T13:19:54.650259+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -1158,7 +1158,22 @@
           "url": "https://github.com/666ghj/MiroFish/issues/19#issuecomment-3753021224",
           "body_excerpt": "对的，还是建议一万字以内，30轮左右模拟"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 19,
+        "status": "covered",
+        "summary": "The home upload flow and quick-start docs now explicitly recommend starting with smaller source material (roughly 10k words) and about 30 simulation rounds on a first run, reducing avoidable quota burn and onboarding confusion.",
+        "local_refs": [
+          "frontend/src/views/Home.vue",
+          "frontend/src/i18n/locales/zh.js",
+          "frontend/src/i18n/locales/en.js",
+          "README.md",
+          "README-EN.md"
+        ],
+        "validation": [
+          "frontend: npm run build"
+        ]
+      }
     },
     {
       "number": 21,
@@ -2426,6 +2441,5 @@
       }
     }
   ],
-  "fork_remote": "origin",
-  "_cache_path": "docs/upstream-open-state.json"
+  "fork_remote": "origin"
 }

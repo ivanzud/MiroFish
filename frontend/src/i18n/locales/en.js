@@ -62,6 +62,7 @@ export default {
     formatHint: 'Supported: PDF, MD, TXT',
     dragUpload: 'Drag files to upload',
     clickBrowse: 'or click to browse',
+    firstRunTip: 'For a first run, start with source material under about 10k words and keep the simulation near 30 rounds so you can verify graph build and environment startup before scaling up.',
     inputParams: 'Input Parameters',
     promptLabel: '>_ 02 / Simulation Prompt',
     promptPlaceholder: '// Describe the simulation or prediction you want in natural language',

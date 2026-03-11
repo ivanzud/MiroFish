@@ -263,6 +263,8 @@ OPENAI_MODEL=qwen3.5-plus
 
 如果 Step 5 深度互动里对单个角色提问、批量问卷或全局采访经常超时，可以同时调大前端请求超时 `VITE_API_TIMEOUT`（毫秒）以及后端 Interview 等待时间 `INTERVIEW_AGENT_TIMEOUT_SECONDS`、`INTERVIEW_BATCH_TIMEOUT_SECONDS`、`INTERVIEW_ALL_TIMEOUT_SECONDS`（秒）。
 
+首次体验建议先选 1 万字以内的 PDF / Markdown / TXT 材料，并把模拟轮次控制在 30 轮左右，先确认图谱构建、环境初始化和健康检查都正常，再逐步放大规模，避免过早耗尽 Zep 免费额度或把问题混在一起排查。
+
 #### 2. 安装依赖
 
 ```bash

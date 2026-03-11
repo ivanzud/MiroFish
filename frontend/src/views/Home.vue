@@ -152,6 +152,7 @@
                   <div class="upload-icon">↑</div>
                   <div class="upload-title">{{ t('home.dragUpload') }}</div>
                   <div class="upload-hint">{{ t('home.clickBrowse') }}</div>
+                  <div class="upload-tip">{{ t('home.firstRunTip') }}</div>
                 </div>
                 
                 <div v-else class="file-list">
@@ -739,6 +740,14 @@ const startSimulation = () => {
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: #999;
+}
+
+.upload-tip {
+  margin-top: 12px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #666;
+  max-width: 320px;
 }
 
 .file-list {

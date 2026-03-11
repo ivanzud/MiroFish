@@ -62,6 +62,7 @@ export default {
     formatHint: '支持格式: PDF, MD, TXT',
     dragUpload: '拖拽文件上传',
     clickBrowse: '或点击浏览文件系统',
+    firstRunTip: '首次体验建议先用 1 万字以内的材料，并把模拟轮次控制在 30 轮左右，先确认图谱构建和环境启动链路正常。',
     inputParams: '输入参数',
     promptLabel: '>_ 02 / 模拟提示词',
     promptPlaceholder: '// 用自然语言输入模拟或预测需求',
