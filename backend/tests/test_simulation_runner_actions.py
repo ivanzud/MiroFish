@@ -224,3 +224,52 @@ def test_simulation_runtime_manifests_do_not_depend_on_camel_oasis():
     assert "camel-oasis" not in requirements
     assert "unstructured" not in requirements
     assert (backend_dir / "oasis" / "__init__.py").exists()
+
+
+def test_format_process_exit_error_classifies_huggingface_network_failures():
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+
+    error = runner._format_process_exit_error(
+        exit_code=1,
+        details=(
+            "requests.exceptions.ProxyError: HTTPSConnectionPool(host='huggingface.co', port=443): "
+            "Max retries exceeded while calling hf_hub_download for sentence-transformers/all-MiniLM-L6-v2"
+        ),
+    )
+
+    assert "HuggingFace" in error
+    assert "huggingface.co" in error
+
+
+def test_format_process_exit_error_localizes_huggingface_network_failures_in_english():
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+
+    error = runner._format_process_exit_error(
+        exit_code=1,
+        details=(
+            "urllib3.exceptions.ConnectTimeoutError: HTTPSConnectionPool(host='huggingface.co', port=443) "
+            "timed out while loading transformers model"
+        ),
+        locale="en",
+    )
+
+    assert (
+        error
+        == "The simulation run failed while downloading HuggingFace models or assets. "
+        "Check that this machine can reach huggingface.co, then verify your proxy/VPN settings and retry."
+    )
+
+
+def test_format_process_exit_error_keeps_generic_message_for_other_failures():
+    module = _load_simulation_runner_module()
+    runner = module.SimulationRunner
+
+    error = runner._format_process_exit_error(
+        exit_code=2,
+        details="ValueError: invalid simulation config",
+        locale="en",
+    )
+
+    assert error == "Process exited with code 2. Error: ValueError: invalid simulation config"

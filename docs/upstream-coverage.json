@@ -98,6 +98,21 @@
       ]
     },
     {
+      "number": 68,
+      "status": "covered",
+      "summary": "Simulation process-exit errors now classify common HuggingFace download/proxy failures into a concise retry/proxy guidance message instead of dumping raw log tails into Step 3.",
+      "local_refs": [
+        "backend/app/services/simulation_runner.py",
+        "backend/app/i18n.py",
+        "backend/tests/test_simulation_runner_actions.py"
+      ],
+      "validation": [
+        "backend/tests/test_simulation_runner_actions.py",
+        "backend/tests/test_simulation_api_i18n.py",
+        "backend/tests/test_i18n.py"
+      ]
+    },
+    {
       "number": 84,
       "status": "covered",
       "summary": "Failed report generation can now be retried directly from Step 4 with persisted status polling, backend error text, and a `force_regenerate` retry path.",

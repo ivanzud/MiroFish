@@ -456,6 +456,10 @@ TRANSLATIONS = {
         "zh": "进程退出码: {exit_code}, 错误: {details}",
         "en": "Process exited with code {exit_code}. Error: {details}",
     },
+    "simulation.process_exit_huggingface_network": {
+        "zh": "模拟运行失败：下载 HuggingFace 模型或资源时出现网络错误。请检查当前机器是否能访问 huggingface.co，并确认代理/VPN 配置后重试。",
+        "en": "The simulation run failed while downloading HuggingFace models or assets. Check that this machine can reach huggingface.co, then verify your proxy/VPN settings and retry.",
+    },
 }
 
 

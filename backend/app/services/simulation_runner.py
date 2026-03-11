@@ -237,6 +237,44 @@ class SimulationRunner:
     
     # 图谱记忆更新配置
     _graph_memory_enabled: Dict[str, bool] = {}  # simulation_id -> enabled
+
+    @staticmethod
+    def _format_process_exit_error(exit_code: int, details: str, locale: str | None = None) -> str:
+        normalized = (details or "").lower()
+        huggingface_markers = (
+            "huggingface.co",
+            "huggingface_hub",
+            "sentence-transformers",
+            "transformers",
+            "hf_hub_download",
+        )
+        network_markers = (
+            "connection error",
+            "connection aborted",
+            "connection reset",
+            "temporary failure in name resolution",
+            "name or service not known",
+            "failed to establish a new connection",
+            "max retries exceeded",
+            "proxyerror",
+            "connecttimeout",
+            "readtimeout",
+            "ssl",
+            "certificate verify failed",
+            "network is unreachable",
+        )
+
+        if any(marker in normalized for marker in huggingface_markers) and any(
+            marker in normalized for marker in network_markers
+        ):
+            return tr("simulation.process_exit_huggingface_network", locale)
+
+        return tr(
+            "simulation.process_exit",
+            locale,
+            exit_code=exit_code,
+            details=details,
+        )
     
     @classmethod
     def get_run_state(cls, simulation_id: str) -> Optional[SimulationRunState]:
@@ -565,11 +603,10 @@ class SimulationRunner:
                             error_info = f.read()[-2000:]  # 取最后2000字符
                 except Exception:
                     pass
-                state.error = tr(
-                    "simulation.process_exit",
-                    state.locale,
+                state.error = cls._format_process_exit_error(
                     exit_code=exit_code,
                     details=error_info,
+                    locale=state.locale,
                 )
                 logger.error(f"模拟失败: {simulation_id}, error={state.error}")
             

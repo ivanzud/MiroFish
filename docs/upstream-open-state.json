@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T12:03:06.831590+00:00",
-  "generated_at": "2026-03-11T12:03:06.831590+00:00",
+  "captured_at": "2026-03-11T12:23:22.878107+00:00",
+  "generated_at": "2026-03-11T12:23:22.878107+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -564,7 +564,22 @@
           "url": "https://github.com/666ghj/MiroFish/issues/68#issuecomment-3979489505",
           "body_excerpt": "感谢帮助，确实是网络问题。在使用全局vpn之后，问题解决了"
         }
-      ]
+      ],
+      "local_coverage": {
+        "number": 68,
+        "status": "covered",
+        "summary": "Simulation process-exit errors now classify common HuggingFace download/proxy failures into a concise retry/proxy guidance message instead of dumping raw log tails into Step 3.",
+        "local_refs": [
+          "backend/app/services/simulation_runner.py",
+          "backend/app/i18n.py",
+          "backend/tests/test_simulation_runner_actions.py"
+        ],
+        "validation": [
+          "backend/tests/test_simulation_runner_actions.py",
+          "backend/tests/test_simulation_api_i18n.py",
+          "backend/tests/test_i18n.py"
+        ]
+      }
     },
     {
       "number": 75,
@@ -2376,6 +2391,5 @@
       }
     }
   ],
-  "fork_remote": "origin",
-  "_cache_path": "docs/upstream-open-state.json"
+  "fork_remote": "origin"
 }
