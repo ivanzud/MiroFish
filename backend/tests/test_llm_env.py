@@ -102,6 +102,15 @@ def test_script_message_supports_english_runtime_strings():
     assert llm_env.script_message("batch_interview_completed", "en", count=3) == (
         "  Batch interview completed: 3 agents"
     )
+    assert llm_env.script_message("runner_title", "en", platform="Twitter") == (
+        "OASIS Twitter simulation"
+    )
+    assert llm_env.script_message("signal_received", "en", signal_name="SIGTERM") == (
+        "\nReceived SIGTERM; shutting down..."
+    )
+    assert llm_env.script_message("llm_config", "en", model="gpt-4.1-mini", base_url="default") == (
+        "LLM config: model=gpt-4.1-mini, base_url=default..."
+    )
 
 
 def test_script_message_defaults_to_chinese_runtime_strings():
@@ -111,3 +120,5 @@ def test_script_message_defaults_to_chinese_runtime_strings():
         "错误: 配置文件不存在: /tmp/config.json"
     )
     assert llm_env.script_message("unknown_error") == "未知错误"
+    assert llm_env.script_message("supported_commands") == "支持的命令: interview, batch_interview, close_env"
+    assert llm_env.script_message("wait_mode", state="启用") == "等待命令模式: 启用"

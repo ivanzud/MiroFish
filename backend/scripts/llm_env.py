@@ -77,6 +77,158 @@ SCRIPT_MESSAGES = {
         "zh": "未知错误",
         "en": "unknown error",
     },
+    "agent_lookup_warning": {
+        "zh": "  警告: 无法获取Agent {agent_id}: {error}",
+        "en": "  Warning: failed to load agent {agent_id}: {error}",
+    },
+    "interview_result_read_failed": {
+        "zh": "  读取Interview结果失败: {error}",
+        "en": "  Failed to read interview result: {error}",
+    },
+    "ipc_command_received": {
+        "zh": "\n收到IPC命令: {command_type}, id={command_id}",
+        "en": "\nReceived IPC command: {command_type}, id={command_id}",
+    },
+    "close_command_received": {
+        "zh": "收到关闭环境命令",
+        "en": "Received close-environment command",
+    },
+    "llm_config": {
+        "zh": "LLM配置: model={model}, base_url={base_url}...",
+        "en": "LLM config: model={model}, base_url={base_url}...",
+    },
+    "runner_title": {
+        "zh": "OASIS {platform}模拟",
+        "en": "OASIS {platform} simulation",
+    },
+    "config_path": {
+        "zh": "配置文件: {path}",
+        "en": "Config file: {path}",
+    },
+    "simulation_id": {
+        "zh": "模拟ID: {simulation_id}",
+        "en": "Simulation ID: {simulation_id}",
+    },
+    "wait_mode": {
+        "zh": "等待命令模式: {state}",
+        "en": "Wait-for-command mode: {state}",
+    },
+    "enabled": {
+        "zh": "启用",
+        "en": "enabled",
+    },
+    "disabled": {
+        "zh": "禁用",
+        "en": "disabled",
+    },
+    "rounds_truncated": {
+        "zh": "\n轮数已截断: {original} -> {current} (max_rounds={max_rounds})",
+        "en": "\nRounds truncated: {original} -> {current} (max_rounds={max_rounds})",
+    },
+    "simulation_params": {
+        "zh": "\n模拟参数:",
+        "en": "\nSimulation parameters:",
+    },
+    "total_hours": {
+        "zh": "  - 总模拟时长: {hours}小时",
+        "en": "  - Total duration: {hours} hours",
+    },
+    "minutes_per_round": {
+        "zh": "  - 每轮时间: {minutes}分钟",
+        "en": "  - Minutes per round: {minutes}",
+    },
+    "total_rounds": {
+        "zh": "  - 总轮数: {rounds}",
+        "en": "  - Total rounds: {rounds}",
+    },
+    "max_rounds_limit": {
+        "zh": "  - 最大轮数限制: {max_rounds}",
+        "en": "  - Max-round limit: {max_rounds}",
+    },
+    "old_db_removed": {
+        "zh": "已删除旧数据库: {path}",
+        "en": "Removed previous database: {path}",
+    },
+    "creating_oasis_env": {
+        "zh": "创建OASIS环境...",
+        "en": "Creating OASIS environment...",
+    },
+    "env_initialized": {
+        "zh": "环境初始化完成\n",
+        "en": "Environment initialization complete\n",
+    },
+    "initial_events_start": {
+        "zh": "执行初始事件 ({count}条初始帖子)...",
+        "en": "Applying initial events ({count} initial posts)...",
+    },
+    "initial_post_warning": {
+        "zh": "  警告: 无法为Agent {agent_id}创建初始帖子: {error}",
+        "en": "  Warning: failed to create an initial post for agent {agent_id}: {error}",
+    },
+    "initial_posts_published": {
+        "zh": "  已发布 {count} 条初始帖子",
+        "en": "  Published {count} initial posts",
+    },
+    "simulation_loop_start": {
+        "zh": "\n开始模拟循环...",
+        "en": "\nStarting simulation loop...",
+    },
+    "simulation_loop_complete": {
+        "zh": "\n模拟循环完成!",
+        "en": "\nSimulation loop complete!",
+    },
+    "total_elapsed": {
+        "zh": "  - 总耗时: {seconds:.1f}秒",
+        "en": "  - Total elapsed: {seconds:.1f}s",
+    },
+    "database_path": {
+        "zh": "  - 数据库: {path}",
+        "en": "  - Database: {path}",
+    },
+    "wait_mode_banner": {
+        "zh": "进入等待命令模式 - 环境保持运行",
+        "en": "Entering wait-for-command mode: environment stays online",
+    },
+    "supported_commands": {
+        "zh": "支持的命令: interview, batch_interview, close_env",
+        "en": "Supported commands: interview, batch_interview, close_env",
+    },
+    "interrupt_received": {
+        "zh": "\n收到中断信号",
+        "en": "\nReceived interrupt signal",
+    },
+    "task_cancelled": {
+        "zh": "\n任务被取消",
+        "en": "\nTask cancelled",
+    },
+    "command_processing_failed": {
+        "zh": "\n命令处理出错: {error}",
+        "en": "\nCommand processing failed: {error}",
+    },
+    "closing_env": {
+        "zh": "\n关闭环境...",
+        "en": "\nClosing environment...",
+    },
+    "env_closed": {
+        "zh": "环境已关闭",
+        "en": "Environment closed",
+    },
+    "signal_received": {
+        "zh": "\n收到 {signal_name} 信号，正在退出...",
+        "en": "\nReceived {signal_name}; shutting down...",
+    },
+    "force_exit": {
+        "zh": "强制退出...",
+        "en": "Force exiting...",
+    },
+    "program_interrupted": {
+        "zh": "\n程序被中断",
+        "en": "\nProgram interrupted",
+    },
+    "process_exited": {
+        "zh": "模拟进程已退出",
+        "en": "Simulation process exited",
+    },
 }
 
 

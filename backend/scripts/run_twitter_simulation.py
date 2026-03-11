@@ -295,7 +295,7 @@ class IPCHandler:
                     )
                     agent_prompts[agent_id] = prompt
                 except Exception as e:
-                    print(f"  警告: 无法获取Agent {agent_id}: {e}")
+                    print(script_message("agent_lookup_warning", SCRIPT_LOCALE, agent_id=agent_id, error=e))
             
             if not actions:
                 self.send_response(
@@ -366,7 +366,7 @@ class IPCHandler:
             conn.close()
             
         except Exception as e:
-            print(f"  读取Interview结果失败: {e}")
+            print(script_message("interview_result_read_failed", SCRIPT_LOCALE, error=e))
         
         return result
     
@@ -385,7 +385,7 @@ class IPCHandler:
         command_type = command.get("command_type")
         args = command.get("args", {})
         
-        print(f"\n收到IPC命令: {command_type}, id={command_id}")
+        print(script_message("ipc_command_received", SCRIPT_LOCALE, command_type=command_type, command_id=command_id))
         
         if command_type == CommandType.INTERVIEW:
             await self.handle_interview(
@@ -403,7 +403,7 @@ class IPCHandler:
             return True
             
         elif command_type == CommandType.CLOSE_ENV:
-            print("收到关闭环境命令")
+            print(script_message("close_command_received", SCRIPT_LOCALE))
             self.send_response(
                 command_id,
                 "completed",
@@ -484,7 +484,14 @@ class TwitterSimulationRunner:
         if not os.environ.get("OPENAI_API_KEY"):
             raise ValueError(missing_api_key_message())
 
-        print(f"LLM配置: model={llm_model}, base_url={llm_base_url[:40] if llm_base_url else '默认'}...")
+        print(
+            script_message(
+                "llm_config",
+                SCRIPT_LOCALE,
+                model=llm_model,
+                base_url=llm_base_url[:40] if llm_base_url else _t("默认", "default"),
+            )
+        )
         
         return ModelFactory.create(
             model_platform=ModelPlatformType.OPENAI,
@@ -567,10 +574,16 @@ class TwitterSimulationRunner:
             max_rounds: 最大模拟轮数（可选，用于截断过长的模拟）
         """
         print("=" * 60)
-        print("OASIS Twitter模拟")
-        print(f"配置文件: {self.config_path}")
-        print(f"模拟ID: {self.config.get('simulation_id', 'unknown')}")
-        print(f"等待命令模式: {'启用' if self.wait_for_commands else '禁用'}")
+        print(script_message("runner_title", SCRIPT_LOCALE, platform="Twitter"))
+        print(script_message("config_path", SCRIPT_LOCALE, path=self.config_path))
+        print(script_message("simulation_id", SCRIPT_LOCALE, simulation_id=self.config.get('simulation_id', 'unknown')))
+        print(
+            script_message(
+                "wait_mode",
+                SCRIPT_LOCALE,
+                state=script_message("enabled" if self.wait_for_commands else "disabled", SCRIPT_LOCALE),
+            )
+        )
         print("=" * 60)
         
         # 加载时间配置
@@ -586,14 +599,14 @@ class TwitterSimulationRunner:
             original_rounds = total_rounds
             total_rounds = min(total_rounds, max_rounds)
             if total_rounds < original_rounds:
-                print(f"\n轮数已截断: {original_rounds} -> {total_rounds} (max_rounds={max_rounds})")
-        
-        print(f"\n模拟参数:")
-        print(f"  - 总模拟时长: {total_hours}小时")
-        print(f"  - 每轮时间: {minutes_per_round}分钟")
-        print(f"  - 总轮数: {total_rounds}")
+                print(script_message("rounds_truncated", SCRIPT_LOCALE, original=original_rounds, current=total_rounds, max_rounds=max_rounds))
+
+        print(script_message("simulation_params", SCRIPT_LOCALE))
+        print(script_message("total_hours", SCRIPT_LOCALE, hours=total_hours))
+        print(script_message("minutes_per_round", SCRIPT_LOCALE, minutes=minutes_per_round))
+        print(script_message("total_rounds", SCRIPT_LOCALE, rounds=total_rounds))
         if max_rounds:
-            print(f"  - 最大轮数限制: {max_rounds}")
+            print(script_message("max_rounds_limit", SCRIPT_LOCALE, max_rounds=max_rounds))
         print(script_message("agent_count", SCRIPT_LOCALE, count=len(self.config.get('agent_configs', []))))
         
         # 创建模型
@@ -617,10 +630,10 @@ class TwitterSimulationRunner:
         db_path = self._get_db_path()
         if os.path.exists(db_path):
             os.remove(db_path)
-            print(f"已删除旧数据库: {db_path}")
-        
+            print(script_message("old_db_removed", SCRIPT_LOCALE, path=db_path))
+
         # 创建环境
-        print("创建OASIS环境...")
+        print(script_message("creating_oasis_env", SCRIPT_LOCALE))
         self.env = oasis.make(
             agent_graph=self.agent_graph,
             platform=oasis.DefaultPlatformType.TWITTER,
@@ -629,7 +642,7 @@ class TwitterSimulationRunner:
         )
         
         await self.env.reset()
-        print("环境初始化完成\n")
+        print(script_message("env_initialized", SCRIPT_LOCALE))
         
         # 初始化IPC处理器
         self.ipc_handler = IPCHandler(self.simulation_dir, self.env, self.agent_graph)
@@ -638,9 +651,9 @@ class TwitterSimulationRunner:
         # 执行初始事件
         event_config = self.config.get("event_config", {})
         initial_posts = event_config.get("initial_posts", [])
-        
+
         if initial_posts:
-            print(f"执行初始事件 ({len(initial_posts)}条初始帖子)...")
+            print(script_message("initial_events_start", SCRIPT_LOCALE, count=len(initial_posts)))
             initial_actions = {}
             for post in initial_posts:
                 agent_id = post.get("poster_agent_id", 0)
@@ -652,14 +665,14 @@ class TwitterSimulationRunner:
                         action_args={"content": content}
                     )
                 except Exception as e:
-                    print(f"  警告: 无法为Agent {agent_id}创建初始帖子: {e}")
-            
+                    print(script_message("initial_post_warning", SCRIPT_LOCALE, agent_id=agent_id, error=e))
+
             if initial_actions:
                 await self.env.step(initial_actions)
-                print(f"  已发布 {len(initial_actions)} 条初始帖子")
-        
+                print(script_message("initial_posts_published", SCRIPT_LOCALE, count=len(initial_actions)))
+
         # 主模拟循环
-        print("\n开始模拟循环...")
+        print(script_message("simulation_loop_start", SCRIPT_LOCALE))
         start_time = datetime.now()
         
         for round_num in range(total_rounds):
@@ -695,15 +708,15 @@ class TwitterSimulationRunner:
                       f"- elapsed: {elapsed:.1f}s")
         
         total_elapsed = (datetime.now() - start_time).total_seconds()
-        print(f"\n模拟循环完成!")
-        print(f"  - 总耗时: {total_elapsed:.1f}秒")
-        print(f"  - 数据库: {db_path}")
+        print(script_message("simulation_loop_complete", SCRIPT_LOCALE))
+        print(script_message("total_elapsed", SCRIPT_LOCALE, seconds=total_elapsed))
+        print(script_message("database_path", SCRIPT_LOCALE, path=db_path))
         
         # 是否进入等待命令模式
         if self.wait_for_commands:
             print("\n" + "=" * 60)
-            print("进入等待命令模式 - 环境保持运行")
-            print("支持的命令: interview, batch_interview, close_env")
+            print(script_message("wait_mode_banner", SCRIPT_LOCALE))
+            print(script_message("supported_commands", SCRIPT_LOCALE))
             print("=" * 60)
             
             self.ipc_handler.update_status("alive")
@@ -720,19 +733,19 @@ class TwitterSimulationRunner:
                     except asyncio.TimeoutError:
                         pass
             except KeyboardInterrupt:
-                print("\n收到中断信号")
+                print(script_message("interrupt_received", SCRIPT_LOCALE))
             except asyncio.CancelledError:
-                print("\n任务被取消")
+                print(script_message("task_cancelled", SCRIPT_LOCALE))
             except Exception as e:
-                print(f"\n命令处理出错: {e}")
-            
-            print("\n关闭环境...")
+                print(script_message("command_processing_failed", SCRIPT_LOCALE, error=e))
+
+            print(script_message("closing_env", SCRIPT_LOCALE))
         
         # 关闭环境
         self.ipc_handler.update_status("stopped")
         await self.env.close()
         
-        print("环境已关闭")
+        print(script_message("env_closed", SCRIPT_LOCALE))
         print("=" * 60)
 
 
@@ -786,14 +799,14 @@ def setup_signal_handlers():
     def signal_handler(signum, frame):
         global _cleanup_done
         sig_name = "SIGTERM" if signum == signal.SIGTERM else "SIGINT"
-        print(f"\n收到 {sig_name} 信号，正在退出...")
+        print(script_message("signal_received", SCRIPT_LOCALE, signal_name=sig_name))
         if not _cleanup_done:
             _cleanup_done = True
             if _shutdown_event:
                 _shutdown_event.set()
         else:
             # 重复收到信号才强制退出
-            print("强制退出...")
+            print(script_message("force_exit", SCRIPT_LOCALE))
             sys.exit(1)
     
     signal.signal(signal.SIGTERM, signal_handler)
@@ -805,8 +818,8 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\n程序被中断")
+        print(script_message("program_interrupted", SCRIPT_LOCALE))
     except SystemExit:
         pass
     finally:
-        print("模拟进程已退出")
+        print(script_message("process_exited", SCRIPT_LOCALE))
