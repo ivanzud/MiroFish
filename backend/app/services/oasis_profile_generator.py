@@ -19,6 +19,7 @@ from openai import OpenAI
 from zep_cloud.client import Zep
 
 from ..config import Config
+from ..i18n import tr
 from ..utils.logger import get_logger
 from ..utils.llm_client import LLMClient
 from .zep_entity_reader import EntityNode, ZepEntityReader
@@ -208,9 +209,7 @@ class OasisProfileGenerator:
         self.locale = "en" if locale == "en" else "zh"
         
         if not self.api_key:
-            if self.locale == "en":
-                raise ValueError("LLM_API_KEY / OPENAI_API_KEY is not configured")
-            raise ValueError("LLM_API_KEY / OPENAI_API_KEY 未配置")
+            raise ValueError(tr("config.llm_key_missing", self.locale))
         
         self.client = OpenAI(
             api_key=self.api_key,

@@ -682,12 +682,13 @@ def prepare_simulation():
                 # 任务完成
                 task_manager.complete_task(
                     task_id,
-                    result=result_state.to_simple_dict()
+                    result=result_state.to_simple_dict(),
+                    locale=locale,
                 )
                 
             except Exception as e:
                 logger.error(f"准备模拟失败: {str(e)}")
-                task_manager.fail_task(task_id, str(e))
+                task_manager.fail_task(task_id, str(e), locale=locale)
                 
                 # 更新模拟状态为失败
                 state = manager.get_simulation(simulation_id)

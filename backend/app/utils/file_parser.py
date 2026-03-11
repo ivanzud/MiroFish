@@ -8,6 +8,8 @@ import logging
 from pathlib import Path
 from typing import List, Optional
 
+from ..i18n import tr
+
 logger = logging.getLogger(__name__)
 
 
@@ -80,12 +82,12 @@ class FileParser:
         path = Path(file_path)
         
         if not path.exists():
-            raise FileNotFoundError(f"文件不存在: {file_path}")
+            raise FileNotFoundError(tr("file.not_found", path=file_path))
         
         suffix = path.suffix.lower()
         
         if suffix not in cls.SUPPORTED_EXTENSIONS:
-            raise ValueError(f"不支持的文件格式: {suffix}")
+            raise ValueError(tr("file.unsupported_type", suffix=suffix))
         
         if suffix == '.pdf':
             return cls._extract_from_pdf(file_path)
@@ -94,7 +96,7 @@ class FileParser:
         elif suffix == '.txt':
             return cls._extract_from_txt(file_path)
         
-        raise ValueError(f"无法处理的文件格式: {suffix}")
+        raise ValueError(tr("file.unhandled_type", suffix=suffix))
     
     @staticmethod
     def _extract_from_pdf(file_path: str) -> str:

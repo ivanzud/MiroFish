@@ -226,17 +226,19 @@ def generate_report():
                             "report_id": report.report_id,
                             "simulation_id": simulation_id,
                             "status": "completed"
-                        }
+                        },
+                        locale=locale,
                     )
                 else:
                     task_manager.fail_task(
                         task_id,
                         report.error or tr("report.generation_failed", locale),
+                        locale=locale,
                     )
                 
             except Exception as e:
                 logger.error(f"报告生成失败: {str(e)}")
-                task_manager.fail_task(task_id, str(e))
+                task_manager.fail_task(task_id, str(e), locale=locale)
         
         # 启动后台线程
         thread = threading.Thread(target=run_generate, daemon=True)

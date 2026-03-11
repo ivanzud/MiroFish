@@ -10,6 +10,7 @@ from typing import Optional, Dict, Any, List
 from openai import OpenAI, APIError, BadRequestError
 
 from ..config import Config
+from ..i18n import tr
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ class LLMClient:
         self.default_max_tokens = Config.LLM_MAX_TOKENS
         
         if not self.api_key:
-            raise ValueError("LLM_API_KEY / OPENAI_API_KEY 未配置")
+            raise ValueError(tr("config.llm_key_missing"))
         
         self.client = OpenAI(
             api_key=self.api_key,
@@ -174,4 +175,4 @@ class LLMClient:
         try:
             return json.loads(cleaned_response)
         except json.JSONDecodeError:
-            raise ValueError(f"LLM返回的JSON格式无效: {cleaned_response}")
+            raise ValueError(tr("llm.invalid_json", payload=cleaned_response))

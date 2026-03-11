@@ -285,13 +285,13 @@ class GraphBuilderService:
                 "graph_id": graph_id,
                 "graph_info": graph_info.to_dict(),
                 "chunks_processed": total_chunks,
-            })
+            }, locale=self.locale)
             
         except Exception as e:
             import traceback
             self.logger.error("Graph build worker failed: %s", e)
             self.logger.debug(traceback.format_exc())
-            self.task_manager.fail_task(task_id, self.format_user_facing_error(e))
+            self.task_manager.fail_task(task_id, self.format_user_facing_error(e), locale=self.locale)
     
     def create_graph(self, name: str, max_retries: Optional[int] = None) -> str:
         """创建Zep图谱（公开方法）"""

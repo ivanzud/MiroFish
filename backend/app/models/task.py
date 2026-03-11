@@ -10,6 +10,8 @@ from enum import Enum
 from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
 
+from ..i18n import tr
+
 
 class TaskStatus(str, Enum):
     """任务状态枚举"""
@@ -142,22 +144,22 @@ class TaskManager:
                 if progress_detail is not None:
                     task.progress_detail = progress_detail
     
-    def complete_task(self, task_id: str, result: Dict):
+    def complete_task(self, task_id: str, result: Dict, locale: str | None = None):
         """标记任务完成"""
         self.update_task(
             task_id,
             status=TaskStatus.COMPLETED,
             progress=100,
-            message="任务完成",
+            message=tr("task.completed", locale),
             result=result
         )
     
-    def fail_task(self, task_id: str, error: str):
+    def fail_task(self, task_id: str, error: str, locale: str | None = None):
         """标记任务失败"""
         self.update_task(
             task_id,
             status=TaskStatus.FAILED,
-            message="任务失败",
+            message=tr("task.failed", locale),
             error=error
         )
     
@@ -181,4 +183,3 @@ class TaskManager:
             ]
             for tid in old_ids:
                 del self._tasks[tid]
-

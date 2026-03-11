@@ -16,6 +16,10 @@ TRANSLATIONS = {
         "zh": "{name} 未配置",
         "en": "{name} is not configured",
     },
+    "config.llm_key_missing": {
+        "zh": "LLM_API_KEY / OPENAI_API_KEY 未配置",
+        "en": "LLM_API_KEY / OPENAI_API_KEY is not configured",
+    },
     "config.url_invalid_scheme": {
         "zh": "{name} 必须使用 http/https: {value}",
         "en": "{name} must use http/https: {value}",
@@ -51,6 +55,30 @@ TRANSLATIONS = {
     "config.model_info": {
         "zh": "LLM_MODEL_NAME={model}",
         "en": "LLM_MODEL_NAME={model}",
+    },
+    "llm.invalid_json": {
+        "zh": "LLM返回的JSON格式无效: {payload}",
+        "en": "The LLM returned invalid JSON: {payload}",
+    },
+    "file.not_found": {
+        "zh": "文件不存在: {path}",
+        "en": "File not found: {path}",
+    },
+    "file.unsupported_type": {
+        "zh": "不支持的文件格式: {suffix}",
+        "en": "Unsupported file format: {suffix}",
+    },
+    "file.unhandled_type": {
+        "zh": "无法处理的文件格式: {suffix}",
+        "en": "Unhandled file format: {suffix}",
+    },
+    "task.completed": {
+        "zh": "任务完成",
+        "en": "Task completed",
+    },
+    "task.failed": {
+        "zh": "任务失败",
+        "en": "Task failed",
     },
     "graph.project_not_found": {
         "zh": "项目不存在: {project_id}",
