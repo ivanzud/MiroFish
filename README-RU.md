@@ -42,9 +42,11 @@ This Russian README is a safe repo-native documentation subset extracted from up
 
 ```bash
 cp .env.example .env
-npm run setup:all
+npm run setup:core
 npm run dev
 ```
+
+`npm run setup:all` remains available as a backward-compatible alias for the same core install path. Install `npm run setup:backend:simulation` only when you need the optional Step 3 / Step 5 simulation runtime.
 
 Services:
 

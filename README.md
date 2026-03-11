@@ -271,7 +271,10 @@ OPENAI_MODEL=qwen3.5-plus
 #### 2. 安装依赖
 
 ```bash
-# 一键安装所有依赖（根目录 + 前端 + 后端）
+# 推荐的核心安装路径：图谱 / 报告 / OpenAI-compatible 后端
+npm run setup:core
+
+# 向后兼容别名，效果与 setup:core 相同
 npm run setup:all
 
 # 如需启用 OASIS 仿真运行（Step 3 / Step 5），再额外安装可选仿真依赖
@@ -287,11 +290,14 @@ npm run setup
 # 安装 Python 核心依赖（后端，自动创建虚拟环境）
 npm run setup:backend
 
+# 等价的核心组合安装快捷方式
+npm run setup:core
+
 # 安装 OASIS 仿真运行时可选依赖
 npm run setup:backend:simulation
 ```
 
-默认的 `setup:backend` 现在只安装图谱构建、报告生成和 OpenAI 兼容后端所需的核心依赖。Step 3 / Step 5 使用的上游 `oasis` 运行时代码现在直接随仓库 vendoring 到 `backend/oasis`，而可选仿真依赖只保留运行所需的显式包，因此不再通过 `camel-oasis -> unstructured==0.13.7` 这条高风险传递依赖链安装。
+默认的 `setup:core` / `setup:all` 现在只安装根目录、前端，以及图谱构建、报告生成和 OpenAI 兼容后端所需的核心依赖。Step 3 / Step 5 使用的上游 `oasis` 运行时代码现在直接随仓库 vendoring 到 `backend/oasis`，而可选仿真依赖只保留运行所需的显式包，因此不再通过 `camel-oasis -> unstructured==0.13.7` 这条高风险传递依赖链安装。
 
 已知限制：`npm run setup:backend:simulation` 现在会在 Python 3.13+ 且未安装 Rust 时直接失败并给出说明，因为当前 `camel-ai -> tiktoken==0.7.0` 仍会触发源码构建。若只需要核心后端，可继续使用默认安装；若要实际运行 Step 3 / Step 5 仿真，当前更稳妥的是使用 Python 3.11/3.12，或先安装 Rust 再执行该命令。
 

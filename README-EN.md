@@ -271,7 +271,10 @@ For a first run, prefer a PDF / Markdown / TXT source under roughly 10k words an
 #### 2. Install Dependencies
 
 ```bash
-# One-click installation of all dependencies (root + frontend + backend)
+# Recommended core install for graph/report/OpenAI-compatible backend usage
+npm run setup:core
+
+# Backward-compatible alias for the same core install path
 npm run setup:all
 
 # Install the optional OASIS runtime only if you need Step 3 / Step 5 simulations
@@ -287,11 +290,14 @@ npm run setup
 # Install core Python dependencies (backend, auto-creates virtual environment)
 npm run setup:backend
 
+# Equivalent combined core install shortcut
+npm run setup:core
+
 # Install the optional OASIS simulation runtime
 npm run setup:backend:simulation
 ```
 
-`setup:backend` now installs only the core graph/report/OpenAI-compatible backend dependencies. The upstream `oasis` runtime code used by Step 3 / Step 5 is now vendored directly under `backend/oasis`, and the optional simulation install keeps only the explicit runtime dependencies, so the default path no longer pulls the high-risk `camel-oasis -> unstructured==0.13.7` chain.
+`setup:core` / `setup:all` installs only the root package, frontend, and core graph/report/OpenAI-compatible backend dependencies. The upstream `oasis` runtime code used by Step 3 / Step 5 is now vendored directly under `backend/oasis`, and the optional simulation install keeps only the explicit runtime dependencies, so the default path no longer pulls the high-risk `camel-oasis -> unstructured==0.13.7` chain.
 
 Known limitation: `npm run setup:backend:simulation` now fails fast on Python 3.13+ when Rust is not installed, because the current `camel-ai -> tiktoken==0.7.0` chain still falls back to a source build there. The core backend path is unaffected; for actual Step 3 / Step 5 simulation runs, use Python 3.11/3.12 or install Rust before running that command.
 
