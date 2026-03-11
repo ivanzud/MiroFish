@@ -30,6 +30,7 @@ DEFAULT_API_TIMEOUT = int(os.environ.get("MIROFISH_GITHUB_SYNC_TIMEOUT", "30"))
 REQUEST_TIMEOUT = DEFAULT_API_TIMEOUT
 DEFAULT_STALE_CACHE_HOURS = int(os.environ.get("MIROFISH_GITHUB_SYNC_STALE_HOURS", "24"))
 DEFAULT_MAX_WORKERS = int(os.environ.get("MIROFISH_GITHUB_SYNC_MAX_WORKERS", "8"))
+DEFAULT_REPO = "666ghj/MiroFish"
 GH_CLI_USABLE: bool | None = None
 GH_CLI_DISABLED_REASON: str | None = None
 
@@ -645,7 +646,16 @@ def repo_lock(output_path: Path, repo: str):
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo", default="666ghj/MiroFish", help="owner/repo to inspect")
+    parser.add_argument(
+        "repo_arg",
+        nargs="?",
+        help="Legacy positional owner/repo alias retained for backward compatibility",
+    )
+    parser.add_argument(
+        "--repo",
+        default=argparse.SUPPRESS,
+        help="owner/repo to inspect",
+    )
     parser.add_argument("--state", default="open", help="GitHub state filter (open, closed, or all)")
     parser.add_argument("--limit", type=int, default=500, help="Maximum items to fetch per collection")
     parser.add_argument(
@@ -702,9 +712,26 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def resolve_repo_argument(args: argparse.Namespace, parser: argparse.ArgumentParser) -> str:
+    positional_repo = getattr(args, "repo_arg", None)
+    default_repo = DEFAULT_REPO
+    explicit_repo = getattr(args, "repo", None)
+    option_repo = explicit_repo or default_repo
+
+    if positional_repo:
+        if explicit_repo is not None and positional_repo != option_repo:
+            parser.error(
+                f"conflicting repo values: positional {positional_repo!r} does not match --repo {option_repo!r}"
+            )
+        return positional_repo
+
+    return option_repo
+
+
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+    args.repo = resolve_repo_argument(args, parser)
     global REQUEST_TIMEOUT
     REQUEST_TIMEOUT = max(1, args.timeout)
     max_workers = max(1, args.max_workers)

@@ -213,6 +213,39 @@ class SyncUpstreamGithubTests(unittest.TestCase):
 
         self.assertEqual(args.max_workers, 4)
 
+    def test_build_parser_accepts_legacy_positional_repo_argument(self):
+        parser = sync_upstream_github.build_parser()
+        args = parser.parse_args(
+            [
+                "666ghj/MiroFish",
+                "--output",
+                "docs/upstream-open-state.json",
+                "--summary",
+                "docs/upstream-open-summary.md",
+            ]
+        )
+
+        resolved_repo = sync_upstream_github.resolve_repo_argument(args, parser)
+
+        self.assertEqual(resolved_repo, "666ghj/MiroFish")
+
+    def test_resolve_repo_argument_rejects_conflicting_repo_values(self):
+        parser = sync_upstream_github.build_parser()
+        args = parser.parse_args(
+            [
+                "fork/MiroFish",
+                "--repo",
+                "666ghj/MiroFish",
+                "--output",
+                "docs/upstream-open-state.json",
+                "--summary",
+                "docs/upstream-open-summary.md",
+            ]
+        )
+
+        with self.assertRaises(SystemExit):
+            sync_upstream_github.resolve_repo_argument(args, parser)
+
     def test_snapshot_is_fresh_accepts_recent_capture(self):
         payload = {"captured_at": "2026-03-11T08:30:00+00:00"}
 
@@ -561,6 +594,90 @@ class SyncUpstreamGithubTests(unittest.TestCase):
             self.assertEqual(payload["captured_at"], "2026-03-11T09:00:00+00:00")
             self.assertEqual(payload["generated_at"], "2026-03-11T09:00:00+00:00")
             self.assertIn("2026-03-11T09:00:00+00:00", summary_path.read_text(encoding="utf-8"))
+
+    def test_main_accepts_legacy_positional_repo_argument(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir) / "state.json"
+            summary_path = Path(tmpdir) / "summary.md"
+            pr_payload = {
+                "number": 2,
+                "title": "PR",
+                "html_url": "https://example.test/pull/2",
+                "state": "open",
+                "created_at": "2026-03-10T00:00:00Z",
+                "updated_at": "2026-03-11T00:00:00Z",
+                "closed_at": None,
+                "merged_at": None,
+                "head": {
+                    "ref": "feature",
+                    "sha": "abc123",
+                    "repo": {
+                        "full_name": "fork/repo",
+                        "clone_url": "https://example.test/fork/repo.git",
+                    },
+                },
+                "base": {
+                    "ref": "main",
+                    "repo": {"full_name": "666ghj/MiroFish"},
+                },
+                "draft": False,
+                "mergeable_state": "clean",
+                "labels": [],
+                "user": {"login": "bob"},
+                "body": "PR body",
+                "comments": 0,
+                "review_comments": 0,
+            }
+
+            with (
+                patch.object(
+                    sync_upstream_github.sys,
+                    "argv",
+                    [
+                        "sync_upstream_github.py",
+                        "666ghj/MiroFish",
+                        "--state",
+                        "open",
+                        "--output",
+                        str(output_path),
+                        "--summary",
+                        str(summary_path),
+                    ],
+                ),
+                patch.object(
+                    sync_upstream_github,
+                    "github_api_paginated",
+                    side_effect=[
+                        [
+                            {
+                                "number": 1,
+                                "title": "Issue",
+                                "html_url": "https://example.test/issues/1",
+                                "state": "open",
+                                "created_at": "2026-03-10T00:00:00Z",
+                                "updated_at": "2026-03-11T00:00:00Z",
+                                "closed_at": None,
+                                "labels": [],
+                                "user": {"login": "alice"},
+                                "body": "Issue body",
+                                "comments": 0,
+                            }
+                        ],
+                        [pr_payload],
+                    ],
+                ),
+                patch.object(sync_upstream_github, "hydrate_pull_requests", return_value=[pr_payload]),
+                patch.object(sync_upstream_github, "datetime") as mocked_datetime,
+            ):
+                mocked_datetime.now.return_value = __import__("datetime").datetime(
+                    2026, 3, 11, 9, 0, tzinfo=__import__("datetime").timezone.utc
+                )
+                mocked_datetime.fromisoformat = __import__("datetime").datetime.fromisoformat
+                result = sync_upstream_github.main()
+
+            self.assertEqual(result, 0)
+            payload = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(payload["repo"], "666ghj/MiroFish")
 
     def test_main_reuses_recent_cached_snapshot_when_pr_hydration_rate_limited(self):
         with tempfile.TemporaryDirectory() as tmpdir:
