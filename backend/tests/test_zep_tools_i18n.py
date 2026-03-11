@@ -449,6 +449,78 @@ def test_tool_result_renderers_localize_deterministic_wrappers_in_english():
     assert "### [Entities involved]" in rendered_panorama
 
 
+def test_panorama_search_localizes_missing_historical_timestamps_in_english():
+    app = Flask(__name__)
+    service = _make_service()
+    service._locale = lambda: "en"
+    service.get_all_nodes = lambda graph_id: [
+        NodeInfo(
+            uuid="node-1",
+            name="Alice",
+            labels=["Entity", "Analyst"],
+            summary="Tracks sentiment shifts.",
+            attributes={},
+            locale="en",
+        )
+    ]
+    service.get_all_edges = lambda graph_id, include_temporal=True: [
+        EdgeInfo(
+            uuid="edge-1",
+            name="influences",
+            fact="Alice ignored the topic.",
+            source_node_uuid="node-1",
+            target_node_uuid="node-2",
+            source_node_name="Alice",
+            target_node_name="Bob",
+            valid_at=None,
+            invalid_at=None,
+            expired_at="2026-03-10",
+            locale="en",
+        )
+    ]
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        result = service.panorama_search("graph-1", "Alice")
+
+    assert result.historical_facts == ["[Unknown - 2026-03-10] Alice ignored the topic."]
+    assert "未知" not in result.to_text()
+
+
+def test_insight_forge_localizes_default_entity_type_in_english():
+    app = Flask(__name__)
+    service = _make_service()
+    service._locale = lambda: "en"
+    service._generate_sub_queries = lambda **kwargs: ["Who shaped the narrative?"]
+    service.search_graph = lambda **kwargs: SearchResult(
+        facts=["Alice posted first."],
+        edges=[
+            {
+                "source_node_uuid": "node-1",
+                "target_node_uuid": "node-2",
+                "name": "influences",
+            }
+        ],
+        nodes=[],
+        query=str(kwargs.get("query", "")),
+        total_count=1,
+        locale="en",
+    )
+    service.get_node_detail = lambda uuid: NodeInfo(
+        uuid=uuid,
+        name="Alice" if uuid == "node-1" else "Bob",
+        labels=["Entity"],
+        summary="Context",
+        attributes={},
+        locale="en",
+    )
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        result = service.insight_forge("graph-1", "Who shaped the narrative?", "Track policy sentiment")
+
+    assert result.entity_insights[0]["type"] == "Entity"
+    assert "实体" not in result.to_text()
+
+
 def test_select_agents_for_interview_localizes_prompts_fallback_reasoning_and_logs_in_english(monkeypatch):
     app = Flask(__name__)
     service = _make_service()

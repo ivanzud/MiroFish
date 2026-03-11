@@ -1662,7 +1662,10 @@ class ZepToolsService:
 
         entity_insights = []
         for node in deduplicated_nodes:
-            entity_type = next((l for l in node.labels if l not in ["Entity", "Node"]), "实体")
+            entity_type = next(
+                (l for l in node.labels if l not in ["Entity", "Node"]),
+                self._text("实体", "Entity", locale),
+            )
             entity_insights.append({
                 "uuid": node.uuid,
                 "name": node.name,
@@ -1865,8 +1868,8 @@ Requirements:
             
             if is_historical:
                 # 历史/过期事实，添加时间标记
-                valid_at = edge.valid_at or "未知"
-                invalid_at = edge.invalid_at or edge.expired_at or "未知"
+                valid_at = edge.valid_at or self._text("未知", "Unknown", locale)
+                invalid_at = edge.invalid_at or edge.expired_at or self._text("未知", "Unknown", locale)
                 fact_with_time = f"[{valid_at} - {invalid_at}] {edge.fact}"
                 historical_facts.append(fact_with_time)
             else:

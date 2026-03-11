@@ -1,6 +1,6 @@
 {
   "repo": "666ghj/MiroFish",
-  "captured_at": "2026-03-11T19:13:32Z",
+  "captured_at": "2026-03-11T22:03:00Z",
   "issues": [
     {
       "number": 150,
@@ -768,7 +768,7 @@
     {
       "number": 119,
       "status": "partial",
-      "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, and English-localized GraphBuilderService worker progress strings, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
+      "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
       "local_refs": [
         "frontend/src/views/MainView.vue",
         "frontend/src/views/mainViewLogMessages.js",
@@ -791,7 +791,7 @@
         "uv run --project backend pytest -q backend/tests/test_graph_builder.py backend/tests/test_graph_upload_api.py",
         "uv run --project backend pytest -q backend/tests/test_report_agent.py",
         "uv run --project backend pytest -q backend/tests/test_openai_compat_services.py",
-        "backend/tests/test_zep_tools_i18n.py",
+        "uv run --project backend pytest -q backend/tests/test_zep_tools_i18n.py",
         "scripts/test_backend_lite.sh",
         "frontend: npm test",
         "frontend: npm run build"
