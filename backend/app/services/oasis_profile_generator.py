@@ -196,6 +196,15 @@ class OasisProfileGenerator:
 
     def _default_country(self) -> str:
         return "China" if getattr(self, "locale", "zh") == "en" else "中国"
+
+    def _search_query(self, entity_name: str) -> str:
+        return self._text(
+            f"All available information, activities, events, relationships, and background about {entity_name}",
+            f"关于{entity_name}的所有信息、活动、事件、关系和背景",
+        )
+
+    def _context_heading(self, en_text: str, zh_text: str) -> str:
+        return f"### {self._text(en_text, zh_text)}"
     
     def __init__(
         self, 
@@ -228,7 +237,12 @@ class OasisProfileGenerator:
             try:
                 self.zep_client = Zep(api_key=self.zep_api_key)
             except Exception as e:
-                logger.warning(f"Zep客户端初始化失败: {e}")
+                logger.warning(
+                    self._text(
+                        f"Failed to initialize the Zep client: {e}",
+                        f"Zep客户端初始化失败: {e}",
+                    )
+                )
 
     def _request_json_completion(
         self,
@@ -257,7 +271,12 @@ class OasisProfileGenerator:
         content = response.choices[0].message.content or ""
         finish_reason = response.choices[0].finish_reason
         if finish_reason == 'length':
-            logger.warning("LLM输出被截断, 尝试修复...")
+            logger.warning(
+                self._text(
+                    "LLM output was truncated; attempting to repair the JSON payload...",
+                    "LLM输出被截断, 尝试修复...",
+                )
+            )
             content = self._fix_truncated_json(content)
 
         parsed_content = LLMClient._extract_json_payload(content)
@@ -371,7 +390,7 @@ class OasisProfileGenerator:
             logger.debug(self._text("Skipping Zep lookup: graph_id is not set", "跳过Zep检索：未设置graph_id"))
             return results
         
-        comprehensive_query = f"关于{entity_name}的所有信息、活动、事件、关系和背景"
+        comprehensive_query = self._search_query(entity_name)
         
         def search_edges():
             """搜索边（事实/关系）- 带重试机制"""
@@ -468,15 +487,26 @@ class OasisProfileGenerator:
                     if hasattr(node, 'summary') and node.summary:
                         all_summaries.add(node.summary)
                     if hasattr(node, 'name') and node.name and node.name != entity_name:
-                        all_summaries.add(f"相关实体: {node.name}")
+                        all_summaries.add(
+                            self._text(
+                                f"Related entity: {node.name}",
+                                f"相关实体: {node.name}",
+                            )
+                        )
             results["node_summaries"] = list(all_summaries)
             
             # 构建综合上下文
             context_parts = []
             if results["facts"]:
-                context_parts.append("事实信息:\n" + "\n".join(f"- {f}" for f in results["facts"][:20]))
+                context_parts.append(
+                    f"{self._text('Facts', '事实信息')}:\n"
+                    + "\n".join(f"- {f}" for f in results["facts"][:20])
+                )
             if results["node_summaries"]:
-                context_parts.append("相关实体:\n" + "\n".join(f"- {s}" for s in results["node_summaries"][:10]))
+                context_parts.append(
+                    f"{self._text('Related entities', '相关实体')}:\n"
+                    + "\n".join(f"- {s}" for s in results["node_summaries"][:10])
+                )
             results["context"] = "\n\n".join(context_parts)
             
             logger.info(
@@ -487,9 +517,19 @@ class OasisProfileGenerator:
             )
             
         except concurrent.futures.TimeoutError:
-            logger.warning(f"Zep检索超时 ({entity_name})")
+            logger.warning(
+                self._text(
+                    f"Zep retrieval timed out ({entity_name})",
+                    f"Zep检索超时 ({entity_name})",
+                )
+            )
         except Exception as e:
-            logger.warning(f"Zep检索失败 ({entity_name}): {e}")
+            logger.warning(
+                self._text(
+                    f"Zep retrieval failed ({entity_name}): {e}",
+                    f"Zep检索失败 ({entity_name}): {e}",
+                )
+            )
         
         return results
     
@@ -511,7 +551,9 @@ class OasisProfileGenerator:
                 if value and str(value).strip():
                     attrs.append(f"- {key}: {value}")
             if attrs:
-                context_parts.append("### 实体属性\n" + "\n".join(attrs))
+                context_parts.append(
+                    self._context_heading("Entity attributes", "实体属性") + "\n" + "\n".join(attrs)
+                )
         
         # 2. 添加相关边信息（事实/关系）
         existing_facts = set()
@@ -527,12 +569,26 @@ class OasisProfileGenerator:
                     existing_facts.add(fact)
                 elif edge_name:
                     if direction == "outgoing":
-                        relationships.append(f"- {entity.name} --[{edge_name}]--> (相关实体)")
+                        relationships.append(
+                            self._text(
+                                f"- {entity.name} --[{edge_name}]--> (related entity)",
+                                f"- {entity.name} --[{edge_name}]--> (相关实体)",
+                            )
+                        )
                     else:
-                        relationships.append(f"- (相关实体) --[{edge_name}]--> {entity.name}")
+                        relationships.append(
+                            self._text(
+                                f"- (related entity) --[{edge_name}]--> {entity.name}",
+                                f"- (相关实体) --[{edge_name}]--> {entity.name}",
+                            )
+                        )
             
             if relationships:
-                context_parts.append("### 相关事实和关系\n" + "\n".join(relationships))
+                context_parts.append(
+                    self._context_heading("Relevant facts and relationships", "相关事实和关系")
+                    + "\n"
+                    + "\n".join(relationships)
+                )
         
         # 3. 添加关联节点的详细信息
         if entity.related_nodes:
@@ -552,7 +608,11 @@ class OasisProfileGenerator:
                     related_info.append(f"- **{node_name}**{label_str}")
             
             if related_info:
-                context_parts.append("### 关联实体信息\n" + "\n".join(related_info))
+                context_parts.append(
+                    self._context_heading("Related entity information", "关联实体信息")
+                    + "\n"
+                    + "\n".join(related_info)
+                )
         
         # 4. 使用Zep混合检索获取更丰富的信息
         zep_results = self._search_zep_for_entity(entity)
@@ -561,10 +621,18 @@ class OasisProfileGenerator:
             # 去重：排除已存在的事实
             new_facts = [f for f in zep_results["facts"] if f not in existing_facts]
             if new_facts:
-                context_parts.append("### Zep检索到的事实信息\n" + "\n".join(f"- {f}" for f in new_facts[:15]))
+                context_parts.append(
+                    self._context_heading("Facts retrieved from Zep", "Zep检索到的事实信息")
+                    + "\n"
+                    + "\n".join(f"- {f}" for f in new_facts[:15])
+                )
         
         if zep_results.get("node_summaries"):
-            context_parts.append("### Zep检索到的相关节点\n" + "\n".join(f"- {s}" for s in zep_results["node_summaries"][:10]))
+            context_parts.append(
+                self._context_heading("Related nodes retrieved from Zep", "Zep检索到的相关节点")
+                + "\n"
+                + "\n".join(f"- {s}" for s in zep_results["node_summaries"][:10])
+            )
         
         return "\n\n".join(context_parts)
     
@@ -626,7 +694,10 @@ class OasisProfileGenerator:
                     if "bio" not in result or not result["bio"]:
                         result["bio"] = entity_summary[:200] if entity_summary else f"{entity_type}: {entity_name}"
                     if "persona" not in result or not result["persona"]:
-                        result["persona"] = entity_summary or f"{entity_name}是一个{entity_type}。"
+                        result["persona"] = entity_summary or self._text(
+                            f"{entity_name} is a {entity_type}.",
+                            f"{entity_name}是一个{entity_type}。",
+                        )
                     
                     return result
                     
@@ -738,11 +809,19 @@ class OasisProfileGenerator:
         persona_match = re.search(r'"persona"\s*:\s*"([^"]*)', content)  # 可能被截断
         
         bio = bio_match.group(1) if bio_match else (entity_summary[:200] if entity_summary else f"{entity_type}: {entity_name}")
-        persona = persona_match.group(1) if persona_match else (entity_summary or f"{entity_name}是一个{entity_type}。")
+        persona = persona_match.group(1) if persona_match else (
+            entity_summary
+            or self._text(f"{entity_name} is a {entity_type}.", f"{entity_name}是一个{entity_type}。")
+        )
         
         # 如果提取到了有意义的内容，标记为已修复
         if bio_match or persona_match:
-            logger.info(f"从损坏的JSON中提取了部分信息")
+            logger.info(
+                self._text(
+                    "Recovered partial profile fields from malformed JSON",
+                    "从损坏的JSON中提取了部分信息",
+                )
+            )
             return {
                 "bio": bio,
                 "persona": persona,
@@ -750,10 +829,18 @@ class OasisProfileGenerator:
             }
         
         # 7. 完全失败，返回基础结构
-        logger.warning(f"JSON修复失败，返回基础结构")
+        logger.warning(
+            self._text(
+                "Failed to repair malformed JSON; falling back to the base profile structure",
+                "JSON修复失败，返回基础结构",
+            )
+        )
         return {
             "bio": entity_summary[:200] if entity_summary else f"{entity_type}: {entity_name}",
-            "persona": entity_summary or f"{entity_name}是一个{entity_type}。"
+            "persona": entity_summary or self._text(
+                f"{entity_name} is a {entity_type}.",
+                f"{entity_name}是一个{entity_type}。",
+            )
         }
     
     def _get_system_prompt(self, is_individual: bool) -> str:

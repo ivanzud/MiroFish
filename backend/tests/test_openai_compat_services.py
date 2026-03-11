@@ -242,6 +242,82 @@ def test_oasis_profile_generator_english_console_profile_output(monkeypatch):
     assert "Interested Topics: Games, Policy" in output
 
 
+def test_oasis_profile_generator_english_zep_context_scaffolding(monkeypatch):
+    info_messages = []
+    warning_messages = []
+    debug_messages = []
+    fake_logger = SimpleNamespace(
+        info=info_messages.append,
+        warning=warning_messages.append,
+        error=lambda *_: None,
+        debug=debug_messages.append,
+    )
+    monkeypatch.setattr("app.services.oasis_profile_generator.logger", fake_logger)
+
+    edge_result = SimpleNamespace(edges=[SimpleNamespace(fact="Alice supports the launch")])
+    node_result = SimpleNamespace(
+        nodes=[
+            SimpleNamespace(name="Bob", summary="A longtime collaborator."),
+            SimpleNamespace(name="Alice", summary="Ignored self summary."),
+        ]
+    )
+
+    class FakeGraph:
+        def search(self, *, query, graph_id, limit, scope, reranker):
+            assert graph_id == "graph-1"
+            assert reranker == "rrf"
+            assert "All available information" in query
+            return edge_result if scope == "edges" else node_result
+
+    generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+    generator.locale = "en"
+    generator.graph_id = "graph-1"
+    generator.zep_client = SimpleNamespace(graph=FakeGraph())
+
+    entity = SimpleNamespace(name="Alice")
+    results = generator._search_zep_for_entity(entity)
+
+    assert results["facts"] == ["Alice supports the launch"]
+    assert "Facts:" in results["context"]
+    assert "Related entities:" in results["context"]
+    assert "- Related entity: Bob" in results["context"]
+    assert warning_messages == []
+    assert debug_messages == []
+    assert info_messages[-1].startswith("Completed Zep hybrid retrieval: Alice, fetched 1 facts and ")
+    assert info_messages[-1].endswith(" related nodes")
+
+
+def test_oasis_profile_generator_english_build_entity_context_headings():
+    generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+    generator.locale = "en"
+    generator._search_zep_for_entity = lambda entity: {
+        "facts": ["Alice appeared at the launch event"],
+        "node_summaries": ["Related entity: Bob"],
+        "context": "",
+    }
+
+    entity = SimpleNamespace(
+        name="Alice",
+        attributes={"role": "Strategist"},
+        related_edges=[
+            {"fact": "Alice advised the campaign"},
+            {"edge_name": "KNOWS", "direction": "outgoing"},
+        ],
+        related_nodes=[
+            {"name": "Bob", "labels": ["Entity", "Analyst"], "summary": "Tracks policy shifts."},
+        ],
+    )
+
+    context = generator._build_entity_context(entity)
+
+    assert "### Entity attributes" in context
+    assert "### Relevant facts and relationships" in context
+    assert "### Related entity information" in context
+    assert "### Facts retrieved from Zep" in context
+    assert "### Related nodes retrieved from Zep" in context
+    assert "Alice --[KNOWS]--> (related entity)" in context
+
+
 def test_simulation_config_generator_missing_api_key_mentions_openai_alias(monkeypatch):
     monkeypatch.setattr("app.services.simulation_config_generator.Config.LLM_API_KEY", "")
 
