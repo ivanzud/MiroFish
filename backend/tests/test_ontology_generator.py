@@ -27,6 +27,30 @@ def load_ontology_generator():
 OntologyGenerator = load_ontology_generator().OntologyGenerator
 
 
+class FakeLLM:
+    def __init__(self):
+        self.messages = None
+
+    def chat_json(self, messages, temperature, max_tokens):
+        self.messages = messages
+        return {
+            "entity_types": [
+                {"name": "Player", "description": "Game player", "attributes": [], "examples": []},
+                {"name": "Studio", "description": "Game studio", "attributes": [], "examples": []},
+                {"name": "Analyst", "description": "Market analyst", "attributes": [], "examples": []},
+                {"name": "Streamer", "description": "Content creator", "attributes": [], "examples": []},
+                {"name": "Journalist", "description": "Reporter", "attributes": [], "examples": []},
+                {"name": "Publisher", "description": "Publisher", "attributes": [], "examples": []},
+                {"name": "Community", "description": "Fan community", "attributes": [], "examples": []},
+                {"name": "Platform", "description": "Distribution platform", "attributes": [], "examples": []},
+                {"name": "Person", "description": "Fallback person", "attributes": [], "examples": []},
+                {"name": "Organization", "description": "Fallback org", "attributes": [], "examples": []},
+            ],
+            "edge_types": [],
+            "analysis_summary": "English summary",
+        }
+
+
 def test_validate_and_process_normalizes_string_and_invalid_ontology_items():
     generator = OntologyGenerator(llm_client=object())
 
@@ -81,3 +105,17 @@ def test_validate_and_process_normalizes_string_and_invalid_ontology_items():
             "attributes": [],
         },
     ]
+
+
+def test_generate_requests_english_analysis_summary_when_locale_is_en():
+    llm = FakeLLM()
+    generator = OntologyGenerator(llm_client=llm, locale="en")
+
+    result = generator.generate(
+        document_texts=["Game design notes"],
+        simulation_requirement="Predict the target audience for this game",
+    )
+
+    assert result["analysis_summary"] == "English summary"
+    assert llm.messages is not None
+    assert "Brief analysis summary of the text content (English)" in llm.messages[0]["content"]

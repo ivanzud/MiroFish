@@ -161,8 +161,9 @@ class OntologyGenerator:
     分析文本内容，生成实体和关系类型定义
     """
     
-    def __init__(self, llm_client: Optional[LLMClient] = None):
+    def __init__(self, llm_client: Optional[LLMClient] = None, locale: str = "zh"):
         self.llm_client = llm_client or LLMClient()
+        self.locale = "en" if locale == "en" else "zh"
     
     def generate(
         self,
@@ -189,7 +190,7 @@ class OntologyGenerator:
         )
         
         messages = [
-            {"role": "system", "content": ONTOLOGY_SYSTEM_PROMPT},
+            {"role": "system", "content": self._build_system_prompt()},
             {"role": "user", "content": user_message}
         ]
         
@@ -204,6 +205,14 @@ class OntologyGenerator:
         result = self._validate_and_process(result)
         
         return result
+
+    def _build_system_prompt(self) -> str:
+        if self.locale == "en":
+            return ONTOLOGY_SYSTEM_PROMPT.replace(
+                '"analysis_summary": "对文本内容的简要分析说明（中文）"',
+                '"analysis_summary": "Brief analysis summary of the text content (English)"',
+            )
+        return ONTOLOGY_SYSTEM_PROMPT
     
     # 传给 LLM 的文本最大长度（5万字）
     MAX_TEXT_LENGTH_FOR_LLM = 50000

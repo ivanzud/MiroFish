@@ -1343,6 +1343,7 @@ def generate_profiles():
     """
     try:
         data = request.get_json() or {}
+        locale = get_locale()
         
         graph_id = data.get('graph_id')
         if not graph_id:
@@ -1368,7 +1369,7 @@ def generate_profiles():
                 "error": "没有找到符合条件的实体"
             }), 400
         
-        generator = OasisProfileGenerator()
+        generator = OasisProfileGenerator(locale=locale)
         profiles = generator.generate_profiles_from_entities(
             entities=filtered.entities,
             use_llm=use_llm

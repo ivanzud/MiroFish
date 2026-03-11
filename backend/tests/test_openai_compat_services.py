@@ -84,6 +84,24 @@ def test_oasis_profile_generator_missing_api_key_mentions_openai_alias(monkeypat
         raise AssertionError("expected ValueError when no API key is configured")
 
 
+def test_oasis_profile_generator_english_prompts_switch_user_facing_language():
+    generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+    generator.locale = "en"
+
+    system_prompt = generator._get_system_prompt(is_individual=True)
+    user_prompt = generator._build_individual_persona_prompt(
+        entity_name="Alice",
+        entity_type="Player",
+        entity_summary="A strategy-game enthusiast.",
+        entity_attributes={"region": "US"},
+        context="Forum comments and profile notes.",
+    )
+
+    assert "Write all user-facing text fields in English." in system_prompt
+    assert "Use English for all user-facing fields except gender values" in user_prompt
+    assert "country name in English" in user_prompt
+
+
 def test_simulation_config_generator_missing_api_key_mentions_openai_alias(monkeypatch):
     monkeypatch.setattr("app.services.simulation_config_generator.Config.LLM_API_KEY", "")
 

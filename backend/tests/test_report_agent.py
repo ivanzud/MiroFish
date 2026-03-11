@@ -71,3 +71,23 @@ def test_plan_outline_sends_readability_constraints_in_prompt():
     assert "禁止使用与用户问题脱节的抽象比喻或夸张措辞" in system_prompt
     assert "报告标题必须让普通用户直接看懂" in user_prompt
     assert "如果模拟需求是在预测某个产品、方案、游戏、事件或人群，就在标题里明确点出该对象" in user_prompt
+
+
+def test_plan_outline_requests_english_output_when_locale_is_en():
+    llm = FakeLLM()
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    agent.plan_outline()
+
+    assert llm.messages is not None
+    user_prompt = llm.messages[1]["content"]
+
+    assert "Return the report title, summary, and section titles/descriptions in English." in user_prompt
+    assert "Keep wording concrete, readable, and directly aligned with the simulation requirement." in user_prompt

@@ -136,7 +136,8 @@ def generate_report():
                 agent = ReportAgent(
                     graph_id=graph_id,
                     simulation_id=simulation_id,
-                    simulation_requirement=simulation_requirement
+                    simulation_requirement=simulation_requirement,
+                    locale=locale,
                 )
                 
                 # 进度回调
@@ -521,7 +522,8 @@ def chat_with_report_agent():
         agent = ReportAgent(
             graph_id=graph_id,
             simulation_id=simulation_id,
-            simulation_requirement=simulation_requirement
+            simulation_requirement=simulation_requirement,
+            locale=locale,
         )
         
         result = agent.chat(message=message, chat_history=chat_history)

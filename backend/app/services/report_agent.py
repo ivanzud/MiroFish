@@ -664,12 +664,7 @@ SECTION_SYSTEM_PROMPT_TEMPLATE = """\
      > "某类人群会表示：原文内容..."
    - 这些引用是模拟预测的核心证据
 
-3. 【语言一致性 - 引用内容必须翻译为报告语言】
-   - 工具返回的内容可能包含英文或中英文混杂的表述
-   - 如果模拟需求和材料原文是中文的，报告必须全部使用中文撰写
-   - 当你引用工具返回的英文或中英混杂内容时，必须将其翻译为流畅的中文后再写入报告
-   - 翻译时保持原意不变，确保表述自然通顺
-   - 这一规则同时适用于正文和引用块（> 格式）中的内容
+{language_instruction}
 
 4. 【忠实呈现预测结果】
    - 报告内容必须反映模拟世界中的代表未来的模拟结果
@@ -864,7 +859,8 @@ CHAT_SYSTEM_PROMPT_TEMPLATE = """\
 【回答风格】
 - 简洁直接，不要长篇大论
 - 使用 > 格式引用关键内容
-- 优先给出结论，再解释原因"""
+- 优先给出结论，再解释原因
+- 最终回答必须使用 {report_language}"""
 
 CHAT_OBSERVATION_SUFFIX = "\n\n请简洁回答问题。"
 
@@ -905,6 +901,7 @@ class ReportAgent:
         graph_id: str,
         simulation_id: str,
         simulation_requirement: str,
+        locale: str = "zh",
         llm_client: Optional[LLMClient] = None,
         zep_tools: Optional[ZepToolsService] = None
     ):
@@ -921,6 +918,7 @@ class ReportAgent:
         self.graph_id = graph_id
         self.simulation_id = simulation_id
         self.simulation_requirement = simulation_requirement
+        self.locale = "en" if locale == "en" else "zh"
         
         self.llm = llm_client or LLMClient()
         self.zep_tools = zep_tools or ZepToolsService()
@@ -934,6 +932,26 @@ class ReportAgent:
         self.console_logger: Optional[ReportConsoleLogger] = None
         
         logger.info(f"ReportAgent 初始化完成: graph_id={graph_id}, simulation_id={simulation_id}")
+
+    def _report_language_name(self) -> str:
+        return "English" if self.locale == "en" else "中文"
+
+    def _report_language_prompt_block(self) -> str:
+        if self.locale == "en":
+            return """3. 【Language consistency】
+   - Write the entire report section in natural English.
+   - If tool output contains Chinese or mixed-language text, translate it into fluent English before quoting or summarizing it.
+   - Preserve the original meaning while keeping the wording clear and readable.
+   - Apply this rule to both body paragraphs and block quotes.
+"""
+
+        return """3. 【语言一致性 - 引用内容必须翻译为报告语言】
+   - 工具返回的内容可能包含英文或中英文混杂的表述
+   - 如果模拟需求和材料原文是中文的，报告必须全部使用中文撰写
+   - 当你引用工具返回的英文或中英混杂内容时，必须将其翻译为流畅的中文后再写入报告
+   - 翻译时保持原意不变，确保表述自然通顺
+   - 这一规则同时适用于正文和引用块（> 格式）中的内容
+"""
     
     def _define_tools(self) -> Dict[str, Dict[str, Any]]:
         """定义可用工具"""
@@ -1191,6 +1209,18 @@ class ReportAgent:
             total_entities=context.get('total_entities', 0),
             related_facts_json=json.dumps(context.get('related_facts', [])[:10], ensure_ascii=False, indent=2),
         )
+        if self.locale == "en":
+            user_prompt += (
+                "\n\nOutput requirements:\n"
+                "- Return the report title, summary, and section titles/descriptions in English.\n"
+                "- Keep wording concrete, readable, and directly aligned with the simulation requirement."
+            )
+        else:
+            user_prompt += (
+                "\n\n输出要求：\n"
+                "- 报告标题、摘要和章节标题/描述都必须使用中文。\n"
+                "- 表述保持具体、易懂，并直接呼应模拟需求。"
+            )
 
         try:
             response = self.llm.chat_json(
@@ -1277,6 +1307,7 @@ class ReportAgent:
             simulation_requirement=self.simulation_requirement,
             section_title=section.title,
             tools_description=self._get_tools_description(),
+            language_instruction=self._report_language_prompt_block().rstrip(),
         )
 
         # 构建用户prompt - 每个已完成章节各传入最大4000字
@@ -1827,6 +1858,7 @@ class ReportAgent:
             simulation_requirement=self.simulation_requirement,
             report_content=report_content if report_content else "（暂无报告）",
             tools_description=self._get_tools_description(),
+            report_language=self._report_language_name(),
         )
 
         # 构建消息

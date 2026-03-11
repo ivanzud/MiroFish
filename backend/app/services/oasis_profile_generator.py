@@ -196,13 +196,17 @@ class OasisProfileGenerator:
         base_url: Optional[str] = None,
         model_name: Optional[str] = None,
         zep_api_key: Optional[str] = None,
-        graph_id: Optional[str] = None
+        graph_id: Optional[str] = None,
+        locale: str = "zh",
     ):
         self.api_key = api_key or Config.LLM_API_KEY
         self.base_url = base_url or Config.LLM_BASE_URL
         self.model_name = model_name or Config.LLM_MODEL_NAME
+        self.locale = "en" if locale == "en" else "zh"
         
         if not self.api_key:
+            if self.locale == "en":
+                raise ValueError("LLM_API_KEY / OPENAI_API_KEY is not configured")
             raise ValueError("LLM_API_KEY / OPENAI_API_KEY 未配置")
         
         self.client = OpenAI(
@@ -709,6 +713,12 @@ class OasisProfileGenerator:
     
     def _get_system_prompt(self, is_individual: bool) -> str:
         """获取系统提示词"""
+        if self.locale == "en":
+            return (
+                "You are an expert at generating detailed social-media personas for public-opinion simulations. "
+                "Return valid JSON only, and do not include unescaped newline characters inside string values. "
+                "Write all user-facing text fields in English."
+            )
         base_prompt = "你是社交媒体用户画像生成专家。生成详细、真实的人设用于舆论模拟,最大程度还原已有现实情况。必须返回有效的JSON格式，所有字符串值不能包含未转义的换行符。使用中文。"
         return base_prompt
     
@@ -725,6 +735,35 @@ class OasisProfileGenerator:
         attrs_str = json.dumps(entity_attributes, ensure_ascii=False) if entity_attributes else "无"
         context_str = context[:3000] if context else "无额外上下文"
         
+        if self.locale == "en":
+            return f"""Generate a detailed social-media persona for this entity and stay as faithful as possible to the available context.
+
+Entity name: {entity_name}
+Entity type: {entity_type}
+Entity summary: {entity_summary}
+Entity attributes: {attrs_str}
+
+Context:
+{context_str}
+
+Return JSON with these fields:
+
+1. bio: social-media bio, about 200 characters
+2. persona: detailed persona description (plain text, about 2000 characters)
+3. age: integer age
+4. gender: must be "male" or "female"
+5. mbti: MBTI type such as INTJ or ENFP
+6. country: country name in English
+7. profession: profession
+8. interested_topics: array of interested topics
+
+Important:
+- Every field value must be a string, number, or array without embedded newlines
+- persona must be one continuous paragraph
+- Use English for all user-facing fields except gender values
+- Keep the content consistent with the source entity information
+"""
+
         return f"""为实体生成详细的社交媒体用户人设,最大程度还原已有现实情况。
 
 实体名称: {entity_name}
@@ -774,6 +813,35 @@ class OasisProfileGenerator:
         attrs_str = json.dumps(entity_attributes, ensure_ascii=False) if entity_attributes else "无"
         context_str = context[:3000] if context else "无额外上下文"
         
+        if self.locale == "en":
+            return f"""Generate a detailed social-media account persona for this organization or group, staying faithful to the available context.
+
+Entity name: {entity_name}
+Entity type: {entity_type}
+Entity summary: {entity_summary}
+Entity attributes: {attrs_str}
+
+Context:
+{context_str}
+
+Return JSON with these fields:
+
+1. bio: official account bio, about 200 characters
+2. persona: detailed account description (plain text, about 2000 characters)
+3. age: fixed integer 30
+4. gender: fixed string "other"
+5. mbti: MBTI type describing account style
+6. country: country name in English
+7. profession: organization function description
+8. interested_topics: array of focus areas
+
+Important:
+- Every field value must be a string, number, or array and must not be null
+- persona must be one continuous paragraph without embedded newlines
+- Use English for all user-facing fields except the fixed gender value
+- Keep the account voice aligned with the entity identity
+"""
+
         return f"""为机构/群体实体生成详细的社交媒体账号设定,最大程度还原已有现实情况。
 
 实体名称: {entity_name}

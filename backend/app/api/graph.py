@@ -242,7 +242,7 @@ def generate_ontology():
         
         # 生成本体
         logger.info("调用 LLM 生成本体定义...")
-        generator = OntologyGenerator()
+        generator = OntologyGenerator(locale=locale)
         ontology = generator.generate(
             document_texts=document_texts,
             simulation_requirement=simulation_requirement,
