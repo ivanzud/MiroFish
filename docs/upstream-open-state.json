@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T15:53:05.941364+00:00",
-  "generated_at": "2026-03-11T15:53:05.941364+00:00",
+  "captured_at": "2026-03-11T16:00:34.222444+00:00",
+  "generated_at": "2026-03-11T16:00:34.222444+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -301,7 +301,7 @@
       "local_coverage": {
         "number": 117,
         "status": "covered",
-        "summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, and report/interview parsing: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs now localize through shared helpers, and Step 4 tool-output parsers accept both Chinese and English markers for interview/search results and no-reply placeholders.",
+        "summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, report/interview parsing, and Step 5 interview fallbacks: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, Step 4 tool-output parsers accept both Chinese and English markers, and zep_tools now localizes deterministic interview-selection/question/summary fallback copy in English mode.",
         "local_refs": [
           "frontend/src/components/Step2EnvSetup.vue",
           "frontend/src/components/Step3Simulation.vue",
@@ -311,17 +311,21 @@
           "frontend/src/components/simulationLogMessages.js",
           "frontend/src/components/step5Profiles.js",
           "frontend/src/components/simulationTimeline.js",
+          "backend/app/services/zep_tools.py",
           "frontend/src/i18n/locales/en.js",
           "frontend/src/i18n/locales/zh.js",
-          "frontend/tests/simulationLogMessages.test.mjs"
+          "frontend/tests/simulationLogMessages.test.mjs",
+          "backend/tests/test_zep_tools_i18n.py"
         ],
         "validation": [
           "frontend/tests/reportParsers.test.mjs",
           "frontend/tests/simulationLogMessages.test.mjs",
           "frontend/tests/simulationTimeline.test.mjs",
           "frontend/tests/step5Profiles.test.mjs",
+          "backend/tests/test_zep_tools_i18n.py",
           "frontend: npm test",
-          "frontend: npm run build"
+          "frontend: npm run build",
+          "scripts/test_backend_lite.sh"
         ],
         "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
       },
@@ -2066,18 +2070,22 @@
       "local_coverage": {
         "number": 119,
         "status": "partial",
-        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, and bilingual Step 4 Insight/Panorama tool-result parsing, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
+        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, bilingual Step 4 Insight/Panorama parsing, and deterministic Step 5 interview helper fallbacks/prompts in English mode, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
         "local_refs": [
           "frontend/src/views/MainView.vue",
           "frontend/src/views/mainViewLogMessages.js",
           "frontend/src/components/Step4Report.vue",
           "frontend/src/components/reportParsers.js",
+          "backend/app/services/zep_tools.py",
           "frontend/src/i18n/locales/en.js",
           "frontend/src/i18n/locales/zh.js",
           "frontend/tests/mainViewLogMessages.test.mjs",
-          "frontend/tests/reportParsers.test.mjs"
+          "frontend/tests/reportParsers.test.mjs",
+          "backend/tests/test_zep_tools_i18n.py"
         ],
         "validation": [
+          "backend/tests/test_zep_tools_i18n.py",
+          "scripts/test_backend_lite.sh",
           "frontend: npm test",
           "frontend: npm run build"
         ]

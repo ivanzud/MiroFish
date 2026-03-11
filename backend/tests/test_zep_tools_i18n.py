@@ -15,6 +15,7 @@ sys.modules.setdefault("zep_cloud.client", fake_zep_client)
 
 from app.services import zep_tools as zep_tools_module
 from app.services.zep_tools import (
+    AgentInterview,
     EdgeInfo,
     InsightForgeResult,
     NodeInfo,
@@ -196,3 +197,90 @@ def test_tool_result_renderers_localize_deterministic_wrappers_in_english():
     assert "### [Current active facts] (original simulation output)" in rendered_panorama
     assert "### [Historical/expired facts] (change timeline record)" in rendered_panorama
     assert "### [Entities involved]" in rendered_panorama
+
+
+def test_select_agents_for_interview_localizes_prompts_and_fallback_reasoning_in_english():
+    app = Flask(__name__)
+    service = _make_service()
+    captured = {}
+
+    class FakeLLM:
+        def chat_json(self, messages, temperature):
+            captured["messages"] = messages
+            raise RuntimeError("planner unavailable")
+
+    service._llm_client = FakeLLM()
+    profiles = [{"username": "alice", "bio": "", "interested_topics": []}]
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        selected, indices, reasoning = service._select_agents_for_interview(
+            profiles=profiles,
+            interview_requirement="Understand the reaction",
+            simulation_requirement="",
+            max_agents=1,
+        )
+
+    assert selected == profiles
+    assert indices == [0]
+    assert reasoning == "Used the default selection strategy"
+    assert "You are an expert interview planner." in captured["messages"][0]["content"]
+    assert "Simulation background:\nNot provided" in captured["messages"][1]["content"]
+    assert '"profession": "Unknown"' in captured["messages"][1]["content"]
+
+
+def test_generate_interview_questions_localizes_prompts_and_fallbacks_in_english():
+    app = Flask(__name__)
+    service = _make_service()
+    captured = {}
+
+    class FakeLLM:
+        def chat_json(self, messages, temperature):
+            captured["messages"] = messages
+            raise RuntimeError("question generator unavailable")
+
+    service._llm_client = FakeLLM()
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        questions = service._generate_interview_questions(
+            interview_requirement="the reaction",
+            simulation_requirement="",
+            selected_agents=[{"profession": None}],
+        )
+
+    assert questions == [
+        "What is your perspective on the reaction?",
+        "How does this affect you or the group you represent?",
+        "What should be changed or improved in response?",
+    ]
+    assert "You are a professional interviewer." in captured["messages"][0]["content"]
+    assert "Simulation background: Not provided" in captured["messages"][1]["content"]
+    assert "Interviewee roles: Unknown" in captured["messages"][1]["content"]
+
+
+def test_generate_interview_summary_localizes_empty_and_fallback_copy_in_english():
+    app = Flask(__name__)
+    service = _make_service()
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        assert service._generate_interview_summary([], "Understand the reaction") == "No interviews were completed"
+
+    class FakeLLM:
+        def chat(self, messages, temperature, max_tokens):
+            raise RuntimeError("summary generator unavailable")
+
+    service._llm_client = FakeLLM()
+    interviews = [
+        AgentInterview(
+            agent_name="Alice",
+            agent_role="Analyst",
+            agent_bio="Tracks sentiment shifts.",
+            question="What changed?",
+            response="People became more cautious after the update.",
+            locale="en",
+        )
+    ]
+
+    with app.test_request_context(headers={"X-Locale": "en"}):
+        summary = service._generate_interview_summary(interviews, "Understand the reaction")
+
+    assert summary == "Interviewed 1 participants, including: Alice"

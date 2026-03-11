@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T15:53:05.941364+00:00`
+- Captured: `2026-03-11T16:00:34.222444+00:00`
 - Issues: `38` total (`open=38`, `closed=0`)
 - Pull requests: `36` total (`open=36`, `closed=0`)
 - Mirrored in `origin`: `36` of `36` PR refs
@@ -34,7 +34,7 @@
   - 前后端启动都显示成功了，0.0.0.0:5001无法访问，提示404。前端0.0.0.0:3000虽然可以访问，但是一到这个界面就会报错 <img width="2550" height="1233" alt="Image" src="https://github.com/user-attachments/assets/032cf0ac-78ae-406d-831d-da5b9a28d5a0" />，看了项目也没有报错日志，请问这是什么问题呢
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @Axing93! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这是一个常见的前后端连接配置问题。 **后端 5001 返回 404 是正常的** — [根路径 `/` 未定义端点](https://github.com/666ghj/MiroFish/issues/68)，实际 API 通过具体…
 - #117 [open, mirror=#8] ### Feature Request: English Language Support (enhancement)
-  - local coverage [covered]: The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, and report/interview parsing: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs now localize through shared helpers, and Step 4 tool-output parsers accept both Chinese and English markers for interview/search results and no-reply placeholders.
+  - local coverage [covered]: The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, report/interview parsing, and Step 5 interview fallbacks: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, Step 4 tool-output parsers accept both Chinese and English markers, and zep_tools now localizes deterministic interview-selection/question/summary fallback copy in English mode.
   - Hi, First of all, thank you for creating and open-sourcing this amazing project. MiroFish is a very interesting and powerful multi-agent prediction engine. Currently, a large portion of the documentation, UI text, and comments appear to be primarily in Chinese. This makes it difficult for international developers to fully understand and use the project. ### Request It would be very helpful if the…
 - #110 [open, mirror=#9] 阿里云百炼 API 调用异常：付费计划（Coding Plan）非千文模型及大模型API中转站的API均失效，仅免费额度模型或coding plan的千文模型可用 (LLM API)
   - local coverage [covered]: The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.
