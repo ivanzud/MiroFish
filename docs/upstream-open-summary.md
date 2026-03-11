@@ -2,10 +2,10 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T18:03:31.405734+00:00`
+- Captured: `2026-03-11T18:12:09.379981+00:00`
 - Issues: `40` total (`open=40`, `closed=0`)
-- Pull requests: `38` total (`open=38`, `closed=0`)
-- Mirrored in `origin`: `38` of `38` PR refs
+- Pull requests: `39` total (`open=39`, `closed=0`)
+- Mirrored in `origin`: `39` of `39` PR refs
 - Mirrored in `ivanzud/MiroFish`: `40` of `40` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
@@ -46,6 +46,9 @@
 
 ## Recently Updated Pull Requests
 
+- #152 [open, mergeable=clean, mirrored=yes] fix(backend): enforce Zep API naming conventions for ontology types (`support-pascal-and-snake-case` -> `main`)
+  - local coverage [landed]: Landed locally as a repo-native graph-builder fix: ontology entity type names now normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.
+  - ## Changes - Add `to_pascal_case()` to enforce PascalCase on entity type names (e.g. `university_student` → `UniversityStudent`) - Add `to_screaming_snake_case()` to enforce SCREAMING_SNAKE_CASE on edge/relationship type names (e.g. `WorksFor` → `WORKS_FOR`) - Enforce PascalCase on edge `source_targets` source/target references to match their corresponding entity type names - Fix Zep API 400 erro…
 - #151 [open, mergeable=clean, mirrored=yes] Fix silent data loss when platform defaults to reddit for Twitter-only simulations (`fix/platform-default-reddit-silent-failure` -> `main`)
   - local coverage [landed]: Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.
   - ## Summary - API retrieval endpoints (`/profiles`, `/profiles/realtime`, `/posts`, `/comments`) hardcoded `'reddit'` as the default platform - When a Twitter-only simulation was run (`enable_reddit=false`), these APIs silently returned empty results because they looked for `reddit_simulation.db` / `reddit_profiles.json` which did not exist - Frontend also hardcoded `'reddit'` in Vue components an…
@@ -73,6 +76,3 @@
   - ## Description Adds automatic retry mechanism to handle transient network errors when connecting to Zep Cloud API. This prevents graph build failures caused by temporary connection issues such as "Connection reset by peer" (errno 54). The retry logic uses exponential backoff (2s, 4s, 6s) and provides detailed progress feedback to users. ## Changes - Added retry logic (max 3 attempts) to `create_g…
 - #130 [open, mergeable=clean, mirrored=yes] docs: 添加贡献指南文档 (`docs/add-pr-guide` -> `main`)
   - local coverage [landed]: Landed locally: `CONTRIBUTING.md`.
-- #129 [open, mergeable=clean, mirrored=yes] fix(report_agent): handle API token overflow crash with context lengt… (`fix/fix-priority-issues-mNNjT` -> `main`)
-  - local coverage [landed]: Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning.
-  - Add error handling in LLMClient for context_length_exceeded errors with automatic message trimming and retry (fixes https://github.com/666ghj/MiroFish/issues/52) Add configurable LLM_MAX_TOKENS env variable (default 4096) so users with different models can set appropriate limits Add message history pruning in report agent ReACT loop to prevent unbounded context growth that causes token overflow I…

@@ -392,6 +392,30 @@ class GraphBuilderService:
                 return f"entity_{attr_name}"
             return attr_name
 
+        def split_identifier_parts(raw_name: Any) -> List[str]:
+            text = str(raw_name or "").strip()
+            if not text:
+                return []
+            pieces = re.findall(r"[A-Z]+(?=[A-Z][a-z]|\d|$)|[A-Z]?[a-z]+|\d+", text.replace("-", "_"))
+            if not pieces:
+                pieces = [part for part in re.split(r"[^A-Za-z0-9]+", text) if part]
+            return [piece for piece in pieces if piece]
+
+        def normalize_entity_type_name(raw_name: Any) -> str:
+            parts = split_identifier_parts(raw_name)
+            if not parts:
+                return "Entity"
+            return "".join(part[:1].upper() + part[1:].lower() for part in parts)
+
+        def normalize_edge_type_name(raw_name: Any) -> str:
+            parts = split_identifier_parts(raw_name)
+            if not parts:
+                return "RELATED_TO"
+            return "_".join(part.upper() for part in parts)
+
+        def edge_class_name(raw_name: str) -> str:
+            return "".join(part[:1].upper() + part[1:].lower() for part in raw_name.split("_") if part) or "RelatedTo"
+
         def normalized_attributes(owner_name: str, attributes: Any) -> List[Dict[str, str]]:
             """Accept string-style attributes from loose LLM output and skip unusable entries."""
             normalized: List[Dict[str, str]] = []
@@ -416,8 +440,11 @@ class GraphBuilderService:
         
         # 动态创建实体类型
         entity_types = {}
+        entity_name_map: Dict[str, str] = {}
         for entity_def in ontology.get("entity_types", []):
-            name = entity_def["name"]
+            raw_name = entity_def["name"]
+            name = normalize_entity_type_name(raw_name)
+            entity_name_map[str(raw_name)] = name
             description = entity_def.get("description", f"A {name} entity.")
             
             # 创建属性字典和类型注解（Pydantic v2 需要）
@@ -441,7 +468,8 @@ class GraphBuilderService:
         # 动态创建边类型
         edge_definitions = {}
         for edge_def in ontology.get("edge_types", []):
-            name = edge_def["name"]
+            raw_name = edge_def["name"]
+            name = normalize_edge_type_name(raw_name)
             description = edge_def.get("description", f"A {name} relationship.")
             
             # 创建属性字典和类型注解
@@ -458,17 +486,21 @@ class GraphBuilderService:
             attrs["__annotations__"] = annotations
             
             # 动态创建类
-            class_name = ''.join(word.capitalize() for word in name.split('_'))
+            class_name = edge_class_name(name)
             edge_class = type(class_name, (EdgeModel,), attrs)
             edge_class.__doc__ = description
             
             # 构建source_targets
             source_targets = []
             for st in edge_def.get("source_targets", []):
+                source_name = normalize_entity_type_name(st.get("source", "Entity"))
+                target_name = normalize_entity_type_name(st.get("target", "Entity"))
+                source_name = entity_name_map.get(str(st.get("source", "")), source_name)
+                target_name = entity_name_map.get(str(st.get("target", "")), target_name)
                 source_targets.append(
                     EntityEdgeSourceTarget(
-                        source=st.get("source", "Entity"),
-                        target=st.get("target", "Entity")
+                        source=source_name,
+                        target=target_name,
                     )
                 )
             

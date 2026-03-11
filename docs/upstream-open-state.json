@@ -1,18 +1,18 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T18:03:31.405734+00:00",
-  "generated_at": "2026-03-11T18:03:31.405734+00:00",
+  "captured_at": "2026-03-11T18:12:09.379981+00:00",
+  "generated_at": "2026-03-11T18:12:09.379981+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
       "open": 40
     },
     "pull_requests": {
-      "open": 38
+      "open": 39
     },
     "mirrored_pull_requests": {
-      "mirrored": 38,
+      "mirrored": 39,
       "not_mirrored": 0
     },
     "mirrored_issues": {
@@ -1740,6 +1740,51 @@
     }
   ],
   "pull_requests": [
+    {
+      "number": 152,
+      "title": "fix(backend): enforce Zep API naming conventions for ontology types",
+      "url": "https://github.com/666ghj/MiroFish/pull/152",
+      "state": "open",
+      "created_at": "2026-03-11T18:09:38Z",
+      "updated_at": "2026-03-11T18:10:51Z",
+      "closed_at": null,
+      "merged_at": null,
+      "head": "support-pascal-and-snake-case",
+      "head_sha": "928b668183146c2d24208b20312f62e1d2a1c4d5",
+      "head_repo": "sx-tane/MiroFish",
+      "head_clone_url": "https://github.com/sx-tane/MiroFish.git",
+      "base": "main",
+      "base_repo": "666ghj/MiroFish",
+      "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:S"
+      ],
+      "author": "sx-tane",
+      "body_excerpt": "## Changes - Add `to_pascal_case()` to enforce PascalCase on entity type names (e.g. `university_student` → `UniversityStudent`) - Add `to_screaming_snake_case()` to enforce SCREAMING_SNAKE_CASE on edge/relationship type names (e.g. `WorksFor` → `WORKS_FOR`) - Enforce PascalCase on edge `source_targets` source/target references to match their corresponding entity type names - Fix Zep API 400 erro…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-152",
+      "local_coverage": {
+        "number": 152,
+        "status": "landed",
+        "summary": "Landed locally as a repo-native graph-builder fix: ontology entity type names now normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
+        "local_refs": [
+          "backend/app/services/graph_builder.py",
+          "backend/tests/test_graph_builder.py",
+          "origin/mirror/upstream-pr-152",
+          ".beads/issues.jsonl"
+        ],
+        "validation": [
+          "cd backend && uv run pytest -q tests/test_graph_builder.py",
+          "python3 -m compileall backend/app/services/graph_builder.py"
+        ]
+      },
+      "local_status": "landed",
+      "local_summary": "Landed locally as a repo-native graph-builder fix: ontology entity type names now normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema."
+    },
     {
       "number": 151,
       "title": "Fix silent data loss when platform defaults to reddit for Twitter-only simulations",

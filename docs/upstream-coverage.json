@@ -849,6 +849,21 @@
       ]
     },
     {
+      "number": 152,
+      "status": "landed",
+      "summary": "Landed locally as a repo-native graph-builder fix: ontology entity type names now normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
+      "local_refs": [
+        "backend/app/services/graph_builder.py",
+        "backend/tests/test_graph_builder.py",
+        "origin/mirror/upstream-pr-152",
+        ".beads/issues.jsonl"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_graph_builder.py",
+        "python3 -m compileall backend/app/services/graph_builder.py"
+      ]
+    },
+    {
       "number": 151,
       "status": "landed",
       "summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.",

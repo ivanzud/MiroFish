@@ -239,12 +239,66 @@ def test_set_ontology_accepts_string_attribute_definitions(graph_builder_module)
     assert entities["Person"].__annotations__["full_name"] is not None
     assert entities["Person"].__annotations__["role"] is not None
 
-    edge_model, source_targets = edges["knows"]
+    edge_model, source_targets = edges["KNOWS"]
+    assert edge_model.__name__ == "Knows"
     assert edge_model.__annotations__["since"] is not None
     assert edge_model.__annotations__["context"] is not None
     assert len(source_targets) == 1
     assert source_targets[0].source == "Person"
     assert source_targets[0].target == "Person"
+
+
+def test_set_ontology_normalizes_entity_and_edge_type_names(graph_builder_module):
+    service = build_service(graph_builder_module)
+    captured = {}
+
+    def fake_set_ontology(**kwargs):
+        captured.update(kwargs)
+
+    service.client.graph.set_ontology = fake_set_ontology
+
+    service.set_ontology(
+        "graph-1",
+        {
+            "entity_types": [
+                {
+                    "name": "university_student",
+                    "description": "Student entity",
+                    "attributes": [{"name": "major", "description": "Major"}],
+                },
+                {
+                    "name": "ResearchLab",
+                    "description": "Lab entity",
+                    "attributes": [{"name": "focus_area", "description": "Focus"}],
+                },
+            ],
+            "edge_types": [
+                {
+                    "name": "WorksFor",
+                    "description": "Employment edge",
+                    "attributes": [{"name": "start_date", "description": "Start"}],
+                    "source_targets": [
+                        {"source": "university_student", "target": "ResearchLab"}
+                    ],
+                }
+            ],
+        },
+    )
+
+    entities = captured["entities"]
+    edges = captured["edges"]
+
+    assert "UniversityStudent" in entities
+    assert "ResearchLab" in entities
+    assert entities["UniversityStudent"].__annotations__["major"] is not None
+    assert entities["ResearchLab"].__annotations__["focus_area"] is not None
+
+    edge_model, source_targets = edges["WORKS_FOR"]
+    assert edge_model.__name__ == "WorksFor"
+    assert edge_model.__annotations__["start_date"] is not None
+    assert len(source_targets) == 1
+    assert source_targets[0].source == "UniversityStudent"
+    assert source_targets[0].target == "ResearchLab"
 
 
 def test_format_user_facing_error_maps_zep_auth_failures(graph_builder_module):
