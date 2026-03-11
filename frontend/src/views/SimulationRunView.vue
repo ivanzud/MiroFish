@@ -21,6 +21,7 @@
       </div>
 
       <div class="header-right">
+        <LanguageSelector light />
         <div class="workflow-step">
           <span class="step-num">Step 3/5</span>
           <span class="step-name">{{ t('mainView.stepSim') }}</span>
@@ -73,6 +74,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import GraphPanel from '../components/GraphPanel.vue'
 import Step3Simulation from '../components/Step3Simulation.vue'
+import LanguageSelector from '../components/LanguageSelector.vue'
 import { getProject, getGraphData } from '../api/graph'
 import { getSimulation, getSimulationConfig, stopSimulation, closeSimulationEnv, getEnvStatus } from '../api/simulation'
 
