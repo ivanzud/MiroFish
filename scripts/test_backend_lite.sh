@@ -10,6 +10,8 @@ fi
 
 # Keep the lightweight path limited to the dependencies needed by the fast unit tests.
 "${VENV_DIR}/bin/pip" install -q \
+  "flask>=3.0.0" \
+  "flask-cors>=5.0.0" \
   "pytest>=8.0.0" \
   "openai>=1.0.0" \
   "python-dotenv>=1.0.0"
@@ -18,5 +20,6 @@ fi
   "${ROOT_DIR}/backend/tests/test_config.py" \
   "${ROOT_DIR}/backend/tests/test_llm_client.py" \
   "${ROOT_DIR}/backend/tests/test_graph_builder.py" \
+  "${ROOT_DIR}/backend/tests/test_simulation_runner_actions.py" \
   "${ROOT_DIR}/backend/tests/test_openai_compat_services.py" \
   -q

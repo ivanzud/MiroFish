@@ -19,6 +19,9 @@ from ..models.project import ProjectManager
 
 logger = get_logger('mirofish.api.simulation')
 
+RUN_STATUS_DETAIL_DEFAULT_LIMIT = 200
+RUN_STATUS_DETAIL_MAX_LIMIT = 1000
+
 
 # Interview prompt 优化前缀
 # 添加此前缀可以避免Agent调用工具，直接用文本回复
@@ -1669,12 +1672,14 @@ def get_run_status(simulation_id: str):
 @simulation_bp.route('/<simulation_id>/run-status/detail', methods=['GET'])
 def get_run_status_detail(simulation_id: str):
     """
-    获取模拟运行详细状态（包含所有动作）
+    获取模拟运行详细状态（默认返回有限窗口，支持增量动作拉取）
     
     用于前端展示实时动态
     
     Query参数：
         platform: 过滤平台（twitter/reddit，可选）
+        since: 仅返回时间戳大于等于该值的动作（可选，建议前端轮询使用）
+        limit: 初始加载时返回的最大动作数（默认200，最大1000）
     
     返回：
         {
@@ -1706,6 +1711,13 @@ def get_run_status_detail(simulation_id: str):
     try:
         run_state = SimulationRunner.get_run_state(simulation_id)
         platform_filter = request.args.get('platform')
+        since_timestamp = (request.args.get('since') or '').strip() or None
+        limit_arg = request.args.get('limit')
+        try:
+            requested_limit = int(limit_arg) if limit_arg else RUN_STATUS_DETAIL_DEFAULT_LIMIT
+        except ValueError:
+            requested_limit = RUN_STATUS_DETAIL_DEFAULT_LIMIT
+        requested_limit = max(1, min(requested_limit, RUN_STATUS_DETAIL_MAX_LIMIT))
         
         if not run_state:
             return jsonify({
@@ -1715,43 +1727,43 @@ def get_run_status_detail(simulation_id: str):
                     "runner_status": "idle",
                     "all_actions": [],
                     "twitter_actions": [],
-                    "reddit_actions": []
+                    "reddit_actions": [],
+                    "requested_since": since_timestamp,
+                    "returned_actions_count": 0,
+                    "detail_mode": "incremental" if since_timestamp else "recent_window",
                 }
             })
         
-        # 获取完整的动作列表
+        # 轮询默认走增量/窗口模式，避免每次都把全量历史重新序列化到响应里。
         all_actions = SimulationRunner.get_all_actions(
             simulation_id=simulation_id,
-            platform=platform_filter
+            platform=platform_filter,
+            since_timestamp=since_timestamp,
+            limit=None if since_timestamp else requested_limit,
         )
-        
-        # 分平台获取动作
-        twitter_actions = SimulationRunner.get_all_actions(
-            simulation_id=simulation_id,
-            platform="twitter"
-        ) if not platform_filter or platform_filter == "twitter" else []
-        
-        reddit_actions = SimulationRunner.get_all_actions(
-            simulation_id=simulation_id,
-            platform="reddit"
-        ) if not platform_filter or platform_filter == "reddit" else []
+        ordered_actions = list(reversed(all_actions))
+        twitter_actions = [action for action in ordered_actions if action.platform == "twitter"]
+        reddit_actions = [action for action in ordered_actions if action.platform == "reddit"]
         
         # 获取当前轮次的动作（recent_actions 只展示最新一轮）
         current_round = run_state.current_round
         recent_actions = SimulationRunner.get_all_actions(
             simulation_id=simulation_id,
             platform=platform_filter,
-            round_num=current_round
+            round_num=current_round,
         ) if current_round > 0 else []
         
         # 获取基础状态信息
         result = run_state.to_dict()
-        result["all_actions"] = [a.to_dict() for a in all_actions]
+        result["all_actions"] = [a.to_dict() for a in ordered_actions]
         result["twitter_actions"] = [a.to_dict() for a in twitter_actions]
         result["reddit_actions"] = [a.to_dict() for a in reddit_actions]
         result["rounds_count"] = len(run_state.rounds)
         # recent_actions 只展示当前最新一轮两个平台的内容
         result["recent_actions"] = [a.to_dict() for a in recent_actions]
+        result["requested_since"] = since_timestamp
+        result["returned_actions_count"] = len(ordered_actions)
+        result["detail_mode"] = "incremental" if since_timestamp else "recent_window"
         
         return jsonify({
             "success": True,

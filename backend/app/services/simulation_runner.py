@@ -12,6 +12,7 @@ import threading
 import subprocess
 import signal
 import atexit
+from collections import deque
 from typing import Dict, Any, List, Optional, Union
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -823,7 +824,9 @@ class SimulationRunner:
         default_platform: Optional[str] = None,
         platform_filter: Optional[str] = None,
         agent_id: Optional[int] = None,
-        round_num: Optional[int] = None
+        round_num: Optional[int] = None,
+        since_timestamp: Optional[str] = None,
+        limit: Optional[int] = None,
     ) -> List[AgentAction]:
         """
         从单个动作文件中读取动作
@@ -838,7 +841,10 @@ class SimulationRunner:
         if not os.path.exists(file_path):
             return []
         
-        actions = []
+        if limit is not None and limit > 0:
+            actions: Union[List[AgentAction], deque[AgentAction]] = deque(maxlen=limit)
+        else:
+            actions = []
         
         with open(file_path, 'r', encoding='utf-8') as f:
             for line in f:
@@ -867,10 +873,13 @@ class SimulationRunner:
                         continue
                     if round_num is not None and data.get("round") != round_num:
                         continue
+                    timestamp = data.get("timestamp", "")
+                    if since_timestamp and timestamp < since_timestamp:
+                        continue
                     
                     actions.append(AgentAction(
                         round_num=data.get("round", 0),
-                        timestamp=data.get("timestamp", ""),
+                        timestamp=timestamp,
                         platform=record_platform,
                         agent_id=data.get("agent_id", 0),
                         agent_name=data.get("agent_name", ""),
@@ -883,7 +892,7 @@ class SimulationRunner:
                 except json.JSONDecodeError:
                     continue
         
-        return actions
+        return list(actions)
     
     @classmethod
     def get_all_actions(
@@ -891,7 +900,9 @@ class SimulationRunner:
         simulation_id: str,
         platform: Optional[str] = None,
         agent_id: Optional[int] = None,
-        round_num: Optional[int] = None
+        round_num: Optional[int] = None,
+        since_timestamp: Optional[str] = None,
+        limit: Optional[int] = None,
     ) -> List[AgentAction]:
         """
         获取所有平台的完整动作历史（无分页限制）
@@ -916,7 +927,9 @@ class SimulationRunner:
                 default_platform="twitter",  # 自动填充 platform 字段
                 platform_filter=platform,
                 agent_id=agent_id, 
-                round_num=round_num
+                round_num=round_num,
+                since_timestamp=since_timestamp,
+                limit=limit,
             ))
         
         # 读取 Reddit 动作文件（根据文件路径自动设置 platform 为 reddit）
@@ -927,7 +940,9 @@ class SimulationRunner:
                 default_platform="reddit",  # 自动填充 platform 字段
                 platform_filter=platform,
                 agent_id=agent_id,
-                round_num=round_num
+                round_num=round_num,
+                since_timestamp=since_timestamp,
+                limit=limit,
             ))
         
         # 如果分平台文件不存在，尝试读取旧的单一文件格式
@@ -938,11 +953,16 @@ class SimulationRunner:
                 default_platform=None,  # 旧格式文件中应该有 platform 字段
                 platform_filter=platform,
                 agent_id=agent_id,
-                round_num=round_num
+                round_num=round_num,
+                since_timestamp=since_timestamp,
+                limit=limit,
             )
         
         # 按时间戳排序（新的在前）
         actions.sort(key=lambda x: x.timestamp, reverse=True)
+
+        if limit is not None and limit > 0:
+            actions = actions[:limit]
         
         return actions
     
@@ -1760,4 +1780,3 @@ class SimulationRunner:
             results = results[:limit]
         
         return results
-

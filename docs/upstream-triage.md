@@ -48,6 +48,7 @@ Last refreshed: `2026-03-11`
 - `#93` Hardcoded frontend API base URL is now fully addressed locally: `Process.vue` uses the shared frontend API resolver instead of embedding a separate `http://localhost:5001` fallback in network-error messages.
 - Upstream issue `#133` is now addressed locally: when the frontend is served on the documented default port `3000` without an explicit `VITE_API_BASE_URL`, it now auto-targets backend port `5001` on the same host instead of calling the frontend origin and failing in dual-port Docker/local deployments. The READMEs now also point users to `http://localhost:5001/health` instead of expecting the backend root to serve a page.
 - Upstream issue `#64` now has a clearer server-deployment failure path locally: before ontology generation or graph building starts, the frontend performs a backend config preflight and surfaces the exact missing `LLM_*` / `OPENAI_*` / `ZEP_API_KEY` validation errors instead of collapsing them into a generic upload/build 500.
+- Upstream issue `#42` now has an incremental Step 3 polling path locally: the detailed run-status API returns a bounded recent window on first load and then only actions at or after the newest seen timestamp, so the frontend no longer re-downloads the entire simulation timeline every 3 seconds while a run grows.
 - `#101` Robust JSON helper utilities are now mirrored into the fork for visibility, but the upstream branch predates substantial local/frontend/backend hardening on this branch; a blind cherry-pick would effectively revert large amounts of newer work, and the useful intent is already covered locally by broader JSON payload extraction and compatibility fixes.
 
 ## Deferred for later review
@@ -86,6 +87,7 @@ Last refreshed: `2026-03-11`
 - `cd frontend && npm test -- --runInBand` and `cd frontend && npm run build` both pass after localizing the shared graph panel and Step 5 deep-interaction chrome.
 - `cd frontend && npm test` and `cd frontend && npm run build` both pass after localizing the Step 2/3/5 workflow wrapper views and their runtime log/status copy.
 - `npm run test:backend:lite`, `cd frontend && npm test`, and `cd frontend && npm run build` all pass after adding the backend config-status preflight endpoint plus frontend API-error preservation for the remaining issue `#64` server-deployment diagnostics path.
+- `npm run test:backend:lite`, `cd frontend && npm test`, and `cd frontend && npm run build` all pass after narrowing Step 3 simulation polling to a bounded initial window plus incremental action fetches for the remaining issue `#42` memory-growth path.
 - `cd backend && uv run pytest -q` is currently blocked in this environment because dependency resolution reaches `tiktoken`, which attempts a source build and fails without a Rust compiler.
 
 ## Snapshot artifacts

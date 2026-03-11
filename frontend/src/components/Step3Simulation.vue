@@ -323,6 +323,7 @@ const startError = ref(null)
 const runStatus = ref({})
 const allActions = ref([]) // 所有动作（增量累积）
 const actionIds = ref(new Set()) // 用于去重的动作ID集合
+const latestActionTimestamp = ref('')
 const scrollContainer = ref(null)
 
 // Computed
@@ -370,6 +371,7 @@ const resetAllState = () => {
   runStatus.value = {}
   allActions.value = []
   actionIds.value = new Set()
+  latestActionTimestamp.value = ''
   prevTwitterRound.value = 0
   prevRedditRound.value = 0
   startError.value = null
@@ -568,14 +570,15 @@ const fetchRunStatusDetail = async () => {
   if (!props.simulationId) return
   
   try {
-    const res = await getRunStatusDetail(props.simulationId)
+    const params = latestActionTimestamp.value
+      ? { since: latestActionTimestamp.value }
+      : { limit: 200 }
+    const res = await getRunStatusDetail(props.simulationId, params)
     
     if (res.success && res.data) {
-      // 使用 all_actions 获取完整的动作列表
       const serverActions = res.data.all_actions || []
       
       // 增量添加新动作（去重）
-      let newActionsAdded = 0
       serverActions.forEach(action => {
         // 生成唯一ID
         const actionId = action.id || `${action.timestamp}-${action.platform}-${action.agent_id}-${action.action_type}`
@@ -586,7 +589,10 @@ const fetchRunStatusDetail = async () => {
             ...action,
             _uniqueId: actionId
           })
-          newActionsAdded++
+        }
+
+        if (action.timestamp && action.timestamp > latestActionTimestamp.value) {
+          latestActionTimestamp.value = action.timestamp
         }
       })
       
