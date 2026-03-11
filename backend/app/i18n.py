@@ -268,6 +268,94 @@ TRANSLATIONS = {
         "zh": "模拟不存在: {simulation_id}",
         "en": "Simulation not found: {simulation_id}",
     },
+    "simulation.project_graph_required": {
+        "zh": "项目尚未构建图谱，请先调用 /api/graph/build",
+        "en": "The project graph has not been built yet. Call /api/graph/build first.",
+    },
+    "simulation.project_requirement_required": {
+        "zh": "项目缺少模拟需求描述 (simulation_requirement)",
+        "en": "The project is missing simulation_requirement",
+    },
+    "simulation.prepare_dir_missing": {
+        "zh": "模拟目录不存在",
+        "en": "The simulation directory does not exist",
+    },
+    "simulation.prepare_missing_files": {
+        "zh": "缺少必要文件",
+        "en": "Missing required files",
+    },
+    "simulation.prepare_status_not_ready": {
+        "zh": "状态不在已准备列表中或config_generated为false: status={status}, config_generated={config_generated}",
+        "en": "The simulation is not in a prepared state or config_generated is false: status={status}, config_generated={config_generated}",
+    },
+    "simulation.prepare_state_read_failed": {
+        "zh": "读取状态文件失败: {details}",
+        "en": "Failed to read the simulation state file: {details}",
+    },
+    "simulation.prepare_already_done": {
+        "zh": "已有完成的准备工作，无需重复生成",
+        "en": "Preparation already exists and does not need to run again",
+    },
+    "simulation.prepare_started": {
+        "zh": "准备任务已启动，请通过 /api/simulation/prepare/status 查询进度",
+        "en": "Preparation has started. Query /api/simulation/prepare/status for progress.",
+    },
+    "simulation.prepare_exists_short": {
+        "zh": "已有完成的准备工作",
+        "en": "Preparation already exists",
+    },
+    "simulation.prepare_not_started": {
+        "zh": "尚未开始准备，请调用 /api/simulation/prepare 开始",
+        "en": "Preparation has not started yet. Call /api/simulation/prepare first.",
+    },
+    "simulation.prepare_task_completed_existing": {
+        "zh": "任务已完成（准备工作已存在）",
+        "en": "The task is already complete because preparation already exists",
+    },
+    "simulation.graph_id_required": {
+        "zh": "请提供 graph_id",
+        "en": "Please provide graph_id",
+    },
+    "simulation.no_matching_entities": {
+        "zh": "没有找到符合条件的实体",
+        "en": "No matching entities were found",
+    },
+    "simulation.interviews_required": {
+        "zh": "请提供 interviews（采访列表）",
+        "en": "Please provide interviews",
+    },
+    "simulation.interview_item_agent_required": {
+        "zh": "采访列表第{index}项缺少 agent_id",
+        "en": "Interview item {index} is missing agent_id",
+    },
+    "simulation.interview_item_prompt_required": {
+        "zh": "采访列表第{index}项缺少 prompt",
+        "en": "Interview item {index} is missing prompt",
+    },
+    "simulation.interview_item_platform_invalid": {
+        "zh": "采访列表第{index}项的platform只能是 'twitter' 或 'reddit'",
+        "en": "Interview item {index} platform must be 'twitter' or 'reddit'",
+    },
+    "simulation.env_running": {
+        "zh": "环境正在运行，可以接收Interview命令",
+        "en": "The environment is running and can accept interview commands",
+    },
+    "simulation.env_closed": {
+        "zh": "环境未运行或已关闭",
+        "en": "The environment is not running or has already closed",
+    },
+    "simulation.env_already_closed": {
+        "zh": "环境已经关闭",
+        "en": "The environment is already closed",
+    },
+    "simulation.env_close_sent": {
+        "zh": "环境关闭命令已发送",
+        "en": "The environment close command was sent",
+    },
+    "simulation.env_close_timeout": {
+        "zh": "环境关闭命令已发送（等待响应超时，环境可能正在关闭）",
+        "en": "The environment close command was sent, but waiting for the response timed out and the environment may already be shutting down",
+    },
     "simulation.running_force_required": {
         "zh": "模拟正在运行中，请先调用 /stop 接口停止，或使用 force=true 强制重新开始",
         "en": "The simulation is already running. Stop it via /stop first, or use force=true to restart it.",

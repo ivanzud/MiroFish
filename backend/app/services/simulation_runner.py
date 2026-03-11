@@ -1661,7 +1661,8 @@ class SimulationRunner:
     def close_simulation_env(
         cls,
         simulation_id: str,
-        timeout: float = 30.0
+        timeout: float = 30.0,
+        locale: str | None = None,
     ) -> Dict[str, Any]:
         """
         关闭模拟环境（而不是停止模拟进程）
@@ -1677,14 +1678,14 @@ class SimulationRunner:
         """
         sim_dir = os.path.join(cls.RUN_STATE_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            raise ValueError(f"模拟不存在: {simulation_id}")
+            raise ValueError(tr("simulation.not_found", locale, simulation_id=simulation_id))
         
         ipc_client = SimulationIPCClient(sim_dir)
         
         if not ipc_client.check_env_alive():
             return {
                 "success": True,
-                "message": "环境已经关闭"
+                "message": tr("simulation.env_already_closed", locale)
             }
         
         logger.info(f"发送关闭环境命令: simulation_id={simulation_id}")
@@ -1694,7 +1695,7 @@ class SimulationRunner:
             
             return {
                 "success": response.status.value == "completed",
-                "message": "环境关闭命令已发送",
+                "message": tr("simulation.env_close_sent", locale),
                 "result": response.result,
                 "timestamp": response.timestamp
             }
@@ -1702,7 +1703,7 @@ class SimulationRunner:
             # 超时可能是因为环境正在关闭
             return {
                 "success": True,
-                "message": "环境关闭命令已发送（等待响应超时，环境可能正在关闭）"
+                "message": tr("simulation.env_close_timeout", locale)
             }
     
     @classmethod
