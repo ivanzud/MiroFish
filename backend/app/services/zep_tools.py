@@ -658,9 +658,14 @@ class ZepToolsService:
                         "labels": getattr(node, 'labels', []),
                         "summary": getattr(node, 'summary', ''),
                     })
-                    # 节点摘要也算作事实
-                    if hasattr(node, 'summary') and node.summary:
-                        facts.append(f"[{node.name}]: {node.summary}")
+            nodes, edges, node_facts = self._deduplicate_search_payload(
+                nodes,
+                edges,
+                locale,
+                "search results",
+            )
+            facts.extend(node_facts)
+            facts = self._unique_search_facts(facts)
             
             self._log(
                 "info",
@@ -719,7 +724,8 @@ class ZepToolsService:
         
         facts = []
         edges_result = []
-        nodes_result = []
+        nodes_result: List[NodeInfo] = []
+        node_dicts: List[Dict[str, Any]] = []
         
         # 提取查询关键词（简单分词）
         query_lower = query.lower()
@@ -774,16 +780,18 @@ class ZepToolsService:
                         scored_nodes.append((score, node))
                 
                 scored_nodes.sort(key=lambda x: x[0], reverse=True)
-                
+
                 for score, node in scored_nodes[:limit]:
-                    nodes_result.append({
-                        "uuid": node.uuid,
-                        "name": node.name,
-                        "labels": node.labels,
-                        "summary": node.summary,
-                    })
-                    if node.summary:
-                        facts.append(f"[{node.name}]: {node.summary}")
+                    nodes_result.append(node)
+
+            node_dicts, edges_result, node_facts = self._deduplicate_search_payload(
+                [self._search_node_info_to_dict(node) for node in nodes_result],
+                edges_result,
+                locale,
+                "local search results",
+            )
+            facts.extend(node_facts)
+            facts = self._unique_search_facts(facts)
             
             self._log(
                 "info",
@@ -803,7 +811,7 @@ class ZepToolsService:
         return SearchResult(
             facts=facts,
             edges=edges_result,
-            nodes=nodes_result,
+            nodes=node_dicts,
             query=query,
             total_count=len(facts),
             locale=self._locale(),
@@ -930,6 +938,84 @@ class ZepToolsService:
                 uuid_remap.setdefault(node.uuid, node.uuid)
 
         return merged_nodes, uuid_remap
+
+    @staticmethod
+    def _search_node_info_to_dict(node: NodeInfo) -> Dict[str, Any]:
+        return {
+            "uuid": node.uuid,
+            "name": node.name,
+            "labels": list(node.labels or []),
+            "summary": node.summary,
+        }
+
+    @staticmethod
+    def _search_node_dict_to_info(node: Dict[str, Any], locale: str) -> NodeInfo:
+        return NodeInfo(
+            uuid=str(node.get("uuid", "") or ""),
+            name=str(node.get("name", "") or ""),
+            labels=list(node.get("labels", []) or []),
+            summary=str(node.get("summary", "") or ""),
+            attributes=dict(node.get("attributes", {}) or {}),
+            locale=locale,
+        )
+
+    @staticmethod
+    def _unique_search_facts(facts: List[str]) -> List[str]:
+        result: List[str] = []
+        seen = set()
+        for fact in facts:
+            normalized = str(fact or "").strip()
+            if not normalized or normalized in seen:
+                continue
+            seen.add(normalized)
+            result.append(normalized)
+        return result
+
+    @classmethod
+    def _deduplicate_search_payload(
+        cls,
+        nodes: List[Dict[str, Any]],
+        edges: List[Dict[str, Any]],
+        locale: str,
+        log_context: str,
+    ) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[str]]:
+        if not nodes:
+            return nodes, edges, []
+
+        node_infos = [cls._search_node_dict_to_info(node, locale) for node in nodes]
+        deduplicated_nodes, uuid_remap = cls._deduplicate_nodes(node_infos, log_context)
+        deduplicated_node_dicts = [cls._search_node_info_to_dict(node) for node in deduplicated_nodes]
+
+        deduplicated_edges: List[Dict[str, Any]] = []
+        seen_edges = set()
+        for edge in edges:
+            remapped = dict(edge)
+            source_uuid = str(remapped.get("source_node_uuid", "") or "")
+            target_uuid = str(remapped.get("target_node_uuid", "") or "")
+            if source_uuid:
+                remapped["source_node_uuid"] = uuid_remap.get(source_uuid, source_uuid)
+            if target_uuid:
+                remapped["target_node_uuid"] = uuid_remap.get(target_uuid, target_uuid)
+
+            edge_key = (
+                remapped.get("source_node_uuid", ""),
+                remapped.get("target_node_uuid", ""),
+                remapped.get("name", ""),
+                remapped.get("fact", ""),
+            )
+            if edge_key in seen_edges:
+                continue
+            seen_edges.add(edge_key)
+            deduplicated_edges.append(remapped)
+
+        node_facts = cls._unique_search_facts(
+            [
+                f"[{node.name}]: {node.summary}"
+                for node in deduplicated_nodes
+                if node.summary
+            ]
+        )
+        return deduplicated_node_dicts, deduplicated_edges, node_facts
 
     def get_all_edges(self, graph_id: str, include_temporal: bool = True) -> List[EdgeInfo]:
         """
