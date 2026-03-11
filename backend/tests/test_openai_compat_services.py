@@ -599,3 +599,14 @@ def test_zep_graph_memory_updater_localizes_english_runtime_logs(monkeypatch):
     assert any("Created graph memory updater: simulation_id=sim-1, graph_id=graph_456" in message for message in info_messages)
     assert any("Stopped graph memory updater: simulation_id=sim-1" in message for message in info_messages)
     assert all(not any("\u4e00" <= ch <= "\u9fff" for ch in message) for message in combined_messages)
+
+
+def test_zep_graph_memory_updater_missing_key_uses_requested_locale(monkeypatch):
+    monkeypatch.setattr("app.services.zep_graph_memory_updater.Config.ZEP_API_KEY", "")
+
+    try:
+        ZepGraphMemoryUpdater("graph_123", locale="en")
+    except ValueError as exc:
+        assert str(exc) == "ZEP_API_KEY is not configured"
+    else:
+        raise AssertionError("expected ValueError when ZEP_API_KEY is missing")

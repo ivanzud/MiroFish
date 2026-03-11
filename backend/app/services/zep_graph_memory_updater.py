@@ -292,7 +292,7 @@ class ZepGraphMemoryUpdater:
     def _text(self, en: str, zh: str) -> str:
         return en if self.locale == "en" else zh
     
-    def __init__(self, graph_id: str, api_key: Optional[str] = None, locale: str = "zh"):
+    def __init__(self, graph_id: str, api_key: Optional[str] = None, locale: Optional[str] = None):
         """
         初始化更新器
         
@@ -300,12 +300,14 @@ class ZepGraphMemoryUpdater:
             graph_id: Zep图谱ID
             api_key: Zep API Key（可选，默认从配置读取）
         """
+        resolved_locale = locale if locale in {"zh", "en"} else get_locale()
+
         self.graph_id = graph_id
         self.api_key = api_key or Config.ZEP_API_KEY
-        self.locale = locale if locale in {"zh", "en"} else "zh"
+        self.locale = resolved_locale if resolved_locale in {"zh", "en"} else "zh"
         
         if not self.api_key:
-            raise ValueError(tr("graph.zep_key_missing", get_locale()))
+            raise ValueError(tr("graph.zep_key_missing", self.locale))
         
         self.client = Zep(api_key=self.api_key)
         
@@ -607,7 +609,12 @@ class ZepGraphMemoryManager:
         return en if locale == "en" else zh
     
     @classmethod
-    def create_updater(cls, simulation_id: str, graph_id: str, locale: str = "zh") -> ZepGraphMemoryUpdater:
+    def create_updater(
+        cls,
+        simulation_id: str,
+        graph_id: str,
+        locale: Optional[str] = None,
+    ) -> ZepGraphMemoryUpdater:
         """
         为模拟创建图谱记忆更新器
         
