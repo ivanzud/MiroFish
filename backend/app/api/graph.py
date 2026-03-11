@@ -14,6 +14,7 @@ from ..services.ontology_generator import OntologyGenerator
 from ..services.graph_builder import GraphBuilderService
 from ..services.text_processor import TextProcessor
 from ..utils.file_parser import FileParser
+from ..utils.error_handler import handle_api_exception
 from ..utils.logger import get_logger
 from ..models.task import TaskManager, TaskStatus
 from ..models.project import ProjectManager, ProjectStatus
@@ -247,11 +248,7 @@ def generate_ontology():
         })
         
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "生成本体失败")
 
 
 # ============== 接口2：构建图谱 ==============
@@ -500,7 +497,7 @@ def build_graph():
                     task_id,
                     status=TaskStatus.FAILED,
                     message=f"构建失败: {str(e)}",
-                    error=traceback.format_exc()
+                    error=traceback.format_exc() if Config.DEBUG else str(e)
                 )
         
         # 启动后台线程
@@ -517,11 +514,7 @@ def build_graph():
         })
         
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "启动图谱构建失败")
 
 
 # ============== 任务查询接口 ==============
@@ -582,11 +575,7 @@ def get_graph_data(graph_id: str):
         })
         
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "获取图谱数据失败")
 
 
 @graph_bp.route('/delete/<graph_id>', methods=['DELETE'])
@@ -610,8 +599,4 @@ def delete_graph(graph_id: str):
         })
         
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "删除图谱失败")

@@ -4,7 +4,6 @@ Report API路由
 """
 
 import os
-import traceback
 import threading
 from flask import request, jsonify, send_file
 
@@ -14,6 +13,7 @@ from ..services.report_agent import ReportAgent, ReportManager, ReportStatus
 from ..services.simulation_manager import SimulationManager
 from ..models.project import ProjectManager
 from ..models.task import TaskManager, TaskStatus
+from ..utils.error_handler import handle_api_exception
 from ..utils.logger import get_logger
 
 logger = get_logger('mirofish.api.report')
@@ -187,12 +187,7 @@ def generate_report():
         })
         
     except Exception as e:
-        logger.error(f"启动报告生成任务失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "启动报告生成任务失败")
 
 
 @report_bp.route('/generate/status', methods=['POST'])
@@ -303,12 +298,7 @@ def get_report(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取报告失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "获取报告失败")
 
 
 @report_bp.route('/by-simulation/<simulation_id>', methods=['GET'])
@@ -342,12 +332,7 @@ def get_report_by_simulation(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取报告失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "获取报告失败")
 
 
 @report_bp.route('/list', methods=['GET'])
@@ -382,12 +367,7 @@ def list_reports():
         })
         
     except Exception as e:
-        logger.error(f"列出报告失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "列出报告失败")
 
 
 @report_bp.route('/<report_id>/download', methods=['GET'])
@@ -428,12 +408,7 @@ def download_report(report_id: str):
         )
         
     except Exception as e:
-        logger.error(f"下载报告失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "下载报告失败")
 
 
 @report_bp.route('/<report_id>', methods=['DELETE'])
@@ -454,12 +429,7 @@ def delete_report(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"删除报告失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "删除报告失败")
 
 
 # ============== Report Agent对话接口 ==============
@@ -551,12 +521,7 @@ def chat_with_report_agent():
         })
         
     except Exception as e:
-        logger.error(f"对话失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "对话失败")
 
 
 # ============== 报告进度与分章节接口 ==============
@@ -594,12 +559,7 @@ def get_report_progress(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取报告进度失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "获取报告进度失败")
 
 
 @report_bp.route('/<report_id>/sections', methods=['GET'])
@@ -645,12 +605,7 @@ def get_report_sections(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取章节列表失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "获取章节列表失败")
 
 
 @report_bp.route('/<report_id>/section/<int:section_index>', methods=['GET'])
@@ -689,12 +644,7 @@ def get_single_section(report_id: str, section_index: int):
         })
         
     except Exception as e:
-        logger.error(f"获取章节内容失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "获取章节内容失败")
 
 
 # ============== 报告状态检查接口 ==============
@@ -740,12 +690,7 @@ def check_report_status(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"检查报告状态失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "检查报告状态失败")
 
 
 # ============== Agent 日志接口 ==============
@@ -801,12 +746,7 @@ def get_agent_log(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取Agent日志失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "获取Agent日志失败")
 
 
 @report_bp.route('/<report_id>/agent-log/stream', methods=['GET'])
@@ -835,12 +775,7 @@ def stream_agent_log(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取Agent日志失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "获取Agent日志失败")
 
 
 # ============== 控制台日志接口 ==============
@@ -883,12 +818,7 @@ def get_console_log(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取控制台日志失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "获取控制台日志失败")
 
 
 @report_bp.route('/<report_id>/console-log/stream', methods=['GET'])
@@ -917,12 +847,7 @@ def stream_console_log(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取控制台日志失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "获取控制台日志失败")
 
 
 # ============== 工具调用接口（供调试使用）==============
@@ -967,12 +892,7 @@ def search_graph_tool():
         })
         
     except Exception as e:
-        logger.error(f"图谱搜索失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "图谱搜索失败")
 
 
 @report_bp.route('/tools/statistics', methods=['POST'])
@@ -1007,9 +927,4 @@ def get_graph_statistics_tool():
         })
         
     except Exception as e:
-        logger.error(f"获取图谱统计失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return handle_api_exception(logger, e, "获取图谱统计失败")
