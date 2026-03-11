@@ -18,6 +18,30 @@ sync_upstream_github = load_module()
 
 
 class SyncUpstreamGithubTests(unittest.TestCase):
+    def test_list_mirrored_pull_request_numbers_reads_remote_and_local_refs(self):
+        with patch.object(
+            sync_upstream_github.subprocess,
+            "run",
+            return_value=type(
+                "Completed",
+                (),
+                {"stdout": "origin/mirror/upstream-pr-101\nmirror/upstream-pr-102\norigin/main\n"},
+            )(),
+        ) as mocked:
+            mirrored = sync_upstream_github.list_mirrored_pull_request_numbers("origin")
+
+        self.assertEqual(mirrored, {101, 102})
+        self.assertEqual(
+            mocked.call_args.args[0],
+            [
+                "git",
+                "for-each-ref",
+                "--format=%(refname:short)",
+                "refs/remotes/origin/mirror/upstream-pr-*",
+                "refs/heads/mirror/upstream-pr-*",
+            ],
+        )
+
     def test_fetch_json_prefers_authenticated_gh_cli_when_no_token(self):
         with (
             patch.object(sync_upstream_github, "has_github_token", return_value=False),
@@ -116,7 +140,9 @@ class SyncUpstreamGithubTests(unittest.TestCase):
                 "mergeable_state": "clean",
                 "labels": [{"name": "enhancement"}],
                 "user": {"login": "bob"},
-            }
+            },
+            mirrored_pr_numbers={11},
+            fork_remote="origin",
         )
 
         self.assertEqual(issue["state"], "closed")
@@ -125,6 +151,8 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(pr["merged_at"], "2026-01-03T00:00:01Z")
         self.assertEqual(pr["mergeable_state"], "clean")
         self.assertEqual(pr["labels"], ["enhancement"])
+        self.assertTrue(pr["fork_mirrored"])
+        self.assertEqual(pr["fork_mirror_ref"], "origin/mirror/upstream-pr-11")
 
 
 if __name__ == "__main__":

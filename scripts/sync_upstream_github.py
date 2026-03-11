@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -116,6 +117,31 @@ def hydrate_pull_requests(owner: str, name: str, pull_requests: list[dict[str, A
     return hydrated
 
 
+def list_mirrored_pull_request_numbers(remote: str) -> set[int]:
+    try:
+        result = subprocess.run(
+            [
+                "git",
+                "for-each-ref",
+                "--format=%(refname:short)",
+                f"refs/remotes/{remote}/mirror/upstream-pr-*",
+                "refs/heads/mirror/upstream-pr-*",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise RuntimeError(f"Unable to inspect mirrored pull request refs for remote {remote!r}") from exc
+
+    mirrored: set[int] = set()
+    for line in result.stdout.splitlines():
+        match = re.search(r"mirror/upstream-pr-(\d+)$", line.strip())
+        if match:
+            mirrored.add(int(match.group(1)))
+    return mirrored
+
+
 def compact_issue(issue: dict[str, object]) -> dict[str, object]:
     return {
         "number": issue["number"],
@@ -130,9 +156,20 @@ def compact_issue(issue: dict[str, object]) -> dict[str, object]:
     }
 
 
-def compact_pr(pr: dict[str, object]) -> dict[str, object]:
+def compact_pr(
+    pr: dict[str, object],
+    mirrored_pr_numbers: set[int] | None = None,
+    fork_remote: str | None = None,
+) -> dict[str, object]:
+    number = int(pr["number"])
+    fork_mirrored = False
+    fork_mirror_ref = None
+    if mirrored_pr_numbers is not None and fork_remote is not None:
+        fork_mirrored = number in mirrored_pr_numbers
+        fork_mirror_ref = f"{fork_remote}/mirror/upstream-pr-{number}"
+
     return {
-        "number": pr["number"],
+        "number": number,
         "title": pr["title"],
         "url": pr["html_url"],
         "state": pr["state"],
@@ -146,6 +183,8 @@ def compact_pr(pr: dict[str, object]) -> dict[str, object]:
         "mergeable_state": pr.get("mergeable_state"),
         "labels": [label["name"] for label in pr.get("labels", [])],
         "author": pr.get("user", {}).get("login"),
+        "fork_mirrored": fork_mirrored,
+        "fork_mirror_ref": fork_mirror_ref,
     }
 
 
@@ -157,9 +196,17 @@ def summarize_counts(items: list[dict[str, object]]) -> dict[str, int]:
     return counts
 
 
-def write_summary(path: Path, repo: str, state: str, issues: list[dict[str, object]], prs: list[dict[str, object]]) -> None:
+def write_summary(
+    path: Path,
+    repo: str,
+    state: str,
+    issues: list[dict[str, object]],
+    prs: list[dict[str, object]],
+    fork_remote: str | None = None,
+) -> None:
     issue_counts = summarize_counts(issues)
     pr_counts = summarize_counts(prs)
+    mirrored_count = sum(1 for pr in prs if pr.get("fork_mirrored"))
     lines = [
         "# Upstream Triage Snapshot",
         "",
@@ -168,10 +215,10 @@ def write_summary(path: Path, repo: str, state: str, issues: list[dict[str, obje
         f"- Captured: `{datetime.now(timezone.utc).isoformat()}`",
         f"- Issues: `{len(issues)}` total (`open={issue_counts.get('open', 0)}`, `closed={issue_counts.get('closed', 0)}`)",
         f"- Pull requests: `{len(prs)}` total (`open={pr_counts.get('open', 0)}`, `closed={pr_counts.get('closed', 0)}`)",
-        "",
-        "## Recently Updated Issues",
-        "",
     ]
+    if fork_remote:
+        lines.append(f"- Mirrored in `{fork_remote}`: `{mirrored_count}` of `{len(prs)}` PR refs")
+    lines.extend(["", "## Recently Updated Issues", ""])
 
     for issue in issues[:10]:
         labels = ", ".join(issue["labels"]) if issue["labels"] else "no labels"
@@ -181,8 +228,11 @@ def write_summary(path: Path, repo: str, state: str, issues: list[dict[str, obje
     for pr in prs[:10]:
         suffix = " merged" if pr.get("merged_at") else ""
         mergeable_state = pr.get("mergeable_state") or "unknown"
+        mirror_suffix = ""
+        if fork_remote:
+            mirror_suffix = ", mirrored=yes" if pr.get("fork_mirrored") else ", mirrored=no"
         lines.append(
-            f"- #{pr['number']} [{pr['state']}{suffix}, mergeable={mergeable_state}] "
+            f"- #{pr['number']} [{pr['state']}{suffix}, mergeable={mergeable_state}{mirror_suffix}] "
             f"{pr['title']} (`{pr['head']}` -> `{pr['base']}`)"
         )
 
@@ -197,6 +247,11 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=500, help="Maximum items to fetch per collection")
     parser.add_argument("--output", required=True, help="Path to write machine-readable JSON")
     parser.add_argument("--summary", required=True, help="Path to write markdown summary")
+    parser.add_argument(
+        "--fork-remote",
+        default=None,
+        help="Optional git remote name used to annotate whether upstream PR refs are mirrored into the fork",
+    )
     args = parser.parse_args()
 
     owner, name = args.repo.split("/", 1)
@@ -213,7 +268,8 @@ def main() -> int:
 
     issues = [compact_issue(item) for item in issue_items if "pull_request" not in item]
     pr_details = hydrate_pull_requests(owner, name, pr_items)
-    prs = [compact_pr(item) for item in pr_details]
+    mirrored_pr_numbers = list_mirrored_pull_request_numbers(args.fork_remote) if args.fork_remote else None
+    prs = [compact_pr(item, mirrored_pr_numbers, args.fork_remote) for item in pr_details]
     payload = {
         "repo": args.repo,
         "state": args.state,
@@ -225,11 +281,18 @@ def main() -> int:
         "issues": issues,
         "pull_requests": prs,
     }
+    if args.fork_remote:
+        mirrored_total = sum(1 for pr in prs if pr["fork_mirrored"])
+        payload["fork_remote"] = args.fork_remote
+        payload["counts"]["mirrored_pull_requests"] = {
+            "mirrored": mirrored_total,
+            "not_mirrored": len(prs) - mirrored_total,
+        }
 
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    write_summary(Path(args.summary), args.repo, args.state, issues, prs)
+    write_summary(Path(args.summary), args.repo, args.state, issues, prs, args.fork_remote)
 
     print(
         f"Captured {len(issues)} issues and {len(prs)} pull requests from {args.repo} "

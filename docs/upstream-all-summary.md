@@ -2,9 +2,10 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T07:49:28.871457+00:00`
+- Captured: `2026-03-11T07:57:59.555809+00:00`
 - Issues: `80` total (`open=33`, `closed=47`)
 - Pull requests: `47` total (`open=33`, `closed=14`)
+- Mirrored in `origin`: `29` of `47` PR refs
 
 ## Recently Updated Issues
 
@@ -21,13 +22,13 @@
 
 ## Recently Updated Pull Requests
 
-- #127 [closed, mergeable=clean] Fix potential crash in LLMClient when content is None (`fix/llm-client-none-content` -> `main`)
-- #120 [closed, mergeable=clean] fix: 修复subsystems目录下neo4j_client导入路径错误; feat: 添加TODO.md开发规划文档 (`main` -> `main`)
-- #105 [open, mergeable=clean] fix: security improvements and error handling fixes (`fix/security-improvements` -> `main`)
-- #132 [open, mergeable=clean] docs:add simple system architecture part for README-EN.md & README.md (`docs/add-sys-architecture-part` -> `main`)
-- #131 [open, mergeable=clean] feat(graph_builder): add retry mechanism for Zep Cloud connection failures (`feat/zep-retry-mechanism` -> `main`)
-- #130 [open, mergeable=clean] docs: 添加贡献指南文档 (`docs/add-pr-guide` -> `main`)
-- #129 [open, mergeable=clean] fix(report_agent): handle API token overflow crash with context lengt… (`fix/fix-priority-issues-mNNjT` -> `main`)
-- #126 [open, mergeable=clean] feat: Add custom exceptions and enhanced config validation (`feature/custom-exceptions-and-config-validation` -> `main`)
-- #125 [open, mergeable=clean] fix: improve new-project network error diagnostics (`fix/issue-121` -> `main`)
-- #124 [open, mergeable=clean] fix: robust JSON extraction for mixed LLM responses (`fix/issue-64` -> `main`)
+- #127 [closed, mergeable=clean, mirrored=yes] Fix potential crash in LLMClient when content is None (`fix/llm-client-none-content` -> `main`)
+- #120 [closed, mergeable=clean, mirrored=no] fix: 修复subsystems目录下neo4j_client导入路径错误; feat: 添加TODO.md开发规划文档 (`main` -> `main`)
+- #105 [open, mergeable=clean, mirrored=yes] fix: security improvements and error handling fixes (`fix/security-improvements` -> `main`)
+- #132 [open, mergeable=clean, mirrored=yes] docs:add simple system architecture part for README-EN.md & README.md (`docs/add-sys-architecture-part` -> `main`)
+- #131 [open, mergeable=clean, mirrored=yes] feat(graph_builder): add retry mechanism for Zep Cloud connection failures (`feat/zep-retry-mechanism` -> `main`)
+- #130 [open, mergeable=clean, mirrored=yes] docs: 添加贡献指南文档 (`docs/add-pr-guide` -> `main`)
+- #129 [open, mergeable=clean, mirrored=yes] fix(report_agent): handle API token overflow crash with context lengt… (`fix/fix-priority-issues-mNNjT` -> `main`)
+- #126 [open, mergeable=clean, mirrored=yes] feat: Add custom exceptions and enhanced config validation (`feature/custom-exceptions-and-config-validation` -> `main`)
+- #125 [open, mergeable=clean, mirrored=yes] fix: improve new-project network error diagnostics (`fix/issue-121` -> `main`)
+- #124 [open, mergeable=clean, mirrored=yes] fix: robust JSON extraction for mixed LLM responses (`fix/issue-64` -> `main`)

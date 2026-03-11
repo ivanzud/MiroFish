@@ -1,7 +1,7 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-11T07:49:28.870620+00:00",
+  "captured_at": "2026-03-11T07:57:59.554711+00:00",
   "counts": {
     "issues": {
       "open": 33,
@@ -10,6 +10,10 @@
     "pull_requests": {
       "closed": 14,
       "open": 33
+    },
+    "mirrored_pull_requests": {
+      "mirrored": 29,
+      "not_mirrored": 18
     }
   },
   "issues": [
@@ -946,7 +950,9 @@
         "LLM API",
         "size:XS"
       ],
-      "author": "sjhddh"
+      "author": "sjhddh",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-127"
     },
     {
       "number": 120,
@@ -964,7 +970,9 @@
       "labels": [
         "size:XXL"
       ],
-      "author": "28764116"
+      "author": "28764116",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-120"
     },
     {
       "number": 105,
@@ -983,7 +991,9 @@
         "documentation",
         "size:L"
       ],
-      "author": "hobostay"
+      "author": "hobostay",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-105"
     },
     {
       "number": 132,
@@ -1002,7 +1012,9 @@
         "documentation",
         "size:L"
       ],
-      "author": "Noblegasesgoo"
+      "author": "Noblegasesgoo",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-132"
     },
     {
       "number": 131,
@@ -1021,7 +1033,9 @@
         "enhancement",
         "size:L"
       ],
-      "author": "EuanTop"
+      "author": "EuanTop",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-131"
     },
     {
       "number": 130,
@@ -1040,7 +1054,9 @@
         "documentation",
         "size:M"
       ],
-      "author": "M-Tlinqinming"
+      "author": "M-Tlinqinming",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-130"
     },
     {
       "number": 129,
@@ -1059,7 +1075,9 @@
         "LLM API",
         "size:M"
       ],
-      "author": "ai-x-builder"
+      "author": "ai-x-builder",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-129"
     },
     {
       "number": 126,
@@ -1078,7 +1096,9 @@
         "enhancement",
         "size:XXL"
       ],
-      "author": "ZaviQ7"
+      "author": "ZaviQ7",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-126"
     },
     {
       "number": 125,
@@ -1097,7 +1117,9 @@
         "enhancement",
         "size:S"
       ],
-      "author": "SergioChan"
+      "author": "SergioChan",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-125"
     },
     {
       "number": 124,
@@ -1116,7 +1138,9 @@
         "LLM API",
         "size:M"
       ],
-      "author": "SergioChan"
+      "author": "SergioChan",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-124"
     },
     {
       "number": 122,
@@ -1135,7 +1159,9 @@
         "LLM API",
         "size:XS"
       ],
-      "author": "ImL1s"
+      "author": "ImL1s",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-122"
     },
     {
       "number": 119,
@@ -1154,7 +1180,9 @@
         "enhancement",
         "size:XXL"
       ],
-      "author": "Pratiyankkumar"
+      "author": "Pratiyankkumar",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-119"
     },
     {
       "number": 89,
@@ -1173,7 +1201,9 @@
         "enhancement",
         "size:XL"
       ],
-      "author": "zzfe-501"
+      "author": "zzfe-501",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-89"
     },
     {
       "number": 118,
@@ -1193,7 +1223,9 @@
         "enhancement",
         "size:XXL"
       ],
-      "author": "pratyush618"
+      "author": "pratyush618",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-118"
     },
     {
       "number": 116,
@@ -1211,7 +1243,9 @@
       "labels": [
         "size:XS"
       ],
-      "author": "ailuntz"
+      "author": "ailuntz",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-116"
     },
     {
       "number": 115,
@@ -1229,7 +1263,9 @@
       "labels": [
         "size:XS"
       ],
-      "author": "ailuntz"
+      "author": "ailuntz",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-115"
     },
     {
       "number": 114,
@@ -1247,7 +1283,9 @@
       "labels": [
         "size:S"
       ],
-      "author": "ailuntz"
+      "author": "ailuntz",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-114"
     },
     {
       "number": 113,
@@ -1266,7 +1304,9 @@
         "documentation",
         "size:L"
       ],
-      "author": "eltociear"
+      "author": "eltociear",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-113"
     },
     {
       "number": 112,
@@ -1285,7 +1325,9 @@
         "documentation",
         "size:L"
       ],
-      "author": "waitle"
+      "author": "waitle",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-112"
     },
     {
       "number": 72,
@@ -1303,7 +1345,9 @@
       "labels": [
         "size:S"
       ],
-      "author": "MoeclubM"
+      "author": "MoeclubM",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-72"
     },
     {
       "number": 108,
@@ -1322,7 +1366,9 @@
         "enhancement",
         "size:XL"
       ],
-      "author": "JasonOA888"
+      "author": "JasonOA888",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-108"
     },
     {
       "number": 104,
@@ -1341,7 +1387,9 @@
         "documentation",
         "size:M"
       ],
-      "author": "nil957"
+      "author": "nil957",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-104"
     },
     {
       "number": 103,
@@ -1360,7 +1408,9 @@
         "enhancement",
         "size:XS"
       ],
-      "author": "nil957"
+      "author": "nil957",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-103"
     },
     {
       "number": 91,
@@ -1378,7 +1428,9 @@
       "labels": [
         "size:XS"
       ],
-      "author": "leon-x-labs"
+      "author": "leon-x-labs",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-91"
     },
     {
       "number": 102,
@@ -1397,7 +1449,9 @@
         "enhancement",
         "size:XS"
       ],
-      "author": "JasonOA888"
+      "author": "JasonOA888",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-102"
     },
     {
       "number": 101,
@@ -1416,7 +1470,9 @@
         "enhancement",
         "size:M"
       ],
-      "author": "JasonOA888"
+      "author": "JasonOA888",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-101"
     },
     {
       "number": 100,
@@ -1435,7 +1491,9 @@
         "enhancement",
         "size:S"
       ],
-      "author": "JasonOA888"
+      "author": "JasonOA888",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-100"
     },
     {
       "number": 97,
@@ -1454,7 +1512,9 @@
         "Memory Layer",
         "size:XXL"
       ],
-      "author": "Jerry050512"
+      "author": "Jerry050512",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-97"
     },
     {
       "number": 87,
@@ -1472,7 +1532,9 @@
       "labels": [
         "size:S"
       ],
-      "author": "salmanmkc"
+      "author": "salmanmkc",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-87"
     },
     {
       "number": 86,
@@ -1490,7 +1552,9 @@
       "labels": [
         "size:XS"
       ],
-      "author": "salmanmkc"
+      "author": "salmanmkc",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-86"
     },
     {
       "number": 82,
@@ -1508,7 +1572,9 @@
       "labels": [
         "size:XS"
       ],
-      "author": "orbisai0security"
+      "author": "orbisai0security",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-82"
     },
     {
       "number": 81,
@@ -1527,7 +1593,9 @@
         "LLM API",
         "size:XS"
       ],
-      "author": "JasonOA888"
+      "author": "JasonOA888",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-81"
     },
     {
       "number": 13,
@@ -1543,7 +1611,9 @@
       "draft": false,
       "mergeable_state": "dirty",
       "labels": [],
-      "author": "martin0359"
+      "author": "martin0359",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-13"
     },
     {
       "number": 74,
@@ -1561,7 +1631,9 @@
       "labels": [
         "size:XS"
       ],
-      "author": "haosenwang1018"
+      "author": "haosenwang1018",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-74"
     },
     {
       "number": 73,
@@ -1580,7 +1652,9 @@
         "LLM API",
         "size:S"
       ],
-      "author": "calvinguo721"
+      "author": "calvinguo721",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-73"
     },
     {
       "number": 70,
@@ -1599,7 +1673,9 @@
         "enhancement",
         "size:XXL"
       ],
-      "author": "Jonah-Wu23"
+      "author": "Jonah-Wu23",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-70"
     },
     {
       "number": 33,
@@ -1615,7 +1691,9 @@
       "draft": false,
       "mergeable_state": "dirty",
       "labels": [],
-      "author": "zouyonghe"
+      "author": "zouyonghe",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-33"
     },
     {
       "number": 38,
@@ -1631,7 +1709,9 @@
       "draft": false,
       "mergeable_state": "dirty",
       "labels": [],
-      "author": "SmartisanNaive"
+      "author": "SmartisanNaive",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-38"
     },
     {
       "number": 25,
@@ -1647,7 +1727,9 @@
       "draft": false,
       "mergeable_state": "dirty",
       "labels": [],
-      "author": "Deroino"
+      "author": "Deroino",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-25"
     },
     {
       "number": 44,
@@ -1663,7 +1745,9 @@
       "draft": false,
       "mergeable_state": "dirty",
       "labels": [],
-      "author": "moonhalf-nostar"
+      "author": "moonhalf-nostar",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-44"
     },
     {
       "number": 49,
@@ -1679,7 +1763,9 @@
       "draft": false,
       "mergeable_state": "dirty",
       "labels": [],
-      "author": "Momoyeyu"
+      "author": "Momoyeyu",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-49"
     },
     {
       "number": 6,
@@ -1695,7 +1781,9 @@
       "draft": false,
       "mergeable_state": "clean",
       "labels": [],
-      "author": "jwc19890114"
+      "author": "jwc19890114",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-6"
     },
     {
       "number": 15,
@@ -1711,7 +1799,9 @@
       "draft": false,
       "mergeable_state": "clean",
       "labels": [],
-      "author": "tt-a1i"
+      "author": "tt-a1i",
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-15"
     },
     {
       "number": 12,
@@ -1727,7 +1817,9 @@
       "draft": false,
       "mergeable_state": "unknown",
       "labels": [],
-      "author": "666ghj"
+      "author": "666ghj",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-12"
     },
     {
       "number": 10,
@@ -1743,7 +1835,9 @@
       "draft": true,
       "mergeable_state": "clean",
       "labels": [],
-      "author": "666ghj"
+      "author": "666ghj",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-10"
     },
     {
       "number": 1,
@@ -1759,7 +1853,9 @@
       "draft": false,
       "mergeable_state": "dirty",
       "labels": [],
-      "author": "huanchong-99"
+      "author": "huanchong-99",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-1"
     },
     {
       "number": 2,
@@ -1775,7 +1871,10 @@
       "draft": false,
       "mergeable_state": "dirty",
       "labels": [],
-      "author": "huanchong-99"
+      "author": "huanchong-99",
+      "fork_mirrored": false,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-2"
     }
-  ]
+  ],
+  "fork_remote": "origin"
 }

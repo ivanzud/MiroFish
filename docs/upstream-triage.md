@@ -5,6 +5,7 @@ Last refreshed: `2026-03-11`
 ## Current focus
 
 - Keep reusable local snapshots of `666ghj/MiroFish` open and full issue/PR state.
+- Keep fork visibility current by annotating upstream snapshots with mirror status and pushing missing clean PR refs into `origin` when they are still review-relevant.
 - Land small, low-risk upstream fixes before considering larger feature branches.
 - Keep OpenAI-compatible backend support verified in both code paths and docs while reviewing the remaining open PR queue.
 
@@ -70,6 +71,7 @@ Last refreshed: `2026-03-11`
 - `./.tmp-test-venv/bin/pytest backend/tests/test_ontology_generator.py backend/tests/test_llm_client.py backend/tests/test_graph_builder.py -q` passes after landing the ontology validation hardening and exception-scope cleanup.
 - `python3 -m unittest tests/test_sync_upstream_github.py` passes after teaching the sync script to hydrate per-PR details, so the local JSON/markdown snapshots now include real `mergeable_state` metadata instead of `unknown` placeholders.
 - `python3 scripts/sync_upstream_github.py --state open ...` and `--state all ...` refreshed the local snapshots again on March 11, 2026; the full-history capture currently shows `33` open upstream issues, `33` open upstream PRs, and `14` closed upstream PRs (`47` total PRs in the full snapshot).
+- `python3 scripts/sync_upstream_github.py --state open|all --fork-remote origin ...` now annotates each PR record with `fork_mirrored` / `fork_mirror_ref`; after mirroring the missing clean non-`main` branches, the refreshed snapshots show `28/33` open PRs and `29/47` total PRs mirrored into the fork.
 - `cd frontend && npm test` passes with new coverage for the frontend API base URL resolver, including the default `3000 -> 5001` dual-port deployment fallback.
 - `cd frontend && npm run build` passes after restoring dual-port frontend/backend compatibility for the default local and Docker topology.
 - `cd backend && uv run pytest -q` is currently blocked in this environment because dependency resolution reaches `tiktoken`, which attempts a source build and fails without a Rust compiler.
@@ -78,11 +80,11 @@ Last refreshed: `2026-03-11`
 
 - `docs/upstream-open-state.json` and `docs/upstream-open-summary.md` remain the fast open-work triage view.
 - `docs/upstream-all-state.json` and `docs/upstream-all-summary.md` now capture the full upstream issue/PR state for historical triage and mirroring decisions.
-- `scripts/sync_upstream_github.py` now supports paginated `--state all` refreshes, hydrates PR detail records so machine-readable snapshots include labels plus `mergeable_state`, and uses `GITHUB_TOKEN` / `GH_TOKEN` when available; when those env vars are absent but the GitHub CLI is authenticated, it falls back to `gh api` so upstream intake still works under anonymous API rate limits.
+- `scripts/sync_upstream_github.py` now supports paginated `--state all` refreshes, hydrates PR detail records so machine-readable snapshots include labels plus `mergeable_state`, annotates optional fork mirror status via `--fork-remote`, and uses `GITHUB_TOKEN` / `GH_TOKEN` when available; when those env vars are absent but the GitHub CLI is authenticated, it falls back to `gh api` so upstream intake still works under anonymous API rate limits.
 
 ## Practical mirror strategy for the fork
 
 - Mirror the highest-signal upstream PR branches to the fork when they are under active review.
-- Fork visibility now includes `origin/mirror/upstream-pr-101`, `origin/mirror/upstream-pr-105`, `origin/mirror/upstream-pr-108`, `origin/mirror/upstream-pr-118`, `origin/mirror/upstream-pr-126`, `origin/mirror/upstream-pr-130`, `origin/mirror/upstream-pr-131`, and `origin/mirror/upstream-pr-132` in addition to the previously mirrored review branches.
+- Fork visibility now includes `origin/mirror/upstream-pr-73`, `origin/mirror/upstream-pr-74`, `origin/mirror/upstream-pr-81`, `origin/mirror/upstream-pr-82`, `origin/mirror/upstream-pr-86`, `origin/mirror/upstream-pr-87`, `origin/mirror/upstream-pr-100`, `origin/mirror/upstream-pr-101`, `origin/mirror/upstream-pr-102`, `origin/mirror/upstream-pr-103`, `origin/mirror/upstream-pr-104`, `origin/mirror/upstream-pr-105`, `origin/mirror/upstream-pr-108`, `origin/mirror/upstream-pr-113`, `origin/mirror/upstream-pr-114`, `origin/mirror/upstream-pr-115`, `origin/mirror/upstream-pr-116`, `origin/mirror/upstream-pr-118`, `origin/mirror/upstream-pr-119`, `origin/mirror/upstream-pr-122`, `origin/mirror/upstream-pr-124`, `origin/mirror/upstream-pr-125`, `origin/mirror/upstream-pr-126`, `origin/mirror/upstream-pr-127`, `origin/mirror/upstream-pr-129`, `origin/mirror/upstream-pr-130`, `origin/mirror/upstream-pr-131`, and `origin/mirror/upstream-pr-132`, plus the older mirrored `origin/mirror/upstream-pr-15`.
 - Keep detailed execution tracking in local beads issues to avoid spamming the fork with every upstream item.
-- Use `scripts/sync_upstream_github.py` to refresh a machine-readable snapshot and a concise markdown summary before each new evolve pass.
+- Use `scripts/sync_upstream_github.py --fork-remote origin` to refresh a machine-readable snapshot and a concise markdown summary before each new evolve pass.
