@@ -2,10 +2,10 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-11T16:17:07.829452+00:00`
+- Captured: `2026-03-11T16:21:58.030372+00:00`
 - Issues: `38` total (`open=38`, `closed=0`)
-- Pull requests: `36` total (`open=36`, `closed=0`)
-- Mirrored in `origin`: `36` of `36` PR refs
+- Pull requests: `37` total (`open=37`, `closed=0`)
+- Mirrored in `origin`: `37` of `37` PR refs
 - Mirrored in `ivanzud/MiroFish`: `38` of `38` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
@@ -47,6 +47,9 @@
 
 ## Recently Updated Pull Requests
 
+- #147 [open, mergeable=clean, mirrored=yes] feat: Russian localization (Русская локализация) (`russian-localization` -> `main`)
+  - local coverage [partial]: Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets.
+  - ## 🇷🇺 Russian Localization This PR adds a complete Russian translation of MiroFish: ### Changes: - **15 Vue components** — all UI labels, buttons, placeholders, error messages, and tooltips translated from Chinese to Russian - **README-RU.md** — full Russian documentation with quick start guide - Translation files are in `frontend-ru/src/` (ready to merge into `frontend/src/` when approved) - LLM…
 - #141 [open, mergeable=clean, mirrored=yes] feat: add entity deduplication after graph building (`feature/entity-deduplication` -> `main`)
   - local coverage [not_safe]: Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.
   - Hi @666ghj I noticed that during graph building, Zep sometimes creates duplicate entity nodes for the same real-world entity (e.g. "特朗普" and "美国总统特朗普" appear as separate nodes). This affects the accuracy of the knowledge graph. This PR adds an automatic entity deduplication step after graph building, using name similarity pre-filtering + type compatibility check + LLM confirmation to identify and…
@@ -74,6 +77,3 @@
 - #126 [open, mergeable=clean, mirrored=yes] feat: Add custom exceptions and enhanced config validation (`feature/custom-exceptions-and-config-validation` -> `main`)
   - local coverage [landed]: Safe subset landed locally for structured config validation and non-sensitive config summaries.
   - ## Summary This PR improves the robustness of the MiroFish backend by implementing two key architectural improvements: ### 1. Custom Exception Hierarchy - Created a `MiroFishError` base class with error codes, severity levels, and HTTP status codes. - Added domain-specific exceptions for Configuration, Graphs, Simulations, and External APIs to replace generic Exception catches. ### 2. Enhanced Co…
-- #125 [open, mergeable=clean, mirrored=yes] fix: improve new-project network error diagnostics (`fix/issue-121` -> `main`)
-  - local coverage [landed]: Landed locally: improved new-project network error diagnostics in the frontend.
-  - ## Summary Improve frontend error feedback when creating a new project so users can quickly diagnose "Network Error" and timeout failures instead of seeing a generic message. ## Changes - Added `formatProjectInitError` in `frontend/src/views/Process.vue` - Distinguish timeout errors and provide actionable hint (reduce file size / check model speed) - Distinguish network errors and show configured…

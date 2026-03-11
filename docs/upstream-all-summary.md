@@ -2,10 +2,10 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-11T16:17:20.437244+00:00`
+- Captured: `2026-03-11T16:22:08.512064+00:00`
 - Issues: `87` total (`open=38`, `closed=49`)
-- Pull requests: `50` total (`open=36`, `closed=14`)
-- Mirrored in `origin`: `50` of `50` PR refs
+- Pull requests: `51` total (`open=37`, `closed=14`)
+- Mirrored in `origin`: `51` of `51` PR refs
 - Mirrored in `ivanzud/MiroFish`: `87` of `87` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
@@ -46,6 +46,9 @@
 
 ## Recently Updated Pull Requests
 
+- #147 [open, mergeable=clean, mirrored=yes] feat: Russian localization (Русская локализация) (`russian-localization` -> `main`)
+  - local coverage [partial]: Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets.
+  - ## 🇷🇺 Russian Localization This PR adds a complete Russian translation of MiroFish: ### Changes: - **15 Vue components** — all UI labels, buttons, placeholders, error messages, and tooltips translated from Chinese to Russian - **README-RU.md** — full Russian documentation with quick start guide - Translation files are in `frontend-ru/src/` (ready to merge into `frontend/src/` when approved) - LLM…
 - #141 [open, mergeable=clean, mirrored=yes] feat: add entity deduplication after graph building (`feature/entity-deduplication` -> `main`)
   - local coverage [not_safe]: Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.
   - Hi @666ghj I noticed that during graph building, Zep sometimes creates duplicate entity nodes for the same real-world entity (e.g. "特朗普" and "美国总统特朗普" appear as separate nodes). This affects the accuracy of the knowledge graph. This PR adds an automatic entity deduplication step after graph building, using name similarity pre-filtering + type compatibility check + LLM confirmation to identify and…
@@ -72,6 +75,3 @@
   - ## Description Adds automatic retry mechanism to handle transient network errors when connecting to Zep Cloud API. This prevents graph build failures caused by temporary connection issues such as "Connection reset by peer" (errno 54). The retry logic uses exponential backoff (2s, 4s, 6s) and provides detailed progress feedback to users. ## Changes - Added retry logic (max 3 attempts) to `create_g…
 - #130 [open, mergeable=clean, mirrored=yes] docs: 添加贡献指南文档 (`docs/add-pr-guide` -> `main`)
   - local coverage [landed]: Landed locally: `CONTRIBUTING.md`.
-- #129 [open, mergeable=clean, mirrored=yes] fix(report_agent): handle API token overflow crash with context lengt… (`fix/fix-priority-issues-mNNjT` -> `main`)
-  - local coverage [landed]: Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning.
-  - Add error handling in LLMClient for context_length_exceeded errors with automatic message trimming and retry (fixes https://github.com/666ghj/MiroFish/issues/52) Add configurable LLM_MAX_TOKENS env variable (default 4096) so users with different models can set appropriate limits Add message history pruning in report agent ReACT loop to prevent unbounded context growth that causes token overflow I…

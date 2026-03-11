@@ -795,6 +795,23 @@
         "triage diff review",
         "git diff --stat HEAD...upstream/pr-144"
       ]
+    },
+    {
+      "number": 147,
+      "status": "partial",
+      "summary": "Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets.",
+      "local_refs": [
+        "README.md",
+        "README-EN.md",
+        "README-JA.md",
+        "README-KO.md",
+        "README-RU.md",
+        "origin/mirror/upstream-pr-147"
+      ],
+      "validation": [
+        "documentation review",
+        "git diff --stat HEAD..mirror/upstream-pr-147"
+      ]
     }
   ]
 }

@@ -1,18 +1,18 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-11T16:17:07.829452+00:00",
-  "generated_at": "2026-03-11T16:17:07.829452+00:00",
+  "captured_at": "2026-03-11T16:21:58.030372+00:00",
+  "generated_at": "2026-03-11T16:21:58.030372+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
       "open": 38
     },
     "pull_requests": {
-      "open": 36
+      "open": 37
     },
     "mirrored_pull_requests": {
-      "mirrored": 36,
+      "mirrored": 37,
       "not_mirrored": 0
     },
     "mirrored_issues": {
@@ -1574,6 +1574,52 @@
     }
   ],
   "pull_requests": [
+    {
+      "number": 147,
+      "title": "feat: Russian localization (Русская локализация)",
+      "url": "https://github.com/666ghj/MiroFish/pull/147",
+      "state": "open",
+      "created_at": "2026-03-11T16:17:18Z",
+      "updated_at": "2026-03-11T16:19:27Z",
+      "closed_at": null,
+      "merged_at": null,
+      "head": "russian-localization",
+      "head_sha": "cdfece4e116a03d2631e1a70a41e0d86fc4473e4",
+      "head_repo": "notageek88/MiroFish",
+      "head_clone_url": "https://github.com/notageek88/MiroFish.git",
+      "base": "main",
+      "base_repo": "666ghj/MiroFish",
+      "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "documentation",
+        "size:XXL"
+      ],
+      "author": "notageek88",
+      "body_excerpt": "## 🇷🇺 Russian Localization This PR adds a complete Russian translation of MiroFish: ### Changes: - **15 Vue components** — all UI labels, buttons, placeholders, error messages, and tooltips translated from Chinese to Russian - **README-RU.md** — full Russian documentation with quick start guide - Translation files are in `frontend-ru/src/` (ready to merge into `frontend/src/` when approved) - LLM…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
+      "fork_mirrored": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-147",
+      "local_coverage": {
+        "number": 147,
+        "status": "partial",
+        "summary": "Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets.",
+        "local_refs": [
+          "README.md",
+          "README-EN.md",
+          "README-JA.md",
+          "README-KO.md",
+          "README-RU.md",
+          "origin/mirror/upstream-pr-147"
+        ],
+        "validation": [
+          "documentation review",
+          "git diff --stat HEAD..mirror/upstream-pr-147"
+        ]
+      }
+    },
     {
       "number": 141,
       "title": "feat: add entity deduplication after graph building",
