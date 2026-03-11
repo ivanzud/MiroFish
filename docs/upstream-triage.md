@@ -32,6 +32,7 @@ Last refreshed: `2026-03-11`
 - `#74` Replace bare `except:` clauses with `except Exception:` in JSON repair and simulation history formatting paths.
 - `#15` Handle failed simulation status in `Step3Simulation`: stop polling and surface an error instead of leaving the UI stuck in a running state.
 - `#84` Failed report generation can now be retried directly from `Step4Report`: the view polls the persisted report status, surfaces backend error text when generation fails, and offers a `force_regenerate` retry path instead of leaving the user stranded on a dead report page.
+- Upstream issue `#45` now has a concrete Step 5 interaction fix locally: the frontend loads both Reddit and Twitter profile feeds, keeps platform metadata on each selected agent, and sends chat/survey interviews back to the matching platform instead of assuming a Reddit-only profile list. That makes Twitter-only simulations interactive again and removes ambiguous cross-platform targeting in dual-platform runs.
 - `#105` Safe subset landed locally: API JSON error responses now use a shared helper that hides traceback details unless `DEBUG` is enabled, while still logging full tracebacks server-side; file-parser encoding fallbacks now emit debug logs instead of silently swallowing detector failures.
 - `#126` Safe subset landed locally: backend config now exposes structured validation helpers and a non-sensitive config summary, while malformed numeric env vars no longer crash module import before validation can report them.
 - `#119` Safe subset landed locally: the frontend now has a persisted `中文` / `English` language toggle for the home shell, main workflow header, and history modal, while API calls include `X-Locale` for future backend localization without forcing the larger upstream backend/UI refactor onto this branch.
@@ -90,6 +91,7 @@ Last refreshed: `2026-03-11`
 - `cd frontend && npm test` passes with new coverage for the frontend API base URL resolver, including the default `3000 -> 5001` dual-port deployment fallback.
 - `cd frontend && npm run build` passes after restoring dual-port frontend/backend compatibility for the default local and Docker topology.
 - `cd frontend && npm test -- --runInBand` and `cd frontend && npm run build` both pass after localizing the shared graph panel and Step 5 deep-interaction chrome.
+- `npm --prefix frontend test` and `npm --prefix frontend run build` both pass after making Step 5 profile loading and interview targeting platform-aware.
 - `cd frontend && npm test` and `cd frontend && npm run build` both pass after localizing the Step 2/3/5 workflow wrapper views and their runtime log/status copy.
 - `npm run test:backend:lite`, `cd frontend && npm test`, and `cd frontend && npm run build` all pass after adding the backend config-status preflight endpoint plus frontend API-error preservation for the remaining issue `#64` server-deployment diagnostics path.
 - `npm run test:backend:lite`, `cd frontend && npm test`, and `cd frontend && npm run build` all pass after narrowing Step 3 simulation polling to a bounded initial window plus incremental action fetches for the remaining issue `#42` memory-growth path.

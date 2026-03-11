@@ -126,7 +126,7 @@
                   <div class="agent-avatar">{{ (agent.username || 'A')[0] }}</div>
                   <div class="agent-info">
                     <span class="agent-name">{{ agent.username }}</span>
-                    <span class="agent-role">{{ agent.profession || t('step5.unknownProfession') }}</span>
+                    <span class="agent-role">{{ describeAgentRole(agent) }}</span>
                   </div>
                 </div>
               </div>
@@ -224,7 +224,7 @@
                 <div class="profile-card-name">{{ selectedAgent.username }}</div>
                 <div class="profile-card-meta">
                   <span v-if="selectedAgent.name" class="profile-card-handle">@{{ selectedAgent.name }}</span>
-                  <span class="profile-card-profession">{{ selectedAgent.profession || t('step5.unknownProfession') }}</span>
+                  <span class="profile-card-profession">{{ describeAgentRole(selectedAgent) }}</span>
                 </div>
               </div>
               <button class="profile-card-toggle" @click="showFullProfile = !showFullProfile">
@@ -335,7 +335,7 @@
                   <div class="checkbox-avatar">{{ (agent.username || 'A')[0] }}</div>
                   <div class="checkbox-info">
                     <span class="checkbox-name">{{ agent.username }}</span>
-                    <span class="checkbox-role">{{ agent.profession || t('step5.unknownProfession') }}</span>
+                    <span class="checkbox-role">{{ describeAgentRole(agent) }}</span>
                   </div>
                   <div class="checkbox-indicator">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3">
@@ -389,7 +389,7 @@
                   <div class="result-avatar">{{ (result.agent_name || 'A')[0] }}</div>
                   <div class="result-info">
                     <span class="result-name">{{ result.agent_name }}</span>
-                    <span class="result-role">{{ result.profession || t('step5.unknownProfession') }}</span>
+                    <span class="result-role">{{ result.platformLabel ? `${result.platformLabel} · ${result.profession || t('step5.unknownProfession')}` : (result.profession || t('step5.unknownProfession')) }}</span>
                   </div>
                 </div>
                 <div class="result-question">
@@ -411,10 +411,16 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { chatWithReport, getReport, getAgentLog } from '../api/report'
 import { interviewAgents, getSimulationProfilesRealtime } from '../api/simulation'
+import {
+  buildInterviewRequest,
+  extractInterviewResponseContent,
+  formatAgentRole,
+  mergeInteractionProfiles,
+} from './step5Profiles'
 
 const props = defineProps({
   reportId: String,
@@ -429,7 +435,7 @@ const activeTab = ref('chat')
 const chatTarget = ref('report_agent')
 const showAgentDropdown = ref(false)
 const selectedAgent = ref(null)
-const selectedAgentIndex = ref(null)
+const selectedAgentKey = ref(null)
 const showFullProfile = ref(true)
 const showToolsDetail = ref(true)
 
@@ -492,8 +498,8 @@ const saveChatHistory = () => {
   
   if (chatTarget.value === 'report_agent') {
     chatHistoryCache.value['report_agent'] = [...chatHistory.value]
-  } else if (selectedAgentIndex.value !== null) {
-    chatHistoryCache.value[`agent_${selectedAgentIndex.value}`] = [...chatHistory.value]
+  } else if (selectedAgentKey.value) {
+    chatHistoryCache.value[`agent_${selectedAgentKey.value}`] = [...chatHistory.value]
   }
 }
 
@@ -504,7 +510,7 @@ const selectReportAgentChat = () => {
   activeTab.value = 'chat'
   chatTarget.value = 'report_agent'
   selectedAgent.value = null
-  selectedAgentIndex.value = null
+  selectedAgentKey.value = null
   showAgentDropdown.value = false
   
   // 恢复 Report Agent 的对话记录
@@ -514,7 +520,7 @@ const selectReportAgentChat = () => {
 const selectSurveyTab = () => {
   activeTab.value = 'survey'
   selectedAgent.value = null
-  selectedAgentIndex.value = null
+  selectedAgentKey.value = null
   showAgentDropdown.value = false
 }
 
@@ -526,19 +532,21 @@ const toggleAgentDropdown = () => {
   }
 }
 
-const selectAgent = (agent, idx) => {
+const selectAgent = (agent) => {
   // 保存当前对话记录
   saveChatHistory()
   
   selectedAgent.value = agent
-  selectedAgentIndex.value = idx
+  selectedAgentKey.value = agent.profileKey
   chatTarget.value = 'agent'
   showAgentDropdown.value = false
   
   // 恢复该 Agent 的对话记录
-  chatHistory.value = chatHistoryCache.value[`agent_${idx}`] || []
+  chatHistory.value = chatHistoryCache.value[`agent_${agent.profileKey}`] || []
   addLog(t('step5.logs.selectedChatTarget', { name: agent.username }))
 }
+
+const describeAgentRole = (agent) => formatAgentRole(agent, t('step5.unknownProfession'))
 
 const formatTime = (timestamp) => {
   if (!timestamp) return ''
@@ -709,7 +717,7 @@ const sendToReportAgent = async (message) => {
 }
 
 const sendToAgent = async (message) => {
-  if (!selectedAgent.value || selectedAgentIndex.value === null) {
+  if (!selectedAgent.value || !selectedAgentKey.value) {
     throw new Error(t('step5.selectAgentFirst'))
   }
   
@@ -728,35 +736,12 @@ const sendToAgent = async (message) => {
   
   const res = await interviewAgents({
     simulation_id: props.simulationId,
-    interviews: [{
-      agent_id: selectedAgentIndex.value,
-      prompt: prompt
-    }]
+    interviews: [buildInterviewRequest(selectedAgent.value, prompt)]
   })
   
   if (res.success && res.data) {
-    // 正确的数据路径: res.data.result.results 是一个对象字典
-    // 格式: {"twitter_0": {...}, "reddit_0": {...}} 或单平台 {"reddit_0": {...}}
-    const resultData = res.data.result || res.data
-    const resultsDict = resultData.results || resultData
-    
-    // 将对象字典转换为数组，优先获取 reddit 平台的回复
-    let responseContent = null
-    const agentId = selectedAgentIndex.value
-    
-    if (typeof resultsDict === 'object' && !Array.isArray(resultsDict)) {
-      // 优先使用 reddit 平台回复，其次 twitter
-      const redditKey = `reddit_${agentId}`
-      const twitterKey = `twitter_${agentId}`
-      const agentResult = resultsDict[redditKey] || resultsDict[twitterKey] || Object.values(resultsDict)[0]
-      if (agentResult) {
-        responseContent = agentResult.response || agentResult.answer
-      }
-    } else if (Array.isArray(resultsDict) && resultsDict.length > 0) {
-      // 兼容数组格式
-      responseContent = resultsDict[0].response || resultsDict[0].answer
-    }
-    
+    const responseContent = extractInterviewResponseContent(res.data, selectedAgent.value)
+
     if (responseContent) {
       chatHistory.value.push({
         role: 'assistant',
@@ -808,10 +793,10 @@ const submitSurvey = async () => {
   addLog(t('step5.logs.surveySent', { count: selectedAgents.value.size }))
   
   try {
-    const interviews = Array.from(selectedAgents.value).map(idx => ({
-      agent_id: idx,
-      prompt: surveyQuestion.value.trim()
-    }))
+    const selectedProfiles = Array.from(selectedAgents.value)
+      .map((idx) => profiles.value[idx])
+      .filter(Boolean)
+    const interviews = selectedProfiles.map((agent) => buildInterviewRequest(agent, surveyQuestion.value.trim()))
     
     const res = await interviewAgents({
       simulation_id: props.simulationId,
@@ -819,40 +804,16 @@ const submitSurvey = async () => {
     })
     
     if (res.success && res.data) {
-      // 正确的数据路径: res.data.result.results 是一个对象字典
-      // 格式: {"twitter_0": {...}, "reddit_0": {...}, "twitter_1": {...}, ...}
-      const resultData = res.data.result || res.data
-      const resultsDict = resultData.results || resultData
-      
-      // 将对象字典转换为数组格式
       const surveyResultsList = []
       
-      for (const interview of interviews) {
-        const agentIdx = interview.agent_id
-        const agent = profiles.value[agentIdx]
-        
-        // 优先使用 reddit 平台回复，其次 twitter
-        let responseContent = t('step5.noResponse')
-        
-        if (typeof resultsDict === 'object' && !Array.isArray(resultsDict)) {
-          const redditKey = `reddit_${agentIdx}`
-          const twitterKey = `twitter_${agentIdx}`
-          const agentResult = resultsDict[redditKey] || resultsDict[twitterKey]
-          if (agentResult) {
-            responseContent = agentResult.response || agentResult.answer || t('step5.noResponse')
-          }
-        } else if (Array.isArray(resultsDict)) {
-          // 兼容数组格式
-          const matchedResult = resultsDict.find(r => r.agent_id === agentIdx)
-          if (matchedResult) {
-            responseContent = matchedResult.response || matchedResult.answer || t('step5.noResponse')
-          }
-        }
-        
+      for (const agent of selectedProfiles) {
+        const responseContent = extractInterviewResponseContent(res.data, agent) || t('step5.noResponse')
+
         surveyResultsList.push({
-          agent_id: agentIdx,
-          agent_name: agent?.username || `Agent ${agentIdx}`,
+          agent_id: agent.agent_id,
+          agent_name: agent?.username || `Agent ${agent.agent_id}`,
           profession: agent?.profession,
+          platformLabel: agent?.platformLabel,
           question: surveyQuestion.value.trim(),
           answer: responseContent
         })
@@ -917,11 +878,25 @@ const loadProfiles = async () => {
   if (!props.simulationId) return
   
   try {
-    const res = await getSimulationProfilesRealtime(props.simulationId, 'reddit')
-    if (res.success && res.data) {
-      profiles.value = res.data.profiles || []
-      addLog(t('step5.logs.loadedAgents', { count: profiles.value.length }))
-    }
+    const results = await Promise.allSettled([
+      getSimulationProfilesRealtime(props.simulationId, 'reddit'),
+      getSimulationProfilesRealtime(props.simulationId, 'twitter'),
+    ])
+
+    const availableProfiles = results.flatMap((result, index) => {
+      const platform = index === 0 ? 'reddit' : 'twitter'
+      if (result.status !== 'fulfilled' || !result.value?.success || !result.value?.data?.profiles?.length) {
+        return []
+      }
+
+      return [{
+        platform,
+        profiles: result.value.data.profiles,
+      }]
+    })
+
+    profiles.value = mergeInteractionProfiles(availableProfiles)
+    addLog(t('step5.logs.loadedAgents', { count: profiles.value.length }))
   } catch (err) {
     addLog(t('step5.logs.loadAgentsFailed', { message: err.message }))
   }
