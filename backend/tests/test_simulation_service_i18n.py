@@ -232,6 +232,10 @@ def test_prepare_simulation_progress_messages_use_explicit_locale(tmp_path, monk
             pass
 
         def generate_config(self, **kwargs):
+            kwargs["progress_callback"](1, 4, "Generating time configuration...")
+            kwargs["progress_callback"](2, 4, "Generating event config and hot topics...")
+            kwargs["progress_callback"](3, 4, "Generating agent configs (1-2/2)...")
+            kwargs["progress_callback"](4, 4, "Generating platform configuration...")
             return FakeConfig()
 
     monkeypatch.setattr("app.services.simulation_manager.OasisProfileGenerator", FakeProfileGenerator)
@@ -256,8 +260,24 @@ def test_prepare_simulation_progress_messages_use_explicit_locale(tmp_path, monk
     assert "Completed with 2 profiles" in messages
     assert "Analyzing the simulation requirement..." in messages
     assert "Calling the LLM to generate the config..." in messages
+    assert "Generating time configuration..." in messages
+    assert "Generating event config and hot topics..." in messages
+    assert "Generating agent configs (1-2/2)..." in messages
+    assert "Generating platform configuration..." in messages
     assert "Saving the config file..." in messages
     assert "Configuration generation completed" in messages
+
+    generating_config_events = [(progress, message) for stage, progress, message, _ in events if stage == "generating_config"]
+    assert generating_config_events == [
+        (0, "Analyzing the simulation requirement..."),
+        (30, "Calling the LLM to generate the config..."),
+        (38, "Generating time configuration..."),
+        (47, "Generating event config and hot topics..."),
+        (56, "Generating agent configs (1-2/2)..."),
+        (65, "Generating platform configuration..."),
+        (70, "Saving the config file..."),
+        (100, "Configuration generation completed"),
+    ]
 
 
 def test_prepare_simulation_logs_success_message_in_english(tmp_path, monkeypatch):

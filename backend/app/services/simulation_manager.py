@@ -409,6 +409,22 @@ class SimulationManager:
                     current=1,
                     total=3
                 )
+
+            def config_progress(current: int, total: int, message: str) -> None:
+                if not progress_callback:
+                    return
+
+                safe_total = max(total, 1)
+                bounded_current = min(max(current, 0), safe_total)
+                scaled_progress = 30 + int((bounded_current / safe_total) * 35)
+                progress_callback(
+                    "generating_config",
+                    scaled_progress,
+                    message,
+                    current=bounded_current,
+                    total=safe_total,
+                    item_name=message,
+                )
             
             sim_params = config_generator.generate_config(
                 simulation_id=simulation_id,
@@ -418,7 +434,8 @@ class SimulationManager:
                 document_text=document_text,
                 entities=filtered.entities,
                 enable_twitter=state.enable_twitter,
-                enable_reddit=state.enable_reddit
+                enable_reddit=state.enable_reddit,
+                progress_callback=config_progress,
             )
             
             if progress_callback:
