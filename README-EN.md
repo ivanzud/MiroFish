@@ -261,6 +261,7 @@ Verify the OpenAI-compatible path explicitly:
 - For the most direct local backend-only path, run `npm run backend:local`. It executes the same config preflight first and only starts Flask when the current `LLM_*` / `OPENAI_*` aliases resolve cleanly.
 - Then open `http://localhost:5001/api/graph/config/status`. The JSON payload should report `llm.backend_mode = openai_compatible`.
 - `summary.llm.sources` tells you whether MiroFish resolved `LLM_*` or `OPENAI_*` variables and whether the active base URL came from `OPENAI_BASE_URL` or `OPENAI_API_BASE_URL`, which is the quickest way to confirm a Codex/OpenAI-compatible gateway is wired correctly without adding `LLM_PROVIDER`.
+- If that config-status payload still lists `ZEP_API_KEY is not configured`, the direct LLM wiring is still working; it only means Step 1 graph build remains Zep-backed until a repo-native alternative graph backend is actually landed.
 - A warning about `SECRET_KEY` being generated temporarily is expected in local verification shells when `SECRET_KEY` is unset; it does not mean the direct `OPENAI_*` wiring failed.
 
 If `http://localhost:5001` returns `404`, that usually does not mean the backend failed to boot. The backend root is API-only; use `http://localhost:5001/health` for a health check instead.

@@ -1,12 +1,12 @@
 {
-  "cycle": 14,
+  "cycle": 15,
   "mode": "standard",
   "test_first": true,
   "repo_profile_path": null,
   "generator_empty_streak": 0,
   "last_selected_source": "beads",
   "claimed_work": null,
-  "queue_refresh_count": 14,
+  "queue_refresh_count": 15,
   "pinned_queue": null,
   "pinned_queue_file": null,
   "pinned_queue_index": 0,
@@ -15,13 +15,13 @@
   "unblock_depth": 0,
   "unblock_failures": 0,
   "unblock_chain": [],
-  "last_completed_issue": "mirofish-efoi",
+  "last_completed_issue": "mirofish-v7ea",
   "last_validation_commands": [
     "cd backend && uv run pytest -q tests/test_llm_client.py",
     "bash ./scripts/test_backend_lite.sh",
-    "env -i PATH=\"$PATH\" HOME=\"$HOME\" OPENAI_API_KEY=test-key OPENAI_API_BASE_URL=https://codex.example.test/v1 OPENAI_MODEL=gpt-4.1-mini ZEP_API_KEY=test-zep npm run check:backend-config -- --compact"
+    "env -i PATH=\"$PATH\" HOME=\"$HOME\" OPENAI_API_KEY=test-key OPENAI_API_BASE_URL=https://codex.example.test/v1 OPENAI_MODEL=gpt-4.1-mini npm run check:backend-config -- --compact"
   ],
   "last_upstream_snapshot": "docs/upstream-all-state.json",
-  "last_cycle_timestamp": "2026-03-11T23:48:03Z",
+  "last_cycle_timestamp": "2026-03-12T00:02:03Z",
   "last_cycle_head": "f86df0ff54ebad1547570c885478b0933a731177"
 }
