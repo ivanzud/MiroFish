@@ -318,6 +318,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { resolveBaseURL } from '../api/index.js'
 import { formatApiError } from '../api/errors'
+import { getBackendConfigStatus } from '../api/graph'
 import { 
   startSimulation, 
   stopSimulation,
@@ -325,6 +326,7 @@ import {
   getRunStatusDetail
 } from '../api/simulation'
 import { generateReport } from '../api/report'
+import { getReportPreflightBlockReason } from './reportCapability'
 import {
   describeTimelineAction,
   getTimelineActionTypeLabel,
@@ -802,6 +804,15 @@ const formatActionTime = (timestamp) => {
   }
 }
 
+const getReportPreflightBlockMessage = async () => {
+  try {
+    const response = await getBackendConfigStatus()
+    return getReportPreflightBlockReason(response?.data, t)
+  } catch {
+    return ''
+  }
+}
+
 const handleNextStep = async () => {
   if (!props.simulationId) {
     addLog(t('step3.missingSimulationId'))
@@ -812,7 +823,13 @@ const handleNextStep = async () => {
     addLog(t('step3.reportAlreadyRequested'))
     return
   }
-  
+
+  const preflightBlockMessage = await getReportPreflightBlockMessage()
+  if (preflightBlockMessage) {
+    addLog(`! ${t('step3.reportPreflightBlocked', { message: preflightBlockMessage })}`)
+    return
+  }
+
   isGeneratingReport.value = true
   addLog(t('step3.reportStarting'))
   

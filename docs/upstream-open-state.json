@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-12T02:53:47.440734+00:00",
-  "generated_at": "2026-03-12T02:53:47.440734+00:00",
+  "captured_at": "2026-03-12T02:58:43.195906+00:00",
+  "generated_at": "2026-03-12T02:58:43.195906+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -2177,6 +2177,58 @@
   ],
   "pull_requests": [
     {
+      "number": 144,
+      "title": "feat(kg): add dual-mode knowledge graph support",
+      "url": "https://github.com/666ghj/MiroFish/pull/144",
+      "state": "open",
+      "created_at": "2026-03-11T14:39:08Z",
+      "updated_at": "2026-03-12T02:56:41Z",
+      "closed_at": null,
+      "merged_at": null,
+      "head": "feat/local-knowledge-graph",
+      "head_ref_name": "feat/local-knowledge-graph",
+      "head_sha": "fd37d451cb41282163fe945ab0be5d2816987329",
+      "head_repo": "huamingjie0815/MiroFish",
+      "head_clone_url": "https://github.com/huamingjie0815/MiroFish.git",
+      "base": "main",
+      "base_ref_name": "main",
+      "base_repo": "666ghj/MiroFish",
+      "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "Memory Layer",
+        "size:XXL"
+      ],
+      "author": "huamingjie0815",
+      "body_excerpt": "## Summary - Add kg_adapter for dual-mode knowledge graph (cloud/local) - Support switching between Zep Cloud and local Graphiti + Neo4j - Improve entity extraction and report agent robustness - Add test_kg_adapter.py with unit tests ## Test plan - [ ] Test cloud mode with Zep Cloud - [ ] Test local mode with Graphiti + Neo4j - [ ] Run unit tests 🤖 Generated with [Claude Code](https://claude.com/…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
+      "fork_mirrored": true,
+      "mirrored_to_origin": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-144",
+      "mirror_ref": "origin/mirror/upstream-pr-144",
+      "local_coverage": {
+        "number": 144,
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "origin/mirror/upstream-pr-144"
+        ],
+        "validation": [
+          "triage diff review",
+          "git diff --stat HEAD...upstream/pr-144"
+        ]
+      },
+      "local_status": "tracked",
+      "local_summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
+      "triage_status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
+      "coverage_status": "tracked",
+      "coverage_summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage."
+    },
+    {
       "number": 152,
       "title": "feat(report): Zep 命名修复与导出 Markdown 功能",
       "url": "https://github.com/666ghj/MiroFish/pull/152",
@@ -2448,58 +2500,6 @@
       "summary": "Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.",
       "coverage_status": "not_safe",
       "coverage_summary": "Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge."
-    },
-    {
-      "number": 144,
-      "title": "feat(kg): add dual-mode knowledge graph support",
-      "url": "https://github.com/666ghj/MiroFish/pull/144",
-      "state": "open",
-      "created_at": "2026-03-11T14:39:08Z",
-      "updated_at": "2026-03-11T14:41:00Z",
-      "closed_at": null,
-      "merged_at": null,
-      "head": "feat/local-knowledge-graph",
-      "head_ref_name": "feat/local-knowledge-graph",
-      "head_sha": "9523c5d3e60027a52de994549463fc3cda7d6e37",
-      "head_repo": "huamingjie0815/MiroFish",
-      "head_clone_url": "https://github.com/huamingjie0815/MiroFish.git",
-      "base": "main",
-      "base_ref_name": "main",
-      "base_repo": "666ghj/MiroFish",
-      "draft": false,
-      "mergeable_state": "clean",
-      "labels": [
-        "Memory Layer",
-        "size:XXL"
-      ],
-      "author": "huamingjie0815",
-      "body_excerpt": "## Summary - Add kg_adapter for dual-mode knowledge graph (cloud/local) - Support switching between Zep Cloud and local Graphiti + Neo4j - Improve entity extraction and report agent robustness - Add test_kg_adapter.py with unit tests ## Test plan - [ ] Test cloud mode with Zep Cloud - [ ] Test local mode with Graphiti + Neo4j - [ ] Run unit tests 🤖 Generated with [Claude Code](https://claude.com/…",
-      "comment_count": 0,
-      "review_comment_count": 0,
-      "recent_comments": [],
-      "fork_mirrored": true,
-      "mirrored_to_origin": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-144",
-      "mirror_ref": "origin/mirror/upstream-pr-144",
-      "local_coverage": {
-        "number": 144,
-        "status": "tracked",
-        "summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
-        "local_refs": [
-          ".beads/issues.jsonl",
-          "origin/mirror/upstream-pr-144"
-        ],
-        "validation": [
-          "triage diff review",
-          "git diff --stat HEAD...upstream/pr-144"
-        ]
-      },
-      "local_status": "tracked",
-      "local_summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
-      "triage_status": "tracked",
-      "summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
-      "coverage_status": "tracked",
-      "coverage_summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage."
     },
     {
       "number": 143,

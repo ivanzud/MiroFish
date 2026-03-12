@@ -504,6 +504,7 @@ export default {
     simulationCompleted: '模拟已完成',
     simulationFailed: '模拟失败: {message}',
     reportAlreadyRequested: '报告生成请求已发送，请稍候...',
+    reportPreflightBlocked: '当前后端配置下暂时无法进入 Step 4：{message}',
     reportStarting: '正在启动报告生成...',
     reportStarted: '报告生成任务已启动: {id}',
     reportStartFailed: '启动报告生成失败: {message}',

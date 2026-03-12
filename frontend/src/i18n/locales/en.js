@@ -504,6 +504,7 @@ export default {
     simulationCompleted: 'Simulation completed',
     simulationFailed: 'Simulation failed: {message}',
     reportAlreadyRequested: 'Report generation has already been requested. Please wait...',
+    reportPreflightBlocked: 'Step 4 is not available with the current backend configuration: {message}',
     reportStarting: 'Starting report generation...',
     reportStarted: 'Report generation task started: {id}',
     reportStartFailed: 'Failed to start report generation: {message}',
