@@ -844,6 +844,7 @@ class SyncUpstreamGithubTests(unittest.TestCase):
                 "state": "open",
                 "captured_at": "2026-03-11T08:30:00+00:00",
                 "fork_remote": "origin",
+                "mirror_issues_repo": "ivanzud/MiroFish",
                 "issues": [
                     {
                         "number": 1,
@@ -858,6 +859,9 @@ class SyncUpstreamGithubTests(unittest.TestCase):
                         "body_excerpt": "Issue body",
                         "comment_count": 0,
                         "recent_comments": [],
+                        "fork_issue_mirrored": True,
+                        "fork_issue_number": 99,
+                        "fork_issue_url": "https://example.test/issues/99",
                     }
                 ],
                 "pull_requests": [
@@ -929,6 +933,8 @@ class SyncUpstreamGithubTests(unittest.TestCase):
                         str(summary_path),
                         "--fork-remote",
                         "origin",
+                        "--mirror-issues-repo",
+                        "ivanzud/MiroFish",
                         "--coverage-map",
                         str(coverage_path),
                     ],
@@ -949,7 +955,9 @@ class SyncUpstreamGithubTests(unittest.TestCase):
             summary_text = summary_path.read_text(encoding="utf-8")
             self.assertIn("2026-03-11T08:30:00+00:00", summary_text)
             self.assertIn("local coverage [landed]: PR landed locally", summary_text)
+            self.assertIn("Mirrored in `ivanzud/MiroFish`: `1` of `1` issues", summary_text)
             refreshed_payload = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(refreshed_payload["mirror_issues_repo"], "ivanzud/MiroFish")
             self.assertEqual(refreshed_payload["pull_requests"][0]["local_coverage"]["status"], "landed")
 
     def test_main_writes_backward_compatible_generated_at_field(self):

@@ -955,6 +955,8 @@ def try_reuse_cached_snapshot(
     summary_path: Path,
     exc: RuntimeError,
     stale_cache_hours: int,
+    fork_remote: str | None = None,
+    mirror_issues_repo: str | None = None,
     issue_coverage_map: dict[int, dict[str, object]] | None = None,
     pr_coverage_map: dict[int, dict[str, object]] | None = None,
     coverage_map_path: str | None = None,
@@ -974,6 +976,12 @@ def try_reuse_cached_snapshot(
     refreshed_payload["issues"] = issues
     refreshed_payload["pull_requests"] = prs
     refreshed_payload["coverage_map_path"] = coverage_map_path
+    resolved_fork_remote = fork_remote or refreshed_payload.get("fork_remote")
+    resolved_mirror_issues_repo = mirror_issues_repo or refreshed_payload.get("mirror_issues_repo")
+    if resolved_fork_remote:
+        refreshed_payload["fork_remote"] = resolved_fork_remote
+    if resolved_mirror_issues_repo:
+        refreshed_payload["mirror_issues_repo"] = resolved_mirror_issues_repo
     output_path.write_text(json.dumps(refreshed_payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     write_summary(
@@ -982,7 +990,8 @@ def try_reuse_cached_snapshot(
         state,
         issues,
         prs,
-        cached_payload.get("fork_remote"),
+        resolved_fork_remote,
+        mirror_issues_repo=resolved_mirror_issues_repo,
         captured_at=captured_at,
         coverage_map_path=coverage_map_path or cached_payload.get("coverage_map_path"),
     )
@@ -1169,6 +1178,8 @@ def main() -> int:
                 summary_path=summary_path,
                 exc=exc,
                 stale_cache_hours=args.stale_cache_hours,
+                fork_remote=args.fork_remote,
+                mirror_issues_repo=args.mirror_issues_repo,
                 issue_coverage_map=issue_coverage_map,
                 pr_coverage_map=pr_coverage_map,
                 coverage_map_path=str(coverage_map_path) if coverage_map_path and coverage_map_path.exists() else None,
@@ -1211,6 +1222,8 @@ def main() -> int:
                 summary_path=summary_path,
                 exc=exc,
                 stale_cache_hours=args.stale_cache_hours,
+                fork_remote=args.fork_remote,
+                mirror_issues_repo=args.mirror_issues_repo,
                 issue_coverage_map=issue_coverage_map,
                 pr_coverage_map=pr_coverage_map,
                 coverage_map_path=str(coverage_map_path) if coverage_map_path and coverage_map_path.exists() else None,
