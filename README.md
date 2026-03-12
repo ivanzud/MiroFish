@@ -261,6 +261,7 @@ OPENAI_MODEL=qwen3.5-plus
 - 如果你想走最直接的本地后端启动路径，可运行 `npm run backend:local`。它会先执行同样的配置预检，只有当前 `LLM_*` / `OPENAI_*` 别名解析正常时才启动 Flask。
 - 再访问 `http://localhost:5001/api/graph/config/status`。返回 JSON 中 `llm.backend_mode` 应为 `openai_compatible`。
 - `summary.llm.sources` 会显示当前实际生效的是 `LLM_*` 还是 `OPENAI_*` 环境变量，以及具体命中了 `OPENAI_BASE_URL` 还是 `OPENAI_API_BASE_URL`，因此可以直接确认 Codex / OpenAI / DashScope Coding Plan 这类兼容网关是否已被正确识别，不需要额外设置 `LLM_PROVIDER`。
+- 同一个 config-status 里的 `summary.capabilities` 还会明确区分“直接 LLM 已就绪”和“哪些步骤仍依赖 Zep”：`direct_llm` 对应直连 Codex / OpenAI-compatible 后端，`graph_build` 与 `graph_report_tools` 对应 Step 1 / Step 4，`existing_simulation_interaction` 则表示只要已有 Step 2/3 产物，就仍可继续 Step 5 互动。
 - 如果这份 config-status 里仍然提示 `ZEP_API_KEY is not configured`，说明直连 LLM 的 `OPENAI_*` / Codex 兼容路径本身是正常的，只是 Step 1 图谱构建目前仍依赖 Zep，尚未落地仓库原生的替代图谱后端。
 - 如果本地验证时没有设置 `SECRET_KEY`，`npm run check:backend-config` 里出现“临时生成 SECRET_KEY”的 warning 是预期行为，并不表示直连 `OPENAI_*` 配置失败。
 

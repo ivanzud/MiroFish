@@ -154,3 +154,20 @@ def test_print_config_status_script_accepts_openai_aliases_end_to_end():
             "uses_openai_aliases": True,
         },
     }
+    assert payload["data"]["summary"]["capabilities"] == {
+        "direct_llm": {
+            "ready": True,
+        },
+        "graph_build": {
+            "ready": True,
+            "requires_zep": True,
+        },
+        "graph_report_tools": {
+            "ready": True,
+            "requires_zep": True,
+        },
+        "existing_simulation_interaction": {
+            "ready": True,
+            "requires_existing_simulation": True,
+        },
+    }

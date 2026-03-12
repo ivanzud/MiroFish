@@ -298,6 +298,8 @@ class Config:
         llm_base_url_source = _configured_env_name(*cls.LLM_BASE_URL_ENV_NAMES)
         llm_model_source = _configured_env_name('LLM_MODEL_NAME', 'OPENAI_MODEL')
         base_url_conflict = cls._get_alias_conflict(*cls.LLM_BASE_URL_ENV_NAMES)
+        llm_core_ready = bool(cls.LLM_API_KEY and cls.LLM_BASE_URL)
+        zep_ready = bool(cls.ZEP_API_KEY)
 
         return {
             'cors': {
@@ -326,8 +328,25 @@ class Config:
                     ),
                 },
             },
+            'capabilities': {
+                'direct_llm': {
+                    'ready': llm_core_ready,
+                },
+                'graph_build': {
+                    'ready': llm_core_ready and zep_ready,
+                    'requires_zep': True,
+                },
+                'graph_report_tools': {
+                    'ready': llm_core_ready and zep_ready,
+                    'requires_zep': True,
+                },
+                'existing_simulation_interaction': {
+                    'ready': llm_core_ready,
+                    'requires_existing_simulation': True,
+                },
+            },
             'zep': {
-                'configured': bool(cls.ZEP_API_KEY),
+                'configured': zep_ready,
                 'retry_max_attempts': cls.ZEP_RETRY_MAX_ATTEMPTS,
                 'retry_base_delay_seconds': cls.ZEP_RETRY_BASE_DELAY_SECONDS,
             },

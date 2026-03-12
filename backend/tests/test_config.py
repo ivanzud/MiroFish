@@ -187,6 +187,23 @@ def test_config_summary_reports_openai_compatible_alias_sources(monkeypatch):
         "uses_project_aliases": False,
         "uses_openai_aliases": True,
     }
+    assert summary["capabilities"] == {
+        "direct_llm": {
+            "ready": True,
+        },
+        "graph_build": {
+            "ready": True,
+            "requires_zep": True,
+        },
+        "graph_report_tools": {
+            "ready": True,
+            "requires_zep": True,
+        },
+        "existing_simulation_interaction": {
+            "ready": True,
+            "requires_existing_simulation": True,
+        },
+    }
 
 
 def test_config_summary_reports_openai_base_url_source(monkeypatch):
@@ -238,4 +255,35 @@ def test_config_warns_when_openai_base_url_aliases_conflict(monkeypatch):
             {"name": "OPENAI_BASE_URL", "value": "https://api.openai.com/v1"},
             {"name": "OPENAI_API_BASE_URL", "value": "https://codex-gateway.example.test/v1"},
         ],
+    }
+
+
+def test_config_summary_exposes_non_zep_capability_boundaries(monkeypatch):
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    monkeypatch.delenv("LLM_BASE_URL", raising=False)
+    monkeypatch.delenv("LLM_MODEL_NAME", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "codex-key")
+    monkeypatch.setenv("OPENAI_API_BASE_URL", "https://codex.example.test/v1")
+    monkeypatch.setenv("OPENAI_MODEL", "gpt-4.1-mini")
+    monkeypatch.delenv("ZEP_API_KEY", raising=False)
+
+    config_module = load_config_module()
+    summary = config_module.Config.get_config_summary()
+
+    assert summary["capabilities"] == {
+        "direct_llm": {
+            "ready": True,
+        },
+        "graph_build": {
+            "ready": False,
+            "requires_zep": True,
+        },
+        "graph_report_tools": {
+            "ready": False,
+            "requires_zep": True,
+        },
+        "existing_simulation_interaction": {
+            "ready": True,
+            "requires_existing_simulation": True,
+        },
     }

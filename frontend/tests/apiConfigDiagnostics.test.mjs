@@ -22,6 +22,15 @@ const t = (key, params = {}) => {
     'apiConfig.diagnostics.sourceProjectAliases': 'Project LLM_* aliases',
     'apiConfig.diagnostics.sourceUnknown': 'Not resolved',
     'apiConfig.diagnostics.baseUrlConflictNote': '{configuredEnvNames} are set to different values. MiroFish is currently using {selectedEnv}={selectedValue}.',
+    'apiConfig.diagnostics.directLlmLabel': 'Direct LLM usage',
+    'apiConfig.diagnostics.graphBuildLabel': 'Step 1 graph build',
+    'apiConfig.diagnostics.reportToolsLabel': 'Step 4 graph-backed report tools',
+    'apiConfig.diagnostics.step5Label': 'Step 5 on existing simulation',
+    'apiConfig.diagnostics.capabilityReady': 'Ready',
+    'apiConfig.diagnostics.capabilityNeedsZep': 'Needs ZEP_API_KEY',
+    'apiConfig.diagnostics.capabilityReadyExistingSimulation': 'Ready when an existing simulation environment is available',
+    'apiConfig.diagnostics.capabilityNeedsExistingSimulation': 'Needs an existing simulation environment',
+    'apiConfig.diagnostics.capabilityNeedsBackendConfig': 'Needs backend config',
   }
 
   let message = messages[key]
@@ -48,6 +57,12 @@ test('buildBackendDiagnosticModel highlights direct OPENAI alias resolution', ()
           uses_project_aliases: false,
         },
       },
+      capabilities: {
+        direct_llm: { ready: true },
+        graph_build: { ready: true, requires_zep: true },
+        graph_report_tools: { ready: true, requires_zep: true },
+        existing_simulation_interaction: { ready: true, requires_existing_simulation: true },
+      },
     },
     validation: {
       is_valid: true,
@@ -63,6 +78,10 @@ test('buildBackendDiagnosticModel highlights direct OPENAI alias resolution', ()
     { label: 'Resolved env vars', value: 'OPENAI_API_KEY / OPENAI_API_BASE_URL / OPENAI_MODEL' },
     { label: 'Backend LLM base URL', value: 'https://api.openai.com/v1' },
     { label: 'Backend model', value: 'gpt-4.1-mini' },
+    { label: 'Direct LLM usage', value: 'Ready' },
+    { label: 'Step 1 graph build', value: 'Ready' },
+    { label: 'Step 4 graph-backed report tools', value: 'Ready' },
+    { label: 'Step 5 on existing simulation', value: 'Ready when an existing simulation environment is available' },
   ])
 })
 
@@ -90,6 +109,10 @@ test('buildBackendDiagnosticModel falls back cleanly for project aliases and mis
     { label: 'Resolved env vars', value: 'None' },
     { label: 'Backend LLM base URL', value: 'None' },
     { label: 'Backend model', value: 'None' },
+    { label: 'Direct LLM usage', value: 'None' },
+    { label: 'Step 1 graph build', value: 'None' },
+    { label: 'Step 4 graph-backed report tools', value: 'None' },
+    { label: 'Step 5 on existing simulation', value: 'None' },
   ])
 })
 
@@ -142,6 +165,12 @@ test('buildBackendDiagnosticModel keeps the LLM path ready when only ZEP is miss
           uses_project_aliases: false,
         },
       },
+      capabilities: {
+        direct_llm: { ready: true },
+        graph_build: { ready: false, requires_zep: true },
+        graph_report_tools: { ready: false, requires_zep: true },
+        existing_simulation_interaction: { ready: true, requires_existing_simulation: true },
+      },
     },
     validation: {
       is_valid: false,
@@ -155,6 +184,12 @@ test('buildBackendDiagnosticModel keeps the LLM path ready when only ZEP is miss
     diagnostic.note,
     'The direct LLM path is configured, but Step 1 graph build and graph-backed report tools still require ZEP_API_KEY until a non-Zep backend is landed.',
   )
+  assert.deepEqual(diagnostic.rows.slice(-4), [
+    { label: 'Direct LLM usage', value: 'Ready' },
+    { label: 'Step 1 graph build', value: 'Needs ZEP_API_KEY' },
+    { label: 'Step 4 graph-backed report tools', value: 'Needs ZEP_API_KEY' },
+    { label: 'Step 5 on existing simulation', value: 'Ready when an existing simulation environment is available' },
+  ])
 })
 
 test('buildBackendDiagnosticModel flags conflicting base URL aliases', () => {

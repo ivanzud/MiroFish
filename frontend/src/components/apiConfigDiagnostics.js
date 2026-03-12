@@ -3,6 +3,7 @@ export const buildBackendDiagnosticModel = (payload, t) => {
   const summary = payload?.summary || {}
   const validation = payload?.validation || {}
   const llm = summary.llm || {}
+  const capabilities = summary.capabilities || {}
   const sources = llm.sources || {}
   const validationErrors = Array.isArray(validation.errors) ? validation.errors : []
   const usesOpenAIAliases = Boolean(sources.uses_openai_aliases)
@@ -31,6 +32,25 @@ export const buildBackendDiagnosticModel = (payload, t) => {
     sources.base_url_env,
     sources.model_env,
   ].filter(Boolean).join(' / ') || none
+
+  const capabilityValue = (capability) => {
+    if (!capability || typeof capability !== 'object') {
+      return none
+    }
+    if (capability.ready) {
+      if (capability.requires_existing_simulation) {
+        return t('apiConfig.diagnostics.capabilityReadyExistingSimulation')
+      }
+      return t('apiConfig.diagnostics.capabilityReady')
+    }
+    if (capability.requires_zep) {
+      return t('apiConfig.diagnostics.capabilityNeedsZep')
+    }
+    if (capability.requires_existing_simulation) {
+      return t('apiConfig.diagnostics.capabilityNeedsExistingSimulation')
+    }
+    return t('apiConfig.diagnostics.capabilityNeedsBackendConfig')
+  }
 
   return {
     tone: isConfigured ? 'ready' : 'warning',
@@ -74,6 +94,22 @@ export const buildBackendDiagnosticModel = (payload, t) => {
       {
         label: t('apiConfig.diagnostics.modelLabel'),
         value: llm.model || none,
+      },
+      {
+        label: t('apiConfig.diagnostics.directLlmLabel'),
+        value: capabilityValue(capabilities.direct_llm),
+      },
+      {
+        label: t('apiConfig.diagnostics.graphBuildLabel'),
+        value: capabilityValue(capabilities.graph_build),
+      },
+      {
+        label: t('apiConfig.diagnostics.reportToolsLabel'),
+        value: capabilityValue(capabilities.graph_report_tools),
+      },
+      {
+        label: t('apiConfig.diagnostics.step5Label'),
+        value: capabilityValue(capabilities.existing_simulation_interaction),
       },
     ],
   }
