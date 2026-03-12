@@ -13,6 +13,10 @@ Last refreshed: `2026-03-12`
 
 ## Reviewed This Pass
 
+- Upstream issue `#156` has another repo-native partial mitigation now: `backend/app/api/report.py` reuses the same structured backend config payload as the graph endpoints, so `/api/report/generate` fails fast with a non-sensitive `503` when Step 4 is impossible under a direct `OPENAI_*` / Codex-compatible setup without `ZEP_API_KEY`, instead of launching an async report task that only fails later.
+- Validation for this pass passed with `uv run --project backend pytest -q backend/tests/test_report_api_i18n.py`, `python3 -m compileall backend/app/api/report.py backend/tests/test_report_api_i18n.py`, and `bash ./scripts/test_backend_lite.sh` (`173 passed`).
+- Another safe-merge review in this pass still did not expose a new clean upstream PR to adopt; the remaining non-landed queue is still the tracked/unsafe/superseded set already recorded below.
+
 - Upstream intake was revalidated again against the current local snapshots (`docs/upstream-open-state.json` at `2026-03-12T02:33:12.068430+00:00`, `docs/upstream-all-state.json` at `2026-03-12T02:33:27.052491+00:00`). Fork visibility still covers all `45` open upstream issues and all `40` open PR heads.
 - The optional simulation dependency follow-up is stronger now. `backend/uv.lock` has been re-resolved so the simulation extra no longer carries `pillow==10.3.0`; it now locks `pillow==10.4.0` while preserving the existing split where the default backend install path avoids Pillow entirely.
 - Validation for this pass passed with `cd backend && uv sync --extra simulation --frozen --dry-run` and `bash ./scripts/test_backend_lite.sh` (`173 passed`).

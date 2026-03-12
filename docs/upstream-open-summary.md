@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-12T02:38:17.360486+00:00`
+- Captured: `2026-03-12T02:43:39.827928+00:00`
 - Issues: `45` total (`open=45`, `closed=0`)
 - Pull requests: `40` total (`open=40`, `closed=0`)
 - Mirrored in `origin`: `40` of `40` PR refs
@@ -18,7 +18,7 @@
   - local coverage [covered]: Homepage history now supports repo-native deletion of unwanted local records. The backend exposes `DELETE /api/simulation/history/<simulation_id>` to remove a simulation's persisted local directory, cascade-delete its attached local reports, and prune the project metadata when no sibling simulations remain, while refusing deletion for active runs. The history modal now exposes a localized delete action that calls that endpoint directly.
   - 比如我想删除 <img width="1835" height="775" alt="Image" src="https://github.com/user-attachments/assets/12332bbc-f309-497b-a352-f0d15289042e" />这两个，怎么删除呢
 - #156 [open, mirror=#94] 能不能不要画zep图？我只要推演和角色互动 (enhancement)
-  - local coverage [tracked]: Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.
+  - local coverage [tracked]: Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. `/api/report/generate` now also fails early with the same structured backend-config payload instead of launching an async Step 4 task that can only fail later when `ZEP_API_KEY` is missing. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.
   - zep免费额度轻松就用完了，然后流程卡4/5在生成报告上面
 - #154 [open, mirror=#93] Profile serialization crashes when LLM returns structured bio/persona fields (no labels)
   - local coverage [covered]: Profile serialization now tolerates structured LLM output instead of crashing when `bio`, `persona`, `country`, `profession`, or `interested_topics` arrive as dict/list values. `OasisAgentProfile` normalizes those mixed types at construction time and the Reddit/Twitter serializers defensively coerce them again before slicing or string replacement, so simulation preparation no longer fails during profile save with `KeyError: slice(None, 150, None)`.

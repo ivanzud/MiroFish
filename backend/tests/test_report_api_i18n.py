@@ -135,6 +135,26 @@ def test_generate_report_start_message_is_localized(monkeypatch):
         lambda simulation_id: None,
     )
     monkeypatch.setattr(
+        report_api.Config,
+        "validate_comprehensive",
+        classmethod(
+            lambda cls, locale="zh": SimpleNamespace(
+                is_valid=True,
+                errors=[],
+                warnings=[],
+                info=[],
+                to_dict=lambda: {
+                    "is_valid": True,
+                    "errors": [],
+                    "warnings": [],
+                    "info": [],
+                    "error_count": 0,
+                    "warning_count": 0,
+                },
+            )
+        ),
+    )
+    monkeypatch.setattr(
         report_api.ProjectManager,
         "get_project",
         lambda project_id: SimpleNamespace(
@@ -173,6 +193,71 @@ def test_generate_report_start_message_is_localized(monkeypatch):
     assert payload["status"] == "generating"
     assert payload["message"] == "Report generation has started. Query /api/report/generate/status for progress."
     assert payload["already_generated"] is False
+
+
+def test_generate_report_returns_structured_backend_config_error_in_english(monkeypatch):
+    app = create_report_test_app()
+    client = app.test_client()
+
+    monkeypatch.setattr(
+        report_api.SimulationManager,
+        "get_simulation",
+        lambda self, simulation_id: SimpleNamespace(
+            project_id="proj_123",
+            graph_id="graph_123",
+        ),
+    )
+    monkeypatch.setattr(
+        report_api.ReportManager,
+        "get_report_by_simulation",
+        lambda simulation_id: None,
+    )
+    monkeypatch.setattr(
+        report_api.Config,
+        "validate_comprehensive",
+        classmethod(
+            lambda cls, locale="zh": SimpleNamespace(
+                is_valid=False,
+                errors=["ZEP_API_KEY is not configured"],
+                warnings=[],
+                info=[],
+                to_dict=lambda: {
+                    "is_valid": False,
+                    "errors": ["ZEP_API_KEY is not configured"],
+                    "warnings": [],
+                    "info": [],
+                    "error_count": 1,
+                    "warning_count": 0,
+                },
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        report_api.Config,
+        "get_config_summary",
+        classmethod(
+            lambda cls: {
+                "llm": {"backend_mode": "openai_compatible", "configured": True},
+                "capabilities": {
+                    "direct_llm": {"ready": True},
+                    "graph_report_tools": {"ready": False, "requires_zep": True},
+                },
+                "zep": {"configured": False},
+            }
+        ),
+    )
+
+    response = client.post(
+        "/api/report/generate",
+        json={"simulation_id": "sim_123"},
+        headers={"X-Locale": "en"},
+    )
+
+    payload = response.get_json()
+    assert response.status_code == 503
+    assert payload["error"] == "Backend configuration is incomplete: ZEP_API_KEY is not configured"
+    assert payload["data"]["validation"]["is_valid"] is False
+    assert payload["data"]["summary"]["capabilities"]["graph_report_tools"]["ready"] is False
 
 
 def test_generate_status_translates_task_progress_message(monkeypatch):

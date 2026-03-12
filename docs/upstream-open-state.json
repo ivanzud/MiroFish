@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-12T02:38:17.360486+00:00",
-  "generated_at": "2026-03-12T02:38:17.360486+00:00",
+  "captured_at": "2026-03-12T02:43:39.827928+00:00",
+  "generated_at": "2026-03-12T02:43:39.827928+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -141,10 +141,12 @@
       "local_coverage": {
         "number": 156,
         "status": "tracked",
-        "summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
+        "summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. `/api/report/generate` now also fails early with the same structured backend-config payload instead of launching an async Step 4 task that can only fail later when `ZEP_API_KEY` is missing. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
         "local_refs": [
           ".beads/issues.jsonl",
+          "backend/app/api/report.py",
           "backend/app/config.py",
+          "backend/tests/test_report_api_i18n.py",
           "backend/tests/test_config.py",
           "backend/tests/test_print_config_status.py",
           "frontend/src/components/apiConfigDiagnostics.js",
@@ -157,20 +159,21 @@
         ],
         "validation": [
           "cd backend && uv run pytest -q tests/test_config.py tests/test_print_config_status.py",
+          "uv run --project backend pytest -q backend/tests/test_report_api_i18n.py",
           "npm --prefix frontend test -- --runInBand apiConfigDiagnostics.test.mjs",
           "npm --prefix frontend run build",
           "env -i PATH=\"$PATH\" HOME=\"$HOME\" TERM=\"$TERM\" OPENAI_API_KEY=codex-test-key OPENAI_API_BASE_URL=https://codex.example.test/v1 OPENAI_MODEL=gpt-4.1-mini ZEP_API_KEY=zep-test-key SECRET_KEY=test-secret npm run check:backend-config -- --compact",
           "env -i PATH=\"$PATH\" HOME=\"$HOME\" TERM=\"$TERM\" OPENAI_API_KEY=codex-test-key OPENAI_API_BASE_URL=https://codex.example.test/v1 OPENAI_MODEL=gpt-4.1-mini SECRET_KEY=test-secret npm run check:backend-config -- --compact",
           "bash ./scripts/test_backend_lite.sh"
         ],
-        "notes": "Mirrored into fork issue #94 on March 12, 2026. The landed capability matrix makes it explicit that direct OpenAI-compatible LLM wiring can still be valid even when Step 1 / Step 4 remain blocked on Zep, and that Step 5 interaction is still available on an existing simulation environment."
+        "notes": "Mirrored into fork issue #94 on March 12, 2026. The landed capability matrix makes it explicit that direct OpenAI-compatible LLM wiring can still be valid even when Step 1 / Step 4 remain blocked on Zep, and that Step 5 interaction is still available on an existing simulation environment. This branch now also returns that same non-sensitive config payload directly from `/api/report/generate`, so Step 4 no longer starts a doomed async task when only the direct LLM path is configured."
       },
       "local_status": "tracked",
-      "local_summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
+      "local_summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. `/api/report/generate` now also fails early with the same structured backend-config payload instead of launching an async Step 4 task that can only fail later when `ZEP_API_KEY` is missing. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
       "triage_status": "tracked",
-      "summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
+      "summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. `/api/report/generate` now also fails early with the same structured backend-config payload instead of launching an async Step 4 task that can only fail later when `ZEP_API_KEY` is missing. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
       "coverage_status": "tracked",
-      "coverage_summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
+      "coverage_summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. `/api/report/generate` now also fails early with the same structured backend-config payload instead of launching an async Step 4 task that can only fail later when `ZEP_API_KEY` is missing. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 94,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/94"

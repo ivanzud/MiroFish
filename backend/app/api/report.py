@@ -49,6 +49,22 @@ def _handle_report_api_exception(error: Exception, locale: str, key: str):
     return handle_api_exception(logger, error, _report_error_context(locale, key))
 
 
+def _report_backend_config_error_response(locale: str):
+    """Return a consistent non-sensitive config error payload for report endpoints."""
+    validation = Config.validate_comprehensive(locale=locale)
+    if validation.is_valid:
+        return None
+
+    return jsonify({
+        "success": False,
+        "error": tr("api.backend_config_incomplete", locale, details="; ".join(validation.errors)),
+        "data": {
+            "validation": validation.to_dict(),
+            "summary": Config.get_config_summary(),
+        }
+    }), 503
+
+
 def _translate_report_message(locale: str, message: str | None) -> str | None:
     if locale != "en" or not message:
         return message
@@ -155,6 +171,10 @@ def generate_report():
                         "already_generated": True
                     }
                 })
+
+        config_error = _report_backend_config_error_response(locale)
+        if config_error is not None:
+            return config_error
         
         # 获取项目信息
         project = ProjectManager.get_project(state.project_id)
