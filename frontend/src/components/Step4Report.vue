@@ -14,14 +14,24 @@
               <div class="report-reference-card">
                 <div class="report-reference-heading">
                   <span class="report-reference-label">{{ t('step4.reportIdLabel') }}</span>
-                  <button
-                    class="report-reference-copy"
-                    :disabled="!reportId"
-                    type="button"
-                    @click="copyReference('report', reportId)"
-                  >
-                    {{ copiedReferenceKey === 'report' ? t('step4.copied') : t('step4.copyId') }}
-                  </button>
+                  <div class="report-reference-actions">
+                    <button
+                      class="report-reference-copy"
+                      :disabled="!reportId"
+                      type="button"
+                      @click="copyReference('report', reportId)"
+                    >
+                      {{ copiedReferenceKey === 'report' ? t('step4.copied') : t('step4.copyId') }}
+                    </button>
+                    <button
+                      class="report-reference-copy"
+                      :disabled="!reportId"
+                      type="button"
+                      @click="downloadReportMarkdown"
+                    >
+                      {{ t('step4.exportMd') }}
+                    </button>
+                  </div>
                 </div>
                 <span class="report-reference-value">{{ resolvedReportReference }}</span>
               </div>
@@ -462,7 +472,9 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick, h, reactive } f
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { generateReport, getAgentLog, getConsoleLog, getReport } from '../api/report'
+import { resolveBaseURL } from '../api/index.js'
 import { copyText } from '../utils/clipboard'
+import { triggerHistoryReportDownload } from './historyReportDownload.js'
 import { buildInteractionRoute } from './interactionRoute.js'
 import { resolveReportReferenceValue } from './reportReferences.js'
 import {
@@ -595,6 +607,17 @@ const copyReference = async (key, value) => {
     copiedReferenceKey.value = ''
     copiedReferenceTimer = null
   }, 2000)
+}
+
+const downloadReportMarkdown = () => {
+  if (!props.reportId) {
+    return
+  }
+
+  triggerHistoryReportDownload(props.reportId, {
+    simulationId: props.simulationId,
+    baseURL: resolveBaseURL(),
+  })
 }
 
 // Toggle functions
@@ -2047,6 +2070,14 @@ watch(() => props.reportId, (newId) => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.report-reference-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .report-reference-label {

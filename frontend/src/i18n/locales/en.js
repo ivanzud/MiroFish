@@ -567,6 +567,7 @@ export default {
     simulationIdLabel: 'Simulation ID',
     copyId: 'Copy ID',
     copied: 'Copied',
+    exportMd: 'Export MD',
     unavailableId: 'Not available yet',
     referenceHint: 'Keep these IDs with the exported Markdown or saved history entry so you can compare this report against later real-world outcomes.',
     sectionGenerating: 'Generating {title}...',

@@ -567,6 +567,7 @@ export default {
     simulationIdLabel: '模拟 ID',
     copyId: '复制 ID',
     copied: '已复制',
+    exportMd: '导出 MD',
     unavailableId: '暂未生成',
     referenceHint: '请把这些 ID 与导出的 Markdown 或首页历史记录一起保存，便于后续把本次报告与现实结果做对照复核。',
     sectionGenerating: '正在生成 {title}...',

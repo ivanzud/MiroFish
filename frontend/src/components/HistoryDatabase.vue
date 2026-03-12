@@ -503,7 +503,10 @@ const downloadSelectedReport = () => {
     return
   }
 
-  triggerHistoryReportDownload(reportId, { baseURL: resolveBaseURL() })
+  triggerHistoryReportDownload(reportId, {
+    simulationId: selectedProject.value?.simulation_id,
+    baseURL: resolveBaseURL(),
+  })
 }
 
 const isDeletingSelectedProject = computed(
