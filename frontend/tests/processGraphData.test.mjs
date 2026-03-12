@@ -1,7 +1,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { mapProcessGraphData } from '../src/views/processGraphData.js'
+import {
+  getProcessGraphSignature,
+  mapProcessGraphData,
+} from '../src/views/processGraphData.js'
 
 test('process graph mapping localizes fallback node and edge labels', () => {
   const result = mapProcessGraphData({
@@ -104,4 +107,63 @@ test('process graph mapping collapses obvious alias duplicates and remaps edges'
       },
     },
   ])
+})
+
+test('process graph signature changes when edges change without node-count delta', () => {
+  const basePayload = {
+    unnamedNodeLabel: 'Untitled',
+    unknownNodeLabel: 'Unknown',
+    nodes: [
+      { uuid: 'node-1', name: 'Alice', labels: ['Entity', 'Person'] },
+      { uuid: 'node-2', name: 'Bob', labels: ['Entity', 'Person'] },
+      { uuid: 'node-3', name: 'Carol', labels: ['Entity', 'Person'] },
+    ],
+  }
+
+  const firstSignature = getProcessGraphSignature({
+    ...basePayload,
+    edges: [
+      { source_node_uuid: 'node-1', target_node_uuid: 'node-2', fact_type: 'KNOWS' },
+    ],
+  })
+  const secondSignature = getProcessGraphSignature({
+    ...basePayload,
+    edges: [
+      { source_node_uuid: 'node-1', target_node_uuid: 'node-3', fact_type: 'KNOWS' },
+    ],
+  })
+
+  assert.notEqual(firstSignature, secondSignature)
+})
+
+test('process graph signature is stable across raw ordering changes after alias collapse', () => {
+  const payloadA = getProcessGraphSignature({
+    unnamedNodeLabel: 'Untitled',
+    unknownNodeLabel: 'Unknown',
+    nodes: [
+      { uuid: 'node-1', name: '美国总统特朗普', labels: ['Entity', 'Person'] },
+      { uuid: 'node-2', name: '特朗普', labels: ['Entity', 'Person'] },
+      { uuid: 'node-3', name: '美国', labels: ['Entity', 'Location'] },
+    ],
+    edges: [
+      { source_node_uuid: 'node-1', target_node_uuid: 'node-3', fact_type: 'LEADS' },
+      { source_node_uuid: 'node-2', target_node_uuid: 'node-3', fact_type: 'LEADS' },
+    ],
+  })
+
+  const payloadB = getProcessGraphSignature({
+    unnamedNodeLabel: 'Untitled',
+    unknownNodeLabel: 'Unknown',
+    nodes: [
+      { uuid: 'node-3', name: '美国', labels: ['Entity', 'Location'] },
+      { uuid: 'node-2', name: '特朗普', labels: ['Entity', 'Person'] },
+      { uuid: 'node-1', name: '美国总统特朗普', labels: ['Entity', 'Person'] },
+    ],
+    edges: [
+      { source_node_uuid: 'node-2', target_node_uuid: 'node-3', fact_type: 'LEADS' },
+      { source_node_uuid: 'node-1', target_node_uuid: 'node-3', fact_type: 'LEADS' },
+    ],
+  })
+
+  assert.equal(payloadA, payloadB)
 })

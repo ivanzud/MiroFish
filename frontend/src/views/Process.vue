@@ -424,7 +424,7 @@ import { resolveBaseURL } from '../api/index.js'
 import { getPendingUpload, clearPendingUpload } from '../store/pendingUpload'
 import { getDisplayedAliasNames } from '../components/graphAliasDetails.js'
 import { summarizeGraphData } from '../components/graphPanelData.js'
-import { mapProcessGraphData } from './processGraphData.js'
+import { getProcessGraphSignature, mapProcessGraphData } from './processGraphData.js'
 import * as d3 from 'd3'
 
 const route = useRoute()
@@ -440,6 +440,7 @@ const graphLoading = ref(false)
 const error = ref('')
 const projectData = ref(null)
 const graphData = ref(null)
+const graphSignature = ref('')
 const buildProgress = ref(null)
 const ontologyProgress = ref(null) // 本体生成进度
 const currentPhase = ref(-1) // -1: 上传中, 0: 本体生成中, 1: 图谱构建, 2: 完成
@@ -483,6 +484,12 @@ const statusText = computed(() => {
 })
 
 const entityTypes = computed(() => normalizedGraphSummary.value.entityTypes)
+const buildGraphSignature = (payload) => getProcessGraphSignature({
+  nodes: payload?.nodes || [],
+  edges: payload?.edges || [],
+  unnamedNodeLabel: t('process.unnamedNode'),
+  unknownNodeLabel: t('process.unknownNode'),
+})
 
 // 方法
 const goHome = () => {
@@ -778,14 +785,14 @@ const fetchGraphData = async () => {
       
       if (graphResponse.success && graphResponse.data) {
         const newData = graphResponse.data
-        const newNodeCount = newData.node_count || newData.nodes?.length || 0
-        const oldNodeCount = graphData.value?.node_count || graphData.value?.nodes?.length || 0
+        const newSignature = buildGraphSignature(newData)
         
-        console.log('Fetching graph data, nodes:', newNodeCount, 'edges:', newData.edge_count || newData.edges?.length || 0)
+        console.log('Fetching graph data, nodes:', newData.node_count || newData.nodes?.length || 0, 'edges:', newData.edge_count || newData.edges?.length || 0)
         
         // 数据有变化时更新渲染
-        if (newNodeCount !== oldNodeCount || !graphData.value) {
+        if (newSignature !== graphSignature.value || !graphData.value) {
           graphData.value = newData
+          graphSignature.value = newSignature
           await nextTick()
           renderGraph()
         }
@@ -878,6 +885,7 @@ const loadGraph = async (graphId) => {
     
     if (response.success) {
       graphData.value = response.data
+      graphSignature.value = buildGraphSignature(response.data)
       await nextTick()
       renderGraph()
     }

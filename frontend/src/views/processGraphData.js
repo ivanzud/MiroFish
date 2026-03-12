@@ -274,3 +274,44 @@ export const mapProcessGraphData = ({
     edges: mappedEdges,
   }
 }
+
+export const getProcessGraphSignature = ({
+  nodes = [],
+  edges = [],
+  unnamedNodeLabel = 'Unnamed',
+  unknownNodeLabel = 'Unknown',
+}) => {
+  const mapped = mapProcessGraphData({
+    nodes,
+    edges,
+    unnamedNodeLabel,
+    unknownNodeLabel,
+  })
+
+  const nodeSignature = mapped.nodes
+    .map((node) => ({
+      id: node.id,
+      name: node.name,
+      type: node.type,
+      aliases: [...(node.rawData?.alias_names || [])].sort(),
+      merged: [...(node.rawData?.merged_node_uuids || [])].sort(),
+    }))
+    .sort((left, right) => left.id.localeCompare(right.id))
+
+  const edgeSignature = mapped.edges
+    .map((edge) => ({
+      source: edge.source,
+      target: edge.target,
+      type: edge.type,
+    }))
+    .sort((left, right) => (
+      `${left.source}::${left.target}::${left.type}`.localeCompare(
+        `${right.source}::${right.target}::${right.type}`,
+      )
+    ))
+
+  return JSON.stringify({
+    nodes: nodeSignature,
+    edges: edgeSignature,
+  })
+}
