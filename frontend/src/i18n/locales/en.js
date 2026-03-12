@@ -168,6 +168,7 @@ export default {
     deleting: 'Deleting...',
     copyId: 'Copy ID',
     copied: 'Copied',
+    exportMd: 'Export MD',
     simulationIdLabel: 'Simulation ID',
     reportIdLabel: 'Report ID',
     deleteConfirm: 'Delete {simulationId} and its local history files? This cannot be undone.',

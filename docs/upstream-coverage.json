@@ -1,6 +1,6 @@
 {
   "repo": "666ghj/MiroFish",
-  "captured_at": "2026-03-12T00:30:04Z",
+  "captured_at": "2026-03-12T02:18:00Z",
   "issues": [
     {
       "number": 157,
@@ -28,16 +28,18 @@
     {
       "number": 158,
       "status": "partial",
-      "summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, and the homepage history modal now keeps those same references together so users can reopen or preserve the exact report/run pair for later review. Users can export the Markdown report or reuse the files under `backend/uploads/reports/<report_id>/` and compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
+      "summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, and the homepage history modal now keeps those same references together for later review. Users can export the Markdown report directly from both Step 4 and the saved-history modal, or reuse the files under `backend/uploads/reports/<report_id>/`, then compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
       "local_refs": [
         ".beads/issues.jsonl",
         "README-EN.md",
         "README.md",
         "docs/upstream-triage.md",
         "frontend/src/components/HistoryDatabase.vue",
+        "frontend/src/components/historyReportDownload.js",
         "frontend/src/components/Step4Report.vue",
         "frontend/src/i18n/locales/en.js",
         "frontend/src/i18n/locales/zh.js",
+        "frontend/tests/historyReportDownload.test.mjs",
         "https://github.com/ivanzud/MiroFish/issues/95"
       ],
       "validation": [
@@ -45,7 +47,7 @@
         "npm --prefix frontend run build",
         "README verification"
       ],
-      "notes": "Mirrored into fork issue #95 on March 12, 2026. The repo now documents how to preserve and revisit forecast evidence, exposes copyable report/simulation IDs in Step 4, and surfaces the same references in the history modal for later reuse. It still does not automate outcome ingestion or accuracy scoring."
+      "notes": "Mirrored into fork issue #95 on March 12, 2026. The repo now documents how to preserve and revisit forecast evidence, exposes copyable report/simulation IDs in Step 4, and surfaces the same references plus a direct Markdown export action in the history modal for later reuse. It still does not automate outcome ingestion or accuracy scoring."
     },
     {
       "number": 156,

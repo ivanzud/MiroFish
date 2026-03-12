@@ -153,14 +153,24 @@
                   <div class="history-reference-card">
                     <div class="history-reference-heading">
                       <span class="history-reference-label">{{ t('history.reportIdLabel') }}</span>
-                      <button
-                        class="history-copy-btn"
-                        :disabled="!selectedProject.report_id"
-                        type="button"
-                        @click="copyHistoryReference('report', selectedProject.report_id)"
-                      >
-                        {{ copiedHistoryField === 'report' ? t('history.copied') : t('history.copyId') }}
-                      </button>
+                      <div class="history-reference-actions">
+                        <button
+                          class="history-copy-btn"
+                          :disabled="!selectedProject.report_id"
+                          type="button"
+                          @click="copyHistoryReference('report', selectedProject.report_id)"
+                        >
+                          {{ copiedHistoryField === 'report' ? t('history.copied') : t('history.copyId') }}
+                        </button>
+                        <button
+                          class="history-copy-btn"
+                          :disabled="!selectedProject.report_id"
+                          type="button"
+                          @click="downloadSelectedReport"
+                        >
+                          {{ t('history.exportMd') }}
+                        </button>
+                      </div>
                     </div>
                     <span class="history-reference-value">{{ selectedProject.report_id || t('step4.unavailableId') }}</span>
                   </div>
@@ -245,10 +255,12 @@
 import { ref, computed, onMounted, onUnmounted, onActivated, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { resolveBaseURL } from '../api/index'
 import { deleteSimulationHistory, getSimulationHistory } from '../api/simulation'
 import { copyText } from '../utils/clipboard'
 import { buildSimulationReplayRoute, hasReplayableSimulationState } from './historyPlayback'
 import { truncateFilename as formatHistoryFilename } from './historyFormatters'
+import { triggerHistoryReportDownload } from './historyReportDownload'
 
 const router = useRouter()
 const route = useRoute()
@@ -473,6 +485,15 @@ const copyHistoryReference = async (field, value) => {
     copiedHistoryField.value = ''
     copiedHistoryTimer = null
   }, 2000)
+}
+
+const downloadSelectedReport = () => {
+  const reportId = selectedProject.value?.report_id
+  if (!reportId) {
+    return
+  }
+
+  triggerHistoryReportDownload(reportId, { baseURL: resolveBaseURL() })
 }
 
 const isDeletingSelectedProject = computed(
@@ -1330,6 +1351,13 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.history-reference-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .history-reference-label {

@@ -168,6 +168,7 @@ export default {
     deleting: '删除中...',
     copyId: '复制 ID',
     copied: '已复制',
+    exportMd: '导出 MD',
     simulationIdLabel: '模拟 ID',
     reportIdLabel: '报告 ID',
     deleteConfirm: '确认删除 {simulationId} 及其本地历史文件吗？此操作不可撤销。',
