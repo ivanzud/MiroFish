@@ -10,6 +10,10 @@ const t = (key, params = {}) => {
     'apiConfig.diagnostics.configuredOpenAI': 'Direct OPENAI/Codex-compatible path detected',
     'apiConfig.diagnostics.baseUrlConflictTitle': 'Conflicting backend base URLs detected',
     'apiConfig.diagnostics.zepMissingNote': 'The direct LLM path is configured, but Step 1 graph build and graph-backed report tools still require ZEP_API_KEY until a non-Zep backend is landed.',
+    'apiConfig.diagnostics.nextStepsTitle': 'Next usable path',
+    'apiConfig.diagnostics.nextStepOpenStep2': 'Open Step 2 to generate the simulation environment, then continue into Step 3 with the direct backend.',
+    'apiConfig.diagnostics.nextStepReuseStep5': 'After Step 2/3 has produced a simulation environment, Step 5 can still be used for role interaction even without a Step 4 report.',
+    'apiConfig.diagnostics.nextStepWaitForNonZep': 'Step 1 graph build and Step 4 graph-backed report tools remain blocked until ZEP_API_KEY is configured or a non-Zep graph backend is added.',
     'apiConfig.diagnostics.incomplete': 'Backend config needs attention',
     'apiConfig.diagnostics.modeLabel': 'Backend mode',
     'apiConfig.diagnostics.sourceLabel': 'Resolved config source',
@@ -72,6 +76,7 @@ test('buildBackendDiagnosticModel highlights direct OPENAI alias resolution', ()
   assert.equal(diagnostic.tone, 'ready')
   assert.equal(diagnostic.headline, 'Direct OPENAI/Codex-compatible path detected')
   assert.equal(diagnostic.note, '')
+  assert.deepEqual(diagnostic.nextSteps, [])
   assert.deepEqual(diagnostic.rows, [
     { label: 'Backend mode', value: 'OpenAI-compatible' },
     { label: 'Resolved config source', value: 'Direct OPENAI_* aliases' },
@@ -103,6 +108,7 @@ test('buildBackendDiagnosticModel falls back cleanly for project aliases and mis
 
   assert.equal(diagnostic.tone, 'warning')
   assert.equal(diagnostic.headline, 'Backend config needs attention')
+  assert.deepEqual(diagnostic.nextSteps, [])
   assert.deepEqual(diagnostic.rows, [
     { label: 'Backend mode', value: 'None' },
     { label: 'Resolved config source', value: 'Project LLM_* aliases' },
@@ -146,6 +152,7 @@ test('buildBackendDiagnosticModel flags mixed alias resolution explicitly', () =
     'OPENAI_API_KEY / LLM_BASE_URL / OPENAI_MODEL',
   )
   assert.equal(diagnostic.note, '')
+  assert.deepEqual(diagnostic.nextSteps, [])
 })
 
 test('buildBackendDiagnosticModel keeps the LLM path ready when only ZEP is missing', () => {
@@ -184,6 +191,11 @@ test('buildBackendDiagnosticModel keeps the LLM path ready when only ZEP is miss
     diagnostic.note,
     'The direct LLM path is configured, but Step 1 graph build and graph-backed report tools still require ZEP_API_KEY until a non-Zep backend is landed.',
   )
+  assert.deepEqual(diagnostic.nextSteps, [
+    'Open Step 2 to generate the simulation environment, then continue into Step 3 with the direct backend.',
+    'After Step 2/3 has produced a simulation environment, Step 5 can still be used for role interaction even without a Step 4 report.',
+    'Step 1 graph build and Step 4 graph-backed report tools remain blocked until ZEP_API_KEY is configured or a non-Zep graph backend is added.',
+  ])
   assert.deepEqual(diagnostic.rows.slice(-4), [
     { label: 'Direct LLM usage', value: 'Ready' },
     { label: 'Step 1 graph build', value: 'Needs ZEP_API_KEY' },
@@ -229,4 +241,5 @@ test('buildBackendDiagnosticModel flags conflicting base URL aliases', () => {
     diagnostic.note,
     'OPENAI_BASE_URL / OPENAI_API_BASE_URL are set to different values. MiroFish is currently using OPENAI_BASE_URL=https://api.openai.com/v1.',
   )
+  assert.deepEqual(diagnostic.nextSteps, [])
 })

@@ -35,6 +35,18 @@
           <p v-if="backendDiagnostic.note" class="diagnostics-state diagnostics-state--warning">
             {{ backendDiagnostic.note }}
           </p>
+          <div v-if="backendDiagnostic.nextSteps?.length" class="diagnostics-next-steps">
+            <p class="diagnostics-next-steps-title">{{ t('apiConfig.diagnostics.nextStepsTitle') }}</p>
+            <ul class="diagnostics-next-steps-list">
+              <li
+                v-for="step in backendDiagnostic.nextSteps"
+                :key="step"
+                class="diagnostics-next-step"
+              >
+                {{ step }}
+              </li>
+            </ul>
+          </div>
           <div class="diagnostics-grid">
             <div v-for="row in backendDiagnostic.rows" :key="row.label" class="diagnostics-row">
               <span class="diagnostics-label">{{ row.label }}</span>
@@ -225,6 +237,8 @@ const reset = () => {
 .input-label,
 .diagnostics-copy,
 .diagnostics-state,
+.diagnostics-next-steps-title,
+.diagnostics-next-step,
 .diagnostics-label,
 .diagnostics-value {
   font-size: 12px;
@@ -236,6 +250,27 @@ const reset = () => {
   padding: 12px;
   border: 1px solid #000;
   background: #fafafa;
+}
+
+.diagnostics-next-steps {
+  margin: 10px 0 12px;
+  padding: 10px;
+  border: 1px dashed #000;
+  background: #fff;
+}
+
+.diagnostics-next-steps-title {
+  margin: 0 0 6px;
+  font-weight: 700;
+}
+
+.diagnostics-next-steps-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.diagnostics-next-step {
+  margin: 0;
 }
 
 .diagnostics-header {

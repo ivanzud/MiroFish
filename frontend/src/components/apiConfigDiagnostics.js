@@ -17,6 +17,10 @@ export const buildBackendDiagnosticModel = (payload, t) => {
     !(typeof message === 'string' && message.includes('ZEP_API_KEY')),
   )
   const isConfigured = llm.configured && llmBlockingErrors.length === 0 && !hasBaseUrlConflict
+  const directLlmReady = Boolean(capabilities.direct_llm?.ready)
+  const graphBuildReady = Boolean(capabilities.graph_build?.ready)
+  const reportToolsReady = Boolean(capabilities.graph_report_tools?.ready)
+  const step5Ready = Boolean(capabilities.existing_simulation_interaction?.ready)
 
   let resolvedSource = t('apiConfig.diagnostics.sourceUnknown')
   if (usesOpenAIAliases && usesProjectAliases) {
@@ -52,6 +56,15 @@ export const buildBackendDiagnosticModel = (payload, t) => {
     return t('apiConfig.diagnostics.capabilityNeedsBackendConfig')
   }
 
+  const nextSteps = []
+  if (directLlmReady && hasZepMissingError && !graphBuildReady && !reportToolsReady) {
+    nextSteps.push(t('apiConfig.diagnostics.nextStepOpenStep2'))
+    if (step5Ready) {
+      nextSteps.push(t('apiConfig.diagnostics.nextStepReuseStep5'))
+    }
+    nextSteps.push(t('apiConfig.diagnostics.nextStepWaitForNonZep'))
+  }
+
   return {
     tone: isConfigured ? 'ready' : 'warning',
     headline: hasBaseUrlConflict
@@ -72,6 +85,7 @@ export const buildBackendDiagnosticModel = (payload, t) => {
       : isConfigured && hasZepMissingError
       ? t('apiConfig.diagnostics.zepMissingNote')
       : '',
+    nextSteps,
     rows: [
       {
         label: t('apiConfig.diagnostics.modeLabel'),
