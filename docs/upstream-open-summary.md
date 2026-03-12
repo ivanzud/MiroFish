@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-12T02:28:44.896384+00:00`
+- Captured: `2026-03-12T02:33:12.068430+00:00`
 - Issues: `45` total (`open=45`, `closed=0`)
 - Pull requests: `40` total (`open=40`, `closed=0`)
 - Mirrored in `origin`: `40` of `40` PR refs
@@ -12,7 +12,7 @@
 ## Recently Updated Issues
 
 - #158 [open, mirror=#95] Are there any predictions that have been verified by subsequent events? (question)
-  - local coverage [partial]: README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, and the homepage history modal now keeps those same references together for later review. Users can export the Markdown report directly from both Step 4 and the saved-history modal, or reuse the files under `backend/uploads/reports/<report_id>/`, then compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.
+  - local coverage [partial]: README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and exported Step 4 Markdown now embeds the report/simulation/graph references directly in the file header. Users can export the Markdown report directly from both Step 4 and the saved-history modal, or reuse the files under `backend/uploads/reports/<report_id>/`, then compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.
   - Awesome idea! I am wondering are there any predictions that have been verified by subsequent events?
 - #157 [open, mirror=#96] 如何删除不想要的记录 (question)
   - local coverage [covered]: Homepage history now supports repo-native deletion of unwanted local records. The backend exposes `DELETE /api/simulation/history/<simulation_id>` to remove a simulation's persisted local directory, cascade-delete its attached local reports, and prune the project metadata when no sibling simulations remain, while refusing deletion for active runs. The history modal now exposes a localized delete action that calls that endpoint directly.

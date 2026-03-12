@@ -2584,7 +2584,12 @@ class ReportAgent:
             )
             
             # 使用ReportManager组装完整报告
-            report.markdown_content = ReportManager.assemble_full_report(report_id, outline, locale=self.locale)
+            report.markdown_content = ReportManager.assemble_full_report(
+                report_id,
+                outline,
+                locale=self.locale,
+                report=report,
+            )
             report.status = ReportStatus.COMPLETED
             report.completed_at = datetime.now().isoformat()
             
@@ -3171,7 +3176,76 @@ class ReportManager:
         return sections
     
     @classmethod
-    def assemble_full_report(cls, report_id: str, outline: ReportOutline, locale: str = "zh") -> str:
+    def _build_report_reference_block(cls, report: Optional[Report], locale: str = "zh") -> str:
+        """Build a localized reference block for exported Markdown evidence."""
+        if report is None:
+            return ""
+
+        labels = {
+            "zh": {
+                "heading": "报告引用信息",
+                "field": "字段",
+                "value": "值",
+                "report_id": "报告 ID",
+                "simulation_id": "模拟 ID",
+                "graph_id": "图谱 ID",
+                "generated_at": "生成时间",
+                "requirement": "模拟需求",
+                "missing": "暂无",
+            },
+            "en": {
+                "heading": "Report References",
+                "field": "Field",
+                "value": "Value",
+                "report_id": "Report ID",
+                "simulation_id": "Simulation ID",
+                "graph_id": "Graph ID",
+                "generated_at": "Generated At",
+                "requirement": "Simulation Requirement",
+                "missing": "Unavailable",
+            },
+        }
+        copy = labels["en"] if locale == "en" else labels["zh"]
+        fallback = copy["missing"]
+        generated_at = report.completed_at or report.created_at or fallback
+
+        rows = [
+            (copy["report_id"], report.report_id or fallback),
+            (copy["simulation_id"], report.simulation_id or fallback),
+            (copy["graph_id"], report.graph_id or fallback),
+            (copy["generated_at"], generated_at),
+        ]
+
+        lines = [
+            f"## {copy['heading']}",
+            "",
+            f"| {copy['field']} | {copy['value']} |",
+            "| --- | --- |",
+        ]
+        lines.extend(f"| {label} | {value} |" for label, value in rows)
+
+        requirement = (report.simulation_requirement or "").strip()
+        if requirement:
+            lines.extend(
+                [
+                    "",
+                    f"**{copy['requirement']}**",
+                    "",
+                    requirement,
+                ]
+            )
+
+        lines.extend(["", "---", ""])
+        return "\n".join(lines)
+
+    @classmethod
+    def assemble_full_report(
+        cls,
+        report_id: str,
+        outline: ReportOutline,
+        locale: str = "zh",
+        report: Optional[Report] = None,
+    ) -> str:
         """
         组装完整报告
         
@@ -3182,7 +3256,7 @@ class ReportManager:
         # 构建报告头部
         md_content = f"# {outline.title}\n\n"
         md_content += f"> {outline.summary}\n\n"
-        md_content += f"---\n\n"
+        md_content += cls._build_report_reference_block(report, locale=locale)
         
         # 按顺序读取所有章节文件
         sections = cls.get_generated_sections(report_id)

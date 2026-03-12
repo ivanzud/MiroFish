@@ -11,6 +11,7 @@ sys.modules.setdefault("zep_cloud", fake_zep_cloud)
 sys.modules.setdefault("zep_cloud.client", fake_zep_client)
 
 from app.services.report_agent import ReportAgent
+from app.services.report_agent import Report
 from app.services.report_agent import ReportManager
 from app.services.report_agent import ReportOutline
 from app.services.report_agent import ReportSection
@@ -322,6 +323,65 @@ def test_generate_report_survives_empty_llm_section_responses(tmp_path, monkeypa
     assert saved_progress is not None
     assert saved_progress["status"] == "completed"
     assert saved_progress["progress"] == 100
+
+
+def test_assemble_full_report_embeds_localized_reference_block(tmp_path, monkeypatch):
+    monkeypatch.setattr(ReportManager, "REPORTS_DIR", str(tmp_path / "reports"))
+    report_id = "report_refs"
+    ReportManager.save_section(
+        report_id,
+        1,
+        ReportSection(title="Key Findings", content="Forecast body."),
+    )
+    outline = ReportOutline(
+        title="Forecast Report",
+        summary="Audience outlook summary",
+        sections=[ReportSection(title="Key Findings")],
+    )
+    report = Report(
+        report_id=report_id,
+        simulation_id="sim_refs",
+        graph_id="graph_refs",
+        simulation_requirement="Predict the likely audience for this game",
+        status=ReportStatus.GENERATING,
+        created_at="2026-03-12T02:00:00",
+        completed_at="2026-03-12T02:05:00",
+    )
+
+    markdown = ReportManager.assemble_full_report(
+        report_id,
+        outline,
+        locale="en",
+        report=report,
+    )
+
+    assert "**Report References**" in markdown
+    assert "| Report ID | report_refs |" in markdown
+    assert "| Simulation ID | sim_refs |" in markdown
+    assert "| Graph ID | graph_refs |" in markdown
+    assert "| Generated At | 2026-03-12T02:05:00 |" in markdown
+    assert "**Simulation Requirement**" in markdown
+    assert "Predict the likely audience for this game" in markdown
+
+
+def test_generate_report_embeds_reference_block_in_markdown(tmp_path, monkeypatch):
+    monkeypatch.setattr(ReportManager, "REPORTS_DIR", str(tmp_path / "reports"))
+
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="预测这个游戏的受众群体会是什么样",
+        llm_client=EmptySectionLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    report = agent.generate_report(report_id="report_with_refs")
+
+    assert report.status == ReportStatus.COMPLETED
+    assert "**报告引用信息**" in report.markdown_content
+    assert "| 报告 ID | report_with_refs |" in report.markdown_content
+    assert "| 模拟 ID | sim-test |" in report.markdown_content
+    assert "| 图谱 ID | graph-test |" in report.markdown_content
 
 
 def test_generate_section_localizes_english_react_loop_messages(monkeypatch):
