@@ -4,19 +4,125 @@ Report API路由
 """
 
 import os
-import traceback
+import re
 import threading
 from flask import request, jsonify, send_file
 
 from . import report_bp
 from ..config import Config
+from ..i18n import get_locale, tr
 from ..services.report_agent import ReportAgent, ReportManager, ReportStatus
 from ..services.simulation_manager import SimulationManager
 from ..models.project import ProjectManager
 from ..models.task import TaskManager, TaskStatus
+from ..utils.error_handler import handle_api_exception
 from ..utils.logger import get_logger
 
 logger = get_logger('mirofish.api.report')
+
+REPORT_STAGE_LABELS = {
+    "pending": "Pending",
+    "planning": "Planning",
+    "generating": "Generating",
+    "completed": "Completed",
+    "failed": "Failed",
+}
+
+REPORT_PROGRESS_MESSAGE_MAP = {
+    "初始化Report Agent...": "Initializing Report Agent...",
+    "初始化报告...": "Initializing report...",
+    "开始规划报告大纲...": "Starting report outline planning...",
+    "正在分析模拟需求...": "Analyzing the simulation requirement...",
+    "正在生成报告大纲...": "Generating the report outline...",
+    "正在解析大纲结构...": "Parsing the outline structure...",
+    "大纲规划完成": "Outline planning completed",
+    "正在组装完整报告...": "Assembling the full report...",
+    "报告生成完成": "Report generation completed",
+}
+
+
+def _report_error_context(locale: str, key: str) -> str:
+    return tr(key, locale)
+
+
+def _handle_report_api_exception(error: Exception, locale: str, key: str):
+    return handle_api_exception(logger, error, _report_error_context(locale, key))
+
+
+def _report_backend_config_error_response(locale: str):
+    """Return a consistent non-sensitive config error payload for report endpoints."""
+    validation = Config.validate_comprehensive(locale=locale)
+    if validation.is_valid:
+        return None
+
+    return jsonify({
+        "success": False,
+        "error": tr("api.backend_config_incomplete", locale, details="; ".join(validation.errors)),
+        "data": {
+            "validation": validation.to_dict(),
+            "summary": Config.get_config_summary(),
+        }
+    }), 503
+
+
+def _translate_report_message(locale: str, message: str | None) -> str | None:
+    if locale != "en" or not message:
+        return message
+
+    translated = REPORT_PROGRESS_MESSAGE_MAP.get(message, message)
+
+    stage_match = re.match(r"^\[(?P<stage>[a-z_]+)\]\s+(?P<body>.+)$", translated)
+    if stage_match:
+        stage = stage_match.group("stage")
+        body = _translate_report_message(locale, stage_match.group("body")) or ""
+        return f"[{REPORT_STAGE_LABELS.get(stage, stage)}] {body}"
+
+    outline_match = re.match(r"^大纲规划完成，共(?P<count>\d+)个章节$", translated)
+    if outline_match:
+        return f"Outline planning completed with {outline_match.group('count')} sections"
+
+    generating_match = re.match(
+        r"^正在生成章节: (?P<title>.+) \((?P<index>\d+)/(?P<total>\d+)\)$",
+        translated,
+    )
+    if generating_match:
+        return (
+            f"Generating section: {generating_match.group('title')} "
+            f"({generating_match.group('index')}/{generating_match.group('total')})"
+        )
+
+    completed_match = re.match(r"^章节 (?P<title>.+) 已完成$", translated)
+    if completed_match:
+        return f"Section completed: {completed_match.group('title')}"
+
+    return translated
+
+
+def _translate_report_progress_payload(locale: str, payload: dict | None) -> dict | None:
+    if locale != "en" or not payload:
+        return payload
+
+    translated_payload = dict(payload)
+    translated_payload["message"] = _translate_report_message(locale, payload.get("message"))
+    return translated_payload
+
+
+def _sanitize_download_name_part(value: str | None) -> str:
+    sanitized = re.sub(r"[^a-zA-Z0-9._-]+", "-", (value or "").strip())
+    sanitized = re.sub(r"-+", "-", sanitized)
+    return sanitized.strip("-")
+
+
+def _build_report_download_name(report) -> str:
+    report_part = _sanitize_download_name_part(getattr(report, "report_id", ""))
+    simulation_part = _sanitize_download_name_part(getattr(report, "simulation_id", ""))
+
+    if not report_part:
+        report_part = "report"
+
+    if simulation_part:
+        return f"mirofish-report-{report_part}--simulation-{simulation_part}.md"
+    return f"mirofish-report-{report_part}.md"
 
 
 # ============== 报告生成接口 ==============
@@ -46,6 +152,7 @@ def generate_report():
             }
         }
     """
+    locale = get_locale()
     try:
         data = request.get_json() or {}
         
@@ -53,7 +160,7 @@ def generate_report():
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": tr("report.simulation_id_required", locale)
             }), 400
         
         force_regenerate = data.get('force_regenerate', False)
@@ -65,7 +172,7 @@ def generate_report():
         if not state:
             return jsonify({
                 "success": False,
-                "error": f"模拟不存在: {simulation_id}"
+                "error": tr("simulation.not_found", locale, simulation_id=simulation_id)
             }), 404
         
         # 检查是否已有报告
@@ -78,31 +185,35 @@ def generate_report():
                         "simulation_id": simulation_id,
                         "report_id": existing_report.report_id,
                         "status": "completed",
-                        "message": "报告已存在",
+                        "message": tr("report.already_exists", locale),
                         "already_generated": True
                     }
                 })
+
+        config_error = _report_backend_config_error_response(locale)
+        if config_error is not None:
+            return config_error
         
         # 获取项目信息
         project = ProjectManager.get_project(state.project_id)
         if not project:
             return jsonify({
                 "success": False,
-                "error": f"项目不存在: {state.project_id}"
+                "error": tr("report.project_not_found", locale, project_id=state.project_id)
             }), 404
         
         graph_id = state.graph_id or project.graph_id
         if not graph_id:
             return jsonify({
                 "success": False,
-                "error": "缺少图谱ID，请确保已构建图谱"
+                "error": tr("report.graph_id_required_built", locale)
             }), 400
         
         simulation_requirement = project.simulation_requirement
         if not simulation_requirement:
             return jsonify({
                 "success": False,
-                "error": "缺少模拟需求描述"
+                "error": tr("report.requirement_missing", locale)
             }), 400
         
         # 提前生成 report_id，以便立即返回给前端
@@ -127,14 +238,15 @@ def generate_report():
                     task_id,
                     status=TaskStatus.PROCESSING,
                     progress=0,
-                    message="初始化Report Agent..."
+                    message=_translate_report_message(locale, "初始化Report Agent...")
                 )
                 
                 # 创建Report Agent
                 agent = ReportAgent(
                     graph_id=graph_id,
                     simulation_id=simulation_id,
-                    simulation_requirement=simulation_requirement
+                    simulation_requirement=simulation_requirement,
+                    locale=locale,
                 )
                 
                 # 进度回调
@@ -142,7 +254,7 @@ def generate_report():
                     task_manager.update_task(
                         task_id,
                         progress=progress,
-                        message=f"[{stage}] {message}"
+                        message=_translate_report_message(locale, f"[{stage}] {message}")
                     )
                 
                 # 生成报告（传入预先生成的 report_id）
@@ -161,14 +273,19 @@ def generate_report():
                             "report_id": report.report_id,
                             "simulation_id": simulation_id,
                             "status": "completed"
-                        }
+                        },
+                        locale=locale,
                     )
                 else:
-                    task_manager.fail_task(task_id, report.error or "报告生成失败")
+                    task_manager.fail_task(
+                        task_id,
+                        report.error or tr("report.generation_failed", locale),
+                        locale=locale,
+                    )
                 
             except Exception as e:
-                logger.error(f"报告生成失败: {str(e)}")
-                task_manager.fail_task(task_id, str(e))
+                logger.error(f"{_report_error_context(locale, 'report.error_generation_failed')}: {str(e)}")
+                task_manager.fail_task(task_id, str(e), locale=locale)
         
         # 启动后台线程
         thread = threading.Thread(target=run_generate, daemon=True)
@@ -181,18 +298,13 @@ def generate_report():
                 "report_id": report_id,
                 "task_id": task_id,
                 "status": "generating",
-                "message": "报告生成任务已启动，请通过 /api/report/generate/status 查询进度",
+                "message": tr("report.generation_started", locale),
                 "already_generated": False
             }
         })
         
     except Exception as e:
-        logger.error(f"启动报告生成任务失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, locale, "report.error_start_generation_failed")
 
 
 @report_bp.route('/generate/status', methods=['POST'])
@@ -219,6 +331,7 @@ def get_generate_status():
     """
     try:
         data = request.get_json() or {}
+        locale = get_locale()
         
         task_id = data.get('task_id')
         simulation_id = data.get('simulation_id')
@@ -234,7 +347,7 @@ def get_generate_status():
                         "report_id": existing_report.report_id,
                         "status": "completed",
                         "progress": 100,
-                        "message": "报告已生成",
+                        "message": tr("report.already_generated", locale),
                         "already_completed": True
                     }
                 })
@@ -242,7 +355,7 @@ def get_generate_status():
         if not task_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 task_id 或 simulation_id"
+                "error": tr("report.task_or_simulation_required", locale)
             }), 400
         
         task_manager = TaskManager()
@@ -251,16 +364,17 @@ def get_generate_status():
         if not task:
             return jsonify({
                 "success": False,
-                "error": f"任务不存在: {task_id}"
+                "error": tr("report.task_not_found", locale, task_id=task_id)
             }), 404
         
         return jsonify({
             "success": True,
-            "data": task.to_dict()
+            "data": _translate_report_progress_payload(locale, task.to_dict())
         })
         
     except Exception as e:
-        logger.error(f"查询任务状态失败: {str(e)}")
+        locale = get_locale()
+        logger.error(f"{_report_error_context(locale, 'report.error_task_status_failed')}: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e)
@@ -289,12 +403,13 @@ def get_report(report_id: str):
         }
     """
     try:
+        locale = get_locale()
         report = ReportManager.get_report(report_id)
         
         if not report:
             return jsonify({
                 "success": False,
-                "error": f"报告不存在: {report_id}"
+                "error": tr("report.not_found", locale, report_id=report_id)
             }), 404
         
         return jsonify({
@@ -303,12 +418,7 @@ def get_report(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取报告失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, locale, "report.error_get_failed")
 
 
 @report_bp.route('/by-simulation/<simulation_id>', methods=['GET'])
@@ -326,12 +436,13 @@ def get_report_by_simulation(simulation_id: str):
         }
     """
     try:
+        locale = get_locale()
         report = ReportManager.get_report_by_simulation(simulation_id)
         
         if not report:
             return jsonify({
                 "success": False,
-                "error": f"该模拟暂无报告: {simulation_id}",
+                "error": tr("report.not_available_for_simulation", locale, simulation_id=simulation_id),
                 "has_report": False
             }), 404
         
@@ -342,12 +453,7 @@ def get_report_by_simulation(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取报告失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, locale, "report.error_get_failed")
 
 
 @report_bp.route('/list', methods=['GET'])
@@ -382,12 +488,7 @@ def list_reports():
         })
         
     except Exception as e:
-        logger.error(f"列出报告失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, get_locale(), "report.error_list_failed")
 
 
 @report_bp.route('/<report_id>/download', methods=['GET'])
@@ -398,15 +499,17 @@ def download_report(report_id: str):
     返回Markdown文件
     """
     try:
+        locale = get_locale()
         report = ReportManager.get_report(report_id)
         
         if not report:
             return jsonify({
                 "success": False,
-                "error": f"报告不存在: {report_id}"
+                "error": tr("report.not_found", locale, report_id=report_id)
             }), 404
         
         md_path = ReportManager._get_report_markdown_path(report_id)
+        download_name = _build_report_download_name(report)
         
         if not os.path.exists(md_path):
             # 如果MD文件不存在，生成一个临时文件
@@ -418,48 +521,39 @@ def download_report(report_id: str):
             return send_file(
                 temp_path,
                 as_attachment=True,
-                download_name=f"{report_id}.md"
+                download_name=download_name
             )
         
         return send_file(
             md_path,
             as_attachment=True,
-            download_name=f"{report_id}.md"
+            download_name=download_name
         )
         
     except Exception as e:
-        logger.error(f"下载报告失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, locale, "report.error_download_failed")
 
 
 @report_bp.route('/<report_id>', methods=['DELETE'])
 def delete_report(report_id: str):
     """删除报告"""
     try:
+        locale = get_locale()
         success = ReportManager.delete_report(report_id)
         
         if not success:
             return jsonify({
                 "success": False,
-                "error": f"报告不存在: {report_id}"
+                "error": tr("report.not_found", locale, report_id=report_id)
             }), 404
         
         return jsonify({
             "success": True,
-            "message": f"报告已删除: {report_id}"
+            "message": tr("report.deleted", locale, report_id=report_id)
         })
         
     except Exception as e:
-        logger.error(f"删除报告失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, locale, "report.error_delete_failed")
 
 
 # ============== Report Agent对话接口 ==============
@@ -491,6 +585,7 @@ def chat_with_report_agent():
             }
         }
     """
+    locale = get_locale()
     try:
         data = request.get_json() or {}
         
@@ -501,13 +596,13 @@ def chat_with_report_agent():
         if not simulation_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 simulation_id"
+                "error": tr("report.simulation_id_required", locale)
             }), 400
         
         if not message:
             return jsonify({
                 "success": False,
-                "error": "请提供 message"
+                "error": tr("report.message_required", locale)
             }), 400
         
         # 获取模拟和项目信息
@@ -517,21 +612,21 @@ def chat_with_report_agent():
         if not state:
             return jsonify({
                 "success": False,
-                "error": f"模拟不存在: {simulation_id}"
+                "error": tr("simulation.not_found", locale, simulation_id=simulation_id)
             }), 404
         
         project = ProjectManager.get_project(state.project_id)
         if not project:
             return jsonify({
                 "success": False,
-                "error": f"项目不存在: {state.project_id}"
+                "error": tr("report.project_not_found", locale, project_id=state.project_id)
             }), 404
         
         graph_id = state.graph_id or project.graph_id
         if not graph_id:
             return jsonify({
                 "success": False,
-                "error": "缺少图谱ID"
+                "error": tr("report.graph_id_required", locale)
             }), 400
         
         simulation_requirement = project.simulation_requirement or ""
@@ -540,7 +635,8 @@ def chat_with_report_agent():
         agent = ReportAgent(
             graph_id=graph_id,
             simulation_id=simulation_id,
-            simulation_requirement=simulation_requirement
+            simulation_requirement=simulation_requirement,
+            locale=locale,
         )
         
         result = agent.chat(message=message, chat_history=chat_history)
@@ -551,12 +647,7 @@ def chat_with_report_agent():
         })
         
     except Exception as e:
-        logger.error(f"对话失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, locale, "report.error_chat_failed")
 
 
 # ============== 报告进度与分章节接口 ==============
@@ -580,26 +671,22 @@ def get_report_progress(report_id: str):
         }
     """
     try:
+        locale = get_locale()
         progress = ReportManager.get_progress(report_id)
         
         if not progress:
             return jsonify({
                 "success": False,
-                "error": f"报告不存在或进度信息不可用: {report_id}"
+                "error": tr("report.progress_not_available", locale, report_id=report_id)
             }), 404
         
         return jsonify({
             "success": True,
-            "data": progress
+            "data": _translate_report_progress_payload(locale, progress)
         })
         
     except Exception as e:
-        logger.error(f"获取报告进度失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, get_locale(), "report.error_progress_failed")
 
 
 @report_bp.route('/<report_id>/sections', methods=['GET'])
@@ -645,12 +732,7 @@ def get_report_sections(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取章节列表失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, get_locale(), "report.error_section_list_failed")
 
 
 @report_bp.route('/<report_id>/section/<int:section_index>', methods=['GET'])
@@ -668,12 +750,13 @@ def get_single_section(report_id: str, section_index: int):
         }
     """
     try:
+        locale = get_locale()
         section_path = ReportManager._get_section_path(report_id, section_index)
         
         if not os.path.exists(section_path):
             return jsonify({
                 "success": False,
-                "error": f"章节不存在: section_{section_index:02d}.md"
+                "error": tr("report.section_not_found", locale, section_index=section_index)
             }), 404
         
         with open(section_path, 'r', encoding='utf-8') as f:
@@ -689,12 +772,7 @@ def get_single_section(report_id: str, section_index: int):
         })
         
     except Exception as e:
-        logger.error(f"获取章节内容失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, get_locale(), "report.error_section_content_failed")
 
 
 # ============== 报告状态检查接口 ==============
@@ -740,12 +818,7 @@ def check_report_status(simulation_id: str):
         })
         
     except Exception as e:
-        logger.error(f"检查报告状态失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, get_locale(), "report.error_status_failed")
 
 
 # ============== Agent 日志接口 ==============
@@ -801,12 +874,7 @@ def get_agent_log(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取Agent日志失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, get_locale(), "report.error_agent_log_failed")
 
 
 @report_bp.route('/<report_id>/agent-log/stream', methods=['GET'])
@@ -835,12 +903,7 @@ def stream_agent_log(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取Agent日志失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, get_locale(), "report.error_agent_log_failed")
 
 
 # ============== 控制台日志接口 ==============
@@ -883,12 +946,7 @@ def get_console_log(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取控制台日志失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, get_locale(), "report.error_console_log_failed")
 
 
 @report_bp.route('/<report_id>/console-log/stream', methods=['GET'])
@@ -917,12 +975,7 @@ def stream_console_log(report_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取控制台日志失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, get_locale(), "report.error_console_log_failed")
 
 
 # ============== 工具调用接口（供调试使用）==============
@@ -939,6 +992,7 @@ def search_graph_tool():
             "limit": 10
         }
     """
+    locale = get_locale()
     try:
         data = request.get_json() or {}
         
@@ -949,7 +1003,7 @@ def search_graph_tool():
         if not graph_id or not query:
             return jsonify({
                 "success": False,
-                "error": "请提供 graph_id 和 query"
+                "error": tr("report.graph_id_and_query_required", locale)
             }), 400
         
         from ..services.zep_tools import ZepToolsService
@@ -967,12 +1021,7 @@ def search_graph_tool():
         })
         
     except Exception as e:
-        logger.error(f"图谱搜索失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, get_locale(), "report.error_graph_search_failed")
 
 
 @report_bp.route('/tools/statistics', methods=['POST'])
@@ -985,6 +1034,7 @@ def get_graph_statistics_tool():
             "graph_id": "mirofish_xxxx"
         }
     """
+    locale = get_locale()
     try:
         data = request.get_json() or {}
         
@@ -993,7 +1043,7 @@ def get_graph_statistics_tool():
         if not graph_id:
             return jsonify({
                 "success": False,
-                "error": "请提供 graph_id"
+                "error": tr("report.graph_id_required_for_tools", locale)
             }), 400
         
         from ..services.zep_tools import ZepToolsService
@@ -1007,9 +1057,4 @@ def get_graph_statistics_tool():
         })
         
     except Exception as e:
-        logger.error(f"获取图谱统计失败: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }), 500
+        return _handle_report_api_exception(e, get_locale(), "report.error_graph_stats_failed")

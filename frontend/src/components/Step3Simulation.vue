@@ -9,7 +9,7 @@
             <svg class="platform-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
             </svg>
-            <span class="platform-name">Info Plaza</span>
+            <span class="platform-name">{{ getPlatformName('twitter') }}</span>
             <span v-if="runStatus.twitter_completed" class="status-badge">
               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -18,28 +18,27 @@
           </div>
           <div class="platform-stats">
             <span class="stat">
-              <span class="stat-label">ROUND</span>
+              <span class="stat-label">{{ t('step3.round') }}</span>
               <span class="stat-value mono">{{ runStatus.twitter_current_round || 0 }}<span class="stat-total">/{{ runStatus.total_rounds || maxRounds || '-' }}</span></span>
             </span>
             <span class="stat">
-              <span class="stat-label">Elapsed Time</span>
+              <span class="stat-label">{{ t('step3.elapsedTime') }}</span>
               <span class="stat-value mono">{{ twitterElapsedTime }}</span>
             </span>
             <span class="stat">
-              <span class="stat-label">ACTS</span>
+              <span class="stat-label">{{ t('step3.acts') }}</span>
               <span class="stat-value mono">{{ runStatus.twitter_actions_count || 0 }}</span>
             </span>
           </div>
           <!-- 可用动作提示 -->
           <div class="actions-tooltip">
-            <div class="tooltip-title">Available Actions</div>
+            <div class="tooltip-title">{{ t('step3.availableActions') }}</div>
             <div class="tooltip-actions">
-              <span class="tooltip-action">POST</span>
-              <span class="tooltip-action">LIKE</span>
-              <span class="tooltip-action">REPOST</span>
-              <span class="tooltip-action">QUOTE</span>
-              <span class="tooltip-action">FOLLOW</span>
-              <span class="tooltip-action">IDLE</span>
+              <span
+                v-for="actionLabel in getPlatformActions('twitter')"
+                :key="`twitter-${actionLabel}`"
+                class="tooltip-action"
+              >{{ actionLabel }}</span>
             </div>
           </div>
         </div>
@@ -50,7 +49,7 @@
             <svg class="platform-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
             </svg>
-            <span class="platform-name">Topic Community</span>
+            <span class="platform-name">{{ getPlatformName('reddit') }}</span>
             <span v-if="runStatus.reddit_completed" class="status-badge">
               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -59,48 +58,69 @@
           </div>
           <div class="platform-stats">
             <span class="stat">
-              <span class="stat-label">ROUND</span>
+              <span class="stat-label">{{ t('step3.round') }}</span>
               <span class="stat-value mono">{{ runStatus.reddit_current_round || 0 }}<span class="stat-total">/{{ runStatus.total_rounds || maxRounds || '-' }}</span></span>
             </span>
             <span class="stat">
-              <span class="stat-label">Elapsed Time</span>
+              <span class="stat-label">{{ t('step3.elapsedTime') }}</span>
               <span class="stat-value mono">{{ redditElapsedTime }}</span>
             </span>
             <span class="stat">
-              <span class="stat-label">ACTS</span>
+              <span class="stat-label">{{ t('step3.acts') }}</span>
               <span class="stat-value mono">{{ runStatus.reddit_actions_count || 0 }}</span>
             </span>
           </div>
           <!-- 可用动作提示 -->
           <div class="actions-tooltip">
-            <div class="tooltip-title">Available Actions</div>
+            <div class="tooltip-title">{{ t('step3.availableActions') }}</div>
             <div class="tooltip-actions">
-              <span class="tooltip-action">POST</span>
-              <span class="tooltip-action">COMMENT</span>
-              <span class="tooltip-action">LIKE</span>
-              <span class="tooltip-action">DISLIKE</span>
-              <span class="tooltip-action">SEARCH</span>
-              <span class="tooltip-action">TREND</span>
-              <span class="tooltip-action">FOLLOW</span>
-              <span class="tooltip-action">MUTE</span>
-              <span class="tooltip-action">REFRESH</span>
-              <span class="tooltip-action">IDLE</span>
+              <span
+                v-for="actionLabel in getPlatformActions('reddit')"
+                :key="`reddit-${actionLabel}`"
+                class="tooltip-action"
+              >{{ actionLabel }}</span>
             </div>
           </div>
         </div>
       </div>
 
       <div class="action-controls">
+        <button
+          v-if="phase !== 1"
+          class="action-btn secondary"
+          :disabled="isStarting || isGeneratingReport"
+          @click="handleRestartSimulation"
+        >
+          <span v-if="isStarting" class="loading-spinner-small"></span>
+          {{ isStarting ? t('step3.starting') : t(restartButtonLabelKey) }}
+        </button>
         <button 
           class="action-btn primary"
           :disabled="phase !== 2 || isGeneratingReport"
           @click="handleNextStep"
         >
           <span v-if="isGeneratingReport" class="loading-spinner-small"></span>
-          {{ isGeneratingReport ? '启动中...' : '开始生成结果报告' }} 
+          {{ isGeneratingReport ? t('step3.starting') : t('step3.startReport') }}
           <span v-if="!isGeneratingReport" class="arrow-icon">→</span>
         </button>
       </div>
+    </div>
+
+    <div v-if="replayNoticeKey" class="replay-notice">
+      <span class="replay-notice-label">{{ t('step3.replayOnlyLabel') }}</span>
+      <span class="replay-notice-text">{{ t(replayNoticeKey) }}</span>
+    </div>
+
+    <div v-if="interactionShortcutMessage && simulationId" class="interaction-shortcut-notice">
+      <div class="interaction-shortcut-copy">
+        <span class="interaction-shortcut-label">{{ t('step3.interactionShortcutLabel') }}</span>
+        <span class="interaction-shortcut-text">
+          {{ t('step3.interactionShortcutHint', { message: interactionShortcutMessage }) }}
+        </span>
+      </div>
+      <button class="interaction-shortcut-btn" type="button" @click="openInteractionShortcut">
+        {{ t('step3.openInteractionShortcutButton') }}
+      </button>
     </div>
 
     <!-- Main Content: Dual Timeline -->
@@ -108,7 +128,7 @@
       <!-- Timeline Header -->
       <div class="timeline-header" v-if="allActions.length > 0">
         <div class="timeline-stats">
-          <span class="total-count">TOTAL EVENTS: <span class="mono">{{ allActions.length }}</span></span>
+          <span class="total-count">{{ t('step3.totalEvents') }}: <span class="mono">{{ allActions.length }}</span></span>
           <span class="platform-breakdown">
             <span class="breakdown-item twitter">
               <svg class="mini-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
@@ -170,7 +190,7 @@
                   <div v-if="action.action_args?.original_content" class="quoted-block">
                     <div class="quote-header">
                       <svg class="icon-small" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                      <span class="quote-label">@{{ action.action_args.original_author_name || 'User' }}</span>
+                      <span class="quote-label">@{{ action.action_args.original_author_name || t('step3.unknownUser') }}</span>
                     </div>
                     <div class="quote-text">
                       {{ truncateContent(action.action_args.original_content, 150) }}
@@ -182,7 +202,7 @@
                 <template v-if="action.action_type === 'REPOST'">
                   <div class="repost-info">
                     <svg class="icon-small" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
-                    <span class="repost-label">Reposted from @{{ action.action_args?.original_author_name || 'User' }}</span>
+                    <span class="repost-label">{{ describeAction(action) }}</span>
                   </div>
                   <div v-if="action.action_args?.original_content" class="repost-content">
                     {{ truncateContent(action.action_args.original_content, 200) }}
@@ -193,7 +213,7 @@
                 <template v-if="action.action_type === 'LIKE_POST'">
                   <div class="like-info">
                     <svg class="icon-small filled" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                    <span class="like-label">Liked @{{ action.action_args?.post_author_name || 'User' }}'s post</span>
+                    <span class="like-label">{{ describeAction(action) }}</span>
                   </div>
                   <div v-if="action.action_args?.post_content" class="liked-content">
                     "{{ truncateContent(action.action_args.post_content, 120) }}"
@@ -207,7 +227,7 @@
                   </div>
                   <div v-if="action.action_args?.post_id" class="comment-context">
                     <svg class="icon-small" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                    <span>Reply to post #{{ action.action_args.post_id }}</span>
+                    <span>{{ describeAction(action) }}</span>
                   </div>
                 </template>
 
@@ -215,7 +235,7 @@
                 <template v-if="action.action_type === 'SEARCH_POSTS'">
                   <div class="search-info">
                     <svg class="icon-small" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <span class="search-label">Search Query:</span>
+                    <span class="search-label">{{ describeAction(action) }}</span>
                     <span class="search-query">"{{ action.action_args?.query || '' }}"</span>
                   </div>
                 </template>
@@ -224,7 +244,7 @@
                 <template v-if="action.action_type === 'FOLLOW'">
                   <div class="follow-info">
                     <svg class="icon-small" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-                    <span class="follow-label">Followed @{{ action.action_args?.target_user || action.action_args?.user_id || 'User' }}</span>
+                    <span class="follow-label">{{ describeAction(action) }}</span>
                   </div>
                 </template>
 
@@ -233,7 +253,7 @@
                   <div class="vote-info">
                     <svg v-if="action.action_type === 'UPVOTE_POST'" class="icon-small" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
                     <svg v-else class="icon-small" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    <span class="vote-label">{{ action.action_type === 'UPVOTE_POST' ? 'Upvoted' : 'Downvoted' }} Post</span>
+                    <span class="vote-label">{{ describeAction(action) }}</span>
                   </div>
                   <div v-if="action.action_args?.post_content" class="voted-content">
                     "{{ truncateContent(action.action_args.post_content, 120) }}"
@@ -244,7 +264,7 @@
                 <template v-if="action.action_type === 'DO_NOTHING'">
                   <div class="idle-info">
                     <svg class="icon-small" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                    <span class="idle-label">Action Skipped</span>
+                    <span class="idle-label">{{ describeAction(action) }}</span>
                   </div>
                 </template>
 
@@ -264,7 +284,26 @@
 
         <div v-if="allActions.length === 0" class="waiting-state">
           <div class="pulse-ring"></div>
-          <span>Waiting for agent actions...</span>
+          <span>{{ t('step3.waitingActions') }}</span>
+          <div v-if="waitingDiagnostics" class="waiting-diagnostics">
+            <p class="waiting-hint">
+              {{
+                waitingDiagnostics.process_alive
+                  ? t('step3.waitingDiagnosticsProcessAlive')
+                  : t('step3.waitingDiagnosticsProcessExited')
+              }}
+            </p>
+            <p class="waiting-meta">
+              {{ t('step3.waitingDiagnosticsStatus', { status: waitingStatusLabel }) }}
+              <span v-if="waitingDiagnostics.process_pid">
+                · {{ t('step3.waitingDiagnosticsPid', { pid: waitingDiagnostics.process_pid }) }}
+              </span>
+            </p>
+            <pre
+              v-if="waitingDiagnostics.simulation_log_tail"
+              class="waiting-log-tail"
+            >{{ waitingDiagnostics.simulation_log_tail }}</pre>
+          </div>
         </div>
       </div>
     </div>
@@ -272,7 +311,7 @@
     <!-- Bottom Info / Logs -->
     <div class="system-logs">
       <div class="log-header">
-        <span class="log-title">SIMULATION MONITOR</span>
+        <span class="log-title">{{ t('step3.monitor') }}</span>
         <span class="log-id">{{ simulationId || 'NO_SIMULATION' }}</span>
       </div>
       <div class="log-content" ref="logContent">
@@ -287,7 +326,11 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { resolveBaseURL } from '../api/index.js'
+import { formatApiError } from '../api/errors'
+import { getBackendConfigStatus } from '../api/graph'
 import { 
   startSimulation, 
   stopSimulation,
@@ -295,6 +338,24 @@ import {
   getRunStatusDetail
 } from '../api/simulation'
 import { generateReport } from '../api/report'
+import { buildInteractionRoute } from './interactionRoute'
+import { getReportPreflightBlockReason } from './reportCapability'
+import {
+  describeTimelineAction,
+  getTimelineActionTypeLabel,
+  getTimelineAvailableActions,
+  getTimelinePlatformName,
+} from './simulationTimeline'
+import { mergeLiveActions } from './liveActionBuffer'
+import {
+  getReplayNoticeKey,
+  getRestartButtonLabelKey,
+  shouldAutoStartSimulation,
+} from './simulationReplay'
+import {
+  formatSimulationPidLog,
+  formatSimulationRoundLog,
+} from './simulationLogMessages'
 
 const props = defineProps({
   simulationId: String,
@@ -302,6 +363,10 @@ const props = defineProps({
   minutesPerRound: {
     type: Number,
     default: 30 // 默认每轮30分钟
+  },
+  replayOnly: {
+    type: Boolean,
+    default: false
   },
   projectData: Object,
   graphData: Object,
@@ -311,9 +376,11 @@ const props = defineProps({
 const emit = defineEmits(['go-back', 'next-step', 'add-log', 'update-status'])
 
 const router = useRouter()
+const { t, locale } = useI18n()
 
 // State
 const isGeneratingReport = ref(false)
+const interactionShortcutMessage = ref('')
 const phase = ref(0) // 0: 未开始, 1: 运行中, 2: 已完成
 const isStarting = ref(false)
 const isStopping = ref(false)
@@ -321,7 +388,9 @@ const startError = ref(null)
 const runStatus = ref({})
 const allActions = ref([]) // 所有动作（增量累积）
 const actionIds = ref(new Set()) // 用于去重的动作ID集合
+const latestActionTimestamp = ref('')
 const scrollContainer = ref(null)
+const resumedExistingRun = ref(false)
 
 // Computed
 // 按时间顺序显示动作（最新的在最后面，即底部）
@@ -337,6 +406,37 @@ const twitterActionsCount = computed(() => {
 const redditActionsCount = computed(() => {
   return allActions.value.filter(a => a.platform === 'reddit').length
 })
+
+const waitingDiagnostics = computed(() => {
+  const diagnostics = runStatus.value?.waiting_diagnostics
+  if (!diagnostics?.waiting_for_actions) {
+    return null
+  }
+  return diagnostics
+})
+
+const waitingStatusLabel = computed(() => {
+  const status = runStatus.value?.runner_status
+  if (status === 'starting') {
+    return t('step3.waitingDiagnosticsStatusStarting')
+  }
+  if (status === 'running') {
+    return t('step3.waitingDiagnosticsStatusRunning')
+  }
+  return status || t('common.none')
+})
+
+const replayNoticeKey = computed(() => getReplayNoticeKey({
+  replayOnly: props.replayOnly,
+  resumed: resumedExistingRun.value,
+  runnerStatus: runStatus.value?.runner_status,
+}))
+
+const restartButtonLabelKey = computed(() => getRestartButtonLabelKey({
+  replayOnly: props.replayOnly,
+  resumed: resumedExistingRun.value,
+  runnerStatus: runStatus.value?.runner_status,
+}))
 
 // 格式化模拟流逝时间（根据轮次和每轮分钟数计算）
 const formatElapsedTime = (currentRound) => {
@@ -368,18 +468,20 @@ const resetAllState = () => {
   runStatus.value = {}
   allActions.value = []
   actionIds.value = new Set()
+  latestActionTimestamp.value = ''
   prevTwitterRound.value = 0
   prevRedditRound.value = 0
   startError.value = null
   isStarting.value = false
   isStopping.value = false
+  resumedExistingRun.value = false
   stopPolling()  // 停止之前可能存在的轮询
 }
 
 // 启动模拟
-const doStartSimulation = async () => {
+const doStartSimulation = async ({ force = true } = {}) => {
   if (!props.simulationId) {
-    addLog('错误：缺少 simulationId')
+    addLog(t('step3.missingSimulationId'))
     return
   }
   
@@ -388,32 +490,32 @@ const doStartSimulation = async () => {
   
   isStarting.value = true
   startError.value = null
-  addLog('正在启动双平台并行模拟...')
+  addLog(t('step3.startingSimulation'))
   emit('update-status', 'processing')
   
   try {
     const params = {
       simulation_id: props.simulationId,
       platform: 'parallel',
-      force: true,  // 强制重新开始
+      force,
       enable_graph_memory_update: true  // 开启动态图谱更新
     }
     
     if (props.maxRounds) {
       params.max_rounds = props.maxRounds
-      addLog(`设置最大模拟轮数: ${props.maxRounds}`)
+      addLog(t('step3.setMaxRounds', { count: props.maxRounds }))
     }
     
-    addLog('已开启动态图谱更新模式')
+    addLog(t('step3.graphMemoryEnabled'))
     
     const res = await startSimulation(params)
     
     if (res.success && res.data) {
       if (res.data.force_restarted) {
-        addLog('✓ 已清理旧的模拟日志，重新开始模拟')
+        addLog(`✓ ${t('step3.clearedOldLogs')}`)
       }
-      addLog('✓ 模拟引擎启动成功')
-      addLog(`  ├─ PID: ${res.data.process_pid || '-'}`)
+      addLog(`✓ ${t('step3.simulationStarted')}`)
+      addLog(formatSimulationPidLog(res.data.process_pid, t))
       
       phase.value = 1
       runStatus.value = res.data
@@ -421,13 +523,13 @@ const doStartSimulation = async () => {
       startStatusPolling()
       startDetailPolling()
     } else {
-      startError.value = res.error || '启动失败'
-      addLog(`✗ 启动失败: ${res.error || '未知错误'}`)
+      startError.value = res.error || t('step3.startFailed')
+      addLog(`✗ ${t('step3.startFailedWithMessage', { message: res.error || t('process.unknownError') })}`)
       emit('update-status', 'error')
     }
   } catch (err) {
     startError.value = err.message
-    addLog(`✗ 启动异常: ${err.message}`)
+    addLog(`✗ ${t('step3.startException', { message: err.message })}`)
     emit('update-status', 'error')
   } finally {
     isStarting.value = false
@@ -439,21 +541,21 @@ const handleStopSimulation = async () => {
   if (!props.simulationId) return
   
   isStopping.value = true
-  addLog('正在停止模拟...')
+  addLog(t('step3.stoppingSimulation'))
   
   try {
     const res = await stopSimulation({ simulation_id: props.simulationId })
     
     if (res.success) {
-      addLog('✓ 模拟已停止')
+      addLog(`✓ ${t('step3.simulationStopped')}`)
       phase.value = 2
       stopPolling()
       emit('update-status', 'completed')
     } else {
-      addLog(`停止失败: ${res.error || '未知错误'}`)
+      addLog(t('step3.stopFailed', { message: res.error || t('process.unknownError') }))
     }
   } catch (err) {
-    addLog(`停止异常: ${err.message}`)
+    addLog(t('step3.stopException', { message: err.message }))
   } finally {
     isStopping.value = false
   }
@@ -486,6 +588,33 @@ const stopPolling = () => {
 const prevTwitterRound = ref(0)
 const prevRedditRound = ref(0)
 
+const applyRunStatus = (data) => {
+  runStatus.value = data
+  prevTwitterRound.value = data.twitter_current_round || 0
+  prevRedditRound.value = data.reddit_current_round || 0
+
+  if (data.runner_status === 'completed' || data.runner_status === 'stopped') {
+    phase.value = 2
+    emit('update-status', 'completed')
+    return
+  }
+
+  if (data.runner_status === 'failed') {
+    phase.value = 0
+    startError.value = data.error || t('process.unknownError')
+    emit('update-status', 'error')
+    return
+  }
+
+  if (data.runner_status === 'running' || data.runner_status === 'starting') {
+    phase.value = 1
+    emit('update-status', 'processing')
+    return
+  }
+
+  phase.value = 0
+}
+
 const fetchRunStatus = async () => {
   if (!props.simulationId) return
   
@@ -494,18 +623,39 @@ const fetchRunStatus = async () => {
     
     if (res.success && res.data) {
       const data = res.data
-      
-      runStatus.value = data
+      const previousTwitterRound = prevTwitterRound.value
+      const previousRedditRound = prevRedditRound.value
+      applyRunStatus(data)
       
       // 分别检测各平台的轮次变化并输出日志
-      if (data.twitter_current_round > prevTwitterRound.value) {
-        addLog(`[Plaza] R${data.twitter_current_round}/${data.total_rounds} | T:${data.twitter_simulated_hours || 0}h | A:${data.twitter_actions_count}`)
+      if (data.twitter_current_round > previousTwitterRound) {
+        addLog(formatSimulationRoundLog({
+          platform: 'twitter',
+          currentRound: data.twitter_current_round,
+          totalRounds: data.total_rounds,
+          simulatedHours: data.twitter_simulated_hours,
+          actionsCount: data.twitter_actions_count,
+        }, t))
         prevTwitterRound.value = data.twitter_current_round
       }
       
-      if (data.reddit_current_round > prevRedditRound.value) {
-        addLog(`[Community] R${data.reddit_current_round}/${data.total_rounds} | T:${data.reddit_simulated_hours || 0}h | A:${data.reddit_actions_count}`)
+      if (data.reddit_current_round > previousRedditRound) {
+        addLog(formatSimulationRoundLog({
+          platform: 'reddit',
+          currentRound: data.reddit_current_round,
+          totalRounds: data.total_rounds,
+          simulatedHours: data.reddit_simulated_hours,
+          actionsCount: data.reddit_actions_count,
+        }, t))
         prevRedditRound.value = data.reddit_current_round
+      }
+
+      if (data.runner_status === 'failed') {
+        const errorMsg = data.error || t('process.unknownError')
+        addLog(`✗ ${t('step3.simulationFailed', { message: errorMsg })}`)
+        stopPolling()
+        emit('update-status', 'error')
+        return
       }
       
       // 检测模拟是否已完成（通过 runner_status 或平台完成状态判断）
@@ -517,9 +667,9 @@ const fetchRunStatus = async () => {
       
       if (isCompleted || platformsCompleted) {
         if (platformsCompleted && !isCompleted) {
-          addLog('✓ 检测到所有平台模拟已结束')
+          addLog(`✓ ${t('step3.allPlatformsEnded')}`)
         }
-        addLog('✓ 模拟已完成')
+        addLog(`✓ ${t('step3.simulationCompleted')}`)
         phase.value = 2
         stopPolling()
         emit('update-status', 'completed')
@@ -528,6 +678,54 @@ const fetchRunStatus = async () => {
   } catch (err) {
     console.warn('获取运行状态失败:', err)
   }
+}
+
+const loadExistingRun = async () => {
+  if (!props.simulationId) return false
+
+  try {
+    const res = await getRunStatus(props.simulationId)
+    if (!res.success || !res.data || res.data.runner_status === 'idle') {
+      return false
+    }
+
+    resetAllState()
+    resumedExistingRun.value = true
+    applyRunStatus(res.data)
+    await fetchRunStatusDetail()
+
+    if (res.data.runner_status === 'running' || res.data.runner_status === 'starting') {
+      addLog(t('step3.resumeRunningSimulation'))
+      startStatusPolling()
+      startDetailPolling()
+      return true
+    }
+
+    if (res.data.runner_status === 'completed') {
+      addLog(t('step3.resumeCompletedSimulation'))
+      return true
+    }
+
+    if (res.data.runner_status === 'stopped') {
+      addLog(t('step3.resumeStoppedSimulation'))
+      addLog(t('step3.replayReuseHint'))
+      return true
+    }
+
+    if (res.data.runner_status === 'failed') {
+      addLog(t('step3.resumeFailedSimulation', { message: res.data.error || t('process.unknownError') }))
+      addLog(t('step3.replayReuseHint'))
+      return true
+    }
+  } catch (err) {
+    console.warn('加载已有模拟运行状态失败:', err)
+  }
+
+  return false
+}
+
+const handleRestartSimulation = async () => {
+  await doStartSimulation({ force: true })
 }
 
 // 检查所有启用的平台是否已完成
@@ -558,27 +756,21 @@ const fetchRunStatusDetail = async () => {
   if (!props.simulationId) return
   
   try {
-    const res = await getRunStatusDetail(props.simulationId)
+    const params = latestActionTimestamp.value
+      ? { since: latestActionTimestamp.value }
+      : { limit: 200 }
+    const res = await getRunStatusDetail(props.simulationId, params)
     
     if (res.success && res.data) {
-      // 使用 all_actions 获取完整的动作列表
-      const serverActions = res.data.all_actions || []
-      
-      // 增量添加新动作（去重）
-      let newActionsAdded = 0
-      serverActions.forEach(action => {
-        // 生成唯一ID
-        const actionId = action.id || `${action.timestamp}-${action.platform}-${action.agent_id}-${action.action_type}`
-        
-        if (!actionIds.value.has(actionId)) {
-          actionIds.value.add(actionId)
-          allActions.value.push({
-            ...action,
-            _uniqueId: actionId
-          })
-          newActionsAdded++
-        }
+      const merged = mergeLiveActions({
+        existingActions: allActions.value,
+        existingIds: actionIds.value,
+        incomingActions: res.data.all_actions || [],
+        latestActionTimestamp: latestActionTimestamp.value,
       })
+      allActions.value = merged.actions
+      actionIds.value = merged.actionIds
+      latestActionTimestamp.value = merged.latestActionTimestamp
       
       // 不自动滚动，让用户自由查看时间轴
       // 新动作会在底部追加
@@ -589,22 +781,10 @@ const fetchRunStatusDetail = async () => {
 }
 
 // Helpers
-const getActionTypeLabel = (type) => {
-  const labels = {
-    'CREATE_POST': 'POST',
-    'REPOST': 'REPOST',
-    'LIKE_POST': 'LIKE',
-    'CREATE_COMMENT': 'COMMENT',
-    'LIKE_COMMENT': 'LIKE',
-    'DO_NOTHING': 'IDLE',
-    'FOLLOW': 'FOLLOW',
-    'SEARCH_POSTS': 'SEARCH',
-    'QUOTE_POST': 'QUOTE',
-    'UPVOTE_POST': 'UPVOTE',
-    'DOWNVOTE_POST': 'DOWNVOTE'
-  }
-  return labels[type] || type || 'UNKNOWN'
-}
+const getPlatformName = (platform) => getTimelinePlatformName(platform, t)
+const getPlatformActions = (platform) => getTimelineAvailableActions(platform, t)
+const getActionTypeLabel = (type) => getTimelineActionTypeLabel(type, t)
+const describeAction = (action) => describeTimelineAction(action, t)
 
 const getActionTypeClass = (type) => {
   const classes = {
@@ -632,7 +812,16 @@ const truncateContent = (content, maxLength = 100) => {
 const formatActionTime = (timestamp) => {
   if (!timestamp) return ''
   try {
-    return new Date(timestamp).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    return new Date(timestamp).toLocaleTimeString(locale.value === 'en' ? 'en-US' : 'zh-CN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  } catch {
+    return ''
+  }
+}
+
+const getReportPreflightBlockMessage = async () => {
+  try {
+    const response = await getBackendConfigStatus()
+    return getReportPreflightBlockReason(response?.data, t)
   } catch {
     return ''
   }
@@ -640,17 +829,26 @@ const formatActionTime = (timestamp) => {
 
 const handleNextStep = async () => {
   if (!props.simulationId) {
-    addLog('错误：缺少 simulationId')
+    addLog(t('step3.missingSimulationId'))
     return
   }
   
   if (isGeneratingReport.value) {
-    addLog('报告生成请求已发送，请稍候...')
+    addLog(t('step3.reportAlreadyRequested'))
     return
   }
-  
+
+  const preflightBlockMessage = await getReportPreflightBlockMessage()
+  if (preflightBlockMessage) {
+    interactionShortcutMessage.value = preflightBlockMessage
+    addLog(`! ${t('step3.reportPreflightBlocked', { message: preflightBlockMessage })}`)
+    return
+  }
+
+  interactionShortcutMessage.value = ''
+
   isGeneratingReport.value = true
-  addLog('正在启动报告生成...')
+  addLog(t('step3.reportStarting'))
   
   try {
     const res = await generateReport({
@@ -660,16 +858,30 @@ const handleNextStep = async () => {
     
     if (res.success && res.data) {
       const reportId = res.data.report_id
-      addLog(`✓ 报告生成任务已启动: ${reportId}`)
+      addLog(`✓ ${t('step3.reportStarted', { id: reportId })}`)
       
       // 跳转到报告页面
       router.push({ name: 'Report', params: { reportId } })
     } else {
-      addLog(`✗ 启动报告生成失败: ${res.error || '未知错误'}`)
+      addLog(`✗ ${t('step3.reportStartFailed', {
+        message: formatApiError({
+          err: { response: { data: res } },
+          t,
+          resolveBaseURL,
+          locationOrigin: typeof window !== 'undefined' ? window.location.origin : '',
+        }),
+      })}`)
       isGeneratingReport.value = false
     }
   } catch (err) {
-    addLog(`✗ 启动报告生成异常: ${err.message}`)
+    addLog(`✗ ${t('step3.reportStartException', {
+      message: formatApiError({
+        err,
+        t,
+        resolveBaseURL,
+        locationOrigin: typeof window !== 'undefined' ? window.location.origin : '',
+      }),
+    })}`)
     isGeneratingReport.value = false
   }
 }
@@ -685,15 +897,36 @@ watch(() => props.systemLogs?.length, () => {
 })
 
 onMounted(() => {
-  addLog('Step3 模拟运行初始化')
+  addLog(t('step3.initLog'))
+  interactionShortcutMessage.value = ''
   if (props.simulationId) {
-    doStartSimulation()
+    loadExistingRun().then(resumed => {
+      if (shouldAutoStartSimulation({ replayOnly: props.replayOnly, resumed })) {
+        doStartSimulation({ force: false })
+        return
+      }
+
+      if (props.replayOnly && !resumed) {
+        addLog(t('step3.replayOnlyNoRun'))
+        addLog(t('step3.replayReuseHint'))
+      }
+    })
   }
 })
 
 onUnmounted(() => {
   stopPolling()
 })
+
+const openInteractionShortcut = () => {
+  const route = buildInteractionRoute({ simulationId: props.simulationId })
+  if (!route) {
+    return
+  }
+
+  addLog(t('step3.openInteractionShortcut'))
+  router.push(route)
+}
 </script>
 
 <style scoped>
@@ -716,6 +949,76 @@ onUnmounted(() => {
   border-bottom: 1px solid #EAEAEA;
   z-index: 10;
   height: 64px;
+}
+
+.replay-notice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 24px;
+  border-bottom: 1px solid #EAEAEA;
+  background: linear-gradient(90deg, #FFF7E8 0%, #FFFDF8 100%);
+  color: #5C3B00;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.replay-notice-label {
+  flex: 0 0 auto;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.replay-notice-text {
+  max-width: 980px;
+}
+
+.interaction-shortcut-notice {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid #EAEAEA;
+  background: linear-gradient(90deg, #EEF8FF 0%, #F9FCFF 100%);
+}
+
+.interaction-shortcut-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.interaction-shortcut-label {
+  color: #0F4C81;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.interaction-shortcut-text {
+  color: #26445E;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.interaction-shortcut-btn {
+  border: 1px solid #9CC7EB;
+  background: #FFFFFF;
+  color: #123A5C;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.interaction-shortcut-btn:hover {
+  background: #F2F8FD;
 }
 
 .status-group {
@@ -889,8 +1192,18 @@ onUnmounted(() => {
   color: #FFF;
 }
 
+.action-btn.secondary {
+  background: #FFF;
+  color: #1A1A1A;
+  border: 1px solid #D4D4D4;
+}
+
 .action-btn.primary:hover:not(:disabled) {
   background: #333;
+}
+
+.action-btn.secondary:hover:not(:disabled) {
+  background: #F7F7F7;
 }
 
 .action-btn:disabled {
@@ -1177,6 +1490,8 @@ onUnmounted(() => {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
+  max-width: min(560px, calc(100vw - 48px));
+  text-align: center;
 }
 
 .pulse-ring {
@@ -1190,6 +1505,45 @@ onUnmounted(() => {
 @keyframes ripple {
   0% { transform: scale(0.8); opacity: 1; border-color: #CCC; }
   100% { transform: scale(2.5); opacity: 0; border-color: #EAEAEA; }
+}
+
+.waiting-diagnostics {
+  margin-top: 4px;
+  padding: 14px 16px;
+  border: 1px solid #EAEAEA;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #444;
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: 'JetBrains Mono', monospace;
+  width: 100%;
+}
+
+.waiting-hint,
+.waiting-meta {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.waiting-meta {
+  color: #666;
+}
+
+.waiting-log-tail {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  background: #111;
+  color: #F5F5F5;
+  border-radius: 6px;
+  text-align: left;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 180px;
+  overflow: auto;
 }
 
 /* Animation */

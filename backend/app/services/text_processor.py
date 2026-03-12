@@ -10,9 +10,9 @@ class TextProcessor:
     """文本处理器"""
     
     @staticmethod
-    def extract_from_files(file_paths: List[str]) -> str:
+    def extract_from_files(file_paths: List[str], locale: Optional[str] = None) -> str:
         """从多个文件提取文本"""
-        return FileParser.extract_from_multiple(file_paths)
+        return FileParser.extract_from_multiple(file_paths, locale=locale)
     
     @staticmethod
     def split_text(
@@ -68,4 +68,3 @@ class TextProcessor:
             "total_lines": text.count('\n') + 1,
             "total_words": len(text.split()),
         }
-

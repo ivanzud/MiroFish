@@ -4,11 +4,15 @@ LLM客户端封装
 """
 
 import json
+import logging
 import re
 from typing import Optional, Dict, Any, List
-from openai import OpenAI
+from openai import OpenAI, APIError, BadRequestError
 
 from ..config import Config
+from ..i18n import tr
+
+logger = logging.getLogger(__name__)
 
 
 class LLMClient:
@@ -23,20 +27,62 @@ class LLMClient:
         self.api_key = api_key or Config.LLM_API_KEY
         self.base_url = base_url or Config.LLM_BASE_URL
         self.model = model or Config.LLM_MODEL_NAME
+        self.default_max_tokens = Config.LLM_MAX_TOKENS
         
         if not self.api_key:
-            raise ValueError("LLM_API_KEY 未配置")
+            raise ValueError(tr("config.llm_key_missing"))
         
         self.client = OpenAI(
             api_key=self.api_key,
             base_url=self.base_url
         )
+
+    @staticmethod
+    def _trim_messages(messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
+        """Trim old context while preserving the initial prompt and recent turns."""
+        if len(messages) <= 8:
+            return messages
+
+        head_count = 2 if len(messages) >= 2 else 1
+        tail_count = min(8, len(messages) - head_count)
+        tail_start = max(head_count, len(messages) - tail_count)
+        trimmed = messages[:head_count] + messages[tail_start:]
+
+        if len(trimmed) < len(messages):
+            logger.warning("Trimmed LLM context from %s to %s messages", len(messages), len(trimmed))
+
+        return trimmed
+
+    @staticmethod
+    def _is_context_length_error(exc: Exception) -> bool:
+        text = str(exc).lower()
+        markers = (
+            "context_length",
+            "maximum context",
+            "context window",
+            "too many tokens",
+            "maximum tokens",
+            "token limit",
+        )
+        return any(marker in text for marker in markers)
+
+    @staticmethod
+    def _is_unsupported_response_format_error(exc: Exception) -> bool:
+        text = str(exc).lower()
+        markers = (
+            "response_format",
+            "json_object unsupported",
+            "invalid parameter: response_format",
+            "unsupported json mode",
+            "json schema is not supported",
+        )
+        return any(marker in text for marker in markers)
     
     def chat(
         self,
         messages: List[Dict[str, str]],
         temperature: float = 0.7,
-        max_tokens: int = 4096,
+        max_tokens: Optional[int] = None,
         response_format: Optional[Dict] = None
     ) -> str:
         """
@@ -51,6 +97,9 @@ class LLMClient:
         Returns:
             模型响应文本
         """
+        if max_tokens is None:
+            max_tokens = self.default_max_tokens
+
         kwargs = {
             "model": self.model,
             "messages": messages,
@@ -60,18 +109,80 @@ class LLMClient:
         
         if response_format:
             kwargs["response_format"] = response_format
-        
-        response = self.client.chat.completions.create(**kwargs)
-        content = response.choices[0].message.content
-        # 部分模型（如MiniMax M2.5）会在content中包含<think>思考内容，需要移除
-        content = re.sub(r'<think>[\s\S]*?</think>', '', content).strip()
+
+        try:
+            response = self.client.chat.completions.create(**kwargs)
+        except BadRequestError as exc:
+            if response_format and self._is_unsupported_response_format_error(exc):
+                logger.warning(
+                    "LLM backend rejected response_format=%s; retrying without JSON mode",
+                    response_format.get("type") if isinstance(response_format, dict) else response_format,
+                )
+                kwargs.pop("response_format", None)
+                response = self.client.chat.completions.create(**kwargs)
+            else:
+                if not self._is_context_length_error(exc):
+                    raise
+
+                trimmed_messages = self._trim_messages(messages)
+                if len(trimmed_messages) == len(messages):
+                    raise
+
+                logger.warning("Retrying LLM call after context-length failure")
+                kwargs["messages"] = trimmed_messages
+                response = self.client.chat.completions.create(**kwargs)
+        except APIError as exc:
+            if response_format and self._is_unsupported_response_format_error(exc):
+                logger.warning(
+                    "LLM backend rejected response_format=%s via APIError; retrying without JSON mode",
+                    response_format.get("type") if isinstance(response_format, dict) else response_format,
+                )
+                kwargs.pop("response_format", None)
+                response = self.client.chat.completions.create(**kwargs)
+            else:
+                logger.exception("LLM API request failed")
+                raise
+
+        content = response.choices[0].message.content or ""
+        # 部分模型会在 content 中夹带 <think>...</think>，且标签大小写不固定
+        content = re.sub(r'<think\b[^>]*>[\s\S]*?</think>', '', content, flags=re.IGNORECASE).strip()
         return content
+
+    @staticmethod
+    def _extract_json_payload(response_text: str) -> str:
+        """从混合文本中提取可解析的 JSON 负载。"""
+        text = (response_text or "").strip().lstrip('\ufeff')
+
+        text = re.sub(r'^```(?:json)?\s*\n?', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'\n?```\s*$', '', text)
+        text = text.strip()
+
+        try:
+            json.loads(text)
+            return text
+        except json.JSONDecodeError:
+            pass
+
+        decoder = json.JSONDecoder()
+        for index, char in enumerate(text):
+            if char not in '{[':
+                continue
+
+            try:
+                _, end = decoder.raw_decode(text[index:])
+                candidate = text[index:index + end].strip()
+                json.loads(candidate)
+                return candidate
+            except json.JSONDecodeError:
+                pass
+
+        return text
     
     def chat_json(
         self,
         messages: List[Dict[str, str]],
         temperature: float = 0.3,
-        max_tokens: int = 4096
+        max_tokens: Optional[int] = None
     ) -> Dict[str, Any]:
         """
         发送聊天请求并返回JSON
@@ -88,16 +199,11 @@ class LLMClient:
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
-            response_format={"type": "json_object"}
+            # 不设置 response_format，以兼容 LM Studio / Ollama 等仅支持纯文本 JSON 输出的后端
         )
-        # 清理markdown代码块标记
-        cleaned_response = response.strip()
-        cleaned_response = re.sub(r'^```(?:json)?\s*\n?', '', cleaned_response, flags=re.IGNORECASE)
-        cleaned_response = re.sub(r'\n?```\s*$', '', cleaned_response)
-        cleaned_response = cleaned_response.strip()
+        cleaned_response = self._extract_json_payload(response)
 
         try:
             return json.loads(cleaned_response)
         except json.JSONDecodeError:
-            raise ValueError(f"LLM返回的JSON格式无效: {cleaned_response}")
-
+            raise ValueError(tr("llm.invalid_json", payload=cleaned_response))

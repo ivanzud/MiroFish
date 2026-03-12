@@ -4,6 +4,7 @@
 """
 
 import json
+import re
 from typing import Dict, Any, List, Optional
 from ..utils.llm_client import LLMClient
 
@@ -154,6 +155,151 @@ B. **具体类型（8个，根据文本内容设计）**：
 - COMPETES_WITH: 竞争
 """
 
+ONTOLOGY_SYSTEM_PROMPT_EN = """You are a professional knowledge-graph ontology designer. Analyze the provided source text and simulation requirement, then design entity types and relationship types suitable for a **social-media public-opinion simulation**.
+
+**Important: output valid JSON only. Do not output any other text.**
+
+## Core task background
+
+We are building a **social-media public-opinion simulation system**. In this system:
+- Each entity should be a real actor, account, or organization that can speak and interact on social media
+- Entities influence, repost, comment on, and respond to each other
+- We need to simulate reactions and information spread around a real-world event or topic
+
+Therefore, **entities must be real-world actors that can speak or interact on social media**.
+
+**Allowed examples**:
+- Specific people (public figures, involved parties, opinion leaders, experts, ordinary individuals)
+- Companies and businesses (including official brand accounts)
+- Organizations and institutions (universities, associations, NGOs, unions, etc.)
+- Government departments and regulators
+- Media organizations (newspapers, TV stations, self-media accounts, websites)
+- Social-media platforms themselves
+- Representative groups (alumni groups, fan communities, advocacy groups, etc.)
+
+**Not allowed**:
+- Abstract concepts (such as "public opinion", "emotion", or "trend")
+- Topics/themes (such as "academic integrity" or "education reform")
+- Positions/stances (such as "supporters" or "opponents")
+
+## Output format
+
+Return JSON in the following shape:
+
+```json
+{
+    "entity_types": [
+        {
+            "name": "Entity type name (English, PascalCase)",
+            "description": "Short description (English, under 100 characters)",
+            "attributes": [
+                {
+                    "name": "Attribute name (English, snake_case)",
+                    "type": "text",
+                    "description": "Attribute description"
+                }
+            ],
+            "examples": ["Example entity 1", "Example entity 2"]
+        }
+    ],
+    "edge_types": [
+        {
+            "name": "Relationship type name (English, UPPER_SNAKE_CASE)",
+            "description": "Short description (English, under 100 characters)",
+            "source_targets": [
+                {"source": "Source entity type", "target": "Target entity type"}
+            ],
+            "attributes": []
+        }
+    ],
+    "analysis_summary": "Brief analysis summary of the text content (English)"
+}
+```
+
+## Design rules (very important)
+
+### 1. Entity type design
+
+**Quantity requirement: exactly 10 entity types**
+
+**Hierarchy requirement (must include both specific types and fallback types):**
+
+Your 10 entity types must include:
+
+A. **Fallback types (required, and they must be the last 2 items)**:
+   - `Person`: fallback type for any natural person who does not fit a more specific person type
+   - `Organization`: fallback type for any organization that does not fit a more specific organization type
+
+B. **Specific types (8 items, designed from the text)**:
+   - Create more specific types for the major actors appearing in the material
+   - Example for an academic incident: `Student`, `Professor`, `University`
+   - Example for a business story: `Company`, `CEO`, `Employee`
+
+**Why fallback types are needed**:
+- Real documents mention many people such as school teachers, passers-by, or anonymous users
+- If there is no specialized type, they should fall back to `Person`
+- Likewise, small organizations or temporary groups should fall back to `Organization`
+
+**Specific type rules**:
+- Identify the high-frequency or critical role categories in the text
+- Each specific type should have a clear boundary and avoid overlap
+- `description` must clearly explain how the type differs from the fallback type
+
+### 2. Relationship type design
+
+- Quantity: 6-10
+- Relationships should reflect realistic social-media/public-opinion interactions
+- Ensure the `source_targets` combinations cover the entity types you defined
+
+### 3. Attribute design
+
+- Each entity type should have 1-3 key attributes
+- **Important**: do not use reserved attribute names such as `name`, `uuid`, `group_id`, `created_at`, or `summary`
+- Prefer names like `full_name`, `title`, `role`, `position`, `location`, or `description`
+
+## Reference entity types
+
+**Specific person-like types**:
+- Student
+- Professor
+- Journalist
+- Celebrity
+- Executive
+- Official
+- Lawyer
+- Doctor
+
+**Fallback person type**:
+- Person
+
+**Specific organization-like types**:
+- University
+- Company
+- GovernmentAgency
+- MediaOutlet
+- Hospital
+- School
+- NGO
+
+**Fallback organization type**:
+- Organization
+
+## Reference relationship types
+
+- WORKS_FOR
+- STUDIES_AT
+- AFFILIATED_WITH
+- REPRESENTS
+- REGULATES
+- REPORTS_ON
+- COMMENTS_ON
+- RESPONDS_TO
+- SUPPORTS
+- OPPOSES
+- COLLABORATES_WITH
+- COMPETES_WITH
+"""
+
 
 class OntologyGenerator:
     """
@@ -161,8 +307,9 @@ class OntologyGenerator:
     分析文本内容，生成实体和关系类型定义
     """
     
-    def __init__(self, llm_client: Optional[LLMClient] = None):
+    def __init__(self, llm_client: Optional[LLMClient] = None, locale: str = "zh"):
         self.llm_client = llm_client or LLMClient()
+        self.locale = "en" if locale == "en" else "zh"
     
     def generate(
         self,
@@ -189,7 +336,7 @@ class OntologyGenerator:
         )
         
         messages = [
-            {"role": "system", "content": ONTOLOGY_SYSTEM_PROMPT},
+            {"role": "system", "content": self._build_system_prompt()},
             {"role": "user", "content": user_message}
         ]
         
@@ -204,6 +351,11 @@ class OntologyGenerator:
         result = self._validate_and_process(result)
         
         return result
+
+    def _build_system_prompt(self) -> str:
+        if self.locale == "en":
+            return ONTOLOGY_SYSTEM_PROMPT_EN
+        return ONTOLOGY_SYSTEM_PROMPT
     
     # 传给 LLM 的文本最大长度（5万字）
     MAX_TEXT_LENGTH_FOR_LLM = 50000
@@ -223,9 +375,25 @@ class OntologyGenerator:
         # 如果文本超过5万字，截断（仅影响传给LLM的内容，不影响图谱构建）
         if len(combined_text) > self.MAX_TEXT_LENGTH_FOR_LLM:
             combined_text = combined_text[:self.MAX_TEXT_LENGTH_FOR_LLM]
-            combined_text += f"\n\n...(原文共{original_length}字，已截取前{self.MAX_TEXT_LENGTH_FOR_LLM}字用于本体分析)..."
-        
-        message = f"""## 模拟需求
+            if self.locale == "en":
+                combined_text += (
+                    f"\n\n...(original text length: {original_length} characters; "
+                    f"only the first {self.MAX_TEXT_LENGTH_FOR_LLM} characters were included for ontology analysis)..."
+                )
+            else:
+                combined_text += f"\n\n...(原文共{original_length}字，已截取前{self.MAX_TEXT_LENGTH_FOR_LLM}字用于本体分析)..."
+
+        if self.locale == "en":
+            message = f"""## Simulation Requirement
+
+{simulation_requirement}
+
+## Source Documents
+
+{combined_text}
+"""
+        else:
+            message = f"""## 模拟需求
 
 {simulation_requirement}
 
@@ -233,15 +401,35 @@ class OntologyGenerator:
 
 {combined_text}
 """
-        
+
         if additional_context:
-            message += f"""
+            if self.locale == "en":
+                message += f"""
+## Additional Context
+
+{additional_context}
+"""
+            else:
+                message += f"""
 ## 额外说明
 
 {additional_context}
 """
-        
-        message += """
+
+        if self.locale == "en":
+            message += """
+Please design entity types and relationship types suitable for this social-opinion simulation.
+
+**Rules you must follow**:
+1. Output exactly 10 entity types
+2. The last 2 must be the fallback types: Person and Organization
+3. The first 8 must be specific types derived from the text
+4. Every entity type must be a real actor that can speak or interact online, not an abstract concept
+5. Attribute names must not use reserved fields such as name, uuid, or group_id; prefer names like full_name and org_name
+6. Keep all descriptions and `analysis_summary` in English
+"""
+        else:
+            message += """
 请根据以上内容，设计适合社会舆论模拟的实体类型和关系类型。
 
 **必须遵守的规则**：
@@ -266,7 +454,17 @@ class OntologyGenerator:
             result["analysis_summary"] = ""
         
         # 验证实体类型
+        validated_entities = []
         for entity in result["entity_types"]:
+            if isinstance(entity, str):
+                entity = {
+                    "name": entity,
+                    "description": f"Entity type: {entity}"
+                }
+            if not isinstance(entity, dict):
+                continue
+            if entity.get("name"):
+                entity["name"] = self._to_pascal_case(entity["name"])
             if "attributes" not in entity:
                 entity["attributes"] = []
             if "examples" not in entity:
@@ -274,15 +472,36 @@ class OntologyGenerator:
             # 确保description不超过100字符
             if len(entity.get("description", "")) > 100:
                 entity["description"] = entity["description"][:97] + "..."
+            validated_entities.append(entity)
+        result["entity_types"] = validated_entities
         
         # 验证关系类型
+        validated_edges = []
         for edge in result["edge_types"]:
+            if isinstance(edge, str):
+                edge = {
+                    "name": edge,
+                    "description": f"Relationship type: {edge}"
+                }
+            if not isinstance(edge, dict):
+                continue
+            if edge.get("name"):
+                edge["name"] = self._to_screaming_snake_case(edge["name"])
             if "source_targets" not in edge:
                 edge["source_targets"] = []
+            for source_target in edge["source_targets"]:
+                if not isinstance(source_target, dict):
+                    continue
+                if source_target.get("source"):
+                    source_target["source"] = self._to_pascal_case(source_target["source"])
+                if source_target.get("target"):
+                    source_target["target"] = self._to_pascal_case(source_target["target"])
             if "attributes" not in edge:
                 edge["attributes"] = []
             if len(edge.get("description", "")) > 100:
                 edge["description"] = edge["description"][:97] + "..."
+            validated_edges.append(edge)
+        result["edge_types"] = validated_edges
         
         # Zep API 限制：最多 10 个自定义实体类型，最多 10 个自定义边类型
         MAX_ENTITY_TYPES = 10
@@ -343,6 +562,32 @@ class OntologyGenerator:
             result["edge_types"] = result["edge_types"][:MAX_EDGE_TYPES]
         
         return result
+
+    @staticmethod
+    def _to_pascal_case(value: Any) -> str:
+        text = str(value).strip()
+        if not text:
+            return ""
+
+        normalized = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", text)
+        parts = [part for part in re.split(r"[^A-Za-z0-9]+", normalized) if part]
+        converted = []
+        for part in parts:
+            if part.isupper() or part.islower():
+                converted.append(part.lower().capitalize())
+            else:
+                converted.append(part[:1].upper() + part[1:])
+        return "".join(converted)
+
+    @staticmethod
+    def _to_screaming_snake_case(value: Any) -> str:
+        text = str(value).strip()
+        if not text:
+            return ""
+
+        normalized = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", text)
+        parts = [part.upper() for part in re.split(r"[^A-Za-z0-9]+", normalized) if part]
+        return "_".join(parts)
     
     def generate_python_code(self, ontology: Dict[str, Any]) -> str:
         """
@@ -450,4 +695,3 @@ class OntologyGenerator:
         code_lines.append('}')
         
         return '\n'.join(code_lines)
-

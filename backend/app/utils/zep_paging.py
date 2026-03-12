@@ -13,6 +13,7 @@ from typing import Any
 from zep_cloud import InternalServerError
 from zep_cloud.client import Zep
 
+from ..i18n import get_locale, tr
 from .logger import get_logger
 
 logger = get_logger('mirofish.zep_paging')
@@ -29,6 +30,7 @@ def _fetch_page_with_retry(
     max_retries: int = _DEFAULT_MAX_RETRIES,
     retry_delay: float = _DEFAULT_RETRY_DELAY,
     page_description: str = "page",
+    locale: str | None = None,
     **kwargs: Any,
 ) -> list[Any]:
     """单页请求，失败时指数退避重试。仅重试网络/IO类瞬态错误。"""
@@ -45,12 +47,27 @@ def _fetch_page_with_retry(
             last_exception = e
             if attempt < max_retries - 1:
                 logger.warning(
-                    f"Zep {page_description} attempt {attempt + 1} failed: {str(e)[:100]}, retrying in {delay:.1f}s..."
+                    tr(
+                        "zep.paging_failed_attempt",
+                        get_locale(locale),
+                        page_description=page_description,
+                        attempt=attempt + 1,
+                        error=str(e)[:100],
+                        delay=delay,
+                    )
                 )
                 time.sleep(delay)
                 delay *= 2
             else:
-                logger.error(f"Zep {page_description} failed after {max_retries} attempts: {str(e)}")
+                logger.error(
+                    tr(
+                        "zep.paging_failed_final",
+                        get_locale(locale),
+                        page_description=page_description,
+                        max_retries=max_retries,
+                        error=str(e),
+                    )
+                )
 
     assert last_exception is not None
     raise last_exception
@@ -63,6 +80,7 @@ def fetch_all_nodes(
     max_items: int = _MAX_NODES,
     max_retries: int = _DEFAULT_MAX_RETRIES,
     retry_delay: float = _DEFAULT_RETRY_DELAY,
+    locale: str | None = None,
 ) -> list[Any]:
     """分页获取图谱节点，最多返回 max_items 条（默认 2000）。每页请求自带重试。"""
     all_nodes: list[Any] = []
@@ -81,6 +99,7 @@ def fetch_all_nodes(
             max_retries=max_retries,
             retry_delay=retry_delay,
             page_description=f"fetch nodes page {page_num} (graph={graph_id})",
+            locale=locale,
             **kwargs,
         )
         if not batch:
@@ -89,14 +108,27 @@ def fetch_all_nodes(
         all_nodes.extend(batch)
         if len(all_nodes) >= max_items:
             all_nodes = all_nodes[:max_items]
-            logger.warning(f"Node count reached limit ({max_items}), stopping pagination for graph {graph_id}")
+            logger.warning(
+                tr(
+                    "zep.paging_node_limit",
+                    get_locale(locale),
+                    max_items=max_items,
+                    graph_id=graph_id,
+                )
+            )
             break
         if len(batch) < page_size:
             break
 
         cursor = getattr(batch[-1], "uuid_", None) or getattr(batch[-1], "uuid", None)
         if cursor is None:
-            logger.warning(f"Node missing uuid field, stopping pagination at {len(all_nodes)} nodes")
+            logger.warning(
+                tr(
+                    "zep.paging_node_missing_uuid",
+                    get_locale(locale),
+                    count=len(all_nodes),
+                )
+            )
             break
 
     return all_nodes
@@ -108,6 +140,7 @@ def fetch_all_edges(
     page_size: int = _DEFAULT_PAGE_SIZE,
     max_retries: int = _DEFAULT_MAX_RETRIES,
     retry_delay: float = _DEFAULT_RETRY_DELAY,
+    locale: str | None = None,
 ) -> list[Any]:
     """分页获取图谱所有边，返回完整列表。每页请求自带重试。"""
     all_edges: list[Any] = []
@@ -126,6 +159,7 @@ def fetch_all_edges(
             max_retries=max_retries,
             retry_delay=retry_delay,
             page_description=f"fetch edges page {page_num} (graph={graph_id})",
+            locale=locale,
             **kwargs,
         )
         if not batch:
@@ -137,7 +171,13 @@ def fetch_all_edges(
 
         cursor = getattr(batch[-1], "uuid_", None) or getattr(batch[-1], "uuid", None)
         if cursor is None:
-            logger.warning(f"Edge missing uuid field, stopping pagination at {len(all_edges)} edges")
+            logger.warning(
+                tr(
+                    "zep.paging_edge_missing_uuid",
+                    get_locale(locale),
+                    count=len(all_edges),
+                )
+            )
             break
 
     return all_edges

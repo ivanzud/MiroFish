@@ -62,6 +62,7 @@ def test_profile_formats():
     ]
     
     generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+    generator.locale = "en"
     
     # 使用临时目录
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -86,13 +87,14 @@ def test_profile_formats():
             print(f"     {key}: {value}")
         
         # 验证必需字段
-        required_twitter_fields = ['user_id', 'user_name', 'name', 'bio', 
-                                   'friend_count', 'follower_count', 'statuses_count', 'created_at']
+        required_twitter_fields = ['user_id', 'name', 'username', 'user_char', 'description']
         missing = set(required_twitter_fields) - set(rows[0].keys())
         if missing:
             print(f"\n   [错误] 缺少字段: {missing}")
         else:
             print(f"\n   [通过] 所有必需字段都存在")
+            assert rows[0]["username"] == "test_user_123"
+            assert rows[0]["description"] == "A test user for validation"
         
         # 测试Reddit JSON格式
         print("\n2. 测试Reddit Profile (JSON详细格式)")
@@ -110,15 +112,21 @@ def test_profile_formats():
         print(json.dumps(reddit_data[0], ensure_ascii=False, indent=4))
         
         # 验证详细格式字段
-        required_reddit_fields = ['realname', 'username', 'bio', 'persona']
-        optional_reddit_fields = ['age', 'gender', 'mbti', 'country', 'profession', 'interested_topics']
+        required_reddit_fields = [
+            'user_id', 'username', 'name', 'bio', 'persona',
+            'karma', 'created_at', 'age', 'gender', 'mbti', 'country',
+        ]
+        optional_reddit_fields = ['profession', 'interested_topics']
         
         missing = set(required_reddit_fields) - set(reddit_data[0].keys())
         if missing:
             print(f"\n   [错误] 缺少必需字段: {missing}")
         else:
             print(f"\n   [通过] 所有必需字段都存在")
-        
+            assert reddit_data[0]["username"] == "test_user_123"
+            assert reddit_data[0]["country"] == "China"
+            assert reddit_data[1]["country"] == "China"
+
         present_optional = set(optional_reddit_fields) & set(reddit_data[0].keys())
         print(f"   [信息] 可选字段: {present_optional}")
     
@@ -135,19 +143,22 @@ def show_expected_formats():
     
     print("\n1. Twitter Profile (CSV格式)")
     print("-" * 40)
-    twitter_example = """user_id,user_name,name,bio,friend_count,follower_count,statuses_count,created_at
-0,user0,User Zero,I am user zero with interests in technology.,100,150,500,2023-01-01
-1,user1,User One,Tech enthusiast and coffee lover.,200,250,1000,2023-01-02"""
+    twitter_example = """user_id,name,username,user_char,description
+0,User Zero,user0,I am user zero with interests in technology. Curious and analytical.,I am user zero with interests in technology.
+1,User One,user1,Tech enthusiast and coffee lover. Loves sharing product opinions.,Tech enthusiast and coffee lover."""
     print(twitter_example)
     
     print("\n2. Reddit Profile (JSON详细格式)")
     print("-" * 40)
     reddit_example = [
         {
-            "realname": "James Miller",
+            "user_id": 0,
             "username": "millerhospitality",
+            "name": "James Miller",
             "bio": "Passionate about hospitality & tourism.",
             "persona": "James is a seasoned professional in the Hospitality & Tourism industry...",
+            "karma": 1000,
+            "created_at": "2023-01-01",
             "age": 40,
             "gender": "male",
             "mbti": "ESTJ",
@@ -162,5 +173,4 @@ def show_expected_formats():
 if __name__ == "__main__":
     test_profile_formats()
     show_expected_formats()
-
 

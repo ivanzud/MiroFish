@@ -7,16 +7,31 @@ import os
 import uuid
 import time
 import threading
+import re
+from copy import deepcopy
 from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass
+from email.utils import parsedate_to_datetime
 
 from zep_cloud.client import Zep
 from zep_cloud import EpisodeData, EntityEdgeSourceTarget
 
 from ..config import Config
+from ..i18n import get_locale, tr
 from ..models.task import TaskManager, TaskStatus
+from ..utils.logger import get_logger
 from ..utils.zep_paging import fetch_all_nodes, fetch_all_edges
 from .text_processor import TextProcessor
+from .zep_entity_reader import EntityNode, ZepEntityReader
+
+
+def _fetch_with_optional_locale(fetcher: Callable[..., Any], client: Zep, graph_id: str, locale: str) -> Any:
+    try:
+        return fetcher(client, graph_id, locale=locale)
+    except TypeError as exc:
+        if "unexpected keyword argument 'locale'" not in str(exc):
+            raise
+        return fetcher(client, graph_id)
 
 
 @dataclass
@@ -42,13 +57,344 @@ class GraphBuilderService:
     负责调用Zep API构建知识图谱
     """
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, locale: Optional[str] = None):
         self.api_key = api_key or Config.ZEP_API_KEY
+        self.locale = locale or get_locale()
         if not self.api_key:
-            raise ValueError("ZEP_API_KEY 未配置")
+            raise ValueError(tr("config.key_missing", self.locale, name="ZEP_API_KEY"))
         
         self.client = Zep(api_key=self.api_key)
         self.task_manager = TaskManager()
+        self.logger = get_logger('mirofish.graph_builder')
+
+    def _task_message(self, key: str, **kwargs: Any) -> str:
+        """Build a localized task-progress message for persisted worker state."""
+        return tr(key, self.locale, **kwargs)
+
+    @staticmethod
+    def _is_retryable_zep_error(error: Exception) -> bool:
+        """Return whether a Zep operation failure looks transient and safe to retry."""
+        status_code = getattr(error, "status_code", None)
+        if status_code in {408, 409, 423, 425, 429, 500, 502, 503, 504}:
+            return True
+
+        error_text = str(error).lower()
+        retry_signals = (
+            "429",
+            "too many requests",
+            "rate limit",
+            "timeout",
+            "timed out",
+            "temporarily unavailable",
+            "service unavailable",
+            "bad gateway",
+            "gateway timeout",
+            "connection reset",
+            "connection aborted",
+            "connection error",
+            "remote disconnected",
+        )
+        return any(signal in error_text for signal in retry_signals)
+
+    def _retry_zep_operation(
+        self,
+        operation_name: str,
+        func: Callable[[], Any],
+        *,
+        max_retries: Optional[int] = None,
+        progress_callback: Optional[Callable[[str, float], None]] = None,
+        progress_message: Optional[Callable[[int, int, float], str]] = None,
+        progress_value: float = 0,
+    ) -> Any:
+        """Retry transient Zep failures with backoff while surfacing progress updates."""
+        max_attempts = max_retries or Config.ZEP_RETRY_MAX_ATTEMPTS
+        base_delay = Config.ZEP_RETRY_BASE_DELAY_SECONDS
+
+        for attempt in range(max_attempts):
+            try:
+                return func()
+            except Exception as error:
+                should_retry = attempt < max_attempts - 1 and self._is_retryable_zep_error(error)
+                if not should_retry:
+                    raise
+
+                wait_time = self._get_retry_wait_time(error, attempt, base_delay)
+                self.logger.warning(
+                    "%s failed on attempt %s/%s, retrying in %.1fs: %s",
+                    operation_name,
+                    attempt + 1,
+                    max_attempts,
+                    wait_time,
+                    error,
+                )
+                if progress_callback and progress_message:
+                    progress_callback(progress_message(attempt + 1, max_attempts, wait_time), progress_value)
+                time.sleep(wait_time)
+
+    @staticmethod
+    def _extract_retry_after_seconds(error: Exception) -> Optional[float]:
+        """Extract Retry-After delay hints from common SDK error shapes."""
+        candidates: List[Any] = []
+        headers = getattr(error, "headers", None)
+        if headers:
+            candidates.append(headers)
+
+        response = getattr(error, "response", None)
+        response_headers = getattr(response, "headers", None)
+        if response_headers:
+            candidates.append(response_headers)
+
+        for header_map in candidates:
+            for key in ("retry-after", "Retry-After", "retry_after"):
+                raw_value = header_map.get(key) if hasattr(header_map, "get") else None
+                if raw_value not in (None, ""):
+                    parsed = GraphBuilderService._parse_retry_after_value(raw_value)
+                    if parsed is not None:
+                        return parsed
+
+        error_text = str(error)
+        patterns = (
+            r"retry-after['\"]?\s*[:=]\s*['\"]?([0-9]+(?:\.[0-9]+)?)",
+            r"retry after\s+([0-9]+(?:\.[0-9]+)?)\s*(?:seconds?|secs?|s)\b",
+        )
+        for pattern in patterns:
+            match = re.search(pattern, error_text, re.IGNORECASE)
+            if match:
+                return float(match.group(1))
+
+        return None
+
+    @staticmethod
+    def _parse_retry_after_value(value: Any) -> Optional[float]:
+        raw_value = str(value).strip()
+        if not raw_value:
+            return None
+
+        try:
+            return max(0.0, float(raw_value))
+        except ValueError:
+            pass
+
+        try:
+            retry_at = parsedate_to_datetime(raw_value)
+        except (TypeError, ValueError, IndexError, OverflowError):
+            return None
+
+        if retry_at.tzinfo is None:
+            retry_at = retry_at.astimezone()
+        return max(0.0, retry_at.timestamp() - time.time())
+
+    def _get_retry_wait_time(self, error: Exception, attempt: int, base_delay: float) -> float:
+        """Respect bounded Retry-After hints before falling back to exponential backoff."""
+        retry_after = self._extract_retry_after_seconds(error)
+        max_delay = max(base_delay, Config.ZEP_RETRY_MAX_DELAY_SECONDS)
+        if retry_after is not None:
+            return min(max(base_delay, retry_after), max_delay)
+        return min(base_delay * (2 ** attempt), max_delay)
+
+    def format_user_facing_error(self, error: Exception) -> str:
+        """Collapse noisy provider exceptions into actionable graph-build messages."""
+        status_code = getattr(error, "status_code", None)
+        error_text = self._normalize_error_text(error)
+        lowered = error_text.lower()
+
+        if status_code == 401 or ("401" in lowered and "unauthorized" in lowered):
+            return tr("graph.zep_auth_failed", self.locale)
+
+        if status_code == 403 or "forbidden" in lowered:
+            return tr("graph.zep_permission_denied", self.locale)
+
+        if "invalid api key" in lowered or "authentication" in lowered:
+            return tr("graph.zep_auth_failed", self.locale)
+
+        return error_text or error.__class__.__name__
+
+    @staticmethod
+    def _normalize_error_text(error: Exception) -> str:
+        """Strip traceback noise from SDK/provider exceptions before surfacing them."""
+        error_text = str(error).strip()
+        if "Traceback (most recent call last):" not in error_text:
+            return error_text
+
+        cleaned_lines: List[str] = []
+        for raw_line in error_text.splitlines():
+            line = raw_line.strip()
+            if not line:
+                continue
+            if (
+                line.startswith("Traceback (most recent call last):")
+                or line.startswith('File "')
+                or line.startswith("^")
+                or line.startswith("During handling of the above exception")
+            ):
+                continue
+            cleaned_lines.append(line)
+
+        # Prefer the last meaningful line once stack frames are removed.
+        if cleaned_lines:
+            return cleaned_lines[-1]
+
+        return error_text
+
+    @staticmethod
+    def _entity_type_from_node(node: Dict[str, Any]) -> str:
+        for label in node.get("labels", []):
+            if label not in ["Entity", "Node"]:
+                return label
+        return ""
+
+    @classmethod
+    def _node_as_entity(cls, node: Dict[str, Any]) -> EntityNode:
+        return EntityNode(
+            uuid=str(node.get("uuid", "")),
+            name=str(node.get("name", "") or ""),
+            labels=list(node.get("labels", []) or []),
+            summary=str(node.get("summary", "") or ""),
+            attributes=dict(node.get("attributes", {}) or {}),
+        )
+
+    @staticmethod
+    def _unique_values(values: List[Any]) -> List[Any]:
+        seen = set()
+        result = []
+        for value in values:
+            if value in (None, ""):
+                continue
+            if value in seen:
+                continue
+            seen.add(value)
+            result.append(value)
+        return result
+
+    @classmethod
+    def _pick_primary_graph_node(cls, left: Dict[str, Any], right: Dict[str, Any]) -> Dict[str, Any]:
+        left_name = ZepEntityReader._normalize_entity_name(left.get("name", ""))
+        right_name = ZepEntityReader._normalize_entity_name(right.get("name", ""))
+
+        if left_name and right_name and len(left_name) != len(right_name):
+            return left if len(left_name) < len(right_name) else right
+
+        def score(node: Dict[str, Any]) -> int:
+            return (
+                len(node.get("attributes") or {}) * 10
+                + len(node.get("summary") or "")
+                + len(node.get("labels") or [])
+            )
+
+        return left if score(left) >= score(right) else right
+
+    @classmethod
+    def _merge_duplicate_graph_nodes(
+        cls, nodes: List[Dict[str, Any]]
+    ) -> tuple[List[Dict[str, Any]], Dict[str, str]]:
+        merged_nodes: List[Dict[str, Any]] = []
+
+        for node in nodes:
+            prepared = {
+                **deepcopy(node),
+                "labels": list(node.get("labels", []) or []),
+                "attributes": dict(node.get("attributes", {}) or {}),
+                "alias_names": cls._unique_values([*(node.get("alias_names", []) or []), node.get("name")]),
+                "merged_node_uuids": cls._unique_values(
+                    [*(node.get("merged_node_uuids", []) or []), node.get("uuid")]
+                ),
+            }
+
+            duplicate_index = next(
+                (
+                    idx
+                    for idx, existing in enumerate(merged_nodes)
+                    if ZepEntityReader._are_duplicate_entities(
+                        cls._node_as_entity(existing),
+                        cls._node_as_entity(prepared),
+                    )
+                ),
+                None,
+            )
+            if duplicate_index is None:
+                merged_nodes.append(prepared)
+                continue
+
+            existing = merged_nodes[duplicate_index]
+            primary = cls._pick_primary_graph_node(existing, prepared)
+            secondary = prepared if primary is existing else existing
+
+            merged_nodes[duplicate_index] = {
+                **secondary,
+                **primary,
+                "labels": cls._unique_values([*(primary.get("labels", []) or []), *(secondary.get("labels", []) or [])]),
+                "attributes": {
+                    **(secondary.get("attributes") or {}),
+                    **(primary.get("attributes") or {}),
+                },
+                "summary": max(
+                    [part for part in (primary.get("summary"), secondary.get("summary")) if part],
+                    key=len,
+                    default="",
+                ),
+                "created_at": primary.get("created_at") or secondary.get("created_at"),
+                "alias_names": cls._unique_values(
+                    [
+                        *(primary.get("alias_names", []) or []),
+                        *(secondary.get("alias_names", []) or []),
+                        primary.get("name"),
+                        secondary.get("name"),
+                    ]
+                ),
+                "merged_node_uuids": cls._unique_values(
+                    [
+                        *(primary.get("merged_node_uuids", []) or []),
+                        *(secondary.get("merged_node_uuids", []) or []),
+                    ]
+                ),
+            }
+
+        uuid_remap: Dict[str, str] = {}
+        sanitized_nodes: List[Dict[str, Any]] = []
+        for node in merged_nodes:
+            merged_uuids = cls._unique_values(node.get("merged_node_uuids", []) or [])
+            for raw_uuid in merged_uuids:
+                uuid_remap[raw_uuid] = node["uuid"]
+
+            sanitized = dict(node)
+            if len(node.get("alias_names", []) or []) <= 1:
+                sanitized.pop("alias_names", None)
+            if len(merged_uuids) <= 1:
+                sanitized.pop("merged_node_uuids", None)
+            sanitized_nodes.append(sanitized)
+
+        return sanitized_nodes, uuid_remap
+
+    @classmethod
+    def _deduplicate_graph_edges(
+        cls,
+        edges: List[Dict[str, Any]],
+        uuid_remap: Dict[str, str],
+        node_name_map: Dict[str, str],
+    ) -> List[Dict[str, Any]]:
+        deduplicated: List[Dict[str, Any]] = []
+        seen_keys = set()
+
+        for edge in edges:
+            remapped = dict(edge)
+            remapped["source_node_uuid"] = uuid_remap.get(edge.get("source_node_uuid"), edge.get("source_node_uuid"))
+            remapped["target_node_uuid"] = uuid_remap.get(edge.get("target_node_uuid"), edge.get("target_node_uuid"))
+            remapped["source_node_name"] = node_name_map.get(remapped["source_node_uuid"], edge.get("source_node_name", ""))
+            remapped["target_node_name"] = node_name_map.get(remapped["target_node_uuid"], edge.get("target_node_name", ""))
+
+            edge_key = (
+                remapped.get("name", ""),
+                remapped.get("fact", ""),
+                remapped.get("fact_type", ""),
+                remapped.get("source_node_uuid", ""),
+                remapped.get("target_node_uuid", ""),
+            )
+            if edge_key in seen_keys:
+                continue
+            seen_keys.add(edge_key)
+            deduplicated.append(remapped)
+
+        return deduplicated
     
     def build_graph_async(
         self,
@@ -109,7 +455,7 @@ class GraphBuilderService:
                 task_id,
                 status=TaskStatus.PROCESSING,
                 progress=5,
-                message="开始构建图谱..."
+                message=self._task_message("graph.build_started_worker"),
             )
             
             # 1. 创建图谱
@@ -117,7 +463,7 @@ class GraphBuilderService:
             self.task_manager.update_task(
                 task_id,
                 progress=10,
-                message=f"图谱已创建: {graph_id}"
+                message=self._task_message("graph.build_graph_created", graph_id=graph_id),
             )
             
             # 2. 设置本体
@@ -125,7 +471,7 @@ class GraphBuilderService:
             self.task_manager.update_task(
                 task_id,
                 progress=15,
-                message="本体已设置"
+                message=self._task_message("graph.build_ontology_set"),
             )
             
             # 3. 文本分块
@@ -134,7 +480,7 @@ class GraphBuilderService:
             self.task_manager.update_task(
                 task_id,
                 progress=20,
-                message=f"文本已分割为 {total_chunks} 个块"
+                message=self._task_message("graph.build_chunks_split", total_chunks=total_chunks),
             )
             
             # 4. 分批发送数据
@@ -151,7 +497,7 @@ class GraphBuilderService:
             self.task_manager.update_task(
                 task_id,
                 progress=60,
-                message="等待Zep处理数据..."
+                message=self._task_message("graph.build_waiting_for_zep"),
             )
             
             self._wait_for_episodes(
@@ -167,7 +513,7 @@ class GraphBuilderService:
             self.task_manager.update_task(
                 task_id,
                 progress=90,
-                message="获取图谱信息..."
+                message=self._task_message("graph.build_fetching_graph_info"),
             )
             
             graph_info = self._get_graph_info(graph_id)
@@ -177,26 +523,31 @@ class GraphBuilderService:
                 "graph_id": graph_id,
                 "graph_info": graph_info.to_dict(),
                 "chunks_processed": total_chunks,
-            })
+            }, locale=self.locale)
             
         except Exception as e:
             import traceback
-            error_msg = f"{str(e)}\n{traceback.format_exc()}"
-            self.task_manager.fail_task(task_id, error_msg)
+            self.logger.error("Graph build worker failed: %s", e)
+            self.logger.debug(traceback.format_exc())
+            self.task_manager.fail_task(task_id, self.format_user_facing_error(e), locale=self.locale)
     
-    def create_graph(self, name: str) -> str:
+    def create_graph(self, name: str, max_retries: Optional[int] = None) -> str:
         """创建Zep图谱（公开方法）"""
         graph_id = f"mirofish_{uuid.uuid4().hex[:16]}"
-        
-        self.client.graph.create(
-            graph_id=graph_id,
-            name=name,
-            description="MiroFish Social Simulation Graph"
+
+        self._retry_zep_operation(
+            "create_graph",
+            lambda: self.client.graph.create(
+                graph_id=graph_id,
+                name=name,
+                description="MiroFish Social Simulation Graph"
+            ),
+            max_retries=max_retries,
         )
         
         return graph_id
     
-    def set_ontology(self, graph_id: str, ontology: Dict[str, Any]):
+    def set_ontology(self, graph_id: str, ontology: Dict[str, Any], max_retries: Optional[int] = None):
         """设置图谱本体（公开方法）"""
         import warnings
         from typing import Optional
@@ -215,18 +566,67 @@ class GraphBuilderService:
             if attr_name.lower() in RESERVED_NAMES:
                 return f"entity_{attr_name}"
             return attr_name
+
+        def split_identifier_parts(raw_name: Any) -> List[str]:
+            text = str(raw_name or "").strip()
+            if not text:
+                return []
+            pieces = re.findall(r"[A-Z]+(?=[A-Z][a-z]|\d|$)|[A-Z]?[a-z]+|\d+", text.replace("-", "_"))
+            if not pieces:
+                pieces = [part for part in re.split(r"[^A-Za-z0-9]+", text) if part]
+            return [piece for piece in pieces if piece]
+
+        def normalize_entity_type_name(raw_name: Any) -> str:
+            parts = split_identifier_parts(raw_name)
+            if not parts:
+                return "Entity"
+            return "".join(part[:1].upper() + part[1:].lower() for part in parts)
+
+        def normalize_edge_type_name(raw_name: Any) -> str:
+            parts = split_identifier_parts(raw_name)
+            if not parts:
+                return "RELATED_TO"
+            return "_".join(part.upper() for part in parts)
+
+        def edge_class_name(raw_name: str) -> str:
+            return "".join(part[:1].upper() + part[1:].lower() for part in raw_name.split("_") if part) or "RelatedTo"
+
+        def normalized_attributes(owner_name: str, attributes: Any) -> List[Dict[str, str]]:
+            """Accept string-style attributes from loose LLM output and skip unusable entries."""
+            normalized: List[Dict[str, str]] = []
+            for attr_def in attributes or []:
+                if isinstance(attr_def, str):
+                    attr_name = attr_def.strip()
+                    if attr_name:
+                        normalized.append({"name": attr_name, "description": attr_name})
+                    continue
+                if not isinstance(attr_def, dict):
+                    self.logger.warning("Skipping invalid ontology attribute for %s: %r", owner_name, attr_def)
+                    continue
+
+                attr_name = str(attr_def.get("name", "")).strip()
+                if not attr_name:
+                    self.logger.warning("Skipping ontology attribute without name for %s: %r", owner_name, attr_def)
+                    continue
+
+                description = str(attr_def.get("description") or attr_name).strip() or attr_name
+                normalized.append({"name": attr_name, "description": description})
+            return normalized
         
         # 动态创建实体类型
         entity_types = {}
+        entity_name_map: Dict[str, str] = {}
         for entity_def in ontology.get("entity_types", []):
-            name = entity_def["name"]
+            raw_name = entity_def["name"]
+            name = normalize_entity_type_name(raw_name)
+            entity_name_map[str(raw_name)] = name
             description = entity_def.get("description", f"A {name} entity.")
             
             # 创建属性字典和类型注解（Pydantic v2 需要）
             attrs = {"__doc__": description}
             annotations = {}
             
-            for attr_def in entity_def.get("attributes", []):
+            for attr_def in normalized_attributes(name, entity_def.get("attributes", [])):
                 attr_name = safe_attr_name(attr_def["name"])  # 使用安全名称
                 attr_desc = attr_def.get("description", attr_name)
                 # Zep API 需要 Field 的 description，这是必需的
@@ -243,14 +643,15 @@ class GraphBuilderService:
         # 动态创建边类型
         edge_definitions = {}
         for edge_def in ontology.get("edge_types", []):
-            name = edge_def["name"]
+            raw_name = edge_def["name"]
+            name = normalize_edge_type_name(raw_name)
             description = edge_def.get("description", f"A {name} relationship.")
             
             # 创建属性字典和类型注解
             attrs = {"__doc__": description}
             annotations = {}
             
-            for attr_def in edge_def.get("attributes", []):
+            for attr_def in normalized_attributes(name, edge_def.get("attributes", [])):
                 attr_name = safe_attr_name(attr_def["name"])  # 使用安全名称
                 attr_desc = attr_def.get("description", attr_name)
                 # Zep API 需要 Field 的 description，这是必需的
@@ -260,17 +661,21 @@ class GraphBuilderService:
             attrs["__annotations__"] = annotations
             
             # 动态创建类
-            class_name = ''.join(word.capitalize() for word in name.split('_'))
+            class_name = edge_class_name(name)
             edge_class = type(class_name, (EdgeModel,), attrs)
             edge_class.__doc__ = description
             
             # 构建source_targets
             source_targets = []
             for st in edge_def.get("source_targets", []):
+                source_name = normalize_entity_type_name(st.get("source", "Entity"))
+                target_name = normalize_entity_type_name(st.get("target", "Entity"))
+                source_name = entity_name_map.get(str(st.get("source", "")), source_name)
+                target_name = entity_name_map.get(str(st.get("target", "")), target_name)
                 source_targets.append(
                     EntityEdgeSourceTarget(
-                        source=st.get("source", "Entity"),
-                        target=st.get("target", "Entity")
+                        source=source_name,
+                        target=target_name,
                     )
                 )
             
@@ -279,10 +684,14 @@ class GraphBuilderService:
         
         # 调用Zep API设置本体
         if entity_types or edge_definitions:
-            self.client.graph.set_ontology(
-                graph_ids=[graph_id],
-                entities=entity_types if entity_types else None,
-                edges=edge_definitions if edge_definitions else None,
+            self._retry_zep_operation(
+                "set_ontology",
+                lambda: self.client.graph.set_ontology(
+                    graph_ids=[graph_id],
+                    entities=entity_types if entity_types else None,
+                    edges=edge_definitions if edge_definitions else None,
+                ),
+                max_retries=max_retries,
             )
     
     def add_text_batches(
@@ -304,7 +713,13 @@ class GraphBuilderService:
             if progress_callback:
                 progress = (i + len(batch_chunks)) / total_chunks
                 progress_callback(
-                    f"发送第 {batch_num}/{total_batches} 批数据 ({len(batch_chunks)} 块)...",
+                    tr(
+                        "graph.build_batch_sending",
+                        self.locale,
+                        batch_num=batch_num,
+                        total_batches=total_batches,
+                        chunk_count=len(batch_chunks),
+                    ),
                     progress
                 )
             
@@ -314,27 +729,38 @@ class GraphBuilderService:
                 for chunk in batch_chunks
             ]
             
-            # 发送到Zep
-            try:
-                batch_result = self.client.graph.add_batch(
+            def send_batch():
+                return self.client.graph.add_batch(
                     graph_id=graph_id,
                     episodes=episodes
                 )
-                
-                # 收集返回的 episode uuid
-                if batch_result and isinstance(batch_result, list):
-                    for ep in batch_result:
-                        ep_uuid = getattr(ep, 'uuid_', None) or getattr(ep, 'uuid', None)
-                        if ep_uuid:
-                            episode_uuids.append(ep_uuid)
-                
-                # 避免请求过快
-                time.sleep(1)
-                
-            except Exception as e:
-                if progress_callback:
-                    progress_callback(f"批次 {batch_num} 发送失败: {str(e)}", 0)
-                raise
+
+            batch_result = self._retry_zep_operation(
+                f"add_batch[{batch_num}]",
+                send_batch,
+                progress_callback=progress_callback,
+                progress_message=lambda attempt, total, wait_time: (
+                    tr(
+                        "graph.build_batch_retry",
+                        self.locale,
+                        batch_num=batch_num,
+                        wait_time=wait_time,
+                        attempt=attempt,
+                        total=total,
+                    )
+                ),
+                progress_value=(i + len(batch_chunks)) / total_chunks,
+            )
+
+            # 收集返回的 episode uuid
+            if batch_result and isinstance(batch_result, list):
+                for ep in batch_result:
+                    ep_uuid = getattr(ep, 'uuid_', None) or getattr(ep, 'uuid', None)
+                    if ep_uuid:
+                        episode_uuids.append(ep_uuid)
+
+            # 避免请求过快
+            time.sleep(1)
         
         return episode_uuids
     
@@ -347,7 +773,7 @@ class GraphBuilderService:
         """等待所有 episode 处理完成（通过查询每个 episode 的 processed 状态）"""
         if not episode_uuids:
             if progress_callback:
-                progress_callback("无需等待（没有 episode）", 1.0)
+                progress_callback(tr("graph.build_wait_not_required", self.locale), 1.0)
             return
         
         start_time = time.time()
@@ -356,13 +782,21 @@ class GraphBuilderService:
         total_episodes = len(episode_uuids)
         
         if progress_callback:
-            progress_callback(f"开始等待 {total_episodes} 个文本块处理...", 0)
+            progress_callback(
+                tr("graph.build_wait_started", self.locale, total_episodes=total_episodes),
+                0,
+            )
         
         while pending_episodes:
             if time.time() - start_time > timeout:
                 if progress_callback:
                     progress_callback(
-                        f"部分文本块超时，已完成 {completed_count}/{total_episodes}",
+                        tr(
+                            "graph.build_wait_partial_timeout",
+                            self.locale,
+                            completed_count=completed_count,
+                            total_episodes=total_episodes,
+                        ),
                         completed_count / total_episodes
                     )
                 break
@@ -384,7 +818,14 @@ class GraphBuilderService:
             elapsed = int(time.time() - start_time)
             if progress_callback:
                 progress_callback(
-                    f"Zep处理中... {completed_count}/{total_episodes} 完成, {len(pending_episodes)} 待处理 ({elapsed}秒)",
+                    tr(
+                        "graph.build_wait_progress",
+                        self.locale,
+                        completed_count=completed_count,
+                        total_episodes=total_episodes,
+                        pending_count=len(pending_episodes),
+                        elapsed=elapsed,
+                    ),
                     completed_count / total_episodes if total_episodes > 0 else 0
                 )
             
@@ -392,15 +833,23 @@ class GraphBuilderService:
                 time.sleep(3)  # 每3秒检查一次
         
         if progress_callback:
-            progress_callback(f"处理完成: {completed_count}/{total_episodes}", 1.0)
+            progress_callback(
+                tr(
+                    "graph.build_wait_completed",
+                    self.locale,
+                    completed_count=completed_count,
+                    total_episodes=total_episodes,
+                ),
+                1.0,
+            )
     
     def _get_graph_info(self, graph_id: str) -> GraphInfo:
         """获取图谱信息"""
         # 获取节点（分页）
-        nodes = fetch_all_nodes(self.client, graph_id)
+        nodes = _fetch_with_optional_locale(fetch_all_nodes, self.client, graph_id, self.locale)
 
         # 获取边（分页）
-        edges = fetch_all_edges(self.client, graph_id)
+        edges = _fetch_with_optional_locale(fetch_all_edges, self.client, graph_id, self.locale)
 
         # 统计实体类型
         entity_types = set()
@@ -427,8 +876,8 @@ class GraphBuilderService:
         Returns:
             包含nodes和edges的字典，包括时间信息、属性等详细数据
         """
-        nodes = fetch_all_nodes(self.client, graph_id)
-        edges = fetch_all_edges(self.client, graph_id)
+        nodes = _fetch_with_optional_locale(fetch_all_nodes, self.client, graph_id, self.locale)
+        edges = _fetch_with_optional_locale(fetch_all_edges, self.client, graph_id, self.locale)
 
         # 创建节点映射用于获取节点名称
         node_map = {}
@@ -451,6 +900,9 @@ class GraphBuilderService:
                 "created_at": created_at,
             })
         
+        merged_nodes, uuid_remap = self._merge_duplicate_graph_nodes(nodes_data)
+        node_name_map = {node["uuid"]: node.get("name") or "" for node in merged_nodes}
+
         edges_data = []
         for edge in edges:
             # 获取时间信息
@@ -485,16 +937,17 @@ class GraphBuilderService:
                 "expired_at": str(expired_at) if expired_at else None,
                 "episodes": episodes or [],
             })
+
+        edges_data = self._deduplicate_graph_edges(edges_data, uuid_remap, node_name_map)
         
         return {
             "graph_id": graph_id,
-            "nodes": nodes_data,
+            "nodes": merged_nodes,
             "edges": edges_data,
-            "node_count": len(nodes_data),
+            "node_count": len(merged_nodes),
             "edge_count": len(edges_data),
         }
     
     def delete_graph(self, graph_id: str):
         """删除图谱"""
         self.client.graph.delete(graph_id=graph_id)
-

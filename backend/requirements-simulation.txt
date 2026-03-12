@@ -1,0 +1,14 @@
+# Optional OASIS simulation runtime dependencies.
+# Install after requirements.txt when you need Step 3 / Step 5 simulation execution:
+#   pip install -r requirements.txt -r requirements-simulation.txt
+# On Python 3.13+, camel-ai currently pulls a tiktoken build that needs Rust.
+# Prefer Python 3.11/3.12 for this optional path unless rustc is already installed.
+# The upstream OASIS Python package is vendored under backend/oasis so the
+# optional install only needs the explicit runtime dependencies listed below.
+
+-r requirements.txt
+camel-ai==0.2.78
+igraph==0.11.6
+neo4j==5.23.0
+pandas==2.2.2
+sentence-transformers==3.0.0

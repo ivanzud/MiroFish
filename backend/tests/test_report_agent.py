@@ -1,0 +1,708 @@
+import json
+import sys
+from types import ModuleType
+
+fake_zep_cloud = ModuleType("zep_cloud")
+fake_zep_client = ModuleType("zep_cloud.client")
+fake_zep_client.Zep = object
+fake_zep_cloud.client = fake_zep_client
+fake_zep_cloud.__getattr__ = lambda name: object
+sys.modules.setdefault("zep_cloud", fake_zep_cloud)
+sys.modules.setdefault("zep_cloud.client", fake_zep_client)
+
+from app.services.report_agent import ReportAgent
+from app.services.report_agent import Report
+from app.services.report_agent import ReportManager
+from app.services.report_agent import ReportOutline
+from app.services.report_agent import ReportSection
+from app.services.report_agent import ReportStatus
+
+
+class FakeLLM:
+    def __init__(self):
+        self.messages = None
+        self.temperature = None
+
+    def chat_json(self, messages, temperature):
+        self.messages = messages
+        self.temperature = temperature
+        return {
+            "title": "游戏受众分析与预测",
+            "summary": "核心玩家更偏向剧情驱动和策略投入并重的受众组合。",
+            "sections": [
+                {"title": "潜在人群画像"},
+                {"title": "传播与留存风险"},
+            ],
+        }
+
+
+class AbstractTitleLLM(FakeLLM):
+    def chat_json(self, messages, temperature):
+        self.messages = messages
+        self.temperature = temperature
+        return {
+            "title": "未来受众群体生态的静默与解体：一项基于模拟的预测报告",
+            "summary": "核心玩家更偏向剧情驱动和策略投入并重的受众组合。",
+            "sections": [
+                {"title": "潜在人群画像"},
+                {"title": "传播与留存风险"},
+            ],
+        }
+
+
+class FailingLLM(FakeLLM):
+    def chat_json(self, messages, temperature):
+        raise RuntimeError("provider offline")
+
+
+class EmptySectionLLM(FakeLLM):
+    def chat_json(self, messages, temperature):
+        self.messages = messages
+        self.temperature = temperature
+        return {
+            "title": "游戏受众分析与预测",
+            "summary": "核心玩家更偏向剧情驱动和策略投入并重的受众组合。",
+            "sections": [
+                {"title": "潜在人群画像"},
+            ],
+        }
+
+    def chat(self, messages, temperature, max_tokens, response_format=None):
+        self.messages = messages
+        self.temperature = temperature
+        return None
+
+
+class SequenceSectionLLM(FakeLLM):
+    def __init__(self, responses):
+        super().__init__()
+        self.responses = list(responses)
+        self.calls = []
+
+    def chat(self, messages, temperature, max_tokens, response_format=None):
+        snapshot = [{"role": item["role"], "content": item["content"]} for item in messages]
+        self.calls.append(snapshot)
+        self.messages = snapshot
+        self.temperature = temperature
+        if not self.responses:
+            raise AssertionError("SequenceSectionLLM ran out of scripted responses")
+        return self.responses.pop(0)
+
+
+class SequenceChatLLM(FakeLLM):
+    def __init__(self, responses):
+        super().__init__()
+        self.responses = list(responses)
+        self.calls = []
+
+    def chat(self, messages, temperature, max_tokens=None, response_format=None):
+        snapshot = [{"role": item["role"], "content": item["content"]} for item in messages]
+        self.calls.append(snapshot)
+        self.messages = snapshot
+        self.temperature = temperature
+        if not self.responses:
+            raise AssertionError("SequenceChatLLM ran out of scripted responses")
+        return self.responses.pop(0)
+
+
+class FakeZepTools:
+    def get_simulation_context(self, graph_id, simulation_requirement):
+        return {
+            "graph_statistics": {
+                "total_nodes": 12,
+                "total_edges": 21,
+                "entity_types": {"玩家": 8, "媒体": 4},
+            },
+            "total_entities": 12,
+            "related_facts": [
+                {"fact": "剧情向玩家更关注世界观完整度"},
+                {"fact": "策略向玩家更在意长期成长反馈"},
+            ],
+        }
+
+
+class CapturingLogger:
+    def __init__(self):
+        self.debugs = []
+
+    def debug(self, message, *args):
+        if args:
+            message = message % args
+        self.debugs.append(message)
+
+    def info(self, message, *args):
+        pass
+
+    def warning(self, message, *args):
+        pass
+
+    def error(self, message, *args):
+        pass
+
+
+def test_plan_outline_sends_readability_constraints_in_prompt():
+    llm = FakeLLM()
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="预测这个游戏的受众群体会是什么样",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    outline = agent.plan_outline()
+
+    assert outline.title == "游戏受众分析与预测"
+    assert [section.title for section in outline.sections] == ["潜在人群画像", "传播与留存风险"]
+    assert llm.temperature == 0.3
+    assert llm.messages is not None
+
+    system_prompt = llm.messages[0]["content"]
+    user_prompt = llm.messages[1]["content"]
+
+    assert "标题与摘要要求" in system_prompt
+    assert "标题要简洁、直白、可读" in system_prompt
+    assert "禁止使用与用户问题脱节的抽象比喻或夸张措辞" in system_prompt
+    assert "报告标题必须让普通用户直接看懂" in user_prompt
+    assert "如果模拟需求是在预测某个产品、方案、游戏、事件或人群，就在标题里明确点出该对象" in user_prompt
+
+
+def test_plan_outline_falls_back_from_abstract_title_to_requirement_subject():
+    llm = AbstractTitleLLM()
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="预测这个游戏的受众群体会是什么样",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    outline = agent.plan_outline()
+
+    assert outline.title == "游戏受众群体分析报告"
+
+
+def test_plan_outline_requests_english_output_when_locale_is_en():
+    llm = FakeLLM()
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    agent.plan_outline()
+
+    assert llm.messages is not None
+    system_prompt = llm.messages[0]["content"]
+    user_prompt = llm.messages[1]["content"]
+
+    assert "You are an expert writer of \"future forecast reports\"" in system_prompt
+    assert "Return the report outline as JSON in this format:" in system_prompt
+    assert "你是一个" not in system_prompt
+    assert "[Forecast scenario]" in user_prompt
+    assert "Review this simulated future from a bird's-eye view:" in user_prompt
+    assert "Return the report title, summary, and section titles/descriptions in English." in user_prompt
+    assert "Keep wording concrete, readable, and directly aligned with the simulation requirement." in user_prompt
+    assert "【预测场景设定】" not in user_prompt
+
+
+def test_plan_outline_english_progress_messages_are_localized():
+    llm = FakeLLM()
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    progress_updates = []
+    agent.plan_outline(progress_callback=lambda stage, progress, message: progress_updates.append((stage, progress, message)))
+
+    assert progress_updates == [
+        ("planning", 0, "Analyzing the simulation requirement..."),
+        ("planning", 30, "Generating the report outline..."),
+        ("planning", 80, "Parsing the outline structure..."),
+        ("planning", 100, "Outline planning completed"),
+    ]
+
+
+def test_plan_outline_english_fallback_outline_is_localized():
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=FailingLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    outline = agent.plan_outline()
+
+    assert outline.title == "Forecast Report"
+    assert outline.summary == "Trend and risk analysis based on the simulation forecast."
+    assert [section.title for section in outline.sections] == [
+        "Forecast scenarios and key findings",
+        "Audience behavior analysis",
+        "Trend outlook and risk signals",
+    ]
+
+
+def test_report_agent_english_tool_descriptions_are_localized():
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=FakeLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    tools_description = agent._get_tools_description()
+
+    assert "[Deep insight retrieval - powerful analysis tool]" in tools_description
+    assert "Question or topic to analyze deeply" in tools_description
+    assert "[Deep interviews - real agent interviews across both platforms]" in tools_description
+    assert "Maximum number of agents to interview" in tools_description
+    assert "深度洞察检索" not in tools_description
+    assert "采访主题或需求描述" not in tools_description
+
+
+def test_execute_tool_english_errors_are_localized():
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=FakeLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    unknown = agent._execute_tool("not_a_tool", {})
+    assert unknown == "Unknown tool: not_a_tool. Use one of: insight_forge, panorama_search, quick_search"
+
+    class BrokenTools(FakeZepTools):
+        def quick_search(self, graph_id, query, limit):
+            raise RuntimeError("search backend unavailable")
+
+    failing_agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=FakeLLM(),
+        zep_tools=BrokenTools(),
+    )
+
+    assert failing_agent._execute_tool("quick_search", {"query": "audience", "limit": 3}) == (
+        "Tool execution failed: search backend unavailable"
+    )
+
+
+def test_generate_report_survives_empty_llm_section_responses(tmp_path, monkeypatch):
+    monkeypatch.setattr(ReportManager, "REPORTS_DIR", str(tmp_path / "reports"))
+
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="预测这个游戏的受众群体会是什么样",
+        llm_client=EmptySectionLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    report = agent.generate_report(report_id="report_empty_llm")
+
+    assert report.status == ReportStatus.COMPLETED
+    assert "本章节生成失败：LLM 返回空响应，请稍后重试" in report.markdown_content
+
+    saved_progress = ReportManager.get_progress("report_empty_llm")
+    assert saved_progress is not None
+    assert saved_progress["status"] == "completed"
+    assert saved_progress["progress"] == 100
+
+
+def test_assemble_full_report_embeds_localized_reference_block(tmp_path, monkeypatch):
+    monkeypatch.setattr(ReportManager, "REPORTS_DIR", str(tmp_path / "reports"))
+    report_id = "report_refs"
+    ReportManager.save_section(
+        report_id,
+        1,
+        ReportSection(title="Key Findings", content="Forecast body."),
+    )
+    outline = ReportOutline(
+        title="Forecast Report",
+        summary="Audience outlook summary",
+        sections=[ReportSection(title="Key Findings")],
+    )
+    report = Report(
+        report_id=report_id,
+        simulation_id="sim_refs",
+        graph_id="graph_refs",
+        simulation_requirement="Predict the likely audience for this game",
+        status=ReportStatus.GENERATING,
+        created_at="2026-03-12T02:00:00",
+        completed_at="2026-03-12T02:05:00",
+    )
+
+    markdown = ReportManager.assemble_full_report(
+        report_id,
+        outline,
+        locale="en",
+        report=report,
+    )
+
+    assert "**Report References**" in markdown
+    assert "| Report ID | report_refs |" in markdown
+    assert "| Simulation ID | sim_refs |" in markdown
+    assert "| Graph ID | graph_refs |" in markdown
+    assert "| Generated At | 2026-03-12T02:05:00 |" in markdown
+    assert f"| Report Folder | {tmp_path / 'reports' / report_id} |" in markdown
+    assert f"| Markdown Path | {tmp_path / 'reports' / report_id / 'full_report.md'} |" in markdown
+    assert "**Simulation Requirement**" in markdown
+    assert "Predict the likely audience for this game" in markdown
+    assert "**Manual Verification Checklist**" in markdown
+    assert "Keep this file plus the report and simulation IDs above as the stable forecast reference." in markdown
+    assert "When real-world outcomes are available, compare them against the key forecast claims in this report." in markdown
+
+
+def test_generate_report_embeds_reference_block_in_markdown(tmp_path, monkeypatch):
+    monkeypatch.setattr(ReportManager, "REPORTS_DIR", str(tmp_path / "reports"))
+
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="预测这个游戏的受众群体会是什么样",
+        llm_client=EmptySectionLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    report = agent.generate_report(report_id="report_with_refs")
+
+    assert report.status == ReportStatus.COMPLETED
+    assert "**报告引用信息**" in report.markdown_content
+    assert "| 报告 ID | report_with_refs |" in report.markdown_content
+    assert "| 模拟 ID | sim-test |" in report.markdown_content
+    assert "| 图谱 ID | graph-test |" in report.markdown_content
+    assert f"| 报告目录 | {tmp_path / 'reports' / 'report_with_refs'} |" in report.markdown_content
+    assert f"| Markdown 路径 | {tmp_path / 'reports' / 'report_with_refs' / 'full_report.md'} |" in report.markdown_content
+    assert "**手动复核清单**" in report.markdown_content
+    assert "保留本文件以及上面的报告 ID / 模拟 ID 作为后续复核锚点。" in report.markdown_content
+
+
+def test_generate_section_localizes_english_react_loop_messages(monkeypatch):
+    llm = SequenceSectionLLM([
+        '<tool_call>{"name":"quick_search","parameters":{"query":"audience","limit":1}}</tool_call>',
+        "Final Answer: Too early",
+        '<tool_call>{"name":"panorama_search","parameters":{"query":"audience","include_expired":true}}</tool_call>',
+        '<tool_call>{"name":"insight_forge","parameters":{"query":"audience"}}</tool_call>',
+        "Final Answer: Final English section body",
+    ])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+    outline = ReportOutline(
+        title="Forecast Report",
+        summary="Audience forecast",
+        sections=[ReportSection(title="Audience Outlook")],
+    )
+    progress_updates = []
+    observed_contexts = []
+
+    def fake_execute_tool(tool_name, parameters, report_context=None):
+        observed_contexts.append((tool_name, report_context))
+        return f"{tool_name} evidence"
+
+    monkeypatch.setattr(agent, "_execute_tool", fake_execute_tool)
+
+    content = agent._generate_section_react(
+        outline.sections[0],
+        outline,
+        [],
+        progress_callback=lambda stage, progress, message: progress_updates.append((stage, progress, message)),
+        section_index=1,
+    )
+
+    assert content == "Final English section body"
+    assert progress_updates[0] == ("generating", 0, "Deep retrieval and drafting in progress (0/5)")
+    initial_system_prompt = llm.calls[0][0]["content"]
+    initial_user_prompt = llm.calls[0][1]["content"]
+    assert "You are an expert writer preparing one section of a future forecast report." in initial_system_prompt
+    assert "[Core idea]" in initial_system_prompt
+    assert "Each section must call tools at least 3 times and at most 5 times." in initial_system_prompt
+    assert "你是一个「未来预测报告」的撰写专家" not in initial_system_prompt
+    assert "Completed section content (read carefully and avoid repetition):" in initial_user_prompt
+    assert "[Current task] Write section: Audience Outlook" in initial_user_prompt
+    assert "Then call a tool to retrieve simulation evidence." in initial_user_prompt
+    assert "【当前任务】撰写章节" not in initial_user_prompt
+    assert "(This is the first section)" in llm.calls[0][1]["content"]
+    assert observed_contexts[0] == (
+        "quick_search",
+        "Section title: Audience Outlook\nSimulation requirement: Predict the likely audience for this game",
+    )
+
+    observation_prompt = llm.calls[1][-1]["content"]
+    assert "Observation:" in observation_prompt
+    assert "Tool quick_search returned" in observation_prompt
+    assert "Tool calls used: 1/5" in observation_prompt
+
+    insufficient_tools_prompt = llm.calls[2][-1]["content"]
+    assert insufficient_tools_prompt.startswith("Notice: you have only used 1 tool calls; at least 3 are required.")
+    assert "Please call another tool to gather more simulation evidence before outputting Final Answer." in insufficient_tools_prompt
+    assert "Tip: you have not used these tools yet:" in insufficient_tools_prompt
+
+
+def test_generate_section_localizes_english_llm_preview_debug_logs(monkeypatch):
+    llm = SequenceSectionLLM([
+        '<tool_call>{"name":"quick_search","parameters":{"query":"audience","limit":1}}</tool_call>',
+        '<tool_call>{"name":"panorama_search","parameters":{"query":"audience","include_expired":true}}</tool_call>',
+        '<tool_call>{"name":"insight_forge","parameters":{"query":"audience"}}</tool_call>',
+        "Final Answer: Final English section body",
+    ])
+    logger = CapturingLogger()
+    monkeypatch.setattr("app.services.report_agent.logger", logger)
+
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+    outline = ReportOutline(
+        title="Forecast Report",
+        summary="Audience forecast",
+        sections=[ReportSection(title="Audience Outlook")],
+    )
+    monkeypatch.setattr(agent, "_execute_tool", lambda *args, **kwargs: "tool evidence")
+
+    content = agent._generate_section_react(
+        outline.sections[0],
+        outline,
+        [],
+        section_index=1,
+    )
+
+    assert content == "Final English section body"
+    assert logger.debugs
+    assert logger.debugs[0].startswith("LLM response preview: <tool_call>")
+
+
+def test_generate_section_localizes_english_empty_response_retry_and_fallback():
+    llm = SequenceSectionLLM([None, None, None, None, None, None])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+    outline = ReportOutline(
+        title="Forecast Report",
+        summary="Audience forecast",
+        sections=[ReportSection(title="Audience Outlook")],
+    )
+
+    content = agent._generate_section_react(outline.sections[0], outline, [], section_index=1)
+
+    assert content == "(This section could not be generated because the LLM returned an empty response. Please try again later.)"
+    assert llm.calls[1][-2]["content"] == "(The response was empty)"
+    assert llm.calls[1][-1]["content"] == "Please continue generating the content."
+
+
+def test_generate_report_localizes_persisted_agent_log_messages_in_english(tmp_path, monkeypatch):
+    monkeypatch.setattr(ReportManager, "REPORTS_DIR", str(tmp_path / "reports"))
+    monkeypatch.setattr("app.services.report_agent.Config.UPLOAD_FOLDER", str(tmp_path))
+
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=EmptySectionLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    report = agent.generate_report(report_id="report_en_logs")
+
+    assert report.status == ReportStatus.COMPLETED
+
+    assert agent.report_logger is not None
+    log_path = agent.report_logger.log_file_path
+    entries = [
+        json.loads(line)
+        for line in open(log_path, encoding="utf-8").read().splitlines()
+        if line.strip()
+    ]
+    messages = [entry["details"].get("message") for entry in entries]
+
+    assert "Report generation task started" in messages
+    assert "Starting report outline planning" in messages
+    assert "Outline planning completed" in messages
+    assert "Starting section generation: 潜在人群画像" in messages
+    assert "Section generation completed: 潜在人群画像" in messages
+    assert "Report generation completed" in messages
+
+
+def test_generate_report_localizes_console_log_messages_in_english(tmp_path, monkeypatch):
+    monkeypatch.setattr(ReportManager, "REPORTS_DIR", str(tmp_path / "reports"))
+    monkeypatch.setattr("app.services.report_agent.Config.UPLOAD_FOLDER", str(tmp_path))
+
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=EmptySectionLLM(),
+        zep_tools=FakeZepTools(),
+    )
+
+    report = agent.generate_report(report_id="report_en_console")
+
+    assert report.status == ReportStatus.COMPLETED
+
+    console_log_path = tmp_path / "reports" / "report_en_console" / "console_log.txt"
+    console_output = console_log_path.read_text(encoding="utf-8")
+
+    assert "Starting report outline planning..." in console_output
+    assert "Outline planning completed: 1 sections" in console_output
+    assert "Generating section with ReACT: 潜在人群画像" in console_output
+    assert "Section saved: report_en_console/section_01.md" in console_output
+    assert "Full report assembled: report_en_console" in console_output
+    assert "Report generation completed: report_en_console" in console_output
+
+
+def test_chat_localizes_english_scaffolding_without_report(monkeypatch):
+    llm = SequenceChatLLM([
+        '<tool_call>{"name":"quick_search","parameters":{"query":"audience","limit":1}}</tool_call>',
+        "Final answer in English",
+    ])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    monkeypatch.setattr(ReportManager, "get_report_by_simulation", lambda simulation_id: None)
+    monkeypatch.setattr(agent, "_execute_tool", lambda tool_name, parameters: "audience evidence")
+
+    result = agent.chat("Summarize the current audience outlook")
+
+    assert result["response"] == "Final answer in English"
+    assert "(No report available yet)" in llm.calls[0][0]["content"]
+    assert "（暂无报告）" not in llm.calls[0][0]["content"]
+
+    observation_prompt = llm.calls[1][-1]["content"]
+    assert "[Tool quick_search result]" in observation_prompt
+    assert "Please answer the question concisely." in observation_prompt
+    assert "[quick_search结果]" not in observation_prompt
+
+
+def test_chat_localizes_english_system_prompt_template(monkeypatch):
+    llm = SequenceChatLLM(["Final answer in English"])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    monkeypatch.setattr(ReportManager, "get_report_by_simulation", lambda simulation_id: None)
+
+    agent.chat("Summarize the current audience outlook")
+
+    system_prompt = llm.calls[0][0]["content"]
+    assert "You are a concise and efficient simulation-forecast assistant." in system_prompt
+    assert "[Rules]" in system_prompt
+    assert '[Tool call format]' in system_prompt
+    assert '"name": "tool_name"' in system_prompt
+    assert "你是一个简洁高效的模拟预测助手" not in system_prompt
+    assert "工具名称" not in system_prompt
+
+
+def test_chat_localizes_english_truncated_report_marker(monkeypatch):
+    llm = SequenceChatLLM(["Final answer in English"])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+    report = type("ReportStub", (), {"markdown_content": "A" * 15010})()
+
+    monkeypatch.setattr(ReportManager, "get_report_by_simulation", lambda simulation_id: report)
+
+    agent.chat("Summarize the current audience outlook")
+
+    system_prompt = llm.calls[0][0]["content"]
+    assert "... [Report content truncated] ..." in system_prompt
+    assert "... [报告内容已截断] ..." not in system_prompt
+
+
+def test_chat_returns_localized_fallback_when_initial_response_is_none(monkeypatch):
+    llm = SequenceChatLLM([None])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="Predict the likely audience for this game",
+        locale="en",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    monkeypatch.setattr(ReportManager, "get_report_by_simulation", lambda simulation_id: None)
+
+    result = agent.chat("Summarize the current audience outlook")
+
+    assert result == {
+        "response": "(The assistant returned an empty response. Please try again.)",
+        "tool_calls": [],
+        "sources": [],
+    }
+
+
+def test_chat_returns_default_locale_fallback_when_final_response_is_none(monkeypatch):
+    llm = SequenceChatLLM([
+        '<tool_call>{"name":"quick_search","parameters":{"query":"受众","limit":1}}</tool_call>',
+        None,
+    ])
+    agent = ReportAgent(
+        graph_id="graph-test",
+        simulation_id="sim-test",
+        simulation_requirement="预测这个游戏的受众群体会是什么样",
+        llm_client=llm,
+        zep_tools=FakeZepTools(),
+    )
+
+    monkeypatch.setattr(ReportManager, "get_report_by_simulation", lambda simulation_id: None)
+    monkeypatch.setattr(agent, "_execute_tool", lambda tool_name, parameters: "受众证据")
+
+    result = agent.chat("总结一下当前受众走向")
+
+    assert result == {
+        "response": "（助手返回了空响应，请重试。）",
+        "tool_calls": [
+            {
+                "name": "quick_search",
+                "parameters": {"query": "受众", "limit": 1},
+            }
+        ],
+        "sources": ["受众"],
+    }

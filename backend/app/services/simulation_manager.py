@@ -7,12 +7,14 @@ OASIS模拟管理器
 import os
 import json
 import shutil
+import csv
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
 from ..config import Config
+from ..i18n import get_locale, tr
 from ..utils.logger import get_logger
 from .zep_entity_reader import ZepEntityReader, FilteredEntities
 from .oasis_profile_generator import OasisProfileGenerator, OasisAgentProfile
@@ -222,7 +224,15 @@ class SimulationManager:
         )
         
         self._save_simulation_state(state)
-        logger.info(f"创建模拟: {simulation_id}, project={project_id}, graph={graph_id}")
+        logger.info(
+            tr(
+                "simulation.created_log",
+                get_locale(),
+                simulation_id=simulation_id,
+                project_id=project_id,
+                graph_id=graph_id,
+            )
+        )
         
         return state
     
@@ -234,7 +244,8 @@ class SimulationManager:
         defined_entity_types: Optional[List[str]] = None,
         use_llm_for_profiles: bool = True,
         progress_callback: Optional[callable] = None,
-        parallel_profile_count: int = 3
+        parallel_profile_count: int = 3,
+        locale: str = "zh",
     ) -> SimulationState:
         """
         准备模拟环境（全程自动化）
@@ -260,7 +271,7 @@ class SimulationManager:
         """
         state = self._load_simulation_state(simulation_id)
         if not state:
-            raise ValueError(f"模拟不存在: {simulation_id}")
+            raise ValueError(tr("simulation.not_found", locale, simulation_id=simulation_id))
         
         try:
             state.status = SimulationStatus.PREPARING
@@ -270,12 +281,12 @@ class SimulationManager:
             
             # ========== 阶段1: 读取并过滤实体 ==========
             if progress_callback:
-                progress_callback("reading", 0, "正在连接Zep图谱...")
+                progress_callback("reading", 0, tr("simulation.prepare_connecting_graph", locale))
             
             reader = ZepEntityReader()
             
             if progress_callback:
-                progress_callback("reading", 30, "正在读取节点数据...")
+                progress_callback("reading", 30, tr("simulation.prepare_reading_nodes", locale))
             
             filtered = reader.filter_defined_entities(
                 graph_id=state.graph_id,
@@ -289,14 +300,14 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "reading", 100, 
-                    f"完成，共 {filtered.filtered_count} 个实体",
+                    tr("simulation.prepare_entities_completed", locale, count=filtered.filtered_count),
                     current=filtered.filtered_count,
                     total=filtered.filtered_count
                 )
             
             if filtered.filtered_count == 0:
                 state.status = SimulationStatus.FAILED
-                state.error = "没有找到符合条件的实体，请检查图谱是否正确构建"
+                state.error = tr("simulation.no_matching_entities_build_graph", locale)
                 self._save_simulation_state(state)
                 return state
             
@@ -306,13 +317,13 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "generating_profiles", 0, 
-                    "开始生成...",
+                    tr("simulation.prepare_generation_starting", locale),
                     current=0,
                     total=total_entities
                 )
             
             # 传入graph_id以启用Zep检索功能，获取更丰富的上下文
-            generator = OasisProfileGenerator(graph_id=state.graph_id)
+            generator = OasisProfileGenerator(graph_id=state.graph_id, locale=locale)
             
             def profile_progress(current, total, msg):
                 if progress_callback:
@@ -352,7 +363,7 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "generating_profiles", 95, 
-                    "保存Profile文件...",
+                    tr("simulation.prepare_saving_profiles", locale),
                     current=total_entities,
                     total=total_entities
                 )
@@ -375,7 +386,7 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "generating_profiles", 100, 
-                    f"完成，共 {len(profiles)} 个Profile",
+                    tr("simulation.prepare_profiles_completed", locale, count=len(profiles)),
                     current=len(profiles),
                     total=len(profiles)
                 )
@@ -384,19 +395,35 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "generating_config", 0, 
-                    "正在分析模拟需求...",
+                    tr("simulation.prepare_analyzing_requirement", locale),
                     current=0,
                     total=3
                 )
             
-            config_generator = SimulationConfigGenerator()
+            config_generator = SimulationConfigGenerator(locale=locale)
             
             if progress_callback:
                 progress_callback(
                     "generating_config", 30, 
-                    "正在调用LLM生成配置...",
+                    tr("simulation.prepare_generating_config", locale),
                     current=1,
                     total=3
+                )
+
+            def config_progress(current: int, total: int, message: str) -> None:
+                if not progress_callback:
+                    return
+
+                safe_total = max(total, 1)
+                bounded_current = min(max(current, 0), safe_total)
+                scaled_progress = 30 + int((bounded_current / safe_total) * 35)
+                progress_callback(
+                    "generating_config",
+                    scaled_progress,
+                    message,
+                    current=bounded_current,
+                    total=safe_total,
+                    item_name=message,
                 )
             
             sim_params = config_generator.generate_config(
@@ -407,13 +434,14 @@ class SimulationManager:
                 document_text=document_text,
                 entities=filtered.entities,
                 enable_twitter=state.enable_twitter,
-                enable_reddit=state.enable_reddit
+                enable_reddit=state.enable_reddit,
+                progress_callback=config_progress,
             )
             
             if progress_callback:
                 progress_callback(
                     "generating_config", 70, 
-                    "正在保存配置文件...",
+                    tr("simulation.prepare_saving_config", locale),
                     current=2,
                     total=3
                 )
@@ -429,7 +457,7 @@ class SimulationManager:
             if progress_callback:
                 progress_callback(
                     "generating_config", 100, 
-                    "配置生成完成",
+                    tr("simulation.prepare_config_completed", locale),
                     current=3,
                     total=3
                 )
@@ -441,13 +469,27 @@ class SimulationManager:
             state.status = SimulationStatus.READY
             self._save_simulation_state(state)
             
-            logger.info(f"模拟准备完成: {simulation_id}, "
-                       f"entities={state.entities_count}, profiles={state.profiles_count}")
+            logger.info(
+                tr(
+                    "simulation.prepare_completed_log",
+                    locale,
+                    simulation_id=simulation_id,
+                    entities=state.entities_count,
+                    profiles=state.profiles_count,
+                )
+            )
             
             return state
             
         except Exception as e:
-            logger.error(f"模拟准备失败: {simulation_id}, error={str(e)}")
+            logger.error(
+                tr(
+                    "simulation.prepare_failed_log",
+                    locale,
+                    simulation_id=simulation_id,
+                    error=str(e),
+                )
+            )
             import traceback
             logger.error(traceback.format_exc())
             state.status = SimulationStatus.FAILED
@@ -458,6 +500,57 @@ class SimulationManager:
     def get_simulation(self, simulation_id: str) -> Optional[SimulationState]:
         """获取模拟状态"""
         return self._load_simulation_state(simulation_id)
+
+    def get_enabled_platforms(self, simulation_id: str) -> List[str]:
+        """Return enabled platforms in stable preference order."""
+        state = self._load_simulation_state(simulation_id)
+        if not state:
+            raise ValueError(tr("simulation.not_found", get_locale(), simulation_id=simulation_id))
+
+        platforms: List[str] = []
+        if state.enable_reddit:
+            platforms.append(PlatformType.REDDIT.value)
+        if state.enable_twitter:
+            platforms.append(PlatformType.TWITTER.value)
+        return platforms
+
+    def resolve_platform(self, simulation_id: str, platform: Optional[str] = None) -> str:
+        """
+        Resolve a caller-requested platform against the simulation's enabled platforms.
+
+        If exactly one platform is enabled, use it even when older callers still request
+        the historical reddit default.
+        """
+        normalized = platform.strip().lower() if isinstance(platform, str) else None
+        if normalized == "":
+            normalized = None
+
+        valid_platforms = {PlatformType.REDDIT.value, PlatformType.TWITTER.value}
+        if normalized and normalized not in valid_platforms:
+            raise ValueError(tr("simulation.platform_invalid", get_locale()))
+
+        enabled_platforms = self.get_enabled_platforms(simulation_id)
+        if normalized in enabled_platforms:
+            return normalized
+
+        if len(enabled_platforms) == 1:
+            if normalized and normalized != enabled_platforms[0]:
+                logger.info(
+                    "simulation %s requested disabled platform %s; falling back to enabled platform %s",
+                    simulation_id,
+                    normalized,
+                    enabled_platforms[0],
+                )
+            return enabled_platforms[0]
+
+        if normalized:
+            return normalized
+
+        if enabled_platforms:
+            return enabled_platforms[0]
+
+        # Legacy fallback for malformed historical state files with no enabled flags.
+        return PlatformType.REDDIT.value
     
     def list_simulations(self, project_id: Optional[str] = None) -> List[SimulationState]:
         """列出所有模拟"""
@@ -476,20 +569,35 @@ class SimulationManager:
                         simulations.append(state)
         
         return simulations
+
+    def delete_simulation(self, simulation_id: str) -> bool:
+        """删除模拟目录及其持久化状态。"""
+        sim_dir = os.path.join(self.SIMULATION_DATA_DIR, simulation_id)
+
+        self._simulations.pop(simulation_id, None)
+
+        if not os.path.exists(sim_dir):
+            return False
+
+        shutil.rmtree(sim_dir)
+        return True
     
     def get_profiles(self, simulation_id: str, platform: str = "reddit") -> List[Dict[str, Any]]:
         """获取模拟的Agent Profile"""
-        state = self._load_simulation_state(simulation_id)
-        if not state:
-            raise ValueError(f"模拟不存在: {simulation_id}")
+        platform = self.resolve_platform(simulation_id, platform)
         
         sim_dir = self._get_simulation_dir(simulation_id)
-        profile_path = os.path.join(sim_dir, f"{platform}_profiles.json")
+        profile_path = os.path.join(
+            sim_dir,
+            "twitter_profiles.csv" if platform == PlatformType.TWITTER.value else "reddit_profiles.json",
+        )
         
         if not os.path.exists(profile_path):
             return []
         
         with open(profile_path, 'r', encoding='utf-8') as f:
+            if platform == PlatformType.TWITTER.value:
+                return list(csv.DictReader(f))
             return json.load(f)
     
     def get_simulation_config(self, simulation_id: str) -> Optional[Dict[str, Any]]:
@@ -503,12 +611,12 @@ class SimulationManager:
         with open(config_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     
-    def get_run_instructions(self, simulation_id: str) -> Dict[str, str]:
+    def get_run_instructions(self, simulation_id: str, locale: str | None = None) -> Dict[str, str]:
         """获取运行说明"""
         sim_dir = self._get_simulation_dir(simulation_id)
         config_path = os.path.join(sim_dir, "simulation_config.json")
         scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../scripts'))
-        
+
         return {
             "simulation_dir": sim_dir,
             "scripts_dir": scripts_dir,
@@ -518,11 +626,32 @@ class SimulationManager:
                 "reddit": f"python {scripts_dir}/run_reddit_simulation.py --config {config_path}",
                 "parallel": f"python {scripts_dir}/run_parallel_simulation.py --config {config_path}",
             },
-            "instructions": (
-                f"1. 激活conda环境: conda activate MiroFish\n"
-                f"2. 运行模拟 (脚本位于 {scripts_dir}):\n"
-                f"   - 单独运行Twitter: python {scripts_dir}/run_twitter_simulation.py --config {config_path}\n"
-                f"   - 单独运行Reddit: python {scripts_dir}/run_reddit_simulation.py --config {config_path}\n"
-                f"   - 并行运行双平台: python {scripts_dir}/run_parallel_simulation.py --config {config_path}"
-            )
+            "instructions": "\n".join(
+                [
+                    tr("simulation.run_instructions_activate_env", locale),
+                    tr(
+                        "simulation.run_instructions_run_header",
+                        locale,
+                        scripts_dir=scripts_dir,
+                    ),
+                    tr(
+                        "simulation.run_instructions_twitter",
+                        locale,
+                        scripts_dir=scripts_dir,
+                        config_path=config_path,
+                    ),
+                    tr(
+                        "simulation.run_instructions_reddit",
+                        locale,
+                        scripts_dir=scripts_dir,
+                        config_path=config_path,
+                    ),
+                    tr(
+                        "simulation.run_instructions_parallel",
+                        locale,
+                        scripts_dir=scripts_dir,
+                        config_path=config_path,
+                    ),
+                ]
+            ),
         }

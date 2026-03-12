@@ -8,7 +8,7 @@
 </br>
 <em>A Simple and Universal Swarm Intelligence Engine, Predicting Anything</em>
 
-<a href="https://www.shanda.com/" target="_blank"><img src="./static/image/shanda_logo.png" alt="666ghj%2MiroFish | Shanda" height="40"/></a>
+<a href="https://www.shanda.com/" target="_blank"><img src="./static/image/shanda_logo.png" alt="666ghj%2FMiroFish | Shanda" height="40"/></a>
 
 [![GitHub Stars](https://img.shields.io/github/stars/666ghj/MiroFish?style=flat-square&color=DAA520)](https://github.com/666ghj/MiroFish/stargazers)
 [![GitHub Watchers](https://img.shields.io/github/watchers/666ghj/MiroFish?style=flat-square)](https://github.com/666ghj/MiroFish/watchers)
@@ -20,7 +20,7 @@
 [![X](https://img.shields.io/badge/X-Follow-000000?style=flat-square&logo=x&logoColor=white)](https://x.com/mirofish_ai)
 [![Instagram](https://img.shields.io/badge/Instagram-Follow-E4405F?style=flat-square&logo=instagram&logoColor=white)](https://www.instagram.com/mirofish_ai/)
 
-[English](./README-EN.md) | [中文文档](./README.md)
+[English](./README-EN.md) | [中文文档](./README.md) | [한국어](./README-KO.md) | [日本語](./README-JA.md) | [Русский](./README-RU.md)
 
 </div>
 
@@ -91,6 +91,113 @@ Click the image to watch MiroFish's deep prediction of the lost ending based on 
 4. **Report Generation**: ReportAgent with rich toolset for deep interaction with post-simulation environment
 5. **Deep Interaction**: Chat with any agent in the simulated world & Interact with ReportAgent
 
+## 🏗️ System Architecture
+
+### Layer Breakdown
+
+| Layer | Core Modules | Responsibilities |
+|------|--------------|------------------|
+| Presentation | `frontend/src/views/*`, `frontend/src/components/*` | 5-step workflow UI, live simulation status, report and interaction pages |
+| API | `backend/app/api/graph.py`, `simulation.py`, `report.py` | Public APIs for graph build, simulation control, report generation and download |
+| Orchestration | `simulation_manager.py`, `simulation_runner.py` | Simulation state machine, process lifecycle, pause/resume/stop, live status aggregation |
+| Memory & Graph | `graph_builder.py`, `zep_entity_reader.py`, `zep_graph_memory_updater.py` | Seed structuring, graph writing, entity filtering, and post-simulation memory writeback |
+| Reasoning & Report | `report_agent.py`, `zep_tools.py`, `utils/llm_client.py` | ReACT multi-step reasoning, tool calls, and interactive prediction report generation |
+
+### Project Code Structure Tree
+
+```text
+MiroFish/
+├── frontend/                                  # Vue3 frontend project
+│   ├── package.json                           # frontend dependencies and scripts
+│   ├── vite.config.js                         # Vite build/dev server config
+│   ├── index.html                             # frontend HTML entry
+│   └── src/
+│       ├── main.js                            # Vue app bootstrap
+│       ├── App.vue                            # root component
+│       ├── api/                               # backend API wrappers
+│       │   ├── index.js                       # Axios instance and shared request config
+│       │   ├── graph.js                       # graph build related APIs
+│       │   ├── simulation.js                  # simulation control APIs
+│       │   └── report.js                      # report generation/download/chat APIs
+│       ├── router/
+│       │   └── index.js                       # frontend routes
+│       ├── store/
+│       │   └── pendingUpload.js               # pending upload state store
+│       ├── views/                             # page-level views
+│       │   ├── Home.vue                       # home page
+│       │   ├── MainView.vue                   # main workflow container
+│       │   ├── Process.vue                    # 5-step process page
+│       │   ├── SimulationView.vue             # simulation preparation page
+│       │   ├── SimulationRunView.vue          # live simulation monitor page
+│       │   ├── ReportView.vue                 # report viewer page
+│       │   └── InteractionView.vue            # deep interaction page
+│       ├── components/                        # business components
+│       │   ├── Step1GraphBuild.vue            # Step1 graph build component
+│       │   ├── Step2EnvSetup.vue              # Step2 environment setup component
+│       │   ├── Step3Simulation.vue            # Step3 simulation component
+│       │   ├── Step4Report.vue                # Step4 report component
+│       │   ├── Step5Interaction.vue           # Step5 interaction component
+│       │   ├── GraphPanel.vue                 # graph data panel
+│       │   └── HistoryDatabase.vue            # historical memory/data panel
+│       └── assets/logo/                       # frontend logo assets
+│           ├── MiroFish_logo_left.jpeg
+│           └── MiroFish_logo_compressed.jpeg
+├── backend/                                   # Flask backend project
+│   ├── run.py                                 # backend service entrypoint
+│   ├── requirements.txt                       # Python dependency list
+│   ├── pyproject.toml                         # Python project metadata/tooling
+│   ├── uv.lock                                # uv-locked dependency versions
+│   ├── app/
+│   │   ├── __init__.py                        # Flask app factory and blueprint wiring
+│   │   ├── config.py                          # backend config and env loading
+│   │   ├── api/                               # API route layer
+│   │   │   ├── __init__.py                    # Blueprint initialization
+│   │   │   ├── graph.py                       # graph build and graph management endpoints
+│   │   │   ├── simulation.py                  # entity read, simulation create/run/control endpoints
+│   │   │   └── report.py                      # report generate/query/download/chat endpoints
+│   │   ├── services/                          # core business services
+│   │   │   ├── graph_builder.py               # GraphRAG graph build service
+│   │   │   ├── ontology_generator.py          # ontology/entity type generation
+│   │   │   ├── text_processor.py              # seed text cleaning/preprocessing
+│   │   │   ├── zep_entity_reader.py           # Zep graph entity read/filter service
+│   │   │   ├── oasis_profile_generator.py     # OASIS persona/profile generation
+│   │   │   ├── simulation_config_generator.py # simulation config auto-generation
+│   │   │   ├── simulation_manager.py          # simulation lifecycle state manager
+│   │   │   ├── simulation_runner.py           # background simulation execution/monitoring
+│   │   │   ├── simulation_ipc.py              # simulation process IPC protocol
+│   │   │   ├── zep_graph_memory_updater.py    # write simulation actions back to graph memory
+│   │   │   ├── zep_tools.py                   # ReportAgent tool integrations
+│   │   │   └── report_agent.py                # ReACT report generation and Q&A service
+│   │   ├── models/                            # state model layer
+│   │   │   ├── __init__.py
+│   │   │   ├── project.py                     # project state and metadata manager
+│   │   │   └── task.py                        # async task state model
+│   │   └── utils/                             # shared infrastructure utilities
+│   │       ├── __init__.py
+│   │       ├── llm_client.py                  # OpenAI-SDK-compatible LLM client
+│   │       ├── file_parser.py                 # uploaded file parsing utilities
+│   │       ├── logger.py                      # layered logging system
+│   │       ├── retry.py                       # retry helpers/decorators
+│   │       └── zep_paging.py                  # Zep paging helper
+│   ├── scripts/                               # OASIS runtime scripts
+│   │   ├── run_parallel_simulation.py         # Twitter + Reddit parallel simulation entry
+│   │   ├── run_twitter_simulation.py          # Twitter simulation runner
+│   │   ├── run_reddit_simulation.py           # Reddit simulation runner
+│   │   ├── action_logger.py                   # agent action logging utility
+│   │   └── test_profile_format.py             # profile format validation script
+│   ├── uploads/                               # runtime data (projects/simulations/reports)
+│   └── logs/                                  # backend runtime logs
+├── static/
+│   └── image/                                 # README images and demo assets
+├── package.json                               # root-level scripts for frontend/backend
+├── docker-compose.yml                         # Docker orchestration (frontend + backend)
+├── Dockerfile                                 # Docker image build definition
+├── .env.example                               # environment variable template
+├── README.md                                  # Chinese documentation
+├── README-EN.md                               # English documentation
+└── LICENSE                                    # open-source license
+```
+
 ## 🚀 Quick Start
 
 ### Option 1: Source Code Deployment (Recommended)
@@ -115,23 +222,66 @@ cp .env.example .env
 **Required Environment Variables:**
 
 ```env
-# LLM API Configuration (supports any LLM API with OpenAI SDK format)
+# LLM API Configuration (supports OpenAI, Codex-compatible, and other OpenAI-SDK-compatible backends)
+# Standard OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_API_BASE_URL / OPENAI_MODEL aliases also work
 # Recommended: Alibaba Qwen-plus model via Bailian Platform: https://bailian.console.aliyun.com/
 # High consumption, try simulations with fewer than 40 rounds first
 LLM_API_KEY=your_api_key
 LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 LLM_MODEL_NAME=qwen-plus
+# Optional: reduce this for OpenAI-compatible backends with smaller context windows
+# LLM_MAX_TOKENS=4096
 
 # Zep Cloud Configuration
 # Free monthly quota is sufficient for simple usage: https://app.getzep.com/
 ZEP_API_KEY=your_zep_api_key
 ```
 
+The backend now accepts both the project-specific `LLM_*` variables and the standard `OPENAI_*` aliases, so you can point MiroFish directly at OpenAI, Codex-compatible gateways, LM Studio, Ollama, or other OpenAI-compatible backends without extra code changes or a separate `LLM_PROVIDER` flag. If multiple base-URL aliases are set, MiroFish resolves them in `LLM_BASE_URL` > `OPENAI_BASE_URL` > `OPENAI_API_BASE_URL` order; when those values disagree, `/api/graph/config/status` and `backend/scripts/print_config_status.py` now warn explicitly about which value won.
+
+Common compatible backend examples:
+
+```env
+# OpenAI / Codex-compatible gateway
+OPENAI_API_KEY=your_api_key
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_API_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-4.1-mini
+
+# Alibaba DashScope Coding Plan
+OPENAI_API_KEY=your_dashscope_key
+OPENAI_API_BASE_URL=https://coding.dashscope.aliyuncs.com/v1
+OPENAI_MODEL=qwen3.5-plus
+```
+
+Verify the OpenAI-compatible path explicitly:
+
+- Visit `http://localhost:5001/health` to confirm the backend is up.
+- Or run `npm run check:backend-config` to print the same non-sensitive config-status payload without starting the server.
+- For the most direct local backend-only path, run `npm run backend:local`. It executes the same config preflight first and only starts Flask when the current `LLM_*` / `OPENAI_*` aliases resolve cleanly.
+- Then open `http://localhost:5001/api/graph/config/status`. The JSON payload should report `llm.backend_mode = openai_compatible`.
+- `summary.llm.sources` tells you whether MiroFish resolved `LLM_*` or `OPENAI_*` variables and whether the active base URL came from `OPENAI_BASE_URL` or `OPENAI_API_BASE_URL`, which is the quickest way to confirm a Codex/OpenAI-compatible gateway is wired correctly without adding `LLM_PROVIDER`.
+- The same config-status payload now exposes `summary.capabilities`, which separates “direct LLM is ready” from “which workflow steps still need Zep”: `direct_llm` is the direct Codex/OpenAI-compatible path, `graph_build` and `graph_report_tools` map to Step 1 / Step 4, and `existing_simulation_interaction` shows whether Step 5 can still run once a Step 2/3 simulation environment already exists.
+- If that config-status payload still lists `ZEP_API_KEY is not configured`, the direct LLM wiring is still working; it only means Step 1 graph build remains Zep-backed until a repo-native alternative graph backend is actually landed.
+- A warning about `SECRET_KEY` being generated temporarily is expected in local verification shells when `SECRET_KEY` is unset; it does not mean the direct `OPENAI_*` wiring failed.
+
+If `http://localhost:5001` returns `404`, that usually does not mean the backend failed to boot. The backend root is API-only; use `http://localhost:5001/health` for a health check instead.
+
+If Step 5 deep interaction frequently times out for single-agent chat, batch surveys, or all-agent interviews, increase both the frontend request timeout `VITE_API_TIMEOUT` (milliseconds) and the backend Interview wait windows `INTERVIEW_AGENT_TIMEOUT_SECONDS`, `INTERVIEW_BATCH_TIMEOUT_SECONDS`, and `INTERVIEW_ALL_TIMEOUT_SECONDS` (seconds).
+
+For a first run, prefer a PDF / Markdown / TXT source under roughly 10k words and keep the simulation around 30 rounds. That lets you verify graph build, environment setup, and backend health before spending more Zep quota or debugging multiple scaling variables at once.
+
 #### 2. Install Dependencies
 
 ```bash
-# One-click installation of all dependencies (root + frontend + backend)
+# Recommended core install for graph/report/OpenAI-compatible backend usage
+npm run setup:core
+
+# Backward-compatible alias for the same core install path
 npm run setup:all
+
+# Install the optional OASIS runtime only if you need Step 3 / Step 5 simulations
+npm run setup:backend:simulation
 ```
 
 Or install step by step:
@@ -140,20 +290,57 @@ Or install step by step:
 # Install Node dependencies (root + frontend)
 npm run setup
 
-# Install Python dependencies (backend, auto-creates virtual environment)
+# Install core Python dependencies (backend, auto-creates virtual environment)
 npm run setup:backend
+
+# Equivalent combined core install shortcut
+npm run setup:core
+
+# Install the optional OASIS simulation runtime
+npm run setup:backend:simulation
 ```
+
+`setup:core` / `setup:all` installs only the root package, frontend, and core graph/report/OpenAI-compatible backend dependencies. The upstream `oasis` runtime code used by Step 3 / Step 5 is now vendored directly under `backend/oasis`, and the optional simulation install keeps only the explicit runtime dependencies, so the default path no longer pulls the high-risk `camel-oasis -> unstructured==0.13.7` chain.
+
+Known limitation: `npm run setup:backend:simulation` now fails fast on Python 3.13+ when Rust is not installed, because the current `camel-ai -> tiktoken==0.7.0` chain still falls back to a source build there. The core backend path is unaffected; for actual Step 3 / Step 5 simulation runs, use Python 3.11/3.12 or install Rust before running that command.
 
 #### 3. Start Services
 
 ```bash
 # Start both frontend and backend (run from project root)
 npm run dev
+
+# Or run only the backend with an OpenAI-compatible config preflight
+npm run backend:local
 ```
 
 **Service URLs:**
 - Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:5001`
+
+If you use the default dual-port layout, the frontend auto-targets backend port `5001` on the same host. The backend root is API-only; use `http://localhost:5001/health` for a quick health check.
+
+#### 3.1 FAQ
+
+**Which models / APIs are supported?**
+
+- The backend accepts any OpenAI-compatible API; it is not locked to one provider.
+- Paths already validated and documented in this repo include OpenAI, Codex-compatible gateways, Alibaba DashScope compatible mode, Alibaba DashScope Coding Plan, and local OpenAI-compatible gateways such as LM Studio or Ollama.
+- You can configure either the project-specific `LLM_API_KEY` / `LLM_BASE_URL` / `LLM_MODEL_NAME` variables or the standard `OPENAI_API_KEY` / `OPENAI_API_BASE_URL` / `OPENAI_MODEL` aliases directly.
+
+**What happens if I refresh the browser or close the page?**
+
+- Refreshing the browser or closing the tab does not directly stop graph-building, simulation, or report jobs that are already running on the backend.
+- Persisted data remains under `backend/uploads/`, and the homepage history view can reopen Step 1 (Graph Build), Step 2 (Environment Setup), and Step 4 (Report).
+- Step 3 and Step 5 still depend on a live OASIS runtime session. If the backend process, container, or simulation environment has already been shut down, those live runtime stages cannot be replayed seamlessly and must be prepared or started again.
+
+**How can I verify later whether a forecast matched real-world outcomes?**
+
+- MiroFish does not yet ship an automatic ground-truth ingester or accuracy scorer, but it already preserves a stable manual verification trail.
+- In Step 4, keep the `report_id`, and use the homepage history entry to preserve the matching `simulation_id`. Those IDs anchor later review to the same graph, environment, and report artifacts.
+- For offline evidence, export the Markdown report from Step 4 or keep the generated files under `backend/uploads/reports/<report_id>/full_report.md` and the sibling JSON metadata.
+- Once the real event has evolved, reopen Step 4 from history and compare the report's main judgments, timelines, and assumptions against what actually happened. Reopen Step 1 / Step 2 as needed to inspect the original source material and setup.
+- If the simulation runtime is still online, Step 5 can be used to ask the Report Agent or individual roles which assumptions were validated or invalidated. If the runtime session is gone, the current workflow is Step 4 evidence retention plus manual comparison rather than true automated backtesting.
 
 **Start Individually:**
 
@@ -162,19 +349,41 @@ npm run backend   # Start backend only
 npm run frontend  # Start frontend only
 ```
 
+#### 4. Lightweight Backend Validation
+
+If `uv sync` or `uv run pytest` is blocked by heavyweight builds such as `tiktoken` requiring a Rust toolchain, run the fast targeted backend suite instead:
+
+```bash
+npm run test:backend:lite
+```
+
+This path creates `.tmp-test-venv/` on demand and installs only the packages needed for the current low-risk regression tests (`test_llm_client.py` and `test_graph_builder.py`).
+
 ### Option 2: Docker Deployment
 
 ```bash
 # 1. Configure environment variables (same as source deployment)
 cp .env.example .env
 
-# 2. Pull image and start
+# 2. Optional: override the container image if GHCR is slow or blocked
+# MIROFISH_IMAGE=ghcr.nju.edu.cn/666ghj/mirofish:latest
+
+# 3. Pull image and start
 docker compose up -d
 ```
 
 Reads `.env` from root directory by default, maps ports `3000 (frontend) / 5001 (backend)`
 
-> Mirror address for faster pulling is provided as comments in `docker-compose.yml`, replace if needed.
+If you deploy frontend and backend on different hosts or ports, set `VITE_API_BASE_URL` for the frontend explicitly.
+You can also open the `Backend API` panel in the home screen or the Step 1 / Step 2 workbench header and persist a runtime backend URL in the browser without rebuilding the frontend.
+
+For backend-side cross-origin control, you can also set `CORS_ALLOWED_ORIGINS` (comma-separated) plus optional `CORS_ALLOW_METHODS` / `CORS_ALLOW_HEADERS`. The default remains permissive (`*`) for backward compatibility, so these variables are only needed when you want to restrict which frontend origins may call `/api/*`.
+
+`docker-compose.yml` now reads `MIROFISH_IMAGE`, so you can switch to a registry mirror or a private fork image through `.env` or a one-shot shell override instead of editing the compose file.
+
+```bash
+MIROFISH_IMAGE=ghcr.nju.edu.cn/666ghj/mirofish:latest docker compose up -d
+```
 
 ## 📬 Join the Conversation
 

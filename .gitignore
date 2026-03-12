@@ -58,3 +58,10 @@ backend/uploads/
 
 # Docker 数据
 data/
+
+# AgentOps session artifacts (auto-added by ao init)
+.agents/
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db

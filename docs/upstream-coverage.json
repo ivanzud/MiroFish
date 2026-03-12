@@ -1,0 +1,1172 @@
+{
+  "repo": "666ghj/MiroFish",
+  "captured_at": "2026-03-12T03:21:23Z",
+  "issues": [
+    {
+      "number": 159,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-triage.md",
+        "https://github.com/ivanzud/MiroFish/issues/97"
+      ],
+      "validation": [
+        "tracking only"
+      ],
+      "notes": "Mirrored into fork issue #97 on March 12, 2026. This request overlaps the existing non-Zep backend and self-hosted graph follow-ups from upstream issues #55, #76, #106, and #156."
+    },
+    {
+      "number": 157,
+      "status": "covered",
+      "summary": "Homepage history now supports repo-native deletion of unwanted local records. The backend exposes `DELETE /api/simulation/history/<simulation_id>` to remove a simulation's persisted local directory, cascade-delete its attached local reports, and prune the project metadata when no sibling simulations remain, while refusing deletion for active runs. The history modal now exposes a localized delete action that calls that endpoint directly.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "backend/app/api/simulation.py",
+        "backend/app/i18n.py",
+        "backend/app/services/simulation_manager.py",
+        "backend/tests/test_simulation_api_i18n.py",
+        "frontend/src/api/simulation.js",
+        "frontend/src/components/HistoryDatabase.vue",
+        "frontend/src/i18n/locales/en.js",
+        "frontend/src/i18n/locales/zh.js",
+        "https://github.com/ivanzud/MiroFish/issues/96"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_simulation_api_i18n.py",
+        "bash ./scripts/test_backend_lite.sh",
+        "npm --prefix frontend run build"
+      ],
+      "notes": "Mirrored into fork issue #96 on March 12, 2026. This is a repo-native local-history cleanup flow; it intentionally avoids deleting upstream or Zep-hosted graph data."
+    },
+    {
+      "number": 158,
+      "status": "partial",
+      "summary": "README.md, README-EN.md, README-RU.md, README-KO.md, and README-JA.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and both views now also copy a single structured verification bundle so users can preserve the paired references in one paste. Exported Step 4 Markdown still embeds the report/simulation/graph references directly in the file header, and it now also includes stable local report paths plus a localized manual verification checklist so the saved artifact stays actionable outside the UI. Users can export that Markdown from both Step 4 and the saved-history modal or reuse the files under `backend/uploads/reports/<report_id>/` for later comparison against real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "README-EN.md",
+        "README-JA.md",
+        "README-KO.md",
+        "README.md",
+        "README-RU.md",
+        "backend/app/services/report_agent.py",
+        "backend/tests/test_report_agent.py",
+        "docs/upstream-triage.md",
+        "frontend/src/components/HistoryDatabase.vue",
+        "frontend/src/components/historyReportDownload.js",
+        "frontend/src/components/Step4Report.vue",
+        "frontend/src/components/verificationBundle.js",
+        "frontend/src/i18n/locales/en.js",
+        "frontend/src/i18n/locales/zh.js",
+        "frontend/tests/historyReportDownload.test.mjs",
+        "frontend/tests/verificationBundle.test.mjs",
+        "https://github.com/ivanzud/MiroFish/issues/95"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_report_agent.py -k \"reference_block or embeds_reference_block\"",
+        "uv run --project backend pytest -q backend/tests/test_report_agent.py backend/tests/test_report_api_i18n.py",
+        "python3 -m compileall backend/app/services/report_agent.py backend/tests/test_report_agent.py backend/tests/test_report_api_i18n.py",
+        "bash ./scripts/test_backend_lite.sh",
+        "npm --prefix frontend test",
+        "npm --prefix frontend run build",
+        "README verification"
+      ],
+      "notes": "Mirrored into fork issue #95 on March 12, 2026. The repo now documents how to preserve and revisit forecast evidence across the Chinese, English, Russian, Korean, and Japanese README set, exposes copyable report/simulation IDs in Step 4, surfaces the same references plus a direct Markdown export action in the history modal for later reuse, adds a one-click verification bundle copy in both Step 4 and history so those references can be preserved together, and makes the exported Markdown self-identifying with storage paths plus a manual checklist so the verification evidence survives outside the UI. It still does not automate outcome ingestion or accuracy scoring."
+    },
+    {
+      "number": 156,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, `/api/report/generate` now fails early with the same structured backend-config payload instead of launching a doomed async Step 4 task, and the frontend now also exposes a simulation-only Step 5 route plus Step 3/Step 4 CTAs so users can continue directly into role interaction without a report when only `ZEP_API_KEY` is missing. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "backend/app/api/report.py",
+        "backend/app/config.py",
+        "backend/tests/test_report_api_i18n.py",
+        "backend/tests/test_config.py",
+        "backend/tests/test_print_config_status.py",
+        "frontend/src/components/interactionRoute.js",
+        "frontend/src/components/apiConfigDiagnostics.js",
+        "frontend/src/components/Step3Simulation.vue",
+        "frontend/src/components/Step4Report.vue",
+        "frontend/src/components/Step5Interaction.vue",
+        "frontend/src/i18n/locales/en.js",
+        "frontend/src/i18n/locales/zh.js",
+        "frontend/tests/apiConfigDiagnostics.test.mjs",
+        "frontend/tests/interactionRoute.test.mjs",
+        "frontend/src/router/index.js",
+        "frontend/src/views/InteractionView.vue",
+        "README.md",
+        "README-EN.md",
+        "https://github.com/ivanzud/MiroFish/issues/94"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_config.py tests/test_print_config_status.py",
+        "uv run --project backend pytest -q backend/tests/test_report_api_i18n.py",
+        "npm --prefix frontend test -- --runInBand apiConfigDiagnostics.test.mjs",
+        "npm --prefix frontend test",
+        "npm --prefix frontend run build",
+        "env -i PATH=\"$PATH\" HOME=\"$HOME\" TERM=\"$TERM\" OPENAI_API_KEY=codex-test-key OPENAI_API_BASE_URL=https://codex.example.test/v1 OPENAI_MODEL=gpt-4.1-mini ZEP_API_KEY=zep-test-key SECRET_KEY=test-secret npm run check:backend-config -- --compact",
+        "env -i PATH=\"$PATH\" HOME=\"$HOME\" TERM=\"$TERM\" OPENAI_API_KEY=codex-test-key OPENAI_API_BASE_URL=https://codex.example.test/v1 OPENAI_MODEL=gpt-4.1-mini SECRET_KEY=test-secret npm run check:backend-config -- --compact",
+        "bash ./scripts/test_backend_lite.sh"
+      ],
+      "notes": "Mirrored into fork issue #94 on March 12, 2026. The landed capability matrix makes it explicit that direct OpenAI-compatible LLM wiring can still be valid even when Step 1 / Step 4 remain blocked on Zep, and that Step 5 interaction is still available on an existing simulation environment. This branch now also returns that same non-sensitive config payload directly from `/api/report/generate`, so Step 4 no longer starts a doomed async task when only the direct LLM path is configured, and the frontend now gives users a repo-native escape hatch into `/interaction/simulation/<simulation_id>` from both Step 3 preflight failures and Step 4 failed-report screens."
+    },
+    {
+      "number": 154,
+      "status": "covered",
+      "summary": "Profile serialization now tolerates structured LLM output instead of crashing when `bio`, `persona`, `country`, `profession`, or `interested_topics` arrive as dict/list values. `OasisAgentProfile` normalizes those mixed types at construction time and the Reddit/Twitter serializers defensively coerce them again before slicing or string replacement, so simulation preparation no longer fails during profile save with `KeyError: slice(None, 150, None)`.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "backend/app/services/oasis_profile_generator.py",
+        "backend/tests/test_openai_compat_services.py",
+        "https://github.com/ivanzud/MiroFish/issues/93"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_openai_compat_services.py -k \"structured_fields or save_profiles_defaults_country_by_locale or save_twitter_profiles_tolerates_structured_fields\"",
+        "bash ./scripts/test_backend_lite.sh"
+      ],
+      "notes": "Mirrored into fork issue #93 on March 12, 2026. This is a repo-native fix for the newly reported upstream serialization crash rather than a PR cherry-pick."
+    },
+    {
+      "number": 150,
+      "status": "covered",
+      "summary": "Simulation data retrieval now resolves the active platform from `SimulationState` instead of silently defaulting to Reddit when Twitter/X is the only enabled platform, and `SimulationManager.get_profiles()` now reads Twitter profile CSV files correctly as well. That prevents empty profile/post responses in Twitter-only simulations even when older callers still pass the historical `reddit` default.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "backend/app/services/simulation_manager.py",
+        "backend/app/api/simulation.py",
+        "backend/tests/test_simulation_service_i18n.py",
+        "backend/tests/test_simulation_api_i18n.py",
+        "https://github.com/ivanzud/MiroFish/issues/91"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_simulation_service_i18n.py tests/test_simulation_api_i18n.py",
+        "python3 -m compileall backend/app/services/simulation_manager.py backend/app/api/simulation.py"
+      ],
+      "notes": "Mirrored into fork issue #91 on March 11, 2026. The fix keeps legacy callers working by falling back to the sole enabled platform instead of assuming Reddit."
+    },
+    {
+      "number": 153,
+      "status": "covered",
+      "summary": "The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all, and the optional simulation lock now resolves `pillow==10.4.0` instead of `10.3.0`.",
+      "local_refs": [
+        "package.json",
+        "README.md",
+        "README-EN.md",
+        "scripts/setup_backend_simulation.py",
+        "backend/uv.lock"
+      ],
+      "validation": [
+        "cd backend && uv sync --frozen --python 3.13 --python-platform windows --dry-run --output-format json",
+        "cd backend && uv sync --extra simulation --frozen --dry-run",
+        "triage diff review"
+      ],
+      "notes": "Mirrored into fork issue #92 on March 11, 2026. If the reporter still sees `pillow==10.3.0` during `setup:all`, they are likely on an older checkout. The current core path avoids Pillow entirely and the optional simulation path now locks Pillow to `10.4.0`."
+    },
+    {
+      "number": 148,
+      "status": "covered",
+      "summary": "Interview env liveness now validates the persisted runner state and recorded process PID instead of trusting stale env_status.json alone, so Step 5 world-agent chat fails fast with the existing closed-environment guidance instead of hanging into a 504 when the simulation process has already exited.",
+      "local_refs": [
+        "backend/app/services/simulation_runner.py",
+        "backend/tests/test_simulation_runner_actions.py",
+        "backend/tests/test_simulation_api_i18n.py"
+      ]
+    },
+    {
+      "number": 149,
+      "status": "covered",
+      "summary": "Step 3 now reconciles stale persisted `running` states when the worker PID is gone, and the detailed status payload exposes compact simulation-log diagnostics while waiting for the first actions. That prevents indefinite \"Waiting for agent actions\" polling after a dead worker and makes true startup stalls visible in the UI.",
+      "local_refs": [
+        "backend/app/services/simulation_runner.py",
+        "backend/app/api/simulation.py",
+        "backend/tests/test_simulation_runner_actions.py",
+        "backend/tests/test_simulation_run_status_detail.py",
+        "frontend/src/components/Step3Simulation.vue"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_simulation_runner_actions.py tests/test_simulation_run_status_detail.py",
+        "npm --prefix frontend test",
+        "npm --prefix frontend run build"
+      ]
+    },
+    {
+      "number": 17,
+      "status": "tracked",
+      "summary": "Tracked locally in beads as `mirofish-77h`: a future multi-run consensus workflow should reuse a shared Step 1/2 setup, orchestrate repeated Step 3 runs, and synthesize a consensus/divergence report in Step 4.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-triage.md"
+      ],
+      "validation": [
+        "tracking only"
+      ]
+    },
+    {
+      "number": 14,
+      "status": "covered",
+      "summary": "Step 3 now stops polling and surfaces backend failure text when the simulation runner reports `failed`, so the UI no longer hangs indefinitely.",
+      "local_refs": [
+        "frontend/src/components/Step3Simulation.vue",
+        "frontend/tests/errors.test.mjs"
+      ],
+      "validation": [
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 19,
+      "status": "covered",
+      "summary": "The home upload flow and quick-start docs now explicitly recommend starting with smaller source material (roughly 10k words) and about 30 simulation rounds on a first run, reducing avoidable quota burn and onboarding confusion.",
+      "local_refs": [
+        "frontend/src/views/Home.vue",
+        "frontend/src/i18n/locales/zh.js",
+        "frontend/src/i18n/locales/en.js",
+        "README.md",
+        "README-EN.md"
+      ],
+      "validation": [
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 24,
+      "status": "covered",
+      "summary": "Report generation now tolerates empty LLM section responses by retrying, then falling back to a per-section placeholder instead of crashing the whole report flow with a `NoneType` subscript error.",
+      "local_refs": [
+        "backend/app/services/report_agent.py",
+        "backend/tests/test_report_agent.py"
+      ],
+      "validation": [
+        "backend/tests/test_report_agent.py::test_generate_report_survives_empty_llm_section_responses"
+      ]
+    },
+    {
+      "number": 45,
+      "status": "covered",
+      "summary": "Step 5 now preserves platform metadata and targets Reddit/Twitter interviews against the matching backend instead of assuming a Reddit-only profile list.",
+      "local_refs": [
+        "frontend/src/components/Step5Interaction.vue",
+        "frontend/src/components/step5Profiles.js",
+        "frontend/tests/step5Profiles.test.mjs"
+      ],
+      "validation": [
+        "frontend/tests/step5Profiles.test.mjs",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 46,
+      "status": "covered",
+      "summary": "The setuptools `project.license` warning path is gone because the repo now uses an SPDX license string.",
+      "local_refs": [
+        "backend/pyproject.toml"
+      ],
+      "validation": [
+        "backend: uv run pytest -q"
+      ]
+    },
+    {
+      "number": 52,
+      "status": "covered",
+      "summary": "Report generation now trims oversized message history, retries after context-length failures, and exposes configurable `LLM_MAX_TOKENS` for smaller-context models.",
+      "local_refs": [
+        "backend/app/services/report_agent.py",
+        "backend/app/utils/llm_client.py",
+        "backend/tests/test_report_agent.py",
+        "backend/tests/test_llm_client.py"
+      ],
+      "validation": [
+        "backend/tests/test_report_agent.py",
+        "backend/tests/test_llm_client.py"
+      ]
+    },
+    {
+      "number": 58,
+      "status": "covered",
+      "summary": "Step 5 interviews now derive timeout overrides from the configured frontend request window, and the backend/docs expose dedicated interview timeout settings for slower local models.",
+      "local_refs": [
+        "frontend/src/api/timeout.js",
+        "frontend/src/components/Step5Interaction.vue",
+        ".env.example"
+      ],
+      "validation": [
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 61,
+      "status": "covered",
+      "summary": "The frontend now exposes a persisted runtime backend API override panel on the home screen and Step 1 / Step 2 workbench, so users can repoint the UI to another backend without rebuilding.",
+      "local_refs": [
+        "frontend/src/api/baseUrl.js",
+        "frontend/src/api/index.js",
+        "frontend/src/components/ApiEndpointControl.vue",
+        "frontend/src/views/Home.vue",
+        "frontend/src/views/MainView.vue",
+        "README.md",
+        "README-EN.md"
+      ],
+      "validation": [
+        "frontend/tests/baseUrl.test.mjs",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 62,
+      "status": "partial",
+      "summary": "The Step 5 timeout complaint now has explicit local mitigations across both UI-driven and report-agent-driven interviews: frontend Step 5 requests derive adaptive timeout budgets from the request window, the UI shows the effective single-agent and current survey-batch budget, the docs/env template expose timeout knobs for slower local models, and backend/app/services/zep_tools.py now honors INTERVIEW_BATCH_TIMEOUT_SECONDS instead of forcing a fixed 180-second timeout for live report-agent batch interviews. The broader issue's remaining workflow requests are now tracked separately in beads as `mirofish-as6`.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "frontend/src/api/timeout.js",
+        "frontend/src/components/Step5Interaction.vue",
+        "frontend/src/components/step5Profiles.js",
+        "backend/app/services/zep_tools.py",
+        "backend/tests/test_zep_tools_i18n.py",
+        ".env.example",
+        "README.md",
+        "README-EN.md"
+      ],
+      "validation": [
+        "frontend: npm test",
+        "frontend: npm run build",
+        "backend: uv run pytest -q tests/test_zep_tools_i18n.py"
+      ]
+    },
+    {
+      "number": 64,
+      "status": "covered",
+      "summary": "Upload and graph-build failures now surface structured per-file parser/config validation errors instead of collapsing common deployment or document-ingest problems into a generic 500.",
+      "local_refs": [
+        "backend/app/api/graph.py",
+        "backend/app/config.py",
+        "frontend/src/views/Process.vue",
+        "backend/tests/test_graph_upload_api.py"
+      ],
+      "validation": [
+        "scripts/test_backend_lite.sh",
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 77,
+      "status": "covered",
+      "summary": "Graph-build task failures now classify Zep 401/unauthorized responses into a concise ZEP_API_KEY guidance message and strip embedded traceback noise before returning task payload errors, so deployments behind domestic proxies or with invalid Zep credentials no longer fail with an opaque auth dump.",
+      "local_refs": [
+        "backend/app/services/graph_builder.py",
+        "backend/tests/test_graph_builder.py",
+        "backend/tests/test_graph_upload_api.py",
+        "https://github.com/ivanzud/MiroFish/issues/54"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_graph_builder.py tests/test_graph_upload_api.py -k \"auth_error or unauthorized\""
+      ],
+      "notes": "Mirrored into fork issue #54 on March 11, 2026. This backfills the same repo-native Zep auth hardening already captured for upstream issue #139."
+    },
+    {
+      "number": 68,
+      "status": "covered",
+      "summary": "Simulation process-exit errors now classify common HuggingFace download/proxy failures into a concise retry/proxy guidance message instead of dumping raw log tails into Step 3.",
+      "local_refs": [
+        "backend/app/services/simulation_runner.py",
+        "backend/app/i18n.py",
+        "backend/tests/test_simulation_runner_actions.py"
+      ],
+      "validation": [
+        "backend/tests/test_simulation_runner_actions.py",
+        "backend/tests/test_simulation_api_i18n.py",
+        "backend/tests/test_i18n.py"
+      ]
+    },
+    {
+      "number": 84,
+      "status": "covered",
+      "summary": "Failed report generation can now be retried directly from Step 4 with persisted status polling, backend error text, and a `force_regenerate` retry path.",
+      "local_refs": [
+        "frontend/src/components/Step4Report.vue",
+        "frontend/src/api/report.js"
+      ],
+      "validation": [
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 93,
+      "status": "covered",
+      "summary": "The frontend no longer hardcodes `http://localhost:5001` in project-init messaging and instead uses the shared API base-url resolver.",
+      "local_refs": [
+        "frontend/src/views/Process.vue",
+        "frontend/src/api/baseUrl.js"
+      ],
+      "validation": [
+        "frontend/tests/baseUrl.test.mjs",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 92,
+      "status": "covered",
+      "summary": "The current GitHub Actions workflow already includes the later upgrade sweep from upstream PR #116, so this issue is stale on this branch.",
+      "local_refs": [
+        ".github/workflows/docker-image.yml"
+      ],
+      "validation": [
+        "workflow review only"
+      ]
+    },
+    {
+      "number": 99,
+      "status": "covered",
+      "summary": "Docker image publishing now builds both `linux/amd64` and `linux/arm64`, so the missing ARM image issue is already resolved locally.",
+      "local_refs": [
+        ".github/workflows/docker-image.yml"
+      ],
+      "validation": [
+        "workflow review only"
+      ]
+    },
+    {
+      "number": 9,
+      "status": "partial",
+      "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, the history modal exposes a replay-only Step 3 route that loads an existing timeline without accidentally auto-starting a fresh run, the Step 3 panel now makes the same-simulation restart path explicit after quota/API-key failures, Step 2 now surfaces a direct recovery card that reopens the saved Step 3 replay/restart route without making users hunt through history first, and Step 5 now exposes that same direct Step 3 recovery route whenever the interview environment is offline but the prepared simulation still has replayable state. True mid-run checkpoint/resume is still deferred.",
+      "local_refs": [
+        "frontend/src/components/Step2EnvSetup.vue",
+        "frontend/src/components/Step5Interaction.vue",
+        "frontend/src/components/step2Recovery.js",
+        "frontend/src/components/step5Recovery.js",
+        "frontend/src/components/HistoryDatabase.vue",
+        "frontend/src/views/SimulationRunView.vue",
+        "frontend/src/views/SimulationView.vue",
+        "frontend/src/components/Step3Simulation.vue",
+        "frontend/src/components/historyPlayback.js",
+        "frontend/src/components/simulationReplay.js",
+        "frontend/tests/historyPlayback.test.mjs",
+        "frontend/tests/step2Recovery.test.mjs",
+        "frontend/tests/step5Recovery.test.mjs"
+      ],
+      "validation": [
+        "frontend: npm test",
+        "frontend: npm run build"
+      ],
+      "notes": "The repo still cannot checkpoint and continue from the exact failure point after a provider outage, but the prepared-environment recovery path is now available from history, the Step 2 screen, and the Step 5 offline-interview workspace."
+    },
+    {
+      "number": 21,
+      "status": "covered",
+      "summary": "The docs/UI now clarify that refreshing the browser does not stop backend jobs, persisted runs remain reopenable from history, and Step 3/5 still require a live runtime session.",
+      "local_refs": [
+        "frontend/src/components/HistoryDatabase.vue",
+        "README.md",
+        "README-EN.md"
+      ],
+      "validation": [
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 37,
+      "status": "covered",
+      "summary": "Step 5 now preflights simulation environment status and blocks interview requests against closed or unavailable backends before they fail.",
+      "local_refs": [
+        "frontend/src/components/Step5Interaction.vue",
+        "frontend/src/api/simulation.js"
+      ],
+      "validation": [
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 43,
+      "status": "covered",
+      "summary": "Step 5 now rewrites timeout and environment-closed failures into actionable guidance, and the backend/frontend timeout knobs give slow local models an explicit supported path.",
+      "local_refs": [
+        "frontend/src/components/Step5Interaction.vue",
+        "frontend/src/api/timeout.js",
+        ".env.example"
+      ],
+      "validation": [
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 42,
+      "status": "covered",
+      "summary": "Step 3 detailed run polling is now incremental and bounded, so the frontend no longer re-downloads the entire simulation timeline every few seconds as a run grows.",
+      "local_refs": [
+        "backend/app/api/simulation.py",
+        "frontend/src/components/Step3Simulation.vue",
+        "frontend/src/components/simulationTimeline.js"
+      ],
+      "validation": [
+        "scripts/test_backend_lite.sh",
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 60,
+      "status": "covered",
+      "summary": "Graph-builder retries now honor bounded Zep `Retry-After` guidance from `429` responses instead of always using the default backoff schedule, reducing premature failures when Zep throttles graph creation or uploads.",
+      "local_refs": [
+        "backend/app/config.py",
+        "backend/app/services/graph_builder.py",
+        "backend/tests/test_graph_builder.py"
+      ],
+      "validation": [
+        "backend/tests/test_graph_builder.py::test_create_graph_respects_retry_after_header",
+        "backend/tests/test_graph_builder.py::test_create_graph_respects_retry_after_text_hint",
+        "backend/tests/test_graph_builder.py::test_create_graph_caps_retry_after_delay",
+        "scripts/test_backend_lite.sh"
+      ],
+      "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
+    },
+    {
+      "number": 75,
+      "status": "covered",
+      "summary": "Graph-builder retries now honor bounded Zep `Retry-After` guidance from `429` responses instead of always using the default backoff schedule, reducing the stuck-at-99% failure mode when Zep free-plan throttling delays graph processing.",
+      "local_refs": [
+        "backend/app/config.py",
+        "backend/app/services/graph_builder.py",
+        "backend/tests/test_graph_builder.py"
+      ],
+      "validation": [
+        "backend/tests/test_graph_builder.py::test_create_graph_respects_retry_after_header",
+        "backend/tests/test_graph_builder.py::test_create_graph_respects_retry_after_text_hint",
+        "backend/tests/test_graph_builder.py::test_create_graph_caps_retry_after_delay",
+        "scripts/test_backend_lite.sh"
+      ],
+      "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
+    },
+    {
+      "number": 107,
+      "status": "covered",
+      "summary": "Docker deployment now reads `MIROFISH_IMAGE` from `.env` or the shell, so GHCR pull failures can be worked around with a mirror/private registry override instead of editing `docker-compose.yml`.",
+      "local_refs": [
+        "docker-compose.yml",
+        ".env.example",
+        "README.md",
+        "README-EN.md",
+        "README-JA.md",
+        "README-KO.md"
+      ],
+      "validation": [
+        "docker compose config"
+      ],
+      "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
+    },
+    {
+      "number": 54,
+      "status": "no_action",
+      "summary": "Upstream issue #54 is positive feedback rather than a reproducible bug or scoped feature request, so there is no local implementation task attached to it.",
+      "local_refs": [
+        "docs/upstream-open-state.json"
+      ],
+      "validation": [
+        "triage only"
+      ]
+    },
+    {
+      "number": 55,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-8eg`: local graph backend alternatives such as Neo4j support need a deliberate backend-abstraction design pass instead of a blind merge of third-party code.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-triage.md"
+      ],
+      "validation": [
+        "tracking only"
+      ]
+    },
+    {
+      "number": 56,
+      "status": "reference",
+      "summary": "Upstream issue #56 is a community discussion thread collecting localized Zep alternatives. It is retained as reference material while any concrete backend-abstraction work stays tracked under `mirofish-8eg`.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-open-state.json"
+      ],
+      "validation": [
+        "triage only"
+      ]
+    },
+    {
+      "number": 76,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-8eg`: RAGflow support remains a backend-abstraction/rebase task and is not safe to land via the stale upstream branch without targeted regression coverage.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-triage.md"
+      ],
+      "validation": [
+        "tracking only"
+      ]
+    },
+    {
+      "number": 106,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-8eg`: requests for non-Zep graph backends are preserved locally, but implementing them safely requires a fresh graph-backend abstraction instead of wiring another provider into current graph/simulation flows ad hoc.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-triage.md"
+      ],
+      "validation": [
+        "tracking only"
+      ]
+    },
+    {
+      "number": 109,
+      "status": "covered",
+      "summary": "The home upload flow and quick-start docs now explicitly recommend starting with smaller source material (roughly 10k words) and about 30 simulation rounds on a first run, giving new local users a lower-cost way to verify the graph and runtime chain before they burn through Zep free-plan quota.",
+      "local_refs": [
+        "frontend/src/views/Home.vue",
+        "frontend/src/i18n/locales/zh.js",
+        "frontend/src/i18n/locales/en.js",
+        "README.md",
+        "README-EN.md",
+        "https://github.com/ivanzud/MiroFish/issues/43"
+      ],
+      "validation": [
+        "npm --prefix frontend run build",
+        "rg -n \"10k words|30 rounds|1 万字以内|30 轮左右\" frontend/src/views/Home.vue frontend/src/i18n/locales/zh.js frontend/src/i18n/locales/en.js README.md README-EN.md"
+      ],
+      "notes": "Mirrored into fork issue #43 on March 11, 2026. This backfills the same first-run quota guidance already tracked under upstream issue #19."
+    },
+    {
+      "number": 110,
+      "status": "covered",
+      "summary": "The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.",
+      "local_refs": [
+        "README.md",
+        "README-EN.md",
+        ".env.example",
+        "backend/app/config.py",
+        "backend/app/api/graph.py",
+        "backend/tests/test_openai_compat_services.py"
+      ],
+      "validation": [
+        "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_mentions_openai_alias",
+        "backend/tests/test_openai_compat_services.py::test_simulation_config_generator_missing_api_key_english_message"
+      ],
+      "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
+    },
+    {
+      "number": 117,
+      "status": "covered",
+      "summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, graph-build worker progress, report/interview parsing, Step 5 interview fallbacks, and simulation-config placeholder labels: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, GraphBuilderService now persists English task-status strings for its initial worker milestones, Step 4 tool-output parsers accept both Chinese and English markers, zep_tools localizes deterministic interview-selection/question/summary fallback copy in English mode, and SimulationConfigGenerator now routes unknown entity/poster fallback labels through the active locale instead of leaking hardcoded English `Unknown` into zh-mode config output.",
+      "local_refs": [
+        "frontend/src/components/Step2EnvSetup.vue",
+        "frontend/src/components/Step3Simulation.vue",
+        "backend/app/services/graph_builder.py",
+        "frontend/src/components/Step4Report.vue",
+        "frontend/src/components/Step5Interaction.vue",
+        "frontend/src/components/reportParsers.js",
+        "frontend/src/components/simulationLogMessages.js",
+        "frontend/src/components/step5Profiles.js",
+        "frontend/src/components/simulationTimeline.js",
+        "backend/app/services/zep_tools.py",
+        "backend/app/services/simulation_config_generator.py",
+        "frontend/src/i18n/locales/en.js",
+        "frontend/src/i18n/locales/zh.js",
+        "backend/tests/test_graph_builder.py",
+        "backend/tests/test_openai_compat_services.py",
+        "frontend/tests/simulationLogMessages.test.mjs",
+        "backend/tests/test_zep_tools_i18n.py"
+      ],
+      "validation": [
+        "backend/tests/test_graph_builder.py",
+        "backend/tests/test_openai_compat_services.py",
+        "frontend/tests/reportParsers.test.mjs",
+        "frontend/tests/simulationLogMessages.test.mjs",
+        "frontend/tests/simulationTimeline.test.mjs",
+        "frontend/tests/step5Profiles.test.mjs",
+        "backend/tests/test_zep_tools_i18n.py",
+        "frontend: npm test",
+        "frontend: npm run build",
+        "scripts/test_backend_lite.sh"
+      ],
+      "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
+    },
+    {
+      "number": 121,
+      "status": "covered",
+      "summary": "New-project startup errors now resolve raw frontend `Network Error` failures into an actionable backend URL and proxy/CORS hint instead of leaving users at a generic `handleNewProject` failure banner.",
+      "local_refs": [
+        "frontend/src/api/errors.js",
+        "frontend/tests/errors.test.mjs",
+        "https://github.com/ivanzud/MiroFish/issues/41"
+      ],
+      "validation": [
+        "npm --prefix frontend test -- errors.test.mjs",
+        "npm --prefix frontend run build"
+      ],
+      "notes": "Mirrored into fork issue #41 on March 11, 2026. This backfills the landed frontend error-diagnostics work already represented by upstream PR #125."
+    },
+    {
+      "number": 133,
+      "status": "covered",
+      "summary": "The backend root path `/` plus `/health` and `/healthz` now return a small JSON status payload with the live API prefixes, so local or Docker users no longer need to infer backend health from a bare 404.",
+      "local_refs": [
+        "backend/app/__init__.py",
+        "backend/tests/test_app_routes.py"
+      ],
+      "validation": [
+        "backend/tests/test_app_routes.py::test_root_and_health_endpoints_expose_backend_status"
+      ],
+      "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
+    },
+    {
+      "number": 135,
+      "status": "covered",
+      "summary": "Graph ontology ingestion now accepts string-valued attribute definitions for entity and edge schemas, so malformed LLM ontology output no longer crashes graph builds with `TypeError: string indices must be integers`.",
+      "local_refs": [
+        "backend/app/services/graph_builder.py",
+        "backend/tests/test_graph_builder.py"
+      ],
+      "validation": [
+        "backend/tests/test_graph_builder.py::test_set_ontology_accepts_string_attribute_definitions"
+      ],
+      "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
+    },
+    {
+      "number": 139,
+      "status": "covered",
+      "summary": "Graph-build task failures now classify Zep 401/unauthorized responses into a concise ZEP_API_KEY guidance message and strip embedded traceback noise before returning task payload errors.",
+      "local_refs": [
+        "backend/app/services/graph_builder.py",
+        "backend/tests/test_graph_builder.py",
+        "backend/tests/test_graph_upload_api.py"
+      ],
+      "validation": [
+        "backend/tests/test_graph_builder.py::test_format_user_facing_error_maps_embedded_traceback_auth_failures",
+        "backend/tests/test_graph_upload_api.py::test_build_graph_task_persists_sanitized_zep_auth_error"
+      ],
+      "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
+    },
+    {
+      "number": 140,
+      "status": "no_action",
+      "summary": "Upstream issue #140 is general project commentary rather than an actionable defect report or scoped feature request, so it does not require local implementation work.",
+      "local_refs": [
+        "docs/upstream-open-state.json"
+      ],
+      "validation": [
+        "triage only"
+      ]
+    },
+    {
+      "number": 142,
+      "status": "no_action",
+      "summary": "Upstream issue #142 asks about long-term commercialization direction rather than reporting a reproducible bug or scoped feature request, so there is no local implementation task attached to it.",
+      "local_refs": [
+        "docs/upstream-open-state.json"
+      ],
+      "validation": [
+        "triage only"
+      ]
+    },
+    {
+      "number": 145,
+      "status": "partial",
+      "summary": "Repo-native partial mitigations are now landed locally across simulation inputs, backend graph/report/search/statistics/detail surfaces, raw graph introspection, node-edge introspection, textual tool output, both shipped graph renderers, and the visible frontend graph counters/logs: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `ZepEntityReader.get_entity_with_context()` now merges alias-linked relations and related nodes for the entity-detail API, `backend/app/services/graph_builder.py` now collapses the same conservative alias pairs when serving `/api/graph/data/<graph_id>` and remaps duplicate edges to the retained node UUID, `backend/app/services/zep_tools.py` now collapses those aliases when building typed entity lists, raw node/edge introspection payloads, Panorama output, InsightForge entity/relationship summaries, QuickSearch/general search results, graph statistics, node-edge lookups, entity summaries including relations attached only to alias UUIDs, and `NodeInfo.to_text()` output, while preserving merged `alias_names` metadata so callers and downstream prompts can still see which labels were folded together. `frontend/src/views/processGraphData.js` and the shared `frontend/src/components/GraphPanel.vue` renderer now both collapse them while rendering graph data, the Process plus GraphPanel node detail drawers expose the folded non-canonical aliases via `frontend/src/components/graphAliasDetails.js`, and `frontend/src/components/graphPanelData.js` now drives deduplicated Step 1 / Process counters plus MainView refresh logs so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear twice in the graph or its visible counts. Full graph-level persisted deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-triage.md",
+        "origin/mirror/upstream-pr-141",
+        "backend/app/services/zep_entity_reader.py",
+        "backend/tests/test_zep_entity_reader.py",
+        "backend/app/services/graph_builder.py",
+        "backend/tests/test_graph_builder.py",
+        "backend/app/services/zep_tools.py",
+        "backend/tests/test_zep_tools_dedup.py",
+        "backend/tests/test_zep_tools_i18n.py",
+        "frontend/src/components/GraphPanel.vue",
+        "frontend/src/components/graphAliasDetails.js",
+        "frontend/src/components/graphPanelData.js",
+        "frontend/src/components/Step1GraphBuild.vue",
+        "frontend/tests/graphAliasDetails.test.mjs",
+        "frontend/tests/graphPanelData.test.mjs",
+        "frontend/src/views/MainView.vue",
+        "frontend/src/views/Process.vue",
+        "frontend/src/views/processGraphData.js",
+        "frontend/tests/processGraphData.test.mjs"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_graph_builder.py tests/test_zep_entity_reader.py tests/test_zep_tools_dedup.py tests/test_zep_tools_i18n.py",
+        "python3 -m compileall backend/app/services/zep_entity_reader.py backend/app/services/graph_builder.py backend/app/services/zep_tools.py",
+        "bash ./scripts/test_backend_lite.sh",
+        "frontend: npm --prefix frontend test",
+        "frontend: npm --prefix frontend run build",
+        "triage diff review"
+      ],
+      "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish. 2026-03-11: Added a third repo-native partial mitigation in backend report/search tooling so conservative alias pairs are collapsed before Step 4/analysis surfaces render entity summaries and relationship chains. 2026-03-11: Added a fourth repo-native partial mitigation in backend graph-data responses so `/api/graph/data/<graph_id>` collapses the same obvious alias pairs and remaps duplicate edges without mutating stored Zep nodes. 2026-03-11: Added a fifth repo-native partial mitigation in QuickSearch/general search results so `search_graph()` and the local-search fallback collapse the same obvious alias pairs, deduplicate summary facts, and remap duplicate edges before report tooling or API callers consume the result payload. 2026-03-11: Added a seventh repo-native partial mitigation in backend graph statistics and entity-summary helpers so alias duplicates no longer inflate stats counts and alias queries resolve to the canonical merged entity payload. 2026-03-11: Added an eighth repo-native partial mitigation in backend entity summaries so alias-linked relations are collected from the full edge set before canonical remapping, which prevents summaries from dropping edges attached only to an alias UUID. 2026-03-11: Added a ninth repo-native partial mitigation in backend entity-detail reads so `get_entity_with_context()` resolves the requested node against its alias group, includes alias-linked relations, and deduplicates related-node payloads. 2026-03-11: Added a tenth repo-native partial mitigation in zep_tools node-edge lookups so `get_node_edges()` now resolves the requested node against its alias group and remaps duplicate edges instead of dropping relationships attached only to an alias UUID. 2026-03-11: Added an eleventh repo-native partial mitigation in raw zep_tools graph introspection so `get_all_nodes()` and `get_all_edges()` now collapse obvious alias duplicates and remap duplicate edge payloads before report-side callers consume the graph snapshot. 2026-03-11: Added a fourteenth repo-native partial mitigation in textual zep_tools node rendering so `NodeInfo.to_text()` now includes merged alias names with locale-aware labels, preserving the folded names in downstream report/runtime prompts. 2026-03-11: Added a fifteenth repo-native partial mitigation in the shared frontend graph renderer so `frontend/src/components/GraphPanel.vue` now reuses the conservative display-only alias-collapse mapper and no longer shows obvious duplicate entities outside the Process view. 2026-03-11: Added a sixteenth repo-native partial mitigation in the Process and shared GraphPanel node detail drawers so `frontend/src/components/graphAliasDetails.js` filters merged `alias_names` down to the folded non-canonical labels and both detail panels render them explicitly instead of hiding which source names collapsed into the canonical node. 2026-03-11: Added a seventeenth repo-native partial mitigation in frontend graph stats so `frontend/src/components/graphPanelData.js` now drives Step 1 / Process counters and MainView refresh logs through the same alias-collapse mapping as the visible graph renderer."
+    },
+    {
+      "number": 146,
+      "status": "covered",
+      "summary": "The repo now ships an opt-in, repo-native git hook workflow: `.githooks/pre-commit` runs the shared fast validation bundle, `.githooks/pre-push` runs the full validation bundle, and `npm run hooks:install` enables them without introducing a mandatory Husky/Node-only hook dependency.",
+      "local_refs": [
+        ".githooks/pre-commit",
+        ".githooks/pre-push",
+        "scripts/validate_repo.sh",
+        "scripts/install_git_hooks.sh",
+        "CONTRIBUTING.md",
+        "package.json",
+        "https://github.com/ivanzud/MiroFish/issues/88"
+      ],
+      "validation": [
+        "bash ./scripts/validate_repo.sh --backend-only",
+        "bash ./scripts/validate_repo.sh --frontend-only",
+        "bash ./scripts/install_git_hooks.sh --help"
+      ],
+      "notes": "Mirrored into fork issue #88 on March 11, 2026. The workflow is intentionally opt-in and uses git core.hooksPath instead of requiring Husky."
+    },
+    {
+      "number": 69,
+      "status": "covered",
+      "summary": "Both READMEs now explicitly document direct OpenAI-compatible usage through either `LLM_*` or `OPENAI_*` environment variables, with examples for Codex/OpenAI-compatible gateways, DashScope, LM Studio, and Ollama.",
+      "local_refs": [
+        "README.md",
+        "README-EN.md",
+        ".env.example"
+      ],
+      "validation": [
+        "documentation review"
+      ]
+    }
+  ],
+  "pull_requests": [
+    {
+      "number": 15,
+      "status": "landed",
+      "summary": "Landed locally: Step 3 now surfaces failed simulation status instead of polling forever.",
+      "local_refs": [
+        "frontend/src/components/Step3Simulation.vue"
+      ],
+      "validation": [
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 38,
+      "status": "not_safe",
+      "summary": "Not safe to cherry-pick: it expands the backend API surface to Anthropic-specific protocol work while this branch is intentionally standardizing on OpenAI-compatible gateways."
+    },
+    {
+      "number": 49,
+      "status": "not_safe",
+      "summary": "Not safe to cherry-pick: it introduces a large local graph backend without targeted regression coverage and is superseded conceptually by the broader backend-abstraction follow-up."
+    },
+    {
+      "number": 70,
+      "status": "not_safe",
+      "summary": "Not safe to cherry-pick: the Windows installer flow assumes a repo topology that does not match the current `run.py` plus built-frontend layout."
+    },
+    {
+      "number": 72,
+      "status": "superseded",
+      "summary": "Superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`."
+    },
+    {
+      "number": 73,
+      "status": "landed",
+      "summary": "Landed locally: malformed ontology entity and edge items are sanitized before fallback injection."
+    },
+    {
+      "number": 74,
+      "status": "landed",
+      "summary": "Landed locally: bare `except:` clauses in the reviewed JSON/simulation paths were narrowed to `except Exception:`."
+    },
+    {
+      "number": 81,
+      "status": "landed",
+      "summary": "Landed locally: frontend API timeout is configurable for slow local and OpenAI-compatible backends."
+    },
+    {
+      "number": 82,
+      "status": "covered",
+      "summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies, and the remaining optional simulation lock now resolves `pillow==10.4.0`."
+    },
+    {
+      "number": 86,
+      "status": "superseded",
+      "summary": "Superseded locally by the newer workflow updates already carried on this branch, including the later ARM64/cache improvements."
+    },
+    {
+      "number": 87,
+      "status": "superseded",
+      "summary": "Superseded locally by the broader GitHub Actions upgrade sweep from upstream PR #116."
+    },
+    {
+      "number": 100,
+      "status": "superseded",
+      "summary": "Superseded locally by the shared frontend API base-url resolver, which already uses runtime-origin fallback and repo-specific localhost handling."
+    },
+    {
+      "number": 101,
+      "status": "superseded",
+      "summary": "Superseded locally: the useful JSON-cleanup intent is already covered by the current LLM payload extraction hardening, and the branch predates substantial newer backend/frontend work."
+    },
+    {
+      "number": 102,
+      "status": "superseded",
+      "summary": "Superseded locally by the landed multi-platform Docker workflow that already builds `linux/amd64` and `linux/arm64` images."
+    },
+    {
+      "number": 103,
+      "status": "landed",
+      "summary": "Landed locally: Docker workflow now builds ARM64 images and carries the related cache/buildx improvements."
+    },
+    {
+      "number": 104,
+      "status": "landed",
+      "summary": "Landed locally: Vite dev proxy target is configurable via `VITE_API_BASE_URL`."
+    },
+    {
+      "number": 105,
+      "status": "landed",
+      "summary": "Landed locally: backend security/config hardening now includes env-driven CORS controls with a localhost-only default allowlist, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior."
+    },
+    {
+      "number": 108,
+      "status": "not_safe",
+      "summary": "Not safe to cherry-pick: the Windows packaging flow targets the wrong runtime entrypoints, serves the frontend in dev mode, and rebundles already-landed workflow changes."
+    },
+    {
+      "number": 112,
+      "status": "landed",
+      "summary": "Landed locally: Korean README added and cross-links normalized."
+    },
+    {
+      "number": 113,
+      "status": "landed",
+      "summary": "Landed locally: Japanese README added and cross-links normalized."
+    },
+    {
+      "number": 114,
+      "status": "superseded",
+      "summary": "Superseded locally by the current frontend API client, which already falls back to the runtime origin and supports custom base URLs."
+    },
+    {
+      "number": 115,
+      "status": "landed",
+      "summary": "Landed locally: SPDX license string metadata cleanup."
+    },
+    {
+      "number": 116,
+      "status": "landed",
+      "summary": "Landed locally: GitHub Actions dependency upgrades."
+    },
+    {
+      "number": 118,
+      "status": "not_safe",
+      "summary": "Not safe to cherry-pick: RAGflow support threads a second graph backend through core graph/simulation paths without the targeted regression coverage or rebasing needed on top of current local changes."
+    },
+    {
+      "number": 119,
+      "status": "partial",
+      "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, browser-language-aware first-run locale bootstrap, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, English-localized ReportAgent tool descriptions and parameter help, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
+      "local_refs": [
+        "frontend/src/views/MainView.vue",
+        "frontend/src/views/mainViewLogMessages.js",
+        "backend/app/services/graph_builder.py",
+        "frontend/src/components/Step4Report.vue",
+        "frontend/src/components/reportParsers.js",
+        "backend/app/services/report_agent.py",
+        "backend/app/services/zep_tools.py",
+        "backend/app/services/oasis_profile_generator.py",
+        "frontend/src/i18n/index.js",
+        "frontend/src/i18n/locales/en.js",
+        "frontend/src/i18n/locales/zh.js",
+        "backend/tests/test_graph_builder.py",
+        "backend/tests/test_report_agent.py",
+        "backend/tests/test_openai_compat_services.py",
+        "frontend/tests/i18n.test.mjs",
+        "frontend/tests/mainViewLogMessages.test.mjs",
+        "frontend/tests/reportParsers.test.mjs",
+        "backend/tests/test_zep_tools_i18n.py"
+      ],
+      "validation": [
+        "uv run --project backend pytest -q backend/tests/test_graph_builder.py backend/tests/test_graph_upload_api.py",
+        "uv run --project backend pytest -q backend/tests/test_report_agent.py",
+        "uv run --project backend pytest -q backend/tests/test_openai_compat_services.py",
+        "uv run --project backend pytest -q backend/tests/test_zep_tools_i18n.py",
+        "scripts/test_backend_lite.sh",
+        "frontend: npm test",
+        "frontend: npm run build"
+      ]
+    },
+    {
+      "number": 122,
+      "status": "landed",
+      "summary": "Landed locally: removed `response_format={type: json_object}` from `chat_json()` for LM Studio and Ollama compatibility."
+    },
+    {
+      "number": 124,
+      "status": "landed",
+      "summary": "Landed locally: robust JSON extraction for mixed LLM responses."
+    },
+    {
+      "number": 125,
+      "status": "landed",
+      "summary": "Landed locally: improved new-project network error diagnostics in the frontend."
+    },
+    {
+      "number": 126,
+      "status": "landed",
+      "summary": "Safe subset landed locally for structured config validation and non-sensitive config summaries."
+    },
+    {
+      "number": 127,
+      "status": "landed",
+      "summary": "Landed locally: `LLMClient.chat()` already coerces `None` completion content to an empty string before post-processing, and `backend/tests/test_llm_client.py` covers the regression explicitly.",
+      "local_refs": [
+        "backend/app/utils/llm_client.py",
+        "backend/tests/test_llm_client.py",
+        "origin/mirror/upstream-pr-127"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_llm_client.py -k none"
+      ]
+    },
+    {
+      "number": 129,
+      "status": "landed",
+      "summary": "Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning."
+    },
+    {
+      "number": 130,
+      "status": "landed",
+      "summary": "Landed locally: `CONTRIBUTING.md`."
+    },
+    {
+      "number": 131,
+      "status": "landed",
+      "summary": "Safe subset landed locally: transient Zep failures now retry with bounded backoff."
+    },
+    {
+      "number": 132,
+      "status": "landed",
+      "summary": "Landed locally: README architecture overview."
+    },
+    {
+      "number": 141,
+      "status": "not_safe",
+      "summary": "Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.",
+      "local_refs": [
+        "origin/mirror/upstream-pr-141",
+        ".beads/issues.jsonl"
+      ],
+      "validation": [
+        "triage diff review",
+        "git diff --stat HEAD..upstream/pr/141"
+      ]
+    },
+    {
+      "number": 143,
+      "status": "landed",
+      "summary": "Landed locally as a repo-native docs cleanup: the Shanda logo alt text now uses the correct URL-encoded `666ghj%2FMiroFish` slug across all README variants, not just the primary Chinese README.",
+      "local_refs": [
+        "README.md",
+        "README-EN.md",
+        "README-JA.md",
+        "README-KO.md",
+        "origin/mirror/upstream-pr-143"
+      ],
+      "validation": [
+        "documentation review",
+        "rg -n \"666ghj%2MiroFish|666ghj%2FMiroFish\" README.md README-EN.md README-JA.md README-KO.md"
+      ]
+    },
+    {
+      "number": 144,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "origin/mirror/upstream-pr-144"
+      ],
+      "validation": [
+        "triage diff review",
+        "git diff --stat HEAD...upstream/pr-144"
+      ]
+    },
+    {
+      "number": 152,
+      "status": "landed",
+      "summary": "Landed locally as repo-native subsets instead of a wholesale cherry-pick: ontology generation and graph build submission now normalize type names to Zep-compatible PascalCase / SCREAMING_SNAKE_CASE conventions, and TaskManager state now persists to disk so graph/report task status survives backend restarts.",
+      "local_refs": [
+        "backend/app/services/ontology_generator.py",
+        "backend/tests/test_ontology_generator.py",
+        "backend/app/services/graph_builder.py",
+        "backend/tests/test_graph_builder.py",
+        "backend/app/models/task.py",
+        "backend/tests/test_task_manager.py",
+        "origin/mirror/upstream-pr-152",
+        ".beads/issues.jsonl"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_ontology_generator.py",
+        "python3 -m compileall backend/app/services/ontology_generator.py backend/tests/test_ontology_generator.py",
+        "cd backend && uv run pytest -q tests/test_graph_builder.py",
+        "python3 -m compileall backend/app/services/graph_builder.py",
+        "uv run --project backend pytest -q backend/tests/test_task_manager.py backend/tests/test_backend_localized_errors.py",
+        "python3 -m compileall backend/app/models/task.py backend/tests/test_task_manager.py"
+      ]
+    },
+    {
+      "number": 155,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "origin/mirror/upstream-pr-155",
+        "docs/upstream-triage.md",
+        "scripts/sync_upstream_github.py",
+        "tests/test_sync_upstream_github.py"
+      ],
+      "validation": [
+        "git diff --stat upstream/main...origin/mirror/upstream-pr-155",
+        "python3 -m unittest tests.test_sync_upstream_github"
+      ]
+    },
+    {
+      "number": 151,
+      "status": "landed",
+      "summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.",
+      "local_refs": [
+        "backend/app/api/simulation.py",
+        "backend/app/services/simulation_manager.py",
+        "backend/tests/test_simulation_service_i18n.py",
+        "backend/tests/test_simulation_api_i18n.py",
+        "origin/mirror/upstream-pr-151"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_simulation_service_i18n.py tests/test_simulation_api_i18n.py",
+        "python3 -m compileall backend/app/services/simulation_manager.py backend/app/api/simulation.py"
+      ]
+    },
+    {
+      "number": 147,
+      "status": "partial",
+      "summary": "Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets.",
+      "local_refs": [
+        "README.md",
+        "README-EN.md",
+        "README-JA.md",
+        "README-KO.md",
+        "README-RU.md",
+        "origin/mirror/upstream-pr-147"
+      ],
+      "validation": [
+        "documentation review",
+        "git diff --stat HEAD..mirror/upstream-pr-147"
+      ]
+    }
+  ]
+}

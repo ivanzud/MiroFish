@@ -13,7 +13,7 @@
     <!-- 标题区域 -->
     <div class="section-header">
       <div class="section-line"></div>
-      <span class="section-title">推演记录</span>
+      <span class="section-title">{{ t('history.title') }}</span>
       <div class="section-line"></div>
     </div>
 
@@ -36,16 +36,16 @@
             <span 
               class="status-icon" 
               :class="{ available: project.project_id, unavailable: !project.project_id }"
-              title="图谱构建"
+              :title="t('history.graphBuild')"
             >◇</span>
             <span 
               class="status-icon available" 
-              title="环境搭建"
+              :title="t('history.envSetup')"
             >◈</span>
             <span 
               class="status-icon" 
               :class="{ available: project.report_id, unavailable: !project.report_id }"
-              title="分析报告"
+              :title="t('history.report')"
             >◆</span>
           </div>
         </div>
@@ -67,13 +67,13 @@
             </div>
             <!-- 如果有更多文件，显示提示 -->
             <div v-if="project.files.length > 3" class="files-more">
-              +{{ project.files.length - 3 }} 个文件
+              +{{ project.files.length - 3 }}{{ t('history.moreFiles') }}
             </div>
           </div>
           <!-- 无文件时的占位 -->
           <div class="files-empty" v-else>
             <span class="empty-file-icon">◇</span>
-            <span class="empty-file-text">暂无文件</span>
+            <span class="empty-file-text">{{ t('history.noFiles') }}</span>
           </div>
         </div>
 
@@ -102,7 +102,7 @@
     <!-- 加载状态 -->
     <div v-if="loading" class="loading-state">
       <span class="loading-spinner"></span>
-      <span class="loading-text">加载中...</span>
+      <span class="loading-text">{{ t('common.loading') }}</span>
     </div>
 
     <!-- 历史回放详情弹窗 -->
@@ -119,34 +119,96 @@
                 </span>
                 <span class="modal-create-time">{{ formatDate(selectedProject.created_at) }} {{ formatTime(selectedProject.created_at) }}</span>
               </div>
-              <button class="modal-close" @click="closeModal">×</button>
+              <div class="modal-header-actions">
+                <button
+                  class="modal-delete"
+                  :disabled="isDeletingSelectedProject"
+                  @click="handleDeleteSelectedProject"
+                >
+                  {{ isDeletingSelectedProject ? t('history.deleting') : t('history.deleteRecord') }}
+                </button>
+                <button class="modal-close" @click="closeModal">×</button>
+              </div>
             </div>
 
             <!-- 弹窗内容 -->
             <div class="modal-body">
               <!-- 模拟需求 -->
               <div class="modal-section">
-                <div class="modal-label">模拟需求</div>
-                <div class="modal-requirement">{{ selectedProject.simulation_requirement || '无' }}</div>
+                <div class="modal-label">{{ t('history.references') }}</div>
+                <div class="history-reference-grid">
+                  <div class="history-reference-card">
+                    <div class="history-reference-heading">
+                      <span class="history-reference-label">{{ t('history.simulationIdLabel') }}</span>
+                      <button
+                        class="history-copy-btn"
+                        type="button"
+                        @click="copyHistoryReference('simulation', selectedProject.simulation_id)"
+                      >
+                        {{ copiedHistoryField === 'simulation' ? t('history.copied') : t('history.copyId') }}
+                      </button>
+                    </div>
+                    <span class="history-reference-value">{{ selectedProject.simulation_id || t('history.unknownSimulationId') }}</span>
+                  </div>
+                  <div class="history-reference-card">
+                    <div class="history-reference-heading">
+                      <span class="history-reference-label">{{ t('history.reportIdLabel') }}</span>
+                      <div class="history-reference-actions">
+                        <button
+                          class="history-copy-btn"
+                          :disabled="!selectedProject.report_id"
+                          type="button"
+                          @click="copyHistoryReference('report', selectedProject.report_id)"
+                        >
+                          {{ copiedHistoryField === 'report' ? t('history.copied') : t('history.copyId') }}
+                        </button>
+                        <button
+                          class="history-copy-btn"
+                          :disabled="!selectedProject.report_id"
+                          type="button"
+                          @click="downloadSelectedReport"
+                        >
+                          {{ t('history.exportMd') }}
+                        </button>
+                      </div>
+                    </div>
+                    <span class="history-reference-value">{{ selectedProject.report_id || t('step4.unavailableId') }}</span>
+                  </div>
+                </div>
+                <div class="history-reference-bundle-row">
+                  <button
+                    class="history-copy-btn"
+                    :disabled="!selectedProjectVerificationBundle"
+                    type="button"
+                    @click="copyHistoryReference('bundle', selectedProjectVerificationBundle)"
+                  >
+                    {{ copiedHistoryField === 'bundle' ? t('history.copied') : t('history.copyBundle') }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="modal-section">
+                <div class="modal-label">{{ t('history.simRequirement') }}</div>
+                <div class="modal-requirement">{{ selectedProject.simulation_requirement || t('common.none') }}</div>
               </div>
 
               <!-- 文件列表 -->
               <div class="modal-section">
-                <div class="modal-label">关联文件</div>
+                <div class="modal-label">{{ t('history.relatedFiles') }}</div>
                 <div class="modal-files" v-if="selectedProject.files && selectedProject.files.length > 0">
                   <div v-for="(file, index) in selectedProject.files" :key="index" class="modal-file-item">
                     <span class="file-tag" :class="getFileType(file.filename)">{{ getFileTypeLabel(file.filename) }}</span>
                     <span class="modal-file-name">{{ file.filename }}</span>
                   </div>
                 </div>
-                <div class="modal-empty" v-else>暂无关联文件</div>
+                <div class="modal-empty" v-else>{{ t('history.noRelatedFiles') }}</div>
               </div>
             </div>
 
             <!-- 推演回放分割线 -->
             <div class="modal-divider">
               <span class="divider-line"></span>
-              <span class="divider-text">推演回放</span>
+              <span class="divider-text">{{ t('history.playback') }}</span>
               <span class="divider-line"></span>
             </div>
 
@@ -159,7 +221,7 @@
               >
                 <span class="btn-step">Step1</span>
                 <span class="btn-icon">◇</span>
-                <span class="btn-text">图谱构建</span>
+                <span class="btn-text">{{ t('history.graphBuildBtn') }}</span>
               </button>
               <button 
                 class="modal-btn btn-simulation" 
@@ -167,7 +229,16 @@
               >
                 <span class="btn-step">Step2</span>
                 <span class="btn-icon">◈</span>
-                <span class="btn-text">环境搭建</span>
+                <span class="btn-text">{{ t('history.envSetupBtn') }}</span>
+              </button>
+              <button 
+                class="modal-btn btn-simulation-run" 
+                @click="goToSimulationReplay"
+                :disabled="!canReplaySimulation(selectedProject)"
+              >
+                <span class="btn-step">Step3</span>
+                <span class="btn-icon">◎</span>
+                <span class="btn-text">{{ t('history.simulationRunBtn') }}</span>
               </button>
               <button 
                 class="modal-btn btn-report" 
@@ -176,12 +247,21 @@
               >
                 <span class="btn-step">Step4</span>
                 <span class="btn-icon">◆</span>
-                <span class="btn-text">分析报告</span>
+                <span class="btn-text">{{ t('history.reportBtn') }}</span>
+              </button>
+              <button
+                class="modal-btn btn-interaction"
+                @click="goToInteraction"
+                :disabled="!canOpenInteraction(selectedProject)"
+              >
+                <span class="btn-step">Step5</span>
+                <span class="btn-icon">✦</span>
+                <span class="btn-text">{{ t('history.interactionBtn') }}</span>
               </button>
             </div>
             <!-- 不可回放提示 -->
             <div class="modal-playback-hint">
-              <span class="hint-text">Step3「开始模拟」与 Step5「深度互动」需在运行中启动，不支持历史回放</span>
+              <span class="hint-text">{{ t('history.playbackHint') }}</span>
             </div>
           </div>
         </div>
@@ -193,10 +273,19 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, onActivated, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { getSimulationHistory } from '../api/simulation'
+import { useI18n } from 'vue-i18n'
+import { resolveBaseURL } from '../api/index'
+import { deleteSimulationHistory, getSimulationHistory } from '../api/simulation'
+import { copyText } from '../utils/clipboard'
+import { buildSimulationReplayRoute, hasReplayableSimulationState } from './historyPlayback'
+import { truncateFilename as formatHistoryFilename } from './historyFormatters'
+import { triggerHistoryReportDownload } from './historyReportDownload'
+import { buildInteractionRoute } from './interactionRoute'
+import { buildVerificationReferenceBundle } from './verificationBundle'
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 
 // 状态
 const projects = ref([])
@@ -205,10 +294,20 @@ const isExpanded = ref(false)
 const hoveringCard = ref(null)
 const historyContainer = ref(null)
 const selectedProject = ref(null)  // 当前选中的项目（用于弹窗）
+const deletingSimulationId = ref('')
+const copiedHistoryField = ref('')
 let observer = null
 let isAnimating = false  // 动画锁，防止闪烁
 let expandDebounceTimer = null  // 防抖定时器
 let pendingState = null  // 记录待执行的目标状态
+let copiedHistoryTimer = null
+const selectedProjectVerificationBundle = computed(() =>
+  buildVerificationReferenceBundle({
+    simulationId: selectedProject.value?.simulation_id,
+    reportId: selectedProject.value?.report_id,
+    timestamp: selectedProject.value?.created_at,
+  })
+)
 
 // 卡片布局配置 - 调整为更宽的比例
 const CARDS_PER_ROW = 4
@@ -337,14 +436,14 @@ const truncateText = (text, maxLength) => {
 
 // 从模拟需求生成标题（取前20字）
 const getSimulationTitle = (requirement) => {
-  if (!requirement) return '未命名模拟'
+  if (!requirement) return t('history.unnamedSimulation')
   const title = requirement.slice(0, 20)
   return requirement.length > 20 ? title + '...' : title
 }
 
 // 格式化 simulation_id 显示（截取前6位）
 const formatSimulationId = (simulationId) => {
-  if (!simulationId) return 'SIM_UNKNOWN'
+  if (!simulationId) return t('history.unknownSimulationId')
   const prefix = simulationId.replace('sim_', '').slice(0, 6)
   return `SIM_${prefix.toUpperCase()}`
 }
@@ -353,8 +452,8 @@ const formatSimulationId = (simulationId) => {
 const formatRounds = (simulation) => {
   const current = simulation.current_round || 0
   const total = simulation.total_rounds || 0
-  if (total === 0) return '未开始'
-  return `${current}/${total} 轮`
+  if (total === 0) return t('history.notStarted')
+  return t('history.roundProgress', { current, total })
 }
 
 // 获取文件类型（用于样式）
@@ -381,15 +480,8 @@ const getFileTypeLabel = (filename) => {
 }
 
 // 截断文件名（保留扩展名）
-const truncateFilename = (filename, maxLength) => {
-  if (!filename) return '未知文件'
-  if (filename.length <= maxLength) return filename
-  
-  const ext = filename.includes('.') ? '.' + filename.split('.').pop() : ''
-  const nameWithoutExt = filename.slice(0, filename.length - ext.length)
-  const truncatedName = nameWithoutExt.slice(0, maxLength - ext.length - 3) + '...'
-  return truncatedName + ext
-}
+const truncateFilename = (filename, maxLength) =>
+  formatHistoryFilename(filename, maxLength, t('history.unknownFile'))
 
 // 打开项目详情弹窗
 const navigateToProject = (simulation) => {
@@ -399,7 +491,45 @@ const navigateToProject = (simulation) => {
 // 关闭弹窗
 const closeModal = () => {
   selectedProject.value = null
+  copiedHistoryField.value = ''
 }
+
+const clearCopiedHistoryTimer = () => {
+  if (copiedHistoryTimer) {
+    window.clearTimeout(copiedHistoryTimer)
+    copiedHistoryTimer = null
+  }
+}
+
+const copyHistoryReference = async (field, value) => {
+  const copied = await copyText(value)
+  if (!copied) {
+    return
+  }
+
+  copiedHistoryField.value = field
+  clearCopiedHistoryTimer()
+  copiedHistoryTimer = window.setTimeout(() => {
+    copiedHistoryField.value = ''
+    copiedHistoryTimer = null
+  }, 2000)
+}
+
+const downloadSelectedReport = () => {
+  const reportId = selectedProject.value?.report_id
+  if (!reportId) {
+    return
+  }
+
+  triggerHistoryReportDownload(reportId, {
+    simulationId: selectedProject.value?.simulation_id,
+    baseURL: resolveBaseURL(),
+  })
+}
+
+const isDeletingSelectedProject = computed(
+  () => Boolean(selectedProject.value?.simulation_id) && deletingSimulationId.value === selectedProject.value.simulation_id
+)
 
 // 导航到图谱构建页面（Project）
 const goToProject = () => {
@@ -423,6 +553,23 @@ const goToSimulation = () => {
   }
 }
 
+const canReplaySimulation = (simulation) => hasReplayableSimulationState(simulation)
+
+const getInteractionRoute = (simulation) =>
+  buildInteractionRoute({
+    reportId: simulation?.report_id,
+    simulationId: simulation?.simulation_id,
+  })
+
+const canOpenInteraction = (simulation) => Boolean(getInteractionRoute(simulation))
+
+const goToSimulationReplay = () => {
+  if (selectedProject.value?.simulation_id && canReplaySimulation(selectedProject.value)) {
+    router.push(buildSimulationReplayRoute(selectedProject.value.simulation_id))
+    closeModal()
+  }
+}
+
 // 导航到分析报告页面（Report）
 const goToReport = () => {
   if (selectedProject.value?.report_id) {
@@ -431,6 +578,42 @@ const goToReport = () => {
       params: { reportId: selectedProject.value.report_id }
     })
     closeModal()
+  }
+}
+
+const goToInteraction = () => {
+  const interactionRoute = getInteractionRoute(selectedProject.value)
+  if (!interactionRoute) {
+    return
+  }
+
+  router.push(interactionRoute)
+  closeModal()
+}
+
+const handleDeleteSelectedProject = async () => {
+  const simulation = selectedProject.value
+  if (!simulation?.simulation_id || deletingSimulationId.value) {
+    return
+  }
+
+  const confirmationMessage = t('history.deleteConfirm', {
+    simulationId: formatSimulationId(simulation.simulation_id)
+  })
+  if (!window.confirm(confirmationMessage)) {
+    return
+  }
+
+  deletingSimulationId.value = simulation.simulation_id
+  try {
+    await deleteSimulationHistory(simulation.simulation_id)
+    projects.value = projects.value.filter((project) => project.simulation_id !== simulation.simulation_id)
+    closeModal()
+  } catch (error) {
+    const message = error?.response?.data?.error || error?.message || t('history.deleteFailed')
+    window.alert(message)
+  } finally {
+    deletingSimulationId.value = ''
   }
 }
 
@@ -555,6 +738,7 @@ onActivated(() => {
 })
 
 onUnmounted(() => {
+  clearCopiedHistoryTimer()
   // 清理 Intersection Observer
   if (observer) {
     observer.disconnect()
@@ -1082,6 +1266,12 @@ onUnmounted(() => {
   gap: 16px;
 }
 
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .modal-id {
   font-family: 'JetBrains Mono', monospace;
   font-size: 1rem;
@@ -1133,6 +1323,29 @@ onUnmounted(() => {
   color: #111827;
 }
 
+.modal-delete {
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(254, 226, 226, 0.6);
+  color: #B91C1C;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-delete:hover:not(:disabled) {
+  background: rgba(254, 202, 202, 0.9);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.modal-delete:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 /* 弹窗内容 */
 .modal-body {
   padding: 24px 32px;
@@ -1164,6 +1377,82 @@ onUnmounted(() => {
   background: #F9FAFB;
   border: 1px solid #F3F4F6;
   border-radius: 8px;
+}
+
+.history-reference-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.history-reference-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #F9FAFB;
+}
+
+.history-reference-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.history-reference-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.history-reference-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+}
+
+.history-reference-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: #111827;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.history-copy-btn {
+  border: 1px solid #D1D5DB;
+  background: #FFFFFF;
+  color: #374151;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.history-copy-btn:hover:not(:disabled) {
+  border-color: #111827;
+  color: #111827;
+}
+
+.history-copy-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.history-reference-bundle-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }
 
 .modal-files {
@@ -1256,6 +1545,7 @@ onUnmounted(() => {
 /* 导航按钮 */
 .modal-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   padding: 20px 32px;
   background: #FFFFFF;
@@ -1314,7 +1604,9 @@ onUnmounted(() => {
 
 .modal-btn.btn-project .btn-icon { color: #3B82F6; }
 .modal-btn.btn-simulation .btn-icon { color: #F59E0B; }
+.modal-btn.btn-simulation-run .btn-icon { color: #EF4444; }
 .modal-btn.btn-report .btn-icon { color: #10B981; }
+.modal-btn.btn-interaction .btn-icon { color: #8B5CF6; }
 
 .modal-btn:hover:not(:disabled) .btn-text {
   color: #111827;

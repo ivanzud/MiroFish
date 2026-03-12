@@ -1,9 +1,40 @@
 import axios from 'axios'
+import { getStoredBaseURL, resolveBaseURL as resolveApiBaseURL } from './baseUrl'
+import { resolveTimeoutMs } from './timeout'
+
+const createApiError = (message, extras = {}) => {
+  const error = new Error(message)
+  Object.assign(error, extras)
+  return error
+}
+
+export const resolveBaseURL = () => {
+  return resolveApiBaseURL({
+    runtimeBaseURL: getStoredBaseURL(),
+    envBaseURL: import.meta.env.VITE_API_BASE_URL,
+    location: typeof window !== 'undefined' ? window.location : undefined
+  })
+}
+
+const getApiLocale = () => {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  try {
+    const locale = window.localStorage.getItem('mirofish-locale')
+    return locale === 'en' || locale === 'zh' ? locale : null
+  } catch {
+    return null
+  }
+}
+
+export const getConfiguredApiTimeoutMs = () => resolveTimeoutMs(import.meta.env.VITE_API_TIMEOUT)
 
 // 创建axios实例
 const service = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001',
-  timeout: 300000, // 5分钟超时（本体生成可能需要较长时间）
+  baseURL: resolveBaseURL(),
+  timeout: getConfiguredApiTimeoutMs(), // 可配置超时时间，默认5分钟（本地大模型可能需要更长时间）
   headers: {
     'Content-Type': 'application/json'
   }
@@ -12,6 +43,11 @@ const service = axios.create({
 // 请求拦截器
 service.interceptors.request.use(
   config => {
+    config.baseURL = resolveBaseURL()
+    const locale = getApiLocale()
+    if (locale) {
+      config.headers['X-Locale'] = locale
+    }
     return config
   },
   error => {
@@ -28,7 +64,13 @@ service.interceptors.response.use(
     // 如果返回的状态码不是success，则抛出错误
     if (!res.success && res.success !== undefined) {
       console.error('API Error:', res.error || res.message || 'Unknown error')
-      return Promise.reject(new Error(res.error || res.message || 'Error'))
+      return Promise.reject(createApiError(res.error || res.message || 'Error', {
+        code: 'API_ERROR',
+        response: {
+          ...response,
+          data: res
+        }
+      }))
     }
     
     return res

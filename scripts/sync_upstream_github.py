@@ -1,0 +1,1322 @@
+#!/usr/bin/env python3
+"""Fetch upstream GitHub issues and pull requests into local summaries."""
+
+from __future__ import annotations
+
+import argparse
+import contextlib
+import concurrent.futures
+import errno
+import fcntl
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+import urllib.parse
+import urllib.request
+from urllib.error import HTTPError, URLError
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+BODY_EXCERPT_LIMIT = 400
+COMMENT_EXCERPT_LIMIT = 240
+RECENT_COMMENT_LIMIT = 3
+GH_API_MAX_ATTEMPTS = 3
+DEFAULT_API_TIMEOUT = int(os.environ.get("MIROFISH_GITHUB_SYNC_TIMEOUT", "30"))
+REQUEST_TIMEOUT = DEFAULT_API_TIMEOUT
+DEFAULT_STALE_CACHE_HOURS = int(os.environ.get("MIROFISH_GITHUB_SYNC_STALE_HOURS", "24"))
+DEFAULT_MAX_WORKERS = int(os.environ.get("MIROFISH_GITHUB_SYNC_MAX_WORKERS", "8"))
+DEFAULT_REPO = "666ghj/MiroFish"
+UPSTREAM_ISSUE_REPO_MARKER = "mirofish-upstream-repo:"
+UPSTREAM_ISSUE_NUMBER_MARKER = "mirofish-upstream-issue:"
+GH_CLI_USABLE: bool | None = None
+GH_CLI_DISABLED_REASON: str | None = None
+
+
+def has_github_token() -> bool:
+    return bool(os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN"))
+
+
+def can_use_gh_cli() -> bool:
+    global GH_CLI_USABLE
+
+    if GH_CLI_DISABLED_REASON:
+        return False
+    if GH_CLI_USABLE is not None:
+        return GH_CLI_USABLE
+
+    if shutil.which("gh") is None:
+        GH_CLI_USABLE = False
+        return False
+
+    try:
+        result = subprocess.run(
+            ["gh", "auth", "status"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        GH_CLI_USABLE = False
+        return False
+
+    GH_CLI_USABLE = result.returncode == 0
+    return GH_CLI_USABLE
+
+
+def disable_gh_cli(reason: str) -> None:
+    global GH_CLI_DISABLED_REASON, GH_CLI_USABLE
+    GH_CLI_DISABLED_REASON = reason
+    GH_CLI_USABLE = False
+
+
+def _is_retryable_gh_error(message: str) -> bool:
+    lowered = message.lower()
+    markers = (
+        "timeout",
+        "timed out",
+        "connection reset",
+        "tls",
+        "eof",
+        "502",
+        "503",
+        "504",
+        "secondary rate limit",
+    )
+    return any(marker in lowered for marker in markers)
+
+
+def _is_retryable_http_status(code: int) -> bool:
+    return code in {500, 502, 503, 504}
+
+
+def fetch_json_via_gh(url: str) -> object:
+    parsed = urllib.parse.urlparse(url)
+    endpoint = parsed.path
+    if parsed.query:
+        endpoint = f"{endpoint}?{parsed.query}"
+
+    last_error: RuntimeError | None = None
+    for attempt in range(1, GH_API_MAX_ATTEMPTS + 1):
+        try:
+            result = subprocess.run(
+                ["gh", "api", endpoint],
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=REQUEST_TIMEOUT,
+            )
+            return json.loads(result.stdout)
+        except subprocess.TimeoutExpired as exc:
+            last_error = RuntimeError(
+                f"gh api timed out for {endpoint} after {REQUEST_TIMEOUT}s"
+            )
+            if attempt >= GH_API_MAX_ATTEMPTS:
+                raise last_error from exc
+            time.sleep(attempt)
+        except subprocess.CalledProcessError as exc:
+            details = (exc.stderr or exc.stdout or "").strip() or f"exit status {exc.returncode}"
+            last_error = RuntimeError(f"gh api failed for {endpoint}: {details}")
+            if attempt >= GH_API_MAX_ATTEMPTS or not _is_retryable_gh_error(details):
+                raise last_error from exc
+            time.sleep(attempt)
+
+    assert last_error is not None
+    raise last_error
+
+
+def _fetch_json_via_http(url: str) -> object:
+    headers = {"User-Agent": "mirofish-upstream-sync"}
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    request = urllib.request.Request(url, headers=headers)
+    last_error: RuntimeError | None = None
+    for attempt in range(1, GH_API_MAX_ATTEMPTS + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT) as response:
+                return json.load(response)
+        except TimeoutError as exc:
+            last_error = RuntimeError(
+                f"GitHub API request timed out after {REQUEST_TIMEOUT}s for {url}"
+            )
+            if attempt >= GH_API_MAX_ATTEMPTS:
+                raise last_error from exc
+            time.sleep(attempt)
+        except HTTPError as exc:
+            if exc.code == 403 and "rate limit" in str(exc).lower():
+                raise RuntimeError(
+                    "GitHub API rate limit exceeded. Set GITHUB_TOKEN or GH_TOKEN, or log into gh before running sync."
+                ) from exc
+
+            last_error = RuntimeError(f"GitHub API request failed for {url}: HTTP {exc.code}")
+            if attempt >= GH_API_MAX_ATTEMPTS or not _is_retryable_http_status(exc.code):
+                raise last_error from exc
+            time.sleep(attempt)
+        except URLError as exc:
+            details = str(getattr(exc, "reason", exc)).strip() or str(exc)
+            last_error = RuntimeError(f"GitHub API request failed for {url}: {details}")
+            if attempt >= GH_API_MAX_ATTEMPTS or not _is_retryable_gh_error(details):
+                raise last_error from exc
+            time.sleep(attempt)
+
+    assert last_error is not None
+    raise last_error
+
+
+def fetch_json(url: str) -> object:
+    if not has_github_token() and can_use_gh_cli():
+        try:
+            return fetch_json_via_gh(url)
+        except RuntimeError as exc:
+            if "rate limit" in str(exc).lower():
+                disable_gh_cli("GitHub CLI rate limited")
+            print(
+                f"warning: {exc}; falling back to direct GitHub HTTP request",
+                file=sys.stderr,
+            )
+
+    return _fetch_json_via_http(url)
+
+
+def github_api(path: str, params: dict[str, object]) -> object:
+    url = f"https://api.github.com{path}"
+    if params:
+        query = urllib.parse.urlencode(params)
+        url = f"{url}?{query}"
+    return fetch_json(url)
+
+
+def github_api_paginated(path: str, params: dict[str, object], limit: int) -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+    page = 1
+    per_page = min(limit, 100)
+
+    while len(items) < limit:
+        payload = github_api(path, {**params, "per_page": per_page, "page": page})
+        if not isinstance(payload, list):
+            raise ValueError(f"Expected list payload from GitHub API for {path}, got {type(payload)!r}")
+        if not payload:
+            break
+
+        items.extend(payload)
+        if len(payload) < per_page:
+            break
+
+        page += 1
+
+    return items[:limit]
+
+
+def normalize_excerpt(text: str | None, limit: int) -> str:
+    if not text:
+        return ""
+
+    collapsed = re.sub(r"\s+", " ", text).strip()
+    if len(collapsed) <= limit:
+        return collapsed
+
+    return collapsed[: max(0, limit - 1)].rstrip() + "…"
+
+
+def fetch_recent_comments(comments_url: str | None, limit: int = RECENT_COMMENT_LIMIT) -> list[dict[str, Any]]:
+    if not comments_url or limit <= 0:
+        return []
+
+    payload = fetch_json(
+        f"{comments_url}?{urllib.parse.urlencode({'per_page': limit, 'sort': 'updated', 'direction': 'desc'})}"
+    )
+    if not isinstance(payload, list):
+        raise ValueError(f"Expected list payload when fetching comments from {comments_url}, got {type(payload)!r}")
+
+    comments: list[dict[str, Any]] = []
+    for item in payload[:limit]:
+        comments.append(
+            {
+                "author": item.get("user", {}).get("login"),
+                "created_at": item.get("created_at"),
+                "updated_at": item.get("updated_at"),
+                "url": item.get("html_url"),
+                "body_excerpt": normalize_excerpt(item.get("body"), COMMENT_EXCERPT_LIMIT),
+            }
+        )
+    return comments
+
+
+def hydrate_pull_requests(
+    owner: str,
+    name: str,
+    pull_requests: list[dict[str, Any]],
+    max_workers: int,
+) -> list[dict[str, Any]]:
+    def hydrate_one(pull_request: dict[str, Any]) -> dict[str, Any]:
+        number = pull_request.get("number")
+        if number is None:
+            raise ValueError("Pull request payload missing number")
+        details = github_api(f"/repos/{owner}/{name}/pulls/{number}", {})
+        if not isinstance(details, dict):
+            raise ValueError(f"Expected pull request details dict for #{number}, got {type(details)!r}")
+        return details
+
+    return parallel_ordered_map(
+        pull_requests,
+        hydrate_one,
+        max_workers=max_workers,
+    )
+
+
+def parallel_ordered_map(
+    items: list[Any],
+    func,
+    *,
+    max_workers: int,
+) -> list[Any]:
+    if not items:
+        return []
+
+    resolved_max_workers = max(1, min(max_workers, len(items)))
+    if resolved_max_workers == 1:
+        return [func(item) for item in items]
+
+    results: list[Any] = [None] * len(items)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=resolved_max_workers) as executor:
+        future_to_index = {
+            executor.submit(func, item): index for index, item in enumerate(items)
+        }
+        try:
+            for future in concurrent.futures.as_completed(future_to_index):
+                index = future_to_index[future]
+                results[index] = future.result()
+        except Exception:
+            for future in future_to_index:
+                future.cancel()
+            raise
+    return results
+
+
+def list_mirrored_pull_request_numbers(remote: str) -> set[int]:
+    try:
+        result = subprocess.run(
+            [
+                "git",
+                "for-each-ref",
+                "--format=%(refname:short)",
+                f"refs/remotes/{remote}/mirror/upstream-pr-*",
+                "refs/heads/mirror/upstream-pr-*",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise RuntimeError(f"Unable to inspect mirrored pull request refs for remote {remote!r}") from exc
+
+    mirrored: set[int] = set()
+    for line in result.stdout.splitlines():
+        match = re.search(r"mirror/upstream-pr-(\d+)$", line.strip())
+        if match:
+            mirrored.add(int(match.group(1)))
+    return mirrored
+
+
+def run_git_command(args: list[str]) -> str:
+    try:
+        result = subprocess.run(
+            args,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=REQUEST_TIMEOUT,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise RuntimeError(f"{' '.join(args)} failed") from exc
+    except subprocess.CalledProcessError as exc:
+        details = (exc.stderr or exc.stdout or "").strip() or f"exit status {exc.returncode}"
+        raise RuntimeError(f"{' '.join(args)} failed: {details}") from exc
+
+    return result.stdout
+
+
+def mirror_pull_request_refs(
+    upstream_repo: str,
+    fork_remote: str,
+    pull_requests: list[dict[str, Any]],
+    mirrored_pr_numbers: set[int] | None = None,
+) -> set[int]:
+    mirrored = set(mirrored_pr_numbers or set())
+    upstream_url = f"https://github.com/{upstream_repo}.git"
+
+    for pr in pull_requests:
+        number = int(pr["number"])
+        if number in mirrored:
+            continue
+
+        cache_ref = f"refs/remotes/upstream-sync/pr-{number}"
+        mirror_ref = f"refs/heads/mirror/upstream-pr-{number}"
+        try:
+            run_git_command(
+                [
+                    "git",
+                    "fetch",
+                    "--force",
+                    upstream_url,
+                    f"pull/{number}/head:{cache_ref}",
+                ]
+            )
+            run_git_command(
+                [
+                    "git",
+                    "push",
+                    fork_remote,
+                    f"{cache_ref}:{mirror_ref}",
+                ]
+            )
+            mirrored.add(number)
+        except RuntimeError as exc:
+            print(
+                f"warning: unable to mirror upstream PR #{number} into {fork_remote}: {exc}",
+                file=sys.stderr,
+            )
+
+    return mirrored
+
+
+def load_local_coverage_entries(path: Path | None, key: str) -> dict[int, dict[str, object]]:
+    if path is None or not path.exists():
+        return {}
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+    entries = payload.get(key, []) if isinstance(payload, dict) else []
+    if not isinstance(entries, list):
+        return {}
+
+    coverage_map: dict[int, dict[str, object]] = {}
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        number = entry.get("number")
+        if isinstance(number, int):
+            coverage_map[number] = entry
+    return coverage_map
+
+
+def load_local_issue_coverage(path: Path | None) -> dict[int, dict[str, object]]:
+    return load_local_coverage_entries(path, "issues")
+
+
+def load_local_pr_coverage(path: Path | None) -> dict[int, dict[str, object]]:
+    return load_local_coverage_entries(path, "pull_requests")
+
+
+def attach_local_coverage_fields(
+    item: dict[str, object],
+    local_coverage: dict[str, object] | None,
+) -> dict[str, object]:
+    enriched = dict(item)
+    if local_coverage:
+        triage_status = str(local_coverage.get("status") or "covered")
+        triage_summary = str(local_coverage.get("summary") or "covered locally on this branch")
+        enriched["local_coverage"] = local_coverage
+        enriched["local_status"] = triage_status
+        enriched["local_summary"] = triage_summary
+    else:
+        triage_status = "untracked"
+        triage_summary = str(item.get("body_excerpt") or "")
+
+    # Promote stable top-level fields for downstream machine-readable consumers.
+    enriched["triage_status"] = triage_status
+    enriched["summary"] = triage_summary
+    # Backward-compatible aliases retained for older downstream consumers.
+    enriched["coverage_status"] = triage_status
+    enriched["coverage_summary"] = triage_summary
+    return enriched
+
+
+def attach_pr_review_fields(
+    item: dict[str, object],
+    local_coverage: dict[str, object] | None,
+) -> dict[str, object]:
+    enriched = dict(item)
+    if local_coverage:
+        enriched["local_review"] = {
+            "status": str(local_coverage.get("status") or "covered"),
+            "summary": str(local_coverage.get("summary") or "covered locally on this branch"),
+            "local_refs": list(local_coverage.get("local_refs") or []),
+            "validation": list(local_coverage.get("validation") or []),
+            "notes": local_coverage.get("notes"),
+        }
+    else:
+        enriched["local_review"] = {
+            "status": "unreviewed",
+            "summary": str(item.get("body_excerpt") or ""),
+            "local_refs": [],
+            "validation": [],
+            "notes": None,
+        }
+    return enriched
+
+
+def compact_issue(
+    issue: dict[str, object],
+    coverage_map: dict[int, dict[str, object]] | None = None,
+) -> dict[str, object]:
+    comment_count = int(issue.get("comments") or 0)
+    compacted = {
+        "number": issue["number"],
+        "title": issue["title"],
+        "url": issue["html_url"],
+        "state": issue["state"],
+        "created_at": issue["created_at"],
+        "updated_at": issue["updated_at"],
+        "closed_at": issue.get("closed_at"),
+        "labels": [label["name"] for label in issue.get("labels", [])],
+        "author": issue.get("user", {}).get("login"),
+        "body_excerpt": normalize_excerpt(issue.get("body"), BODY_EXCERPT_LIMIT),
+        "comment_count": comment_count,
+        "recent_comments": fetch_recent_comments(issue.get("comments_url")) if comment_count else [],
+    }
+    local_coverage = (coverage_map or {}).get(int(issue["number"]))
+    return attach_local_coverage_fields(compacted, local_coverage)
+
+
+def compact_issues(
+    issue_items: list[dict[str, object]],
+    max_workers: int,
+    coverage_map: dict[int, dict[str, object]] | None = None,
+) -> list[dict[str, object]]:
+    return parallel_ordered_map(
+        issue_items,
+        lambda item: compact_issue(item, coverage_map),
+        max_workers=max_workers,
+    )
+
+
+def build_mirror_issue_title(issue: dict[str, object]) -> str:
+    return f"[Upstream #{issue['number']}] {issue['title']}"
+
+
+def build_mirror_issue_body(upstream_repo: str, issue: dict[str, object]) -> str:
+    labels = ", ".join(issue.get("labels", [])) or "none"
+    lines = [
+        f"<!-- {UPSTREAM_ISSUE_REPO_MARKER}{upstream_repo} -->",
+        f"<!-- {UPSTREAM_ISSUE_NUMBER_MARKER}{issue['number']} -->",
+        "# Upstream Issue Mirror",
+        "",
+        f"- Upstream issue: {issue['url']}",
+        f"- Upstream repository: `{upstream_repo}`",
+        f"- State: `{issue['state']}`",
+        f"- Author: `{issue.get('author') or 'unknown'}`",
+        f"- Labels: `{labels}`",
+        f"- Last updated: `{issue.get('updated_at') or 'unknown'}`",
+        "",
+        "## Summary",
+        "",
+        issue.get("body_excerpt") or "_No upstream body excerpt available._",
+    ]
+    local_coverage = issue.get("local_coverage") or {}
+    if local_coverage:
+        lines.extend(
+            [
+                "",
+                "## Local Coverage",
+                "",
+                f"- Status: `{local_coverage.get('status') or 'tracked'}`",
+                f"- Summary: {local_coverage.get('summary') or 'Tracked locally on this branch.'}",
+            ]
+        )
+        local_refs = local_coverage.get("local_refs") or []
+        if local_refs:
+            lines.append(f"- Local refs: {', '.join(f'`{ref}`' for ref in local_refs)}")
+        notes = local_coverage.get("notes")
+        if notes:
+            lines.append(f"- Notes: {notes}")
+
+    recent_comments = issue.get("recent_comments") or []
+    if recent_comments:
+        lines.extend(["", "## Recent Upstream Comments", ""])
+        for comment in recent_comments:
+            author = comment.get("author") or "unknown"
+            created_at = comment.get("created_at") or "unknown"
+            excerpt = comment.get("body_excerpt") or "(no comment body)"
+            lines.append(f"- `{author}` at `{created_at}`: {excerpt}")
+
+    return "\n".join(lines) + "\n"
+
+
+def extract_upstream_issue_marker(body: str | None) -> tuple[str, int] | None:
+    if not body:
+        return None
+
+    repo_match = re.search(rf"<!--\s*{re.escape(UPSTREAM_ISSUE_REPO_MARKER)}(.*?)\s*-->", body)
+    issue_match = re.search(rf"<!--\s*{re.escape(UPSTREAM_ISSUE_NUMBER_MARKER)}(\d+)\s*-->", body)
+    if not repo_match or not issue_match:
+        return None
+
+    try:
+        return repo_match.group(1).strip(), int(issue_match.group(1))
+    except ValueError:
+        return None
+
+
+def run_gh_command(args: list[str], input_text: str | None = None) -> str:
+    try:
+        result = subprocess.run(
+            ["gh", *args],
+            check=True,
+            capture_output=True,
+            input=input_text,
+            text=True,
+            timeout=REQUEST_TIMEOUT,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise RuntimeError(f"gh {' '.join(args)} failed") from exc
+    except subprocess.CalledProcessError as exc:
+        details = (exc.stderr or exc.stdout or "").strip() or f"exit status {exc.returncode}"
+        raise RuntimeError(f"gh {' '.join(args)} failed: {details}") from exc
+
+    return result.stdout
+
+
+def normalize_issue_state(state: object) -> str:
+    lowered = str(state or "").strip().lower()
+    if lowered in {"closed", "open"}:
+        return lowered
+    return "open"
+
+
+def extract_issue_number_from_gh_output(output: str | None) -> int | None:
+    if not output:
+        return None
+
+    match = re.search(r"/issues/(\d+)(?:\s|$)", output.strip())
+    if not match:
+        return None
+
+    return int(match.group(1))
+
+
+def list_fork_issue_mirrors(fork_repo: str, upstream_repo: str) -> dict[int, dict[str, object]]:
+    payload = run_gh_command(
+        [
+            "issue",
+            "list",
+            "-R",
+            fork_repo,
+            "--state",
+            "all",
+            "--limit",
+            "200",
+            "--json",
+            "number,title,body,url,state",
+        ]
+    )
+    issues = json.loads(payload or "[]")
+    mirrors: dict[int, dict[str, object]] = {}
+    for issue in issues:
+        if not isinstance(issue, dict):
+            continue
+        marker = extract_upstream_issue_marker(issue.get("body"))
+        if marker is None:
+            continue
+        marker_repo, marker_number = marker
+        if marker_repo != upstream_repo:
+            continue
+        mirrors[marker_number] = issue
+    return mirrors
+
+
+def sync_fork_issue_mirror(
+    fork_repo: str,
+    upstream_repo: str,
+    issue: dict[str, object],
+    current: dict[str, object] | None,
+) -> None:
+    desired_title = build_mirror_issue_title(issue)
+    desired_body = build_mirror_issue_body(upstream_repo, issue)
+    desired_state = normalize_issue_state(issue.get("state"))
+
+    if current is None:
+        created_output = run_gh_command(
+            [
+                "issue",
+                "create",
+                "-R",
+                fork_repo,
+                "--title",
+                desired_title,
+                "--body-file",
+                "-",
+            ],
+            input_text=desired_body,
+        )
+        if desired_state == "closed":
+            created_number = extract_issue_number_from_gh_output(created_output)
+            if created_number is None:
+                refreshed = list_fork_issue_mirrors(fork_repo, upstream_repo)
+                created_issue = refreshed.get(int(issue["number"]))
+                if created_issue is None:
+                    raise RuntimeError(
+                        f"Created fork issue mirror for upstream #{issue['number']} but could not resolve its issue number"
+                    )
+                created_number = int(created_issue["number"])
+            run_gh_command(
+                [
+                    "issue",
+                    "close",
+                    "-R",
+                    fork_repo,
+                    str(created_number),
+                    "--reason",
+                    "completed",
+                ]
+            )
+        return
+
+    current_number = str(current["number"])
+    current_state = normalize_issue_state(current.get("state"))
+    if current.get("title") != desired_title or (current.get("body") or "").rstrip() != desired_body.rstrip():
+        run_gh_command(
+            [
+                "issue",
+                "edit",
+                "-R",
+                fork_repo,
+                current_number,
+                "--title",
+                desired_title,
+                "--body-file",
+                "-",
+            ],
+            input_text=desired_body,
+        )
+
+    if current_state == desired_state:
+        return
+
+    if desired_state == "open":
+        run_gh_command(
+            [
+                "issue",
+                "reopen",
+                "-R",
+                fork_repo,
+                current_number,
+            ]
+        )
+        return
+
+    run_gh_command(
+        [
+            "issue",
+            "close",
+            "-R",
+            fork_repo,
+            current_number,
+            "--reason",
+            "completed",
+        ]
+    )
+
+
+def attach_fork_issue_mirror_metadata(
+    issues: list[dict[str, object]],
+    fork_issue_map: dict[int, dict[str, object]],
+) -> list[dict[str, object]]:
+    attached: list[dict[str, object]] = []
+    for issue in issues:
+        enriched = dict(issue)
+        mirrored = fork_issue_map.get(int(issue["number"]))
+        if mirrored:
+            enriched["fork_issue_mirrored"] = True
+            enriched["fork_issue_number"] = mirrored.get("number")
+            enriched["fork_issue_url"] = mirrored.get("url")
+        else:
+            enriched["fork_issue_mirrored"] = False
+            enriched["fork_issue_number"] = None
+            enriched["fork_issue_url"] = None
+        attached.append(enriched)
+    return attached
+
+
+def mirror_issues_to_fork(
+    fork_repo: str,
+    upstream_repo: str,
+    issues: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    existing = list_fork_issue_mirrors(fork_repo, upstream_repo)
+    for issue in issues:
+        sync_fork_issue_mirror(
+            fork_repo,
+            upstream_repo,
+            issue,
+            existing.get(int(issue["number"])),
+        )
+
+    return attach_fork_issue_mirror_metadata(
+        issues,
+        list_fork_issue_mirrors(fork_repo, upstream_repo),
+    )
+
+
+def compact_pr(
+    pr: dict[str, object],
+    mirrored_pr_numbers: set[int] | None = None,
+    fork_remote: str | None = None,
+    coverage_map: dict[int, dict[str, object]] | None = None,
+) -> dict[str, object]:
+    number = int(pr["number"])
+    head = pr.get("head") or {}
+    base = pr.get("base") or {}
+    head_repo = head.get("repo") or {}
+    base_repo = base.get("repo") or {}
+    fork_mirrored = False
+    fork_mirror_ref = None
+    if mirrored_pr_numbers is not None and fork_remote is not None:
+        fork_mirrored = number in mirrored_pr_numbers
+        fork_mirror_ref = f"{fork_remote}/mirror/upstream-pr-{number}"
+    comment_count = int(pr.get("comments") or 0)
+    review_comment_count = int(pr.get("review_comments") or 0)
+
+    compacted = {
+        "number": number,
+        "title": pr["title"],
+        "url": pr["html_url"],
+        "state": pr["state"],
+        "created_at": pr["created_at"],
+        "updated_at": pr["updated_at"],
+        "closed_at": pr.get("closed_at"),
+        "merged_at": pr.get("merged_at"),
+        "head": head.get("ref"),
+        "head_ref_name": head.get("ref"),
+        "head_sha": head.get("sha"),
+        "head_repo": head_repo.get("full_name"),
+        "head_clone_url": head_repo.get("clone_url"),
+        "base": base.get("ref"),
+        "base_ref_name": base.get("ref"),
+        "base_repo": base_repo.get("full_name"),
+        "draft": pr.get("draft", False),
+        "mergeable_state": pr.get("mergeable_state"),
+        "labels": [label["name"] for label in pr.get("labels", [])],
+        "author": pr.get("user", {}).get("login"),
+        "body_excerpt": normalize_excerpt(pr.get("body"), BODY_EXCERPT_LIMIT),
+        "comment_count": comment_count,
+        "review_comment_count": review_comment_count,
+        "recent_comments": fetch_recent_comments(pr.get("comments_url")) if comment_count else [],
+        "fork_mirrored": fork_mirrored,
+        "mirrored_to_origin": fork_mirrored,
+        "fork_mirror_ref": fork_mirror_ref,
+        "mirror_ref": fork_mirror_ref,
+    }
+    local_coverage = (coverage_map or {}).get(number)
+    return attach_pr_review_fields(
+        attach_local_coverage_fields(compacted, local_coverage),
+        local_coverage,
+    )
+
+
+def compact_pull_requests(
+    pr_items: list[dict[str, object]],
+    mirrored_pr_numbers: set[int] | None,
+    fork_remote: str | None,
+    max_workers: int,
+    coverage_map: dict[int, dict[str, object]] | None = None,
+) -> list[dict[str, object]]:
+    return parallel_ordered_map(
+        pr_items,
+        lambda item: compact_pr(item, mirrored_pr_numbers, fork_remote, coverage_map),
+        max_workers=max_workers,
+    )
+
+
+def summarize_counts(items: list[dict[str, object]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for item in items:
+        state = str(item.get("state", "unknown"))
+        counts[state] = counts.get(state, 0) + 1
+    return counts
+
+
+def write_summary(
+    path: Path,
+    repo: str,
+    state: str,
+    issues: list[dict[str, object]],
+    prs: list[dict[str, object]],
+    fork_remote: str | None = None,
+    mirror_issues_repo: str | None = None,
+    captured_at: str | None = None,
+    coverage_map_path: str | None = None,
+) -> None:
+    issue_counts = summarize_counts(issues)
+    pr_counts = summarize_counts(prs)
+    mirrored_count = sum(1 for pr in prs if pr.get("fork_mirrored"))
+    mirrored_issue_count = sum(1 for issue in issues if issue.get("fork_issue_mirrored"))
+    lines = [
+        "# Upstream Triage Snapshot",
+        "",
+        f"- Repository: `{repo}`",
+        f"- State filter: `{state}`",
+        f"- Captured: `{captured_at or datetime.now(timezone.utc).isoformat()}`",
+        f"- Issues: `{len(issues)}` total (`open={issue_counts.get('open', 0)}`, `closed={issue_counts.get('closed', 0)}`)",
+        f"- Pull requests: `{len(prs)}` total (`open={pr_counts.get('open', 0)}`, `closed={pr_counts.get('closed', 0)}`)",
+    ]
+    if fork_remote:
+        lines.append(f"- Mirrored in `{fork_remote}`: `{mirrored_count}` of `{len(prs)}` PR refs")
+    if mirror_issues_repo:
+        lines.append(f"- Mirrored in `{mirror_issues_repo}`: `{mirrored_issue_count}` of `{len(issues)}` issues")
+    if coverage_map_path:
+        lines.append(f"- Local issue coverage map: `{coverage_map_path}`")
+    lines.extend(["", "## Recently Updated Issues", ""])
+
+    for issue in issues[:10]:
+        labels = ", ".join(issue["labels"]) if issue["labels"] else "no labels"
+        issue_suffix = ""
+        if issue.get("fork_issue_mirrored"):
+            issue_suffix = f", mirror=#{issue.get('fork_issue_number')}"
+        lines.append(f"- #{issue['number']} [{issue['state']}{issue_suffix}] {issue['title']} ({labels})")
+        local_coverage = issue.get("local_coverage") or {}
+        if local_coverage:
+            status = local_coverage.get("status") or "covered"
+            summary = local_coverage.get("summary") or "covered locally on this branch"
+            lines.append(f"  - local coverage [{status}]: {summary}")
+        if issue.get("body_excerpt"):
+            lines.append(f"  - {issue['body_excerpt']}")
+        if issue.get("recent_comments"):
+            latest_comment = issue["recent_comments"][0]
+            author = latest_comment.get("author") or "unknown"
+            excerpt = latest_comment.get("body_excerpt") or "(no comment body)"
+            lines.append(f"  - latest comment by `{author}`: {excerpt}")
+
+    lines.extend(["", "## Recently Updated Pull Requests", ""])
+    for pr in prs[:10]:
+        suffix = " merged" if pr.get("merged_at") else ""
+        mergeable_state = pr.get("mergeable_state") or "unknown"
+        mirror_suffix = ""
+        if fork_remote:
+            mirror_suffix = ", mirrored=yes" if pr.get("fork_mirrored") else ", mirrored=no"
+        lines.append(
+            f"- #{pr['number']} [{pr['state']}{suffix}, mergeable={mergeable_state}{mirror_suffix}] "
+            f"{pr['title']} (`{pr['head']}` -> `{pr['base']}`)"
+        )
+        local_coverage = pr.get("local_coverage") or {}
+        if local_coverage:
+            status = local_coverage.get("status") or "covered"
+            summary = local_coverage.get("summary") or "covered locally on this branch"
+            lines.append(f"  - local coverage [{status}]: {summary}")
+        if pr.get("body_excerpt"):
+            lines.append(f"  - {pr['body_excerpt']}")
+        if pr.get("recent_comments"):
+            latest_comment = pr["recent_comments"][0]
+            author = latest_comment.get("author") or "unknown"
+            excerpt = latest_comment.get("body_excerpt") or "(no comment body)"
+            lines.append(f"  - latest comment by `{author}`: {excerpt}")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def attach_local_coverage(
+    items: list[dict[str, Any]],
+    coverage_map: dict[int, dict[str, object]] | None,
+    item_type: str = "issue",
+) -> list[dict[str, Any]]:
+    attached: list[dict[str, Any]] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        number = item.get("number")
+        if not isinstance(number, int):
+            attached.append(item)
+            continue
+        enriched = dict(item)
+        local_coverage = (coverage_map or {}).get(number)
+        enriched = attach_local_coverage_fields(enriched, local_coverage)
+        if item_type == "pull_request":
+            enriched = attach_pr_review_fields(enriched, local_coverage)
+        attached.append(enriched)
+    return attached
+
+
+def load_cached_snapshot(path: Path, repo: str, state: str) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+    if not isinstance(payload, dict):
+        return None
+    if payload.get("repo") != repo or payload.get("state") != state:
+        return None
+
+    return payload
+
+
+def snapshot_timestamp(payload: dict[str, Any]) -> Any:
+    return payload.get("captured_at") or payload.get("generated_at") or payload.get("refreshed_at")
+
+
+def snapshot_is_fresh(payload: dict[str, Any], stale_after_hours: int) -> bool:
+    captured_at = snapshot_timestamp(payload)
+    if not captured_at or stale_after_hours < 0:
+        return False
+
+    try:
+        captured = datetime.fromisoformat(str(captured_at).replace("Z", "+00:00"))
+    except ValueError:
+        return False
+
+    age_seconds = (datetime.now(timezone.utc) - captured.astimezone(timezone.utc)).total_seconds()
+    return age_seconds <= stale_after_hours * 3600
+
+
+def try_reuse_cached_snapshot(
+    cached_payload: dict[str, Any] | None,
+    *,
+    repo: str,
+    state: str,
+    output_path: Path,
+    summary_path: Path,
+    exc: RuntimeError,
+    stale_cache_hours: int,
+    fork_remote: str | None = None,
+    mirror_issues_repo: str | None = None,
+    issue_coverage_map: dict[int, dict[str, object]] | None = None,
+    pr_coverage_map: dict[int, dict[str, object]] | None = None,
+    coverage_map_path: str | None = None,
+) -> bool:
+    rate_limited = "rate limit" in str(exc).lower()
+    if not rate_limited or not cached_payload or not snapshot_is_fresh(cached_payload, stale_cache_hours):
+        return False
+
+    issues = cached_payload.get("issues") or []
+    prs = cached_payload.get("pull_requests") or []
+    captured_at = snapshot_timestamp(cached_payload)
+    if not isinstance(issues, list) or not isinstance(prs, list):
+        return False
+    issues = attach_local_coverage(issues, issue_coverage_map, item_type="issue")
+    prs = attach_local_coverage(prs, pr_coverage_map, item_type="pull_request")
+    refreshed_payload = dict(cached_payload)
+    refreshed_payload.pop("_cache_path", None)
+    refreshed_payload["issues"] = issues
+    refreshed_payload["pull_requests"] = prs
+    refreshed_payload["refreshed_at"] = captured_at
+    refreshed_payload["coverage_map_path"] = coverage_map_path
+    resolved_fork_remote = fork_remote or refreshed_payload.get("fork_remote")
+    resolved_mirror_issues_repo = mirror_issues_repo or refreshed_payload.get("mirror_issues_repo")
+    if resolved_fork_remote:
+        refreshed_payload["fork_remote"] = resolved_fork_remote
+    if resolved_mirror_issues_repo:
+        refreshed_payload["mirror_issues_repo"] = resolved_mirror_issues_repo
+    output_path.write_text(json.dumps(refreshed_payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    write_summary(
+        summary_path,
+        repo,
+        state,
+        issues,
+        prs,
+        resolved_fork_remote,
+        mirror_issues_repo=resolved_mirror_issues_repo,
+        captured_at=captured_at,
+        coverage_map_path=coverage_map_path or cached_payload.get("coverage_map_path"),
+    )
+    print(
+        f"warning: {exc}; reusing fresh cached snapshot from "
+        f"{cached_payload.get('_cache_path', 'cache')} (captured_at={captured_at})",
+        file=sys.stderr,
+    )
+    print(
+        f"Reused cached snapshot with {len(issues)} issues and {len(prs)} pull requests "
+        f"from {repo} into {os.path.relpath(cached_payload.get('_cache_path', summary_path))}"
+    )
+    return True
+
+
+def lock_path_for(output_path: Path, repo: str) -> Path:
+    repo_slug = re.sub(r"[^A-Za-z0-9._-]+", "-", repo)
+    repo_root = output_path.resolve().parents[1]
+    return repo_root / ".agents" / "upstream-sync-locks" / f"{repo_slug}.lock"
+
+
+@contextlib.contextmanager
+def repo_lock(output_path: Path, repo: str, wait_timeout: float = 0.0, poll_interval: float = 0.1):
+    lock_path = lock_path_for(output_path, repo)
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(lock_path, "w", encoding="utf-8") as lock_file:
+        deadline = time.monotonic() + max(0.0, wait_timeout)
+        while True:
+            try:
+                fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except OSError as exc:
+                if exc.errno not in (errno.EACCES, errno.EAGAIN):
+                    raise
+                if time.monotonic() >= deadline:
+                    raise RuntimeError(
+                        f"Another sync_upstream_github.py run is already refreshing {repo}. "
+                        f"Wait for it to finish and rerun sequentially, or increase --lock-wait-seconds "
+                        f"(current={wait_timeout:g})."
+                    ) from exc
+                time.sleep(max(0.01, poll_interval))
+        lock_file.write(str(os.getpid()))
+        lock_file.flush()
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "repo_arg",
+        nargs="?",
+        help="Legacy positional owner/repo alias retained for backward compatibility",
+    )
+    parser.add_argument(
+        "--repo",
+        default=argparse.SUPPRESS,
+        help="owner/repo to inspect",
+    )
+    parser.add_argument("--state", default="open", help="GitHub state filter (open, closed, or all)")
+    parser.add_argument("--limit", type=int, default=500, help="Maximum items to fetch per collection")
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=DEFAULT_API_TIMEOUT,
+        help="Timeout in seconds for each gh/http request",
+    )
+    parser.add_argument(
+        "--output",
+        "--json-out",
+        dest="output",
+        required=True,
+        help="Path to write machine-readable JSON",
+    )
+    parser.add_argument(
+        "--summary",
+        "--md-out",
+        dest="summary",
+        required=True,
+        help="Path to write markdown summary",
+    )
+    parser.add_argument(
+        "--fork-remote",
+        default=None,
+        help="Optional git remote name used to annotate whether upstream PR refs are mirrored into the fork",
+    )
+    parser.add_argument(
+        "--mirror-issues-repo",
+        default=None,
+        help="Optional owner/repo used to mirror upstream issues into fork GitHub issues",
+    )
+    parser.add_argument(
+        "--stale-cache-hours",
+        type=int,
+        default=DEFAULT_STALE_CACHE_HOURS,
+        help=(
+            "If refresh hits a GitHub rate limit, reuse an existing snapshot captured within this many hours "
+            "instead of failing. Set to -1 to disable stale cache fallback."
+        ),
+    )
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=DEFAULT_MAX_WORKERS,
+        help=(
+            "Maximum concurrent GitHub hydration workers for per-item PR detail/comment fetches. "
+            "Lower this if GitHub starts rate limiting aggressively."
+        ),
+    )
+    parser.add_argument(
+        "--lock-wait-seconds",
+        type=float,
+        default=5.0,
+        help=(
+            "How long to wait for another sync_upstream_github.py run holding the repo lock "
+            "before failing. Defaults to 5 seconds so sequential refreshes can serialize cleanly."
+        ),
+    )
+    parser.add_argument(
+        "--coverage-map",
+        default="docs/upstream-coverage.json",
+        help=(
+            "Optional machine-readable JSON file describing upstream issues already covered locally. "
+            "Defaults to docs/upstream-coverage.json when present."
+        ),
+    )
+    return parser
+
+
+def resolve_repo_argument(args: argparse.Namespace, parser: argparse.ArgumentParser) -> str:
+    positional_repo = getattr(args, "repo_arg", None)
+    default_repo = DEFAULT_REPO
+    explicit_repo = getattr(args, "repo", None)
+    option_repo = explicit_repo or default_repo
+
+    if positional_repo:
+        if explicit_repo is not None and positional_repo != option_repo:
+            parser.error(
+                f"conflicting repo values: positional {positional_repo!r} does not match --repo {option_repo!r}"
+            )
+        return positional_repo
+
+    return option_repo
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+    args.repo = resolve_repo_argument(args, parser)
+    global REQUEST_TIMEOUT
+    REQUEST_TIMEOUT = max(1, args.timeout)
+    max_workers = max(1, args.max_workers)
+
+    output_path = Path(args.output)
+    summary_path = Path(args.summary)
+    coverage_map_path = Path(args.coverage_map) if args.coverage_map else None
+    issue_coverage_map = load_local_issue_coverage(coverage_map_path)
+    pr_coverage_map = load_local_pr_coverage(coverage_map_path)
+    cached_payload = load_cached_snapshot(output_path, args.repo, args.state)
+    if cached_payload is not None:
+        cached_payload["_cache_path"] = str(output_path)
+    owner, name = args.repo.split("/", 1)
+
+    with repo_lock(output_path, args.repo, wait_timeout=args.lock_wait_seconds):
+        try:
+            issue_items = github_api_paginated(
+                f"/repos/{owner}/{name}/issues",
+                {"state": args.state, "sort": "updated", "direction": "desc"},
+                args.limit,
+            )
+            pr_items = github_api_paginated(
+                f"/repos/{owner}/{name}/pulls",
+                {"state": args.state, "sort": "updated", "direction": "desc"},
+                args.limit,
+            )
+        except RuntimeError as exc:
+            if try_reuse_cached_snapshot(
+                cached_payload,
+                repo=args.repo,
+                state=args.state,
+                output_path=output_path,
+                summary_path=summary_path,
+                exc=exc,
+                stale_cache_hours=args.stale_cache_hours,
+                fork_remote=args.fork_remote,
+                mirror_issues_repo=args.mirror_issues_repo,
+                issue_coverage_map=issue_coverage_map,
+                pr_coverage_map=pr_coverage_map,
+                coverage_map_path=str(coverage_map_path) if coverage_map_path and coverage_map_path.exists() else None,
+            ):
+                return 0
+            raise
+
+        try:
+            issues = compact_issues(
+                [item for item in issue_items if "pull_request" not in item],
+                max_workers=max_workers,
+                coverage_map=issue_coverage_map,
+            )
+            if args.mirror_issues_repo:
+                issues = mirror_issues_to_fork(args.mirror_issues_repo, args.repo, issues)
+            pr_details = hydrate_pull_requests(owner, name, pr_items, max_workers=max_workers)
+            mirrored_pr_numbers = (
+                list_mirrored_pull_request_numbers(args.fork_remote) if args.fork_remote else None
+            )
+            if args.fork_remote:
+                mirrored_pr_numbers = mirror_pull_request_refs(
+                    args.repo,
+                    args.fork_remote,
+                    pr_details,
+                    mirrored_pr_numbers,
+                )
+            prs = compact_pull_requests(
+                pr_details,
+                mirrored_pr_numbers,
+                args.fork_remote,
+                max_workers=max_workers,
+                coverage_map=pr_coverage_map,
+            )
+        except RuntimeError as exc:
+            if try_reuse_cached_snapshot(
+                cached_payload,
+                repo=args.repo,
+                state=args.state,
+                output_path=output_path,
+                summary_path=summary_path,
+                exc=exc,
+                stale_cache_hours=args.stale_cache_hours,
+                fork_remote=args.fork_remote,
+                mirror_issues_repo=args.mirror_issues_repo,
+                issue_coverage_map=issue_coverage_map,
+                pr_coverage_map=pr_coverage_map,
+                coverage_map_path=str(coverage_map_path) if coverage_map_path and coverage_map_path.exists() else None,
+            ):
+                return 0
+            raise
+        captured_at = datetime.now(timezone.utc).isoformat()
+        payload = {
+            "repo": args.repo,
+            "state": args.state,
+            "captured_at": captured_at,
+            "generated_at": captured_at,
+            "refreshed_at": captured_at,
+            "coverage_map_path": str(coverage_map_path) if coverage_map_path and coverage_map_path.exists() else None,
+            "counts": {
+                "issues": summarize_counts(issues),
+                "pull_requests": summarize_counts(prs),
+            },
+            "issues": issues,
+            "pull_requests": prs,
+        }
+        if args.fork_remote:
+            mirrored_total = sum(1 for pr in prs if pr["fork_mirrored"])
+            payload["fork_remote"] = args.fork_remote
+            payload["counts"]["mirrored_pull_requests"] = {
+                "mirrored": mirrored_total,
+                "not_mirrored": len(prs) - mirrored_total,
+            }
+        if args.mirror_issues_repo:
+            mirrored_issue_total = sum(1 for issue in issues if issue.get("fork_issue_mirrored"))
+            payload["mirror_issues_repo"] = args.mirror_issues_repo
+            payload["counts"]["mirrored_issues"] = {
+                "mirrored": mirrored_issue_total,
+                "not_mirrored": len(issues) - mirrored_issue_total,
+            }
+
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        write_summary(
+            summary_path,
+            args.repo,
+            args.state,
+            issues,
+            prs,
+            args.fork_remote,
+            mirror_issues_repo=args.mirror_issues_repo,
+            captured_at=captured_at,
+            coverage_map_path=str(coverage_map_path) if coverage_map_path and coverage_map_path.exists() else None,
+        )
+
+    print(
+        f"Captured {len(issues)} issues and {len(prs)} pull requests from {args.repo} "
+        f"into {os.path.relpath(output_path)}"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

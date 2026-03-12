@@ -8,22 +8,23 @@
       
       <div class="header-center">
         <div class="view-switcher">
-          <button 
-            v-for="mode in ['graph', 'split', 'workbench']" 
+          <button
+            v-for="mode in ['graph', 'split', 'workbench']"
             :key="mode"
             class="switch-btn"
             :class="{ active: viewMode === mode }"
             @click="viewMode = mode"
           >
-            {{ { graph: '图谱', split: '双栏', workbench: '工作台' }[mode] }}
+            {{ { graph: t('mainView.graph'), split: t('mainView.split'), workbench: t('mainView.workbench') }[mode] }}
           </button>
         </div>
       </div>
 
       <div class="header-right">
+        <LanguageSelector light />
         <div class="workflow-step">
           <span class="step-num">Step 5/5</span>
-          <span class="step-name">深度互动</span>
+          <span class="step-name">{{ t('mainView.stepInteraction') }}</span>
         </div>
         <div class="step-divider"></div>
         <span class="status-indicator" :class="statusClass">
@@ -64,26 +65,30 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import GraphPanel from '../components/GraphPanel.vue'
 import Step5Interaction from '../components/Step5Interaction.vue'
+import LanguageSelector from '../components/LanguageSelector.vue'
 import { getProject, getGraphData } from '../api/graph'
 import { getSimulation } from '../api/simulation'
 import { getReport } from '../api/report'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 // Props
 const props = defineProps({
-  reportId: String
+  reportId: String,
+  simulationId: String
 })
 
 // Layout State - 默认切换到工作台视角
 const viewMode = ref('workbench')
 
 // Data State
-const currentReportId = ref(route.params.reportId)
-const simulationId = ref(null)
+const currentReportId = ref(route.params.reportId || props.reportId || null)
+const simulationId = ref(route.params.simulationId || props.simulationId || null)
 const projectData = ref(null)
 const graphData = ref(null)
 const graphLoading = ref(false)
@@ -109,10 +114,10 @@ const statusClass = computed(() => {
 })
 
 const statusText = computed(() => {
-  if (currentStatus.value === 'error') return 'Error'
-  if (currentStatus.value === 'completed') return 'Completed'
-  if (currentStatus.value === 'processing') return 'Processing'
-  return 'Ready'
+  if (currentStatus.value === 'error') return t('common.error')
+  if (currentStatus.value === 'completed') return t('common.completed')
+  if (currentStatus.value === 'processing') return t('common.processing')
+  return t('mainView.statusReady')
 })
 
 // --- Helpers ---
@@ -138,42 +143,54 @@ const toggleMaximize = (target) => {
 }
 
 // --- Data Logic ---
-const loadReportData = async () => {
-  try {
-    addLog(`加载报告数据: ${currentReportId.value}`)
-    
-    // 获取 report 信息以获取 simulation_id
-    const reportRes = await getReport(currentReportId.value)
-    if (reportRes.success && reportRes.data) {
-      const reportData = reportRes.data
-      simulationId.value = reportData.simulation_id
-      
-      if (simulationId.value) {
-        // 获取 simulation 信息
-        const simRes = await getSimulation(simulationId.value)
-        if (simRes.success && simRes.data) {
-          const simData = simRes.data
-          
-          // 获取 project 信息
-          if (simData.project_id) {
-            const projRes = await getProject(simData.project_id)
-            if (projRes.success && projRes.data) {
-              projectData.value = projRes.data
-              addLog(`项目加载成功: ${projRes.data.project_id}`)
-              
-              // 获取 graph 数据
-              if (projRes.data.graph_id) {
-                await loadGraph(projRes.data.graph_id)
-              }
-            }
-          }
-        }
+const loadSimulationContext = async (targetSimulationId) => {
+  if (!targetSimulationId) {
+    return
+  }
+
+  simulationId.value = targetSimulationId
+
+  const simRes = await getSimulation(targetSimulationId)
+  if (!simRes.success || !simRes.data) {
+    addLog(t('interactionView.logs.loadSimulationFailed', { message: simRes.error || t('process.unknownError') }))
+    return
+  }
+
+  const simData = simRes.data
+
+  if (simData.project_id) {
+    const projRes = await getProject(simData.project_id)
+    if (projRes.success && projRes.data) {
+      projectData.value = projRes.data
+      addLog(t('interactionView.logs.projectLoaded', { id: projRes.data.project_id }))
+
+      if (projRes.data.graph_id) {
+        await loadGraph(projRes.data.graph_id)
       }
-    } else {
-      addLog(`获取报告信息失败: ${reportRes.error || '未知错误'}`)
+    }
+  }
+}
+
+const loadInteractionData = async () => {
+  try {
+    if (currentReportId.value) {
+      addLog(t('interactionView.logs.loadingReport', { id: currentReportId.value }))
+
+      const reportRes = await getReport(currentReportId.value)
+      if (reportRes.success && reportRes.data) {
+        await loadSimulationContext(reportRes.data.simulation_id)
+      } else {
+        addLog(t('interactionView.logs.reportInfoFailed', { message: reportRes.error || t('process.unknownError') }))
+      }
+      return
+    }
+
+    if (simulationId.value) {
+      addLog(t('interactionView.logs.loadingSimulation', { id: simulationId.value }))
+      await loadSimulationContext(simulationId.value)
     }
   } catch (err) {
-    addLog(`加载异常: ${err.message}`)
+    addLog(t('interactionView.logs.loadException', { message: err.message }))
   }
 }
 
@@ -184,10 +201,10 @@ const loadGraph = async (graphId) => {
     const res = await getGraphData(graphId)
     if (res.success) {
       graphData.value = res.data
-      addLog('图谱数据加载成功')
+      addLog(t('interactionView.logs.graphLoaded'))
     }
   } catch (err) {
-    addLog(`图谱加载失败: ${err.message}`)
+    addLog(t('interactionView.logs.graphLoadFailed', { message: err.message }))
   } finally {
     graphLoading.value = false
   }
@@ -201,15 +218,23 @@ const refreshGraph = () => {
 
 // Watch route params
 watch(() => route.params.reportId, (newId) => {
-  if (newId && newId !== currentReportId.value) {
-    currentReportId.value = newId
-    loadReportData()
+  if (newId !== currentReportId.value) {
+    currentReportId.value = newId || props.reportId || null
+    loadInteractionData()
+  }
+}, { immediate: true })
+
+watch(() => route.params.simulationId, (newId) => {
+  if (newId !== simulationId.value) {
+    simulationId.value = newId || props.simulationId || null
+    currentReportId.value = route.params.reportId || props.reportId || null
+    loadInteractionData()
   }
 }, { immediate: true })
 
 onMounted(() => {
-  addLog('InteractionView 初始化')
-  loadReportData()
+  addLog(t('interactionView.logs.init'))
+  loadInteractionData()
 })
 </script>
 

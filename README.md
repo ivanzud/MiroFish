@@ -8,7 +8,7 @@
 </br>
 <em>A Simple and Universal Swarm Intelligence Engine, Predicting Anything</em>
 
-<a href="https://www.shanda.com/" target="_blank"><img src="./static/image/shanda_logo.png" alt="666ghj%2MiroFish | Shanda" height="40"/></a>
+<a href="https://www.shanda.com/" target="_blank"><img src="./static/image/shanda_logo.png" alt="666ghj%2FMiroFish | Shanda" height="40"/></a>
 
 [![GitHub Stars](https://img.shields.io/github/stars/666ghj/MiroFish?style=flat-square&color=DAA520)](https://github.com/666ghj/MiroFish/stargazers)
 [![GitHub Watchers](https://img.shields.io/github/watchers/666ghj/MiroFish?style=flat-square)](https://github.com/666ghj/MiroFish/watchers)
@@ -20,7 +20,7 @@
 [![X](https://img.shields.io/badge/X-Follow-000000?style=flat-square&logo=x&logoColor=white)](https://x.com/mirofish_ai)
 [![Instagram](https://img.shields.io/badge/Instagram-Follow-E4405F?style=flat-square&logo=instagram&logoColor=white)](https://www.instagram.com/mirofish_ai/)
 
-[English](./README-EN.md) | [中文文档](./README.md)
+[English](./README-EN.md) | [中文文档](./README.md) | [한국어](./README-KO.md) | [日本語](./README-JA.md) | [Русский](./README-RU.md)
 
 </div>
 
@@ -91,6 +91,113 @@ MiroFish 致力于打造映射现实的群体智能镜像，通过捕捉个体�
 4. **报告生成**：ReportAgent拥有丰富的工具集与模拟后环境进行深度交互
 5. **深度互动**：与模拟世界中的任意一位进行对话 & 与ReportAgent进行对话
 
+## 🏗️ 系统架构
+
+### 分层说明
+
+| 层级 | 核心模块 | 职责 |
+|------|----------|------|
+| 表现层 | `frontend/src/views/*`、`frontend/src/components/*` | 五步流程 UI、实时模拟状态展示、报告与深度交互页面 |
+| API 层 | `backend/app/api/graph.py`、`simulation.py`、`report.py` | 对外提供图谱构建、模拟控制、报告生成与下载接口 |
+| 编排层 | `simulation_manager.py`、`simulation_runner.py` | 模拟状态机、进程管理、暂停/恢复/停止与实时状态汇总 |
+| 记忆与图谱层 | `graph_builder.py`、`zep_entity_reader.py`、`zep_graph_memory_updater.py` | 种子数据结构化、图谱写入、实体过滤与模拟后记忆回灌 |
+| 推理与报告层 | `report_agent.py`、`zep_tools.py`、`utils/llm_client.py` | ReACT 多轮推理、工具调用、自动生成可交互预测报告 |
+
+### 项目代码结构树
+
+```text
+MiroFish/
+├── frontend/                                  # Vue3 前端工程
+│   ├── package.json                           # 前端依赖与脚本定义
+│   ├── vite.config.js                         # Vite 构建与开发服务配置
+│   ├── index.html                             # 前端入口 HTML 模板
+│   └── src/
+│       ├── main.js                            # Vue 应用启动入口
+│       ├── App.vue                            # 根组件
+│       ├── api/                               # 后端接口封装层
+│       │   ├── index.js                       # Axios 实例与统一请求配置
+│       │   ├── graph.js                       # 图谱构建相关 API
+│       │   ├── simulation.js                  # 模拟流程控制 API
+│       │   └── report.js                      # 报告生成/下载/对话 API
+│       ├── router/
+│       │   └── index.js                       # 前端路由配置
+│       ├── store/
+│       │   └── pendingUpload.js               # 待上传文件状态管理
+│       ├── views/                             # 页面级视图
+│       │   ├── Home.vue                       # 首页（项目介绍与入口）
+│       │   ├── MainView.vue                   # 主流程容器页
+│       │   ├── Process.vue                    # 五步流程总览页
+│       │   ├── SimulationView.vue             # 模拟准备页
+│       │   ├── SimulationRunView.vue          # 模拟运行监控页
+│       │   ├── ReportView.vue                 # 报告查看页
+│       │   └── InteractionView.vue            # 深度交互页
+│       ├── components/                        # 业务组件
+│       │   ├── Step1GraphBuild.vue            # Step1 图谱构建组件
+│       │   ├── Step2EnvSetup.vue              # Step2 环境搭建组件
+│       │   ├── Step3Simulation.vue            # Step3 模拟控制组件
+│       │   ├── Step4Report.vue                # Step4 报告生成组件
+│       │   ├── Step5Interaction.vue           # Step5 深度交互组件
+│       │   ├── GraphPanel.vue                 # 图谱数据展示面板
+│       │   └── HistoryDatabase.vue            # 历史数据/记忆展示组件
+│       └── assets/logo/                       # 前端 Logo 资源
+│           ├── MiroFish_logo_left.jpeg
+│           └── MiroFish_logo_compressed.jpeg
+├── backend/                                   # Flask 后端工程
+│   ├── run.py                                 # 后端服务启动入口
+│   ├── requirements.txt                       # Python 依赖清单
+│   ├── pyproject.toml                         # Python 项目元数据与工具配置
+│   ├── uv.lock                                # uv 锁定依赖版本
+│   ├── app/
+│   │   ├── __init__.py                        # Flask 应用工厂与蓝图注册
+│   │   ├── config.py                          # 后端配置与环境变量读取
+│   │   ├── api/                               # API 路由层
+│   │   │   ├── __init__.py                    # Blueprint 初始化
+│   │   │   ├── graph.py                       # 图谱构建与图谱管理接口
+│   │   │   ├── simulation.py                  # 实体读取、模拟创建/运行/控制接口
+│   │   │   └── report.py                      # 报告生成、查询、下载与问答接口
+│   │   ├── services/                          # 核心业务服务层
+│   │   │   ├── graph_builder.py               # GraphRAG 图谱构建服务
+│   │   │   ├── ontology_generator.py          # 本体/实体类型生成服务
+│   │   │   ├── text_processor.py              # 种子文本清洗与预处理
+│   │   │   ├── zep_entity_reader.py           # Zep 图谱实体读取与过滤
+│   │   │   ├── oasis_profile_generator.py     # OASIS 角色画像生成
+│   │   │   ├── simulation_config_generator.py # 模拟配置自动生成
+│   │   │   ├── simulation_manager.py          # 模拟状态机与生命周期管理
+│   │   │   ├── simulation_runner.py           # 后台模拟进程执行与监控
+│   │   │   ├── simulation_ipc.py              # 模拟进程 IPC 通信协议
+│   │   │   ├── zep_graph_memory_updater.py    # 模拟动作回写图谱记忆
+│   │   │   ├── zep_tools.py                   # ReportAgent 可调用的检索工具集
+│   │   │   └── report_agent.py                # ReACT 报告生成与交互问答
+│   │   ├── models/                            # 状态模型层
+│   │   │   ├── __init__.py
+│   │   │   ├── project.py                     # 项目状态与元数据管理
+│   │   │   └── task.py                        # 异步任务状态模型
+│   │   └── utils/                             # 通用基础设施
+│   │       ├── __init__.py
+│   │       ├── llm_client.py                  # OpenAI SDK 兼容 LLM 客户端
+│   │       ├── file_parser.py                 # 上传文件解析与抽取工具
+│   │       ├── logger.py                      # 分层日志系统
+│   │       ├── retry.py                       # 通用重试装饰器/逻辑
+│   │       └── zep_paging.py                  # Zep 分页读取工具
+│   ├── scripts/                               # OASIS 执行脚本
+│   │   ├── run_parallel_simulation.py         # Twitter + Reddit 并行模拟入口
+│   │   ├── run_twitter_simulation.py          # Twitter 模拟执行脚本
+│   │   ├── run_reddit_simulation.py           # Reddit 模拟执行脚本
+│   │   ├── action_logger.py                   # Agent 行为日志采集脚本
+│   │   └── test_profile_format.py             # 画像格式校验脚本
+│   ├── uploads/                               # 运行时数据目录（项目/模拟/报告产物）
+│   └── logs/                                  # 后端日志输出目录
+├── static/
+│   └── image/                                 # README 图片与演示资源
+├── package.json                               # 根目录脚本（联动前后端）
+├── docker-compose.yml                         # Docker 编排（前端+后端）
+├── Dockerfile                                 # Docker 镜像构建定义
+├── .env.example                               # 环境变量示例
+├── README.md                                  # 中文文档
+├── README-EN.md                               # 英文文档
+└── LICENSE                                    # 开源许可证
+```
+
 ## 🚀 快速开始
 
 ### 一、源码部署（推荐）
@@ -115,23 +222,66 @@ cp .env.example .env
 **必需的环境变量：**
 
 ```env
-# LLM API配置（支持 OpenAI SDK 格式的任意 LLM API）
+# LLM API配置（支持 OpenAI / Codex-compatible / OpenAI SDK 格式的任意 LLM API）
+# 也支持直接使用 OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_API_BASE_URL / OPENAI_MODEL
 # 推荐使用阿里百炼平台qwen-plus模型：https://bailian.console.aliyun.com/
 # 注意消耗较大，可先进行小于40轮的模拟尝试
 LLM_API_KEY=your_api_key
 LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 LLM_MODEL_NAME=qwen-plus
+# 可选：上下文较小的 OpenAI-compatible 模型可降低输出上限
+# LLM_MAX_TOKENS=4096
 
 # Zep Cloud 配置
 # 每月免费额度即可支撑简单使用：https://app.getzep.com/
 ZEP_API_KEY=your_zep_api_key
 ```
 
+说明：后端现在同时识别项目内的 `LLM_*` 配置和标准 `OPENAI_*` 配置，因此可直接接入 OpenAI、Codex 兼容网关、LM Studio、Ollama 等 OpenAI-compatible 服务，不需要额外的 `LLM_PROVIDER` 开关。若同时设置了多个基础地址变量，则按 `LLM_BASE_URL` > `OPENAI_BASE_URL` > `OPENAI_API_BASE_URL` 的优先级生效；当这些值互相冲突时，`/api/graph/config/status` 与 `backend/scripts/print_config_status.py` 会给出明确告警。
+
+常见兼容后端示例：
+
+```env
+# OpenAI / Codex-compatible 网关
+OPENAI_API_KEY=your_api_key
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_API_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-4.1-mini
+
+# 阿里云百炼 Coding Plan
+OPENAI_API_KEY=your_dashscope_key
+OPENAI_API_BASE_URL=https://coding.dashscope.aliyuncs.com/v1
+OPENAI_MODEL=qwen3.5-plus
+```
+
+验证是否已按 OpenAI-compatible 方式接入：
+
+- 先访问 `http://localhost:5001/health`，确认后端进程已启动。
+- 或直接运行 `npm run check:backend-config`，无需启动服务也能打印同样的非敏感 config-status JSON。
+- 如果你想走最直接的本地后端启动路径，可运行 `npm run backend:local`。它会先执行同样的配置预检，只有当前 `LLM_*` / `OPENAI_*` 别名解析正常时才启动 Flask。
+- 再访问 `http://localhost:5001/api/graph/config/status`。返回 JSON 中 `llm.backend_mode` 应为 `openai_compatible`。
+- `summary.llm.sources` 会显示当前实际生效的是 `LLM_*` 还是 `OPENAI_*` 环境变量，以及具体命中了 `OPENAI_BASE_URL` 还是 `OPENAI_API_BASE_URL`，因此可以直接确认 Codex / OpenAI / DashScope Coding Plan 这类兼容网关是否已被正确识别，不需要额外设置 `LLM_PROVIDER`。
+- 同一个 config-status 里的 `summary.capabilities` 还会明确区分“直接 LLM 已就绪”和“哪些步骤仍依赖 Zep”：`direct_llm` 对应直连 Codex / OpenAI-compatible 后端，`graph_build` 与 `graph_report_tools` 对应 Step 1 / Step 4，`existing_simulation_interaction` 则表示只要已有 Step 2/3 产物，就仍可继续 Step 5 互动。
+- 如果这份 config-status 里仍然提示 `ZEP_API_KEY is not configured`，说明直连 LLM 的 `OPENAI_*` / Codex 兼容路径本身是正常的，只是 Step 1 图谱构建目前仍依赖 Zep，尚未落地仓库原生的替代图谱后端。
+- 如果本地验证时没有设置 `SECRET_KEY`，`npm run check:backend-config` 里出现“临时生成 SECRET_KEY”的 warning 是预期行为，并不表示直连 `OPENAI_*` 配置失败。
+
+如果遇到 `5001` 根路径返回 `404`，那通常不是后端启动失败，而是因为后端只暴露 API 路由；请改用 `http://localhost:5001/health` 检查健康状态。
+
+如果 Step 5 深度互动里对单个角色提问、批量问卷或全局采访经常超时，可以同时调大前端请求超时 `VITE_API_TIMEOUT`（毫秒）以及后端 Interview 等待时间 `INTERVIEW_AGENT_TIMEOUT_SECONDS`、`INTERVIEW_BATCH_TIMEOUT_SECONDS`、`INTERVIEW_ALL_TIMEOUT_SECONDS`（秒）。
+
+首次体验建议先选 1 万字以内的 PDF / Markdown / TXT 材料，并把模拟轮次控制在 30 轮左右，先确认图谱构建、环境初始化和健康检查都正常，再逐步放大规模，避免过早耗尽 Zep 免费额度或把问题混在一起排查。
+
 #### 2. 安装依赖
 
 ```bash
-# 一键安装所有依赖（根目录 + 前端 + 后端）
+# 推荐的核心安装路径：图谱 / 报告 / OpenAI-compatible 后端
+npm run setup:core
+
+# 向后兼容别名，效果与 setup:core 相同
 npm run setup:all
+
+# 如需启用 OASIS 仿真运行（Step 3 / Step 5），再额外安装可选仿真依赖
+npm run setup:backend:simulation
 ```
 
 或者分步安装：
@@ -140,20 +290,57 @@ npm run setup:all
 # 安装 Node 依赖（根目录 + 前端）
 npm run setup
 
-# 安装 Python 依赖（后端，自动创建虚拟环境）
+# 安装 Python 核心依赖（后端，自动创建虚拟环境）
 npm run setup:backend
+
+# 等价的核心组合安装快捷方式
+npm run setup:core
+
+# 安装 OASIS 仿真运行时可选依赖
+npm run setup:backend:simulation
 ```
+
+默认的 `setup:core` / `setup:all` 现在只安装根目录、前端，以及图谱构建、报告生成和 OpenAI 兼容后端所需的核心依赖。Step 3 / Step 5 使用的上游 `oasis` 运行时代码现在直接随仓库 vendoring 到 `backend/oasis`，而可选仿真依赖只保留运行所需的显式包，因此不再通过 `camel-oasis -> unstructured==0.13.7` 这条高风险传递依赖链安装。
+
+已知限制：`npm run setup:backend:simulation` 现在会在 Python 3.13+ 且未安装 Rust 时直接失败并给出说明，因为当前 `camel-ai -> tiktoken==0.7.0` 仍会触发源码构建。若只需要核心后端，可继续使用默认安装；若要实际运行 Step 3 / Step 5 仿真，当前更稳妥的是使用 Python 3.11/3.12，或先安装 Rust 再执行该命令。
 
 #### 3. 启动服务
 
 ```bash
 # 同时启动前后端（在项目根目录执行）
 npm run dev
+
+# 或仅启动后端，并先做一次 OpenAI-compatible 配置预检
+npm run backend:local
 ```
 
 **服务地址：**
 - 前端：`http://localhost:3000`
 - 后端 API：`http://localhost:5001`
+
+默认前后端双端口部署时，前端会自动访问同主机的 `5001` 端口后端。后端根路径仅提供 API，快速健康检查请访问 `http://localhost:5001/health`。
+
+#### 3.1 常见问题
+
+**支持哪些模型 / API？**
+
+- 当前后端支持任意 OpenAI-compatible 接口，不要求必须使用某一个固定厂商。
+- 已在本仓库中验证并写入示例配置的路径包括：OpenAI、Codex 兼容网关、阿里云百炼兼容模式、阿里云百炼 Coding Plan，以及 LM Studio / Ollama 这类 OpenAI SDK 兼容本地网关。
+- 配置时既可以使用项目内的 `LLM_API_KEY` / `LLM_BASE_URL` / `LLM_MODEL_NAME`，也可以直接使用标准 `OPENAI_API_KEY` / `OPENAI_API_BASE_URL` / `OPENAI_MODEL`。
+
+**浏览器刷新、关闭页面后会发生什么？**
+
+- 单纯刷新页面或暂时关闭浏览器，不会直接终止服务器端已经启动的图谱构建、模拟或报告任务。
+- 已落盘的数据会保存在 `backend/uploads/` 下，首页历史记录也可以重新打开 Step1「图谱构建」、Step2「环境搭建」和 Step4「分析报告」。
+- 但 Step3「开始模拟」和 Step5「深度互动」依赖实时运行中的 OASIS 环境；如果后端进程、容器或对应模拟环境已经关闭，就不能像录像回放一样无缝恢复，需要重新准备或重新启动该运行环境。
+
+**之后怎么验证某次预测是否被现实结果印证？**
+
+- 当前仓库还没有“自动抓取真实世界结果并给出准确率分数”的内置评测器，但已经能保留一套稳定的人工复核证据链。
+- 先在 Step4 记录 `report_id`，并用首页历史记录保留对应的 `simulation_id`；这两个 ID 会把后续复核绑定到同一轮图谱、环境和报告产物。
+- 需要离线留档时，可直接在 Step4 导出 Markdown，或到 `backend/uploads/reports/<report_id>/full_report.md` 与同目录 JSON 中保存当时的完整报告内容。
+- 等现实事件有后续结果后，再从首页历史重新打开 Step4，对照报告里的关键判断、时间线和条件假设逐条比对；如果需要补充上下文，也可以同时回看 Step1 / Step2 的输入材料。
+- 如果对应模拟环境仍在线，可继续用 Step5 向 Report Agent 或角色追问“当初哪些判断已经兑现、哪些前提没有发生”；如果运行环境已关闭，当前版本仍以 Step4 留档 + 人工比对为主。
 
 **单独启动：**
 
@@ -162,19 +349,41 @@ npm run backend   # 仅启动后端
 npm run frontend  # 仅启动前端
 ```
 
+#### 4. 轻量后端校验
+
+如果 `uv sync` 或 `uv run pytest` 因 `tiktoken` 等重依赖需要 Rust 工具链而受阻，可先运行仓库内置的快速后端校验路径：
+
+```bash
+npm run test:backend:lite
+```
+
+该路径会按需创建 `.tmp-test-venv/`，只安装当前低风险回归测试所需的最小依赖，并执行 `test_llm_client.py` 与 `test_graph_builder.py`。
+
 ### 二、Docker 部署
 
 ```bash
 # 1. 配置环境变量（同源码部署）
 cp .env.example .env
 
-# 2. 拉取镜像并启动
+# 2. 可选：如果 GHCR 拉取较慢或失败，可先覆盖镜像地址
+# MIROFISH_IMAGE=ghcr.nju.edu.cn/666ghj/mirofish:latest
+
+# 3. 拉取镜像并启动
 docker compose up -d
 ```
 
 默认会读取根目录下的 `.env`，并映射端口 `3000（前端）/5001（后端）`
 
-> 在 `docker-compose.yml` 中已通过注释提供加速镜像地址，可按需替换
+如果前后端部署在不同主机或不同端口，请为前端显式设置 `VITE_API_BASE_URL`。
+也可以在前端首页或 Step 1 / Step 2 工作台右上角打开 `后端 API` 面板，直接输入运行中的后端地址并持久化到浏览器本地，无需重新构建前端。
+
+如果你是前后端跨域部署，并且希望限制允许访问 `/api/*` 的前端来源，也可以设置后端环境变量 `CORS_ALLOWED_ORIGINS`（逗号分隔），并按需补充 `CORS_ALLOW_METHODS` / `CORS_ALLOW_HEADERS`。为兼容现有部署，默认行为仍然是允许所有来源 `*`。
+
+`docker-compose.yml` 现在会读取 `MIROFISH_IMAGE`，因此可以直接通过 `.env` 或单次命令切换到镜像源/私有仓库，无需手动修改 compose 文件。
+
+```bash
+MIROFISH_IMAGE=ghcr.nju.edu.cn/666ghj/mirofish:latest docker compose up -d
+```
 
 ## 📬 更多交流
 

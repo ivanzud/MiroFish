@@ -16,11 +16,26 @@ from dataclasses import dataclass, field
 from zep_cloud.client import Zep
 
 from ..config import Config
+from ..i18n import get_locale, tr
+from .zep_entity_reader import EntityNode, ZepEntityReader
 from ..utils.logger import get_logger
 from ..utils.llm_client import LLMClient
 from ..utils.zep_paging import fetch_all_nodes, fetch_all_edges
 
 logger = get_logger('mirofish.zep_tools')
+
+
+def _localized_text(locale: str, zh: str, en: str) -> str:
+    return en if locale == "en" else zh
+
+
+def _fetch_with_optional_locale(fetcher, client, graph_id: str, locale: str):
+    try:
+        return fetcher(client, graph_id, locale=locale)
+    except TypeError as exc:
+        if "unexpected keyword argument 'locale'" not in str(exc):
+            raise
+        return fetcher(client, graph_id)
 
 
 @dataclass
@@ -31,6 +46,7 @@ class SearchResult:
     nodes: List[Dict[str, Any]]
     query: str
     total_count: int
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -43,10 +59,19 @@ class SearchResult:
     
     def to_text(self) -> str:
         """转换为文本格式，供LLM理解"""
-        text_parts = [f"搜索查询: {self.query}", f"找到 {self.total_count} 条相关信息"]
-        
+        text_parts = [
+            f"{_localized_text(self.locale, '搜索查询', 'Search query')}: {self.query}",
+            (
+                f"{_localized_text(self.locale, '找到', 'Found')} "
+                f"{self.total_count} "
+                f"{_localized_text(self.locale, '条相关信息', 'relevant items')}"
+            ),
+        ]
+
         if self.facts:
-            text_parts.append("\n### 相关事实:")
+            text_parts.append(
+                f"\n### {_localized_text(self.locale, '相关事实', 'Relevant facts')}:"
+            )
             for i, fact in enumerate(self.facts, 1):
                 text_parts.append(f"{i}. {fact}")
         
@@ -61,20 +86,40 @@ class NodeInfo:
     labels: List[str]
     summary: str
     attributes: Dict[str, Any]
+    alias_names: List[str] = field(default_factory=list)
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        result = {
             "uuid": self.uuid,
             "name": self.name,
             "labels": self.labels,
             "summary": self.summary,
             "attributes": self.attributes
         }
+        normalized_aliases = list(dict.fromkeys([*(self.alias_names or []), self.name]))
+        if len(normalized_aliases) > 1:
+            result["alias_names"] = normalized_aliases
+        return result
     
     def to_text(self) -> str:
         """转换为文本格式"""
-        entity_type = next((l for l in self.labels if l not in ["Entity", "Node"]), "未知类型")
-        return f"实体: {self.name} (类型: {entity_type})\n摘要: {self.summary}"
+        entity_type = next(
+            (l for l in self.labels if l not in ["Entity", "Node"]),
+            _localized_text(self.locale, "未知类型", "Unknown type"),
+        )
+        text = (
+            f"{_localized_text(self.locale, '实体', 'Entity')}: {self.name} "
+            f"({_localized_text(self.locale, '类型', 'Type')}: {entity_type})\n"
+            f"{_localized_text(self.locale, '摘要', 'Summary')}: {self.summary}"
+        )
+        normalized_aliases = [alias for alias in dict.fromkeys([*(self.alias_names or []), self.name]) if alias]
+        if len(normalized_aliases) > 1:
+            text += (
+                f"\n{_localized_text(self.locale, '别名', 'Aliases')}: "
+                + ", ".join(normalized_aliases)
+            )
+        return text
 
 
 @dataclass
@@ -92,6 +137,7 @@ class EdgeInfo:
     valid_at: Optional[str] = None
     invalid_at: Optional[str] = None
     expired_at: Optional[str] = None
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -112,14 +158,23 @@ class EdgeInfo:
         """转换为文本格式"""
         source = self.source_node_name or self.source_node_uuid[:8]
         target = self.target_node_name or self.target_node_uuid[:8]
-        base_text = f"关系: {source} --[{self.name}]--> {target}\n事实: {self.fact}"
-        
+        base_text = (
+            f"{_localized_text(self.locale, '关系', 'Relationship')}: "
+            f"{source} --[{self.name}]--> {target}\n"
+            f"{_localized_text(self.locale, '事实', 'Fact')}: {self.fact}"
+        )
+
         if include_temporal:
-            valid_at = self.valid_at or "未知"
-            invalid_at = self.invalid_at or "至今"
-            base_text += f"\n时效: {valid_at} - {invalid_at}"
+            valid_at = self.valid_at or _localized_text(self.locale, "未知", "Unknown")
+            invalid_at = self.invalid_at or _localized_text(self.locale, "至今", "present")
+            base_text += (
+                f"\n{_localized_text(self.locale, '时效', 'Validity')}: "
+                f"{valid_at} - {invalid_at}"
+            )
             if self.expired_at:
-                base_text += f" (已过期: {self.expired_at})"
+                base_text += (
+                    f" ({_localized_text(self.locale, '已过期', 'expired')}: {self.expired_at})"
+                )
         
         return base_text
     
@@ -153,6 +208,7 @@ class InsightForgeResult:
     total_facts: int = 0
     total_entities: int = 0
     total_relationships: int = 0
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -170,40 +226,72 @@ class InsightForgeResult:
     def to_text(self) -> str:
         """转换为详细的文本格式，供LLM理解"""
         text_parts = [
-            f"## 未来预测深度分析",
-            f"分析问题: {self.query}",
-            f"预测场景: {self.simulation_requirement}",
-            f"\n### 预测数据统计",
-            f"- 相关预测事实: {self.total_facts}条",
-            f"- 涉及实体: {self.total_entities}个",
-            f"- 关系链: {self.total_relationships}条"
+            f"## {_localized_text(self.locale, '未来预测深度分析', 'Future prediction deep analysis')}",
+            f"{_localized_text(self.locale, '分析问题', 'Analysis question')}: {self.query}",
+            f"{_localized_text(self.locale, '预测场景', 'Prediction scenario')}: {self.simulation_requirement}",
+            f"\n### {_localized_text(self.locale, '预测数据统计', 'Prediction data summary')}",
+            (
+                f"- {_localized_text(self.locale, '相关预测事实', 'Relevant predictive facts')}: "
+                f"{self.total_facts}{_localized_text(self.locale, '条', '')}"
+            ),
+            (
+                f"- {_localized_text(self.locale, '涉及实体', 'Entities involved')}: "
+                f"{self.total_entities}{_localized_text(self.locale, '个', '')}"
+            ),
+            (
+                f"- {_localized_text(self.locale, '关系链', 'Relationship chains')}: "
+                f"{self.total_relationships}{_localized_text(self.locale, '条', '')}"
+            ),
         ]
         
         # 子问题
         if self.sub_queries:
-            text_parts.append(f"\n### 分析的子问题")
+            text_parts.append(
+                f"\n### {_localized_text(self.locale, '分析的子问题', 'Analysis sub-questions')}"
+            )
             for i, sq in enumerate(self.sub_queries, 1):
                 text_parts.append(f"{i}. {sq}")
         
         # 语义搜索结果
         if self.semantic_facts:
-            text_parts.append(f"\n### 【关键事实】(请在报告中引用这些原文)")
+            text_parts.append(
+                "\n### "
+                + _localized_text(
+                    self.locale,
+                    "【关键事实】(请在报告中引用这些原文)",
+                    "[Key facts] (quote these original statements in the report)",
+                )
+            )
             for i, fact in enumerate(self.semantic_facts, 1):
                 text_parts.append(f"{i}. \"{fact}\"")
         
         # 实体洞察
         if self.entity_insights:
-            text_parts.append(f"\n### 【核心实体】")
+            text_parts.append(
+                f"\n### {_localized_text(self.locale, '【核心实体】', '[Core entities]')}"
+            )
             for entity in self.entity_insights:
-                text_parts.append(f"- **{entity.get('name', '未知')}** ({entity.get('type', '实体')})")
+                text_parts.append(
+                    "- **"
+                    f"{entity.get('name', _localized_text(self.locale, '未知', 'Unknown'))}"
+                    f"** ({entity.get('type', _localized_text(self.locale, '实体', 'Entity'))})"
+                )
                 if entity.get('summary'):
-                    text_parts.append(f"  摘要: \"{entity.get('summary')}\"")
+                    text_parts.append(
+                        f"  {_localized_text(self.locale, '摘要', 'Summary')}: "
+                        f"\"{entity.get('summary')}\""
+                    )
                 if entity.get('related_facts'):
-                    text_parts.append(f"  相关事实: {len(entity.get('related_facts', []))}条")
+                    text_parts.append(
+                        f"  {_localized_text(self.locale, '相关事实', 'Related facts')}: "
+                        f"{len(entity.get('related_facts', []))}{_localized_text(self.locale, '条', '')}"
+                    )
         
         # 关系链
         if self.relationship_chains:
-            text_parts.append(f"\n### 【关系链】")
+            text_parts.append(
+                f"\n### {_localized_text(self.locale, '【关系链】', '[Relationship chains]')}"
+            )
             for chain in self.relationship_chains:
                 text_parts.append(f"- {chain}")
         
@@ -232,6 +320,7 @@ class PanoramaResult:
     total_edges: int = 0
     active_count: int = 0
     historical_count: int = 0
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -249,32 +338,57 @@ class PanoramaResult:
     def to_text(self) -> str:
         """转换为文本格式（完整版本，不截断）"""
         text_parts = [
-            f"## 广度搜索结果（未来全景视图）",
-            f"查询: {self.query}",
-            f"\n### 统计信息",
-            f"- 总节点数: {self.total_nodes}",
-            f"- 总边数: {self.total_edges}",
-            f"- 当前有效事实: {self.active_count}条",
-            f"- 历史/过期事实: {self.historical_count}条"
+            f"## {_localized_text(self.locale, '广度搜索结果（未来全景视图）', 'Panorama search results (future overview)')}",
+            f"{_localized_text(self.locale, '查询', 'Query')}: {self.query}",
+            f"\n### {_localized_text(self.locale, '统计信息', 'Statistics')}",
+            f"- {_localized_text(self.locale, '总节点数', 'Total nodes')}: {self.total_nodes}",
+            f"- {_localized_text(self.locale, '总边数', 'Total edges')}: {self.total_edges}",
+            (
+                f"- {_localized_text(self.locale, '当前有效事实', 'Current active facts')}: "
+                f"{self.active_count}{_localized_text(self.locale, '条', '')}"
+            ),
+            (
+                f"- {_localized_text(self.locale, '历史/过期事实', 'Historical/expired facts')}: "
+                f"{self.historical_count}{_localized_text(self.locale, '条', '')}"
+            ),
         ]
         
         # 当前有效的事实（完整输出，不截断）
         if self.active_facts:
-            text_parts.append(f"\n### 【当前有效事实】(模拟结果原文)")
+            text_parts.append(
+                "\n### "
+                + _localized_text(
+                    self.locale,
+                    "【当前有效事实】(模拟结果原文)",
+                    "[Current active facts] (original simulation output)",
+                )
+            )
             for i, fact in enumerate(self.active_facts, 1):
                 text_parts.append(f"{i}. \"{fact}\"")
         
         # 历史/过期事实（完整输出，不截断）
         if self.historical_facts:
-            text_parts.append(f"\n### 【历史/过期事实】(演变过程记录)")
+            text_parts.append(
+                "\n### "
+                + _localized_text(
+                    self.locale,
+                    "【历史/过期事实】(演变过程记录)",
+                    "[Historical/expired facts] (change timeline record)",
+                )
+            )
             for i, fact in enumerate(self.historical_facts, 1):
                 text_parts.append(f"{i}. \"{fact}\"")
         
         # 关键实体（完整输出，不截断）
         if self.all_nodes:
-            text_parts.append(f"\n### 【涉及实体】")
+            text_parts.append(
+                f"\n### {_localized_text(self.locale, '【涉及实体】', '[Entities involved]')}"
+            )
             for node in self.all_nodes:
-                entity_type = next((l for l in node.labels if l not in ["Entity", "Node"]), "实体")
+                entity_type = next(
+                    (l for l in node.labels if l not in ["Entity", "Node"]),
+                    _localized_text(self.locale, "实体", "Entity"),
+                )
                 text_parts.append(f"- **{node.name}** ({entity_type})")
         
         return "\n".join(text_parts)
@@ -289,6 +403,7 @@ class AgentInterview:
     question: str  # 采访问题
     response: str  # 采访回答
     key_quotes: List[str] = field(default_factory=list)  # 关键引言
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -303,31 +418,40 @@ class AgentInterview:
     def to_text(self) -> str:
         text = f"**{self.agent_name}** ({self.agent_role})\n"
         # 显示完整的agent_bio，不截断
-        text += f"_简介: {self.agent_bio}_\n\n"
+        text += f"_{_localized_text(self.locale, '简介', 'Bio')}: {self.agent_bio}_\n\n"
         text += f"**Q:** {self.question}\n\n"
         text += f"**A:** {self.response}\n"
         if self.key_quotes:
-            text += "\n**关键引言:**\n"
+            text += f"\n**{_localized_text(self.locale, '关键引言', 'Key quotes')}:**\n"
             for quote in self.key_quotes:
                 # 清理各种引号
                 clean_quote = quote.replace('\u201c', '').replace('\u201d', '').replace('"', '')
+                clean_quote = clean_quote.replace("'", "").replace('\u2018', '').replace('\u2019', '')
                 clean_quote = clean_quote.replace('\u300c', '').replace('\u300d', '')
                 clean_quote = clean_quote.strip()
                 # 去掉开头的标点
-                while clean_quote and clean_quote[0] in '，,；;：:、。！？\n\r\t ':
+                while clean_quote and clean_quote[0] in '，,；;：:、。！？.!?\n\r\t ':
                     clean_quote = clean_quote[1:]
-                # 过滤包含问题编号的垃圾内容（问题1-9）
-                skip = False
-                for d in '123456789':
-                    if f'\u95ee\u9898{d}' in clean_quote:
-                        skip = True
-                        break
-                if skip:
+                # 过滤包含问题编号的垃圾内容（中英文）
+                if any(f'\u95ee\u9898{d}' in clean_quote for d in '123456789') or clean_quote.lower().startswith("question "):
                     continue
                 # 截断过长内容（按句号截断，而非硬截断）
                 if len(clean_quote) > 150:
-                    dot_pos = clean_quote.find('\u3002', 80)
-                    if dot_pos > 0:
+                    sentence_end_candidates = [
+                        pos
+                        for pos in (
+                            clean_quote.find('\u3002', 80),
+                            clean_quote.find('. ', 80),
+                            clean_quote.find('! ', 80),
+                            clean_quote.find('? ', 80),
+                            clean_quote.find('.', 80),
+                            clean_quote.find('!', 80),
+                            clean_quote.find('?', 80),
+                        )
+                        if pos > 0
+                    ]
+                    if sentence_end_candidates:
+                        dot_pos = min(sentence_end_candidates)
                         clean_quote = clean_quote[:dot_pos + 1]
                     else:
                         clean_quote = clean_quote[:147] + "..."
@@ -358,6 +482,7 @@ class InterviewResult:
     # 统计
     total_agents: int = 0
     interviewed_count: int = 0
+    locale: str = "zh"
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -374,25 +499,33 @@ class InterviewResult:
     def to_text(self) -> str:
         """转换为详细的文本格式，供LLM理解和报告引用"""
         text_parts = [
-            "## 深度采访报告",
-            f"**采访主题:** {self.interview_topic}",
-            f"**采访人数:** {self.interviewed_count} / {self.total_agents} 位模拟Agent",
-            "\n### 采访对象选择理由",
-            self.selection_reasoning or "（自动选择）",
+            _localized_text(self.locale, "## 深度采访报告", "## In-Depth Interview Report"),
+            f"**{_localized_text(self.locale, '采访主题', 'Interview topic')}:** {self.interview_topic}",
+            (
+                f"**{_localized_text(self.locale, '采访人数', 'Interviewed agents')}:** "
+                f"{self.interviewed_count} / {self.total_agents} "
+                f"{_localized_text(self.locale, '位模拟Agent', 'simulated agents')}"
+            ),
+            f"\n### {_localized_text(self.locale, '采访对象选择理由', 'Why these agents were selected')}",
+            self.selection_reasoning or _localized_text(self.locale, "（自动选择）", "(selected automatically)"),
             "\n---",
-            "\n### 采访实录",
+            f"\n### {_localized_text(self.locale, '采访实录', 'Interview transcripts')}",
         ]
 
         if self.interviews:
             for i, interview in enumerate(self.interviews, 1):
-                text_parts.append(f"\n#### 采访 #{i}: {interview.agent_name}")
+                text_parts.append(
+                    f"\n#### {_localized_text(self.locale, '采访', 'Interview')} #{i}: {interview.agent_name}"
+                )
                 text_parts.append(interview.to_text())
                 text_parts.append("\n---")
         else:
-            text_parts.append("（无采访记录）\n\n---")
+            text_parts.append(f"{_localized_text(self.locale, '（无采访记录）', '(no interview records)')}\n\n---")
 
-        text_parts.append("\n### 采访摘要与核心观点")
-        text_parts.append(self.summary or "（无摘要）")
+        text_parts.append(
+            f"\n### {_localized_text(self.locale, '采访摘要与核心观点', 'Interview summary and key takeaways')}"
+        )
+        text_parts.append(self.summary or _localized_text(self.locale, "（无摘要）", "(no summary)"))
 
         return "\n".join(text_parts)
 
@@ -424,12 +557,28 @@ class ZepToolsService:
     def __init__(self, api_key: Optional[str] = None, llm_client: Optional[LLMClient] = None):
         self.api_key = api_key or Config.ZEP_API_KEY
         if not self.api_key:
-            raise ValueError("ZEP_API_KEY 未配置")
+            raise ValueError(tr("config.key_missing", get_locale(), name="ZEP_API_KEY"))
         
         self.client = Zep(api_key=self.api_key)
         # LLM客户端用于InsightForge生成子问题
         self._llm_client = llm_client
-        logger.info("ZepToolsService 初始化完成")
+        self._log("info", "ZepToolsService 初始化完成", "ZepToolsService initialized")
+
+    @staticmethod
+    def _locale() -> str:
+        return get_locale()
+
+    @classmethod
+    def _text(cls, zh: str, en: str, locale: Optional[str] = None) -> str:
+        return _localized_text(locale or cls._locale(), zh, en)
+
+    @classmethod
+    def _log(cls, level: str, zh: str, en: str, locale: Optional[str] = None) -> None:
+        getattr(logger, level)(cls._text(zh, en, locale))
+
+    @classmethod
+    def _unknown_profession(cls, locale: Optional[str] = None) -> str:
+        return cls._text("未知", "Unknown", locale)
     
     @property
     def llm(self) -> LLMClient:
@@ -450,14 +599,19 @@ class ZepToolsService:
             except Exception as e:
                 last_exception = e
                 if attempt < max_retries - 1:
-                    logger.warning(
-                        f"Zep {operation_name} 第 {attempt + 1} 次尝试失败: {str(e)[:100]}, "
-                        f"{delay:.1f}秒后重试..."
+                    self._log(
+                        "warning",
+                        f"Zep {operation_name} 第 {attempt + 1} 次尝试失败: {str(e)[:100]}, {delay:.1f}秒后重试...",
+                        f"Zep {operation_name} attempt {attempt + 1} failed: {str(e)[:100]}. Retrying in {delay:.1f}s...",
                     )
                     time.sleep(delay)
                     delay *= 2
                 else:
-                    logger.error(f"Zep {operation_name} 在 {max_retries} 次尝试后仍失败: {str(e)}")
+                    self._log(
+                        "error",
+                        f"Zep {operation_name} 在 {max_retries} 次尝试后仍失败: {str(e)}",
+                        f"Zep {operation_name} still failed after {max_retries} attempts: {str(e)}",
+                    )
         
         raise last_exception
     
@@ -483,7 +637,13 @@ class ZepToolsService:
         Returns:
             SearchResult: 搜索结果
         """
-        logger.info(f"图谱搜索: graph_id={graph_id}, query={query[:50]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"图谱搜索: graph_id={graph_id}, query={query[:50]}...",
+            f"Graph search: graph_id={graph_id}, query={query[:50]}...",
+            locale,
+        )
         
         # 尝试使用Zep Cloud Search API
         try:
@@ -495,7 +655,11 @@ class ZepToolsService:
                     scope=scope,
                     reranker="cross_encoder"
                 ),
-                operation_name=f"图谱搜索(graph={graph_id})"
+                operation_name=self._text(
+                    f"图谱搜索(graph={graph_id})",
+                    f"graph search (graph={graph_id})",
+                    locale,
+                )
             )
             
             facts = []
@@ -524,22 +688,38 @@ class ZepToolsService:
                         "labels": getattr(node, 'labels', []),
                         "summary": getattr(node, 'summary', ''),
                     })
-                    # 节点摘要也算作事实
-                    if hasattr(node, 'summary') and node.summary:
-                        facts.append(f"[{node.name}]: {node.summary}")
+            nodes, edges, node_facts = self._deduplicate_search_payload(
+                nodes,
+                edges,
+                locale,
+                "search results",
+            )
+            facts.extend(node_facts)
+            facts = self._unique_search_facts(facts)
             
-            logger.info(f"搜索完成: 找到 {len(facts)} 条相关事实")
+            self._log(
+                "info",
+                f"搜索完成: 找到 {len(facts)} 条相关事实",
+                f"Search completed: found {len(facts)} relevant facts",
+                locale,
+            )
             
             return SearchResult(
                 facts=facts,
                 edges=edges,
                 nodes=nodes,
                 query=query,
-                total_count=len(facts)
+                total_count=len(facts),
+                locale=self._locale(),
             )
             
         except Exception as e:
-            logger.warning(f"Zep Search API失败，降级为本地搜索: {str(e)}")
+            self._log(
+                "warning",
+                f"Zep Search API失败，降级为本地搜索: {str(e)}",
+                f"Zep Search API failed; falling back to local search: {str(e)}",
+                locale,
+            )
             # 降级：使用本地关键词匹配搜索
             return self._local_search(graph_id, query, limit, scope)
     
@@ -564,11 +744,18 @@ class ZepToolsService:
         Returns:
             SearchResult: 搜索结果
         """
-        logger.info(f"使用本地搜索: query={query[:30]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"使用本地搜索: query={query[:30]}...",
+            f"Using local search: query={query[:30]}...",
+            locale,
+        )
         
         facts = []
         edges_result = []
-        nodes_result = []
+        nodes_result: List[NodeInfo] = []
+        node_dicts: List[Dict[str, Any]] = []
         
         # 提取查询关键词（简单分词）
         query_lower = query.lower()
@@ -623,28 +810,41 @@ class ZepToolsService:
                         scored_nodes.append((score, node))
                 
                 scored_nodes.sort(key=lambda x: x[0], reverse=True)
-                
+
                 for score, node in scored_nodes[:limit]:
-                    nodes_result.append({
-                        "uuid": node.uuid,
-                        "name": node.name,
-                        "labels": node.labels,
-                        "summary": node.summary,
-                    })
-                    if node.summary:
-                        facts.append(f"[{node.name}]: {node.summary}")
+                    nodes_result.append(node)
+
+            node_dicts, edges_result, node_facts = self._deduplicate_search_payload(
+                [self._search_node_info_to_dict(node) for node in nodes_result],
+                edges_result,
+                locale,
+                "local search results",
+            )
+            facts.extend(node_facts)
+            facts = self._unique_search_facts(facts)
             
-            logger.info(f"本地搜索完成: 找到 {len(facts)} 条相关事实")
+            self._log(
+                "info",
+                f"本地搜索完成: 找到 {len(facts)} 条相关事实",
+                f"Local search completed: found {len(facts)} relevant facts",
+                locale,
+            )
             
         except Exception as e:
-            logger.error(f"本地搜索失败: {str(e)}")
+            self._log(
+                "error",
+                f"本地搜索失败: {str(e)}",
+                f"Local search failed: {str(e)}",
+                locale,
+            )
         
         return SearchResult(
             facts=facts,
             edges=edges_result,
-            nodes=nodes_result,
+            nodes=node_dicts,
             query=query,
-            total_count=len(facts)
+            total_count=len(facts),
+            locale=self._locale(),
         )
     
     def get_all_nodes(self, graph_id: str) -> List[NodeInfo]:
@@ -657,23 +857,291 @@ class ZepToolsService:
         Returns:
             节点列表
         """
-        logger.info(f"获取图谱 {graph_id} 的所有节点...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取图谱 {graph_id} 的所有节点...",
+            f"Fetching all nodes for graph {graph_id}...",
+            locale,
+        )
 
-        nodes = fetch_all_nodes(self.client, graph_id)
+        raw_nodes = self._fetch_raw_node_infos(graph_id)
 
-        result = []
+        result, _ = self._deduplicate_nodes(raw_nodes, "raw graph node introspection")
+
+        self._log(
+            "info",
+            f"获取到 {len(result)} 个节点",
+            f"Fetched {len(result)} nodes",
+            locale,
+        )
+        return result
+
+    def _fetch_raw_node_infos(self, graph_id: str) -> List[NodeInfo]:
+        locale = self._locale()
+        nodes = _fetch_with_optional_locale(fetch_all_nodes, self.client, graph_id, locale)
+
+        raw_nodes = []
         for node in nodes:
             node_uuid = getattr(node, 'uuid_', None) or getattr(node, 'uuid', None) or ""
-            result.append(NodeInfo(
+            raw_nodes.append(NodeInfo(
                 uuid=str(node_uuid) if node_uuid else "",
                 name=node.name or "",
                 labels=node.labels or [],
                 summary=node.summary or "",
-                attributes=node.attributes or {}
+                attributes=node.attributes or {},
+                alias_names=list(
+                    dict.fromkeys(
+                        [
+                            *(
+                                value
+                                for value in ((node.attributes or {}).get("alias_names", []) or [])
+                                if value
+                            ),
+                            node.name or "",
+                        ]
+                    )
+                ),
+                locale=self._locale(),
             ))
+        return raw_nodes
 
-        logger.info(f"获取到 {len(result)} 个节点")
+    @staticmethod
+    def _node_to_entity(node: NodeInfo) -> EntityNode:
+        return EntityNode(
+            uuid=node.uuid,
+            name=node.name,
+            labels=list(node.labels or []),
+            summary=node.summary or "",
+            attributes=dict(node.attributes or {}),
+        )
+
+    @staticmethod
+    def _node_score(node: NodeInfo) -> int:
+        return (
+            len(node.summary or "")
+            + len(node.labels or [])
+            + len(node.attributes or {}) * 10
+        )
+
+    @classmethod
+    def _pick_primary_node(cls, left: NodeInfo, right: NodeInfo) -> NodeInfo:
+        left_name = ZepEntityReader._normalize_entity_name(left.name)
+        right_name = ZepEntityReader._normalize_entity_name(right.name)
+
+        if left_name and right_name and len(left_name) != len(right_name):
+            return left if len(left_name) < len(right_name) else right
+
+        return left if cls._node_score(left) >= cls._node_score(right) else right
+
+    @classmethod
+    def _deduplicate_nodes(
+        cls, nodes: List[NodeInfo], log_context: str
+    ) -> tuple[List[NodeInfo], Dict[str, str]]:
+        merged_nodes: List[NodeInfo] = []
+        uuid_remap: Dict[str, str] = {}
+
+        for node in nodes:
+            duplicate_index = next(
+                (
+                    idx
+                    for idx, existing in enumerate(merged_nodes)
+                    if ZepEntityReader._are_duplicate_entities(
+                        cls._node_to_entity(existing),
+                        cls._node_to_entity(node),
+                    )
+                ),
+                None,
+            )
+
+            if duplicate_index is None:
+                merged_nodes.append(node)
+                if node.uuid:
+                    uuid_remap[node.uuid] = node.uuid
+                continue
+
+            existing = merged_nodes[duplicate_index]
+            primary = cls._pick_primary_node(existing, node)
+            secondary = node if primary is existing else existing
+
+            merged_node = NodeInfo(
+                uuid=primary.uuid,
+                name=primary.name,
+                labels=list(dict.fromkeys([*(primary.labels or []), *(secondary.labels or [])])),
+                summary=max(
+                    [part for part in (primary.summary, secondary.summary) if part],
+                    key=len,
+                    default="",
+                ),
+                attributes={
+                    **(secondary.attributes or {}),
+                    **(primary.attributes or {}),
+                },
+                alias_names=list(
+                    dict.fromkeys(
+                        [
+                            *(primary.alias_names or []),
+                            *(secondary.alias_names or []),
+                            primary.name,
+                            secondary.name,
+                        ]
+                    )
+                ),
+                locale=primary.locale or secondary.locale,
+            )
+            merged_nodes[duplicate_index] = merged_node
+
+            if existing.uuid:
+                uuid_remap[existing.uuid] = merged_node.uuid
+            if node.uuid:
+                uuid_remap[node.uuid] = merged_node.uuid
+
+            logger.info(
+                "Collapsing duplicate entity aliases for %s: %s <-> %s",
+                log_context,
+                existing.name,
+                node.name,
+            )
+
+        for node in merged_nodes:
+            if node.uuid:
+                uuid_remap.setdefault(node.uuid, node.uuid)
+
+        return merged_nodes, uuid_remap
+
+    @staticmethod
+    def _search_node_info_to_dict(node: NodeInfo) -> Dict[str, Any]:
+        result = {
+            "uuid": node.uuid,
+            "name": node.name,
+            "labels": list(node.labels or []),
+            "summary": node.summary,
+        }
+        normalized_aliases = list(dict.fromkeys([*(node.alias_names or []), node.name]))
+        if len(normalized_aliases) > 1:
+            result["alias_names"] = normalized_aliases
         return result
+
+    @staticmethod
+    def _search_node_dict_to_info(node: Dict[str, Any], locale: str) -> NodeInfo:
+        return NodeInfo(
+            uuid=str(node.get("uuid", "") or ""),
+            name=str(node.get("name", "") or ""),
+            labels=list(node.get("labels", []) or []),
+            summary=str(node.get("summary", "") or ""),
+            attributes=dict(node.get("attributes", {}) or {}),
+            alias_names=list(
+                dict.fromkeys(
+                    [
+                        *(str(alias) for alias in (node.get("alias_names", []) or []) if alias),
+                        str(node.get("name", "") or ""),
+                    ]
+                )
+            ),
+            locale=locale,
+        )
+
+    @staticmethod
+    def _unique_search_facts(facts: List[str]) -> List[str]:
+        result: List[str] = []
+        seen = set()
+        for fact in facts:
+            normalized = str(fact or "").strip()
+            if not normalized or normalized in seen:
+                continue
+            seen.add(normalized)
+            result.append(normalized)
+        return result
+
+    @classmethod
+    def _deduplicate_search_payload(
+        cls,
+        nodes: List[Dict[str, Any]],
+        edges: List[Dict[str, Any]],
+        locale: str,
+        log_context: str,
+    ) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[str]]:
+        if not nodes:
+            return nodes, edges, []
+
+        node_infos = [cls._search_node_dict_to_info(node, locale) for node in nodes]
+        deduplicated_nodes, uuid_remap = cls._deduplicate_nodes(node_infos, log_context)
+        deduplicated_node_dicts = [cls._search_node_info_to_dict(node) for node in deduplicated_nodes]
+
+        deduplicated_edges: List[Dict[str, Any]] = []
+        seen_edges = set()
+        for edge in edges:
+            remapped = dict(edge)
+            source_uuid = str(remapped.get("source_node_uuid", "") or "")
+            target_uuid = str(remapped.get("target_node_uuid", "") or "")
+            if source_uuid:
+                remapped["source_node_uuid"] = uuid_remap.get(source_uuid, source_uuid)
+            if target_uuid:
+                remapped["target_node_uuid"] = uuid_remap.get(target_uuid, target_uuid)
+
+            edge_key = (
+                remapped.get("source_node_uuid", ""),
+                remapped.get("target_node_uuid", ""),
+                remapped.get("name", ""),
+                remapped.get("fact", ""),
+            )
+            if edge_key in seen_edges:
+                continue
+            seen_edges.add(edge_key)
+            deduplicated_edges.append(remapped)
+
+        node_facts = cls._unique_search_facts(
+            [
+                f"[{node.name}]: {node.summary}"
+                for node in deduplicated_nodes
+                if node.summary
+            ]
+        )
+        return deduplicated_node_dicts, deduplicated_edges, node_facts
+
+    @classmethod
+    def _deduplicate_edge_infos(
+        cls,
+        edges: List[EdgeInfo],
+        uuid_remap: Dict[str, str],
+        node_map: Dict[str, NodeInfo],
+    ) -> List[EdgeInfo]:
+        deduplicated_edges: List[EdgeInfo] = []
+        seen_edges = set()
+
+        for edge in edges:
+            source_uuid = uuid_remap.get(edge.source_node_uuid, edge.source_node_uuid)
+            target_uuid = uuid_remap.get(edge.target_node_uuid, edge.target_node_uuid)
+            remapped = EdgeInfo(
+                uuid=edge.uuid,
+                name=edge.name,
+                fact=edge.fact,
+                source_node_uuid=source_uuid,
+                target_node_uuid=target_uuid,
+                source_node_name=node_map.get(source_uuid, NodeInfo('', '', [], '', {})).name or edge.source_node_name,
+                target_node_name=node_map.get(target_uuid, NodeInfo('', '', [], '', {})).name or edge.target_node_name,
+                created_at=edge.created_at,
+                valid_at=edge.valid_at,
+                invalid_at=edge.invalid_at,
+                expired_at=edge.expired_at,
+                locale=edge.locale,
+            )
+
+            edge_key = (
+                remapped.source_node_uuid,
+                remapped.target_node_uuid,
+                remapped.name,
+                remapped.fact,
+                remapped.valid_at,
+                remapped.invalid_at,
+                remapped.expired_at,
+            )
+            if edge_key in seen_edges:
+                continue
+            seen_edges.add(edge_key)
+            deduplicated_edges.append(remapped)
+
+        return deduplicated_edges
 
     def get_all_edges(self, graph_id: str, include_temporal: bool = True) -> List[EdgeInfo]:
         """
@@ -686,11 +1154,22 @@ class ZepToolsService:
         Returns:
             边列表（包含created_at, valid_at, invalid_at, expired_at）
         """
-        logger.info(f"获取图谱 {graph_id} 的所有边...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取图谱 {graph_id} 的所有边...",
+            f"Fetching all edges for graph {graph_id}...",
+            locale,
+        )
 
-        edges = fetch_all_edges(self.client, graph_id)
+        deduplicated_nodes, uuid_remap = self._deduplicate_nodes(
+            self._fetch_raw_node_infos(graph_id),
+            "raw graph edge introspection",
+        )
+        node_map = {node.uuid: node for node in deduplicated_nodes}
+        edges = _fetch_with_optional_locale(fetch_all_edges, self.client, graph_id, locale)
 
-        result = []
+        raw_edges = []
         for edge in edges:
             edge_uuid = getattr(edge, 'uuid_', None) or getattr(edge, 'uuid', None) or ""
             edge_info = EdgeInfo(
@@ -698,7 +1177,8 @@ class ZepToolsService:
                 name=edge.name or "",
                 fact=edge.fact or "",
                 source_node_uuid=edge.source_node_uuid or "",
-                target_node_uuid=edge.target_node_uuid or ""
+                target_node_uuid=edge.target_node_uuid or "",
+                locale=self._locale(),
             )
 
             # 添加时间信息
@@ -708,48 +1188,93 @@ class ZepToolsService:
                 edge_info.invalid_at = getattr(edge, 'invalid_at', None)
                 edge_info.expired_at = getattr(edge, 'expired_at', None)
 
-            result.append(edge_info)
+            raw_edges.append(edge_info)
 
-        logger.info(f"获取到 {len(result)} 条边")
+        result = self._deduplicate_edge_infos(raw_edges, uuid_remap, node_map)
+
+        self._log(
+            "info",
+            f"获取到 {len(result)} 条边",
+            f"Fetched {len(result)} edges",
+            locale,
+        )
         return result
     
-    def get_node_detail(self, node_uuid: str) -> Optional[NodeInfo]:
+    def get_node_detail(self, node_uuid: str, graph_id: Optional[str] = None) -> Optional[NodeInfo]:
         """
         获取单个节点的详细信息
         
         Args:
             node_uuid: 节点UUID
+            graph_id: 图谱ID（可选；提供时会对明显别名执行保守折叠）
             
         Returns:
             节点信息或None
         """
-        logger.info(f"获取节点详情: {node_uuid[:8]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取节点详情: {node_uuid[:8]}...",
+            f"Fetching node details: {node_uuid[:8]}...",
+            locale,
+        )
         
         try:
             node = self._call_with_retry(
                 func=lambda: self.client.graph.node.get(uuid_=node_uuid),
-                operation_name=f"获取节点详情(uuid={node_uuid[:8]}...)"
+                operation_name=self._text(
+                    f"获取节点详情(uuid={node_uuid[:8]}...)",
+                    f"fetch node details (uuid={node_uuid[:8]}...)",
+                    locale,
+                )
             )
             
             if not node:
                 return None
             
-            return NodeInfo(
+            result = NodeInfo(
                 uuid=getattr(node, 'uuid_', None) or getattr(node, 'uuid', ''),
                 name=node.name or "",
                 labels=node.labels or [],
                 summary=node.summary or "",
-                attributes=node.attributes or {}
+                attributes=node.attributes or {},
+                locale=self._locale(),
             )
+            if not graph_id:
+                return result
+
+            raw_nodes = self._fetch_raw_node_infos(graph_id)
+            alias_candidates = [
+                candidate
+                for candidate in raw_nodes
+                if candidate.uuid == result.uuid
+                or ZepEntityReader._are_duplicate_entities(
+                    self._node_to_entity(result),
+                    self._node_to_entity(candidate),
+                )
+            ]
+            if not alias_candidates:
+                return result
+
+            deduplicated_nodes, _ = self._deduplicate_nodes(
+                alias_candidates,
+                "node detail lookup",
+            )
+            return deduplicated_nodes[0] if deduplicated_nodes else result
         except Exception as e:
-            logger.error(f"获取节点详情失败: {str(e)}")
+            self._log(
+                "error",
+                f"获取节点详情失败: {str(e)}",
+                f"Failed to fetch node details: {str(e)}",
+                locale,
+            )
             return None
     
     def get_node_edges(self, graph_id: str, node_uuid: str) -> List[EdgeInfo]:
         """
         获取节点相关的所有边
         
-        通过获取图谱所有边，然后过滤出与指定节点相关的边
+        通过获取图谱所有节点和边，过滤并折叠与指定节点及其明显别名相关的边
         
         Args:
             graph_id: 图谱ID
@@ -758,23 +1283,66 @@ class ZepToolsService:
         Returns:
             边列表
         """
-        logger.info(f"获取节点 {node_uuid[:8]}... 的相关边")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取节点 {node_uuid[:8]}... 的相关边",
+            f"Fetching edges related to node {node_uuid[:8]}...",
+            locale,
+        )
         
         try:
-            # 获取图谱所有边，然后过滤
+            all_nodes = self.get_all_nodes(graph_id)
             all_edges = self.get_all_edges(graph_id)
+
+            requested_node = next((node for node in all_nodes if node.uuid == node_uuid), None)
+            if requested_node is None:
+                result = [
+                    edge
+                    for edge in all_edges
+                    if edge.source_node_uuid == node_uuid or edge.target_node_uuid == node_uuid
+                ]
+            else:
+                deduplicated_nodes, uuid_remap = self._deduplicate_nodes(
+                    all_nodes,
+                    "node edge lookup",
+                )
+                node_map = {node.uuid: node for node in deduplicated_nodes}
+                canonical_uuid = uuid_remap.get(node_uuid, node_uuid)
+                alias_uuids = {
+                    raw_uuid
+                    for raw_uuid, remapped_uuid in uuid_remap.items()
+                    if remapped_uuid == canonical_uuid
+                }
+                alias_uuids.add(node_uuid)
+                alias_uuids.add(canonical_uuid)
+
+                result = self._deduplicate_edge_infos(
+                    [
+                        edge
+                        for edge in all_edges
+                        if edge.source_node_uuid in alias_uuids
+                        or edge.target_node_uuid in alias_uuids
+                    ],
+                    uuid_remap,
+                    node_map,
+                )
             
-            result = []
-            for edge in all_edges:
-                # 检查边是否与指定节点相关（作为源或目标）
-                if edge.source_node_uuid == node_uuid or edge.target_node_uuid == node_uuid:
-                    result.append(edge)
-            
-            logger.info(f"找到 {len(result)} 条与节点相关的边")
+            self._log(
+                "info",
+                f"找到 {len(result)} 条与节点相关的边",
+                f"Found {len(result)} edges related to the node",
+                locale,
+            )
             return result
             
         except Exception as e:
-            logger.warning(f"获取节点边失败: {str(e)}")
+            self._log(
+                "warning",
+                f"获取节点边失败: {str(e)}",
+                f"Failed to fetch node edges: {str(e)}",
+                locale,
+            )
             return []
     
     def get_entities_by_type(
@@ -792,7 +1360,13 @@ class ZepToolsService:
         Returns:
             符合类型的实体列表
         """
-        logger.info(f"获取类型为 {entity_type} 的实体...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取类型为 {entity_type} 的实体...",
+            f"Fetching entities of type {entity_type}...",
+            locale,
+        )
         
         all_nodes = self.get_all_nodes(graph_id)
         
@@ -801,9 +1375,15 @@ class ZepToolsService:
             # 检查labels是否包含指定类型
             if entity_type in node.labels:
                 filtered.append(node)
-        
-        logger.info(f"找到 {len(filtered)} 个 {entity_type} 类型的实体")
-        return filtered
+
+        deduplicated, _ = self._deduplicate_nodes(filtered, "typed entity list")
+        self._log(
+            "info",
+            f"找到 {len(deduplicated)} 个 {entity_type} 类型的实体",
+            f"Found {len(deduplicated)} entities of type {entity_type}",
+            locale,
+        )
+        return deduplicated
     
     def get_entity_summary(
         self, 
@@ -822,7 +1402,13 @@ class ZepToolsService:
         Returns:
             实体摘要信息
         """
-        logger.info(f"获取实体 {entity_name} 的关系摘要...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取实体 {entity_name} 的关系摘要...",
+            f"Fetching relationship summary for entity {entity_name}...",
+            locale,
+        )
         
         # 先搜索该实体相关的信息
         search_result = self.search_graph(
@@ -831,18 +1417,49 @@ class ZepToolsService:
             limit=20
         )
         
-        # 尝试在所有节点中找到该实体
-        all_nodes = self.get_all_nodes(graph_id)
-        entity_node = None
-        for node in all_nodes:
-            if node.name.lower() == entity_name.lower():
-                entity_node = node
-                break
+        # 对节点执行同样的别名折叠，确保实体摘要与搜索/全景输出保持一致。
+        all_nodes, uuid_remap = self._deduplicate_nodes(
+            self.get_all_nodes(graph_id),
+            "entity summary",
+        )
+        entity_node = next(
+            (
+                node
+                for node in all_nodes
+                if node.name.lower() == entity_name.lower()
+                or ZepEntityReader._normalize_entity_name(node.name)
+                == ZepEntityReader._normalize_entity_name(entity_name)
+                or ZepEntityReader._entity_alias_key(self._node_to_entity(node))
+                == ZepEntityReader._strip_known_affixes(
+                    ZepEntityReader._normalize_entity_name(entity_name),
+                    next(
+                        (label for label in node.labels if label not in ["Entity", "Node"]),
+                        "",
+                    ),
+                )
+            ),
+            None,
+        )
         
         related_edges = []
         if entity_node:
-            # 传入graph_id参数
-            related_edges = self.get_node_edges(graph_id, entity_node.uuid)
+            alias_uuids = {
+                raw_uuid
+                for raw_uuid, canonical_uuid in uuid_remap.items()
+                if canonical_uuid == entity_node.uuid
+            }
+            alias_uuids.add(entity_node.uuid)
+
+            related_edges = self._deduplicate_edge_infos(
+                [
+                    edge
+                    for edge in self.get_all_edges(graph_id)
+                    if edge.source_node_uuid in alias_uuids
+                    or edge.target_node_uuid in alias_uuids
+                ],
+                uuid_remap,
+                {node.uuid: node for node in all_nodes},
+            )
         
         return {
             "entity_name": entity_name,
@@ -862,10 +1479,24 @@ class ZepToolsService:
         Returns:
             统计信息
         """
-        logger.info(f"获取图谱 {graph_id} 的统计信息...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取图谱 {graph_id} 的统计信息...",
+            f"Fetching graph statistics for {graph_id}...",
+            locale,
+        )
         
-        nodes = self.get_all_nodes(graph_id)
-        edges = self.get_all_edges(graph_id)
+        nodes, uuid_remap = self._deduplicate_nodes(
+            self.get_all_nodes(graph_id),
+            "graph statistics",
+        )
+        node_map = {node.uuid: node for node in nodes}
+        edges = self._deduplicate_edge_infos(
+            self.get_all_edges(graph_id),
+            uuid_remap,
+            node_map,
+        )
         
         # 统计实体类型分布
         entity_types = {}
@@ -906,7 +1537,13 @@ class ZepToolsService:
         Returns:
             模拟上下文信息
         """
-        logger.info(f"获取模拟上下文: {simulation_requirement[:50]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"获取模拟上下文: {simulation_requirement[:50]}...",
+            f"Fetching simulation context: {simulation_requirement[:50]}...",
+            locale,
+        )
         
         # 搜索与模拟需求相关的信息
         search_result = self.search_graph(
@@ -917,9 +1554,12 @@ class ZepToolsService:
         
         # 获取图谱统计
         stats = self.get_graph_statistics(graph_id)
-        
+
         # 获取所有实体节点
-        all_nodes = self.get_all_nodes(graph_id)
+        all_nodes, _ = self._deduplicate_nodes(
+            self.get_all_nodes(graph_id),
+            "simulation context",
+        )
         
         # 筛选有实际类型的实体（非纯Entity节点）
         entities = []
@@ -970,12 +1610,19 @@ class ZepToolsService:
         Returns:
             InsightForgeResult: 深度洞察检索结果
         """
-        logger.info(f"InsightForge 深度洞察检索: {query[:50]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"InsightForge 深度洞察检索: {query[:50]}...",
+            f"InsightForge deep analysis: {query[:50]}...",
+            locale,
+        )
         
         result = InsightForgeResult(
             query=query,
             simulation_requirement=simulation_requirement,
-            sub_queries=[]
+            sub_queries=[],
+            locale=self._locale(),
         )
         
         # Step 1: 使用LLM生成子问题
@@ -986,7 +1633,12 @@ class ZepToolsService:
             max_queries=max_sub_queries
         )
         result.sub_queries = sub_queries
-        logger.info(f"生成 {len(sub_queries)} 个子问题")
+        self._log(
+            "info",
+            f"生成 {len(sub_queries)} 个子问题",
+            f"Generated {len(sub_queries)} sub-queries",
+            locale,
+        )
         
         # Step 2: 对每个子问题进行语义搜索
         all_facts = []
@@ -1035,36 +1687,53 @@ class ZepToolsService:
                     entity_uuids.add(target_uuid)
         
         # 获取所有相关实体的详情（不限制数量，完整输出）
-        entity_insights = []
-        node_map = {}  # 用于后续关系链构建
-        
+        raw_nodes = []
         for uuid in list(entity_uuids):  # 处理所有实体，不截断
             if not uuid:
                 continue
             try:
                 # 单独获取每个相关节点的信息
-                node = self.get_node_detail(uuid)
+                node = self.get_node_detail(uuid, graph_id=graph_id)
                 if node:
-                    node_map[uuid] = node
-                    entity_type = next((l for l in node.labels if l not in ["Entity", "Node"]), "实体")
-                    
-                    # 获取该实体相关的所有事实（不截断）
-                    related_facts = [
-                        f for f in all_facts 
-                        if node.name.lower() in f.lower()
-                    ]
-                    
-                    entity_insights.append({
-                        "uuid": node.uuid,
-                        "name": node.name,
-                        "type": entity_type,
-                        "summary": node.summary,
-                        "related_facts": related_facts  # 完整输出，不截断
-                    })
+                    raw_nodes.append(node)
             except Exception as e:
-                logger.debug(f"获取节点 {uuid} 失败: {e}")
+                self._log(
+                    "debug",
+                    f"获取节点 {uuid} 失败: {e}",
+                    f"Failed to fetch node {uuid}: {e}",
+                    locale,
+                )
                 continue
-        
+
+        deduplicated_nodes, node_uuid_remap = self._deduplicate_nodes(
+            raw_nodes,
+            "insight forge output",
+        )
+        node_map = {node.uuid: node for node in deduplicated_nodes}
+        related_facts_by_uuid: Dict[str, List[str]] = {node.uuid: [] for node in deduplicated_nodes}
+
+        for raw_node in raw_nodes:
+            canonical_uuid = node_uuid_remap.get(raw_node.uuid, raw_node.uuid)
+            seen_related = set(related_facts_by_uuid.setdefault(canonical_uuid, []))
+            for fact in all_facts:
+                if raw_node.name and raw_node.name.lower() in fact.lower() and fact not in seen_related:
+                    related_facts_by_uuid[canonical_uuid].append(fact)
+                    seen_related.add(fact)
+
+        entity_insights = []
+        for node in deduplicated_nodes:
+            entity_type = next(
+                (l for l in node.labels if l not in ["Entity", "Node"]),
+                self._text("实体", "Entity", locale),
+            )
+            entity_insights.append({
+                "uuid": node.uuid,
+                "name": node.name,
+                "type": entity_type,
+                "summary": node.summary,
+                "related_facts": related_facts_by_uuid.get(node.uuid, []),
+            })
+
         result.entity_insights = entity_insights
         result.total_entities = len(entity_insights)
         
@@ -1072,8 +1741,14 @@ class ZepToolsService:
         relationship_chains = []
         for edge_data in all_edges:  # 处理所有边，不截断
             if isinstance(edge_data, dict):
-                source_uuid = edge_data.get('source_node_uuid', '')
-                target_uuid = edge_data.get('target_node_uuid', '')
+                source_uuid = node_uuid_remap.get(
+                    edge_data.get('source_node_uuid', ''),
+                    edge_data.get('source_node_uuid', ''),
+                )
+                target_uuid = node_uuid_remap.get(
+                    edge_data.get('target_node_uuid', ''),
+                    edge_data.get('target_node_uuid', ''),
+                )
                 relation_name = edge_data.get('name', '')
                 
                 source_name = node_map.get(source_uuid, NodeInfo('', '', [], '', {})).name or source_uuid[:8]
@@ -1086,7 +1761,12 @@ class ZepToolsService:
         result.relationship_chains = relationship_chains
         result.total_relationships = len(relationship_chains)
         
-        logger.info(f"InsightForge完成: {result.total_facts}条事实, {result.total_entities}个实体, {result.total_relationships}条关系")
+        self._log(
+            "info",
+            f"InsightForge完成: {result.total_facts}条事实, {result.total_entities}个实体, {result.total_relationships}条关系",
+            f"InsightForge completed: {result.total_facts} facts, {result.total_entities} entities, {result.total_relationships} relationships",
+            locale,
+        )
         return result
     
     def _generate_sub_queries(
@@ -1101,7 +1781,31 @@ class ZepToolsService:
         
         将复杂问题分解为多个可以独立检索的子问题
         """
-        system_prompt = """你是一个专业的问题分析专家。你的任务是将一个复杂问题分解为多个可以在模拟世界中独立观察的子问题。
+        locale = self._locale()
+        if locale == "en":
+            system_prompt = """You are an expert question analyst. Break a complex question into multiple focused sub-questions that can be observed independently inside the simulation world.
+
+Requirements:
+1. Each sub-question should be specific enough to map to agent behavior, events, or observable changes in the simulation.
+2. Cover different dimensions of the main question when possible (for example who, what, why, how, when, where).
+3. Keep each sub-question relevant to the simulation scenario.
+4. Write every sub-question in natural English, even if the source materials are in another language.
+5. Return JSON in the form {"sub_queries": ["Sub-question 1", "Sub-question 2", ...]}."""
+            simulation_background = simulation_requirement or "Not provided"
+            context_prefix = (
+                f"\n\nReport context:\n{report_context[:500]}"
+                if report_context
+                else ""
+            )
+            user_prompt = (
+                f"Simulation background:\n{simulation_background}"
+                f"{context_prefix}\n\n"
+                f"Break the following question into {max_queries} focused sub-questions:\n"
+                f"{query}\n\n"
+                "Return only the JSON object."
+            )
+        else:
+            system_prompt = """你是一个专业的问题分析专家。你的任务是将一个复杂问题分解为多个可以在模拟世界中独立观察的子问题。
 
 要求：
 1. 每个子问题应该足够具体，可以在模拟世界中找到相关的Agent行为或事件
@@ -1109,7 +1813,7 @@ class ZepToolsService:
 3. 子问题应该与模拟场景相关
 4. 返回JSON格式：{"sub_queries": ["子问题1", "子问题2", ...]}"""
 
-        user_prompt = f"""模拟需求背景：
+            user_prompt = f"""模拟需求背景：
 {simulation_requirement}
 
 {f"报告上下文：{report_context[:500]}" if report_context else ""}
@@ -1133,8 +1837,22 @@ class ZepToolsService:
             return [str(sq) for sq in sub_queries[:max_queries]]
             
         except Exception as e:
-            logger.warning(f"生成子问题失败: {str(e)}，使用默认子问题")
+            self._log(
+                "warning",
+                f"生成子问题失败: {str(e)}，使用默认子问题",
+                f"Failed to generate sub-queries: {str(e)}. Using default sub-queries.",
+                self._locale(),
+            )
             # 降级：返回基于原问题的变体
+            if locale == "en":
+                normalized_query = query.rstrip("?.!").strip() or query
+                return [
+                    query,
+                    f"Who are the main actors related to {normalized_query}?",
+                    f"What are the causes and impacts of {normalized_query}?",
+                    f"How is {normalized_query} likely to evolve?",
+                ][:max_queries]
+
             return [
                 query,
                 f"{query} 的主要参与者",
@@ -1168,18 +1886,29 @@ class ZepToolsService:
         Returns:
             PanoramaResult: 广度搜索结果
         """
-        logger.info(f"PanoramaSearch 广度搜索: {query[:50]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"PanoramaSearch 广度搜索: {query[:50]}...",
+            f"PanoramaSearch overview: {query[:50]}...",
+            locale,
+        )
         
-        result = PanoramaResult(query=query)
+        result = PanoramaResult(query=query, locale=self._locale())
         
         # 获取所有节点
-        all_nodes = self.get_all_nodes(graph_id)
+        raw_nodes = self.get_all_nodes(graph_id)
+        all_nodes, node_uuid_remap = self._deduplicate_nodes(raw_nodes, "panorama output")
         node_map = {n.uuid: n for n in all_nodes}
         result.all_nodes = all_nodes
         result.total_nodes = len(all_nodes)
         
         # 获取所有边（包含时间信息）
-        all_edges = self.get_all_edges(graph_id, include_temporal=True)
+        all_edges = self._deduplicate_edge_infos(
+            self.get_all_edges(graph_id, include_temporal=True),
+            node_uuid_remap,
+            node_map,
+        )
         result.all_edges = all_edges
         result.total_edges = len(all_edges)
         
@@ -1192,16 +1921,16 @@ class ZepToolsService:
                 continue
             
             # 为事实添加实体名称
-            source_name = node_map.get(edge.source_node_uuid, NodeInfo('', '', [], '', {})).name or edge.source_node_uuid[:8]
-            target_name = node_map.get(edge.target_node_uuid, NodeInfo('', '', [], '', {})).name or edge.target_node_uuid[:8]
+            source_name = edge.source_node_name or edge.source_node_uuid[:8]
+            target_name = edge.target_node_name or edge.target_node_uuid[:8]
             
             # 判断是否过期/失效
             is_historical = edge.is_expired or edge.is_invalid
             
             if is_historical:
                 # 历史/过期事实，添加时间标记
-                valid_at = edge.valid_at or "未知"
-                invalid_at = edge.invalid_at or edge.expired_at or "未知"
+                valid_at = edge.valid_at or self._text("未知", "Unknown", locale)
+                invalid_at = edge.invalid_at or edge.expired_at or self._text("未知", "Unknown", locale)
                 fact_with_time = f"[{valid_at} - {invalid_at}] {edge.fact}"
                 historical_facts.append(fact_with_time)
             else:
@@ -1226,12 +1955,20 @@ class ZepToolsService:
         active_facts.sort(key=relevance_score, reverse=True)
         historical_facts.sort(key=relevance_score, reverse=True)
         
+        active_facts = self._unique_search_facts(active_facts)
+        historical_facts = self._unique_search_facts(historical_facts)
+
         result.active_facts = active_facts[:limit]
         result.historical_facts = historical_facts[:limit] if include_expired else []
         result.active_count = len(active_facts)
         result.historical_count = len(historical_facts)
         
-        logger.info(f"PanoramaSearch完成: {result.active_count}条有效, {result.historical_count}条历史")
+        self._log(
+            "info",
+            f"PanoramaSearch完成: {result.active_count}条有效, {result.historical_count}条历史",
+            f"PanoramaSearch completed: {result.active_count} active facts, {result.historical_count} historical facts",
+            locale,
+        )
         return result
     
     def quick_search(
@@ -1256,7 +1993,13 @@ class ZepToolsService:
         Returns:
             SearchResult: 搜索结果
         """
-        logger.info(f"QuickSearch 简单搜索: {query[:50]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"QuickSearch 简单搜索: {query[:50]}...",
+            f"QuickSearch: {query[:50]}...",
+            locale,
+        )
         
         # 直接调用现有的search_graph方法
         result = self.search_graph(
@@ -1266,7 +2009,12 @@ class ZepToolsService:
             scope="edges"
         )
         
-        logger.info(f"QuickSearch完成: {result.total_count}条结果")
+        self._log(
+            "info",
+            f"QuickSearch完成: {result.total_count}条结果",
+            f"QuickSearch completed: {result.total_count} results",
+            locale,
+        )
         return result
     
     def interview_agents(
@@ -1306,23 +2054,44 @@ class ZepToolsService:
         """
         from .simulation_runner import SimulationRunner
         
-        logger.info(f"InterviewAgents 深度采访（真实API）: {interview_requirement[:50]}...")
+        locale = self._locale()
+        self._log(
+            "info",
+            f"InterviewAgents 深度采访（真实API）: {interview_requirement[:50]}...",
+            f"InterviewAgents deep interview (live API): {interview_requirement[:50]}...",
+            locale,
+        )
         
         result = InterviewResult(
             interview_topic=interview_requirement,
-            interview_questions=custom_questions or []
+            interview_questions=custom_questions or [],
+            locale=locale,
         )
         
         # Step 1: 读取人设文件
         profiles = self._load_agent_profiles(simulation_id)
         
         if not profiles:
-            logger.warning(f"未找到模拟 {simulation_id} 的人设文件")
-            result.summary = "未找到可采访的Agent人设文件"
+            self._log(
+                "warning",
+                f"未找到模拟 {simulation_id} 的人设文件",
+                f"No agent profile files were found for simulation {simulation_id}",
+                locale,
+            )
+            result.summary = self._text(
+                "未找到可采访的Agent人设文件",
+                "No interviewable agent profiles were found",
+                locale,
+            )
             return result
         
         result.total_agents = len(profiles)
-        logger.info(f"加载到 {len(profiles)} 个Agent人设")
+        self._log(
+            "info",
+            f"加载到 {len(profiles)} 个Agent人设",
+            f"Loaded {len(profiles)} agent profiles",
+            locale,
+        )
         
         # Step 2: 使用LLM选择要采访的Agent（返回agent_id列表）
         selected_agents, selected_indices, selection_reasoning = self._select_agents_for_interview(
@@ -1334,7 +2103,12 @@ class ZepToolsService:
         
         result.selected_agents = selected_agents
         result.selection_reasoning = selection_reasoning
-        logger.info(f"选择了 {len(selected_agents)} 个Agent进行采访: {selected_indices}")
+        self._log(
+            "info",
+            f"选择了 {len(selected_agents)} 个Agent进行采访: {selected_indices}",
+            f"Selected {len(selected_agents)} agents for interview: {selected_indices}",
+            locale,
+        )
         
         # Step 3: 生成采访问题（如果没有提供）
         if not result.interview_questions:
@@ -1343,24 +2117,43 @@ class ZepToolsService:
                 simulation_requirement=simulation_requirement,
                 selected_agents=selected_agents
             )
-            logger.info(f"生成了 {len(result.interview_questions)} 个采访问题")
+            self._log(
+                "info",
+                f"生成了 {len(result.interview_questions)} 个采访问题",
+                f"Generated {len(result.interview_questions)} interview questions",
+                locale,
+            )
         
         # 将问题合并为一个采访prompt
         combined_prompt = "\n".join([f"{i+1}. {q}" for i, q in enumerate(result.interview_questions)])
         
         # 添加优化前缀，约束Agent回复格式
-        INTERVIEW_PROMPT_PREFIX = (
-            "你正在接受一次采访。请结合你的人设、所有的过往记忆与行动，"
-            "以纯文本方式直接回答以下问题。\n"
-            "回复要求：\n"
-            "1. 直接用自然语言回答，不要调用任何工具\n"
-            "2. 不要返回JSON格式或工具调用格式\n"
-            "3. 不要使用Markdown标题（如#、##、###）\n"
-            "4. 按问题编号逐一回答，每个回答以「问题X：」开头（X为问题编号）\n"
-            "5. 每个问题的回答之间用空行分隔\n"
-            "6. 回答要有实质内容，每个问题至少回答2-3句话\n\n"
-        )
-        optimized_prompt = f"{INTERVIEW_PROMPT_PREFIX}{combined_prompt}"
+        if locale == "en":
+            interview_prompt_prefix = (
+                "You are being interviewed. Combine your persona with your prior memories "
+                "and actions, then answer the following questions directly in plain text.\n"
+                "Response requirements:\n"
+                "1. Answer naturally in plain language and do not call any tools\n"
+                "2. Do not return JSON or tool-call payloads\n"
+                "3. Do not use Markdown headings such as #, ##, or ###\n"
+                "4. Answer each numbered question in order, and begin each answer with "
+                "\"Question X:\" where X is the question number\n"
+                "5. Separate each answer with a blank line\n"
+                "6. Provide substantive content, with at least 2-3 sentences per question\n\n"
+            )
+        else:
+            interview_prompt_prefix = (
+                "你正在接受一次采访。请结合你的人设、所有的过往记忆与行动，"
+                "以纯文本方式直接回答以下问题。\n"
+                "回复要求：\n"
+                "1. 直接用自然语言回答，不要调用任何工具\n"
+                "2. 不要返回JSON格式或工具调用格式\n"
+                "3. 不要使用Markdown标题（如#、##、###）\n"
+                "4. 按问题编号逐一回答，每个回答以「问题X：」开头（X为问题编号）\n"
+                "5. 每个问题的回答之间用空行分隔\n"
+                "6. 回答要有实质内容，每个问题至少回答2-3句话\n\n"
+            )
+        optimized_prompt = f"{interview_prompt_prefix}{combined_prompt}"
         
         # Step 4: 调用真实的采访API（不指定platform，默认双平台同时采访）
         try:
@@ -1373,23 +2166,42 @@ class ZepToolsService:
                     # 不指定platform，API会在twitter和reddit两个平台都采访
                 })
             
-            logger.info(f"调用批量采访API（双平台）: {len(interviews_request)} 个Agent")
+            self._log(
+                "info",
+                f"调用批量采访API（双平台）: {len(interviews_request)} 个Agent",
+                f"Calling the batch interview API (dual platform) for {len(interviews_request)} agents",
+                locale,
+            )
             
             # 调用 SimulationRunner 的批量采访方法（不传platform，双平台采访）
             api_result = SimulationRunner.interview_agents_batch(
                 simulation_id=simulation_id,
                 interviews=interviews_request,
                 platform=None,  # 不指定platform，双平台采访
-                timeout=180.0   # 双平台需要更长超时
+                timeout=float(Config.INTERVIEW_BATCH_TIMEOUT_SECONDS),
             )
             
-            logger.info(f"采访API返回: {api_result.get('interviews_count', 0)} 个结果, success={api_result.get('success')}")
+            self._log(
+                "info",
+                f"采访API返回: {api_result.get('interviews_count', 0)} 个结果, success={api_result.get('success')}",
+                f"Interview API returned {api_result.get('interviews_count', 0)} results, success={api_result.get('success')}",
+                locale,
+            )
             
             # 检查API调用是否成功
             if not api_result.get("success", False):
-                error_msg = api_result.get("error", "未知错误")
-                logger.warning(f"采访API返回失败: {error_msg}")
-                result.summary = f"采访API调用失败：{error_msg}。请检查OASIS模拟环境状态。"
+                error_msg = api_result.get("error", self._text("未知错误", "Unknown error", locale))
+                self._log(
+                    "warning",
+                    f"采访API返回失败: {error_msg}",
+                    f"Interview API returned failure: {error_msg}",
+                    locale,
+                )
+                result.summary = self._text(
+                    f"采访API调用失败：{error_msg}。请检查OASIS模拟环境状态。",
+                    f"Interview API call failed: {error_msg}. Check the OASIS simulation environment status.",
+                    locale,
+                )
                 return result
             
             # Step 5: 解析API返回结果，构建AgentInterview对象
@@ -1400,7 +2212,7 @@ class ZepToolsService:
             for i, agent_idx in enumerate(selected_indices):
                 agent = selected_agents[i]
                 agent_name = agent.get("realname", agent.get("username", f"Agent_{agent_idx}"))
-                agent_role = agent.get("profession", "未知")
+                agent_role = agent.get("profession", self._text("未知", "Unknown", locale))
                 agent_bio = agent.get("bio", "")
                 
                 # 获取该Agent在两个平台的采访结果
@@ -1415,9 +2227,14 @@ class ZepToolsService:
                 reddit_response = self._clean_tool_call_response(reddit_response)
 
                 # 始终输出双平台标记
-                twitter_text = twitter_response if twitter_response else "（该平台未获得回复）"
-                reddit_text = reddit_response if reddit_response else "（该平台未获得回复）"
-                response_text = f"【Twitter平台回答】\n{twitter_text}\n\n【Reddit平台回答】\n{reddit_text}"
+                no_reply = self._text("（该平台未获得回复）", "(no reply received from this platform)", locale)
+                twitter_text = twitter_response if twitter_response else no_reply
+                reddit_text = reddit_response if reddit_response else no_reply
+                response_text = self._text(
+                    f"【Twitter平台回答】\n{twitter_text}\n\n【Reddit平台回答】\n{reddit_text}",
+                    f"[Twitter answer]\n{twitter_text}\n\n[Reddit answer]\n{reddit_text}",
+                    locale,
+                )
 
                 # 提取关键引言（从两个平台的回答中）
                 import re
@@ -1431,21 +2248,29 @@ class ZepToolsService:
                 clean_text = re.sub(r'【[^】]+】', '', clean_text)
 
                 # 策略1（主）: 提取完整的有实质内容的句子
-                sentences = re.split(r'[。！？]', clean_text)
+                sentences = re.split(r'[。！？.!?]+(?:["”」])?\s*', clean_text)
                 meaningful = [
                     s.strip() for s in sentences
                     if 20 <= len(s.strip()) <= 150
-                    and not re.match(r'^[\s\W，,；;：:、]+', s.strip())
-                    and not s.strip().startswith(('{', '问题'))
+                    and not re.match(r'^[\s\W，,；;：:、.!?]+', s.strip())
+                    and not re.match(r'^(?:\{|\u95ee\u9898\d+|question\s+\d+)', s.strip(), re.IGNORECASE)
                 ]
                 meaningful.sort(key=len, reverse=True)
-                key_quotes = [s + "。" for s in meaningful[:3]]
+                sentence_suffix = "." if locale == "en" else "。"
+                key_quotes = [s + sentence_suffix for s in meaningful[:3]]
 
-                # 策略2（补充）: 正确配对的中文引号「」内长文本
+                # 策略2（补充）: 提取正确配对的中英文长引号文本
                 if not key_quotes:
                     paired = re.findall(r'\u201c([^\u201c\u201d]{15,100})\u201d', clean_text)
                     paired += re.findall(r'\u300c([^\u300c\u300d]{15,100})\u300d', clean_text)
-                    key_quotes = [q for q in paired if not re.match(r'^[，,；;：:、]', q)][:3]
+                    paired += re.findall(r'"([^"\n]{15,160})"', clean_text)
+                    paired += re.findall(r"'([^'\n]{15,160})'", clean_text)
+                    key_quotes = [
+                        q.strip()
+                        for q in paired
+                        if not re.match(r'^[，,；;：:、.!?]', q.strip())
+                        and not re.match(r'^(?:\u95ee\u9898\d+|question\s+\d+)', q.strip(), re.IGNORECASE)
+                    ][:3]
                 
                 interview = AgentInterview(
                     agent_name=agent_name,
@@ -1453,7 +2278,8 @@ class ZepToolsService:
                     agent_bio=agent_bio[:1000],  # 扩大bio长度限制
                     question=combined_prompt,
                     response=response_text,
-                    key_quotes=key_quotes[:5]
+                    key_quotes=key_quotes[:5],
+                    locale=locale,
                 )
                 result.interviews.append(interview)
             
@@ -1461,14 +2287,32 @@ class ZepToolsService:
             
         except ValueError as e:
             # 模拟环境未运行
-            logger.warning(f"采访API调用失败（环境未运行？）: {e}")
-            result.summary = f"采访失败：{str(e)}。模拟环境可能已关闭，请确保OASIS环境正在运行。"
+            self._log(
+                "warning",
+                f"采访API调用失败（环境未运行？）: {e}",
+                f"Interview API call failed (environment not running?): {e}",
+                locale,
+            )
+            result.summary = self._text(
+                f"采访失败：{str(e)}。模拟环境可能已关闭，请确保OASIS环境正在运行。",
+                f"Interview failed: {str(e)}. The simulation environment may be closed. Make sure the OASIS environment is still running.",
+                locale,
+            )
             return result
         except Exception as e:
-            logger.error(f"采访API调用异常: {e}")
+            self._log(
+                "error",
+                f"采访API调用异常: {e}",
+                f"Interview API call raised an exception: {e}",
+                locale,
+            )
             import traceback
             logger.error(traceback.format_exc())
-            result.summary = f"采访过程发生错误：{str(e)}"
+            result.summary = self._text(
+                f"采访过程发生错误：{str(e)}",
+                f"An error occurred during the interview process: {str(e)}",
+                locale,
+            )
             return result
         
         # Step 6: 生成采访摘要
@@ -1478,7 +2322,12 @@ class ZepToolsService:
                 interview_requirement=interview_requirement
             )
         
-        logger.info(f"InterviewAgents完成: 采访了 {result.interviewed_count} 个Agent（双平台）")
+        self._log(
+            "info",
+            f"InterviewAgents完成: 采访了 {result.interviewed_count} 个Agent（双平台）",
+            f"InterviewAgents completed: interviewed {result.interviewed_count} agents (dual platform)",
+            locale,
+        )
         return result
     
     @staticmethod
@@ -1521,10 +2370,18 @@ class ZepToolsService:
             try:
                 with open(reddit_profile_path, 'r', encoding='utf-8') as f:
                     profiles = json.load(f)
-                logger.info(f"从 reddit_profiles.json 加载了 {len(profiles)} 个人设")
+                self._log(
+                    "info",
+                    f"从 reddit_profiles.json 加载了 {len(profiles)} 个人设",
+                    f"Loaded {len(profiles)} profiles from reddit_profiles.json",
+                )
                 return profiles
             except Exception as e:
-                logger.warning(f"读取 reddit_profiles.json 失败: {e}")
+                self._log(
+                    "warning",
+                    f"读取 reddit_profiles.json 失败: {e}",
+                    f"Failed to read reddit_profiles.json: {e}",
+                )
         
         # 尝试读取Twitter CSV格式
         twitter_profile_path = os.path.join(sim_dir, "twitter_profiles.csv")
@@ -1539,12 +2396,20 @@ class ZepToolsService:
                             "username": row.get("username", ""),
                             "bio": row.get("description", ""),
                             "persona": row.get("user_char", ""),
-                            "profession": "未知"
+                            "profession": self._unknown_profession()
                         })
-                logger.info(f"从 twitter_profiles.csv 加载了 {len(profiles)} 个人设")
+                self._log(
+                    "info",
+                    f"从 twitter_profiles.csv 加载了 {len(profiles)} 个人设",
+                    f"Loaded {len(profiles)} profiles from twitter_profiles.csv",
+                )
                 return profiles
             except Exception as e:
-                logger.warning(f"读取 twitter_profiles.csv 失败: {e}")
+                self._log(
+                    "warning",
+                    f"读取 twitter_profiles.csv 失败: {e}",
+                    f"Failed to read twitter_profiles.csv: {e}",
+                )
         
         return profiles
     
@@ -1564,20 +2429,51 @@ class ZepToolsService:
                 - selected_indices: 选中Agent的索引列表（用于API调用）
                 - reasoning: 选择理由
         """
+        locale = self._locale()
         
         # 构建Agent摘要列表
         agent_summaries = []
         for i, profile in enumerate(profiles):
+            profession = profile.get("profession") or self._text("未知", "Unknown", locale)
             summary = {
                 "index": i,
                 "name": profile.get("realname", profile.get("username", f"Agent_{i}")),
-                "profession": profile.get("profession", "未知"),
+                "profession": profession,
                 "bio": profile.get("bio", "")[:200],
                 "interested_topics": profile.get("interested_topics", [])
             }
             agent_summaries.append(summary)
-        
-        system_prompt = """你是一个专业的采访策划专家。你的任务是根据采访需求，从模拟Agent列表中选择最适合采访的对象。
+
+        if locale == "en":
+            system_prompt = """You are an expert interview planner. Select the most relevant simulated agents for this interview request.
+
+Selection criteria:
+1. The agent's identity or profession is relevant to the interview topic
+2. The agent may hold a unique or valuable perspective
+3. Prefer a diverse set of viewpoints (for example supporters, critics, neutral observers, professionals)
+4. Prioritize roles directly connected to the event
+5. Write the `reasoning` field in natural English, even if the interview requirement or agent bios use another language
+
+Return JSON:
+{
+    "selected_indices": [selected agent indices],
+    "reasoning": "brief explanation"
+}"""
+            simulation_background = simulation_requirement or "Not provided"
+            user_prompt = f"""Interview requirement:
+{interview_requirement}
+
+Simulation background:
+{simulation_background}
+
+Available agents ({len(agent_summaries)} total):
+{json.dumps(agent_summaries, ensure_ascii=False, indent=2)}
+
+Select up to {max_agents} of the most suitable agents and explain why."""
+            default_reasoning = "Selected automatically based on relevance"
+            default_fallback_reasoning = "Used the default selection strategy"
+        else:
+            system_prompt = """你是一个专业的采访策划专家。你的任务是根据采访需求，从模拟Agent列表中选择最适合采访的对象。
 
 选择标准：
 1. Agent的身份/职业与采访主题相关
@@ -1590,8 +2486,7 @@ class ZepToolsService:
     "selected_indices": [选中Agent的索引列表],
     "reasoning": "选择理由说明"
 }"""
-
-        user_prompt = f"""采访需求：
+            user_prompt = f"""采访需求：
 {interview_requirement}
 
 模拟背景：
@@ -1601,6 +2496,8 @@ class ZepToolsService:
 {json.dumps(agent_summaries, ensure_ascii=False, indent=2)}
 
 请选择最多{max_agents}个最适合采访的Agent，并说明选择理由。"""
+            default_reasoning = "基于相关性自动选择"
+            default_fallback_reasoning = "使用默认选择策略"
 
         try:
             response = self.llm.chat_json(
@@ -1612,7 +2509,7 @@ class ZepToolsService:
             )
             
             selected_indices = response.get("selected_indices", [])[:max_agents]
-            reasoning = response.get("reasoning", "基于相关性自动选择")
+            reasoning = response.get("reasoning", default_reasoning)
             
             # 获取选中的Agent完整信息
             selected_agents = []
@@ -1625,11 +2522,16 @@ class ZepToolsService:
             return selected_agents, valid_indices, reasoning
             
         except Exception as e:
-            logger.warning(f"LLM选择Agent失败，使用默认选择: {e}")
+            self._log(
+                "warning",
+                f"LLM选择Agent失败，使用默认选择: {e}",
+                f"LLM agent selection failed; using the default selection: {e}",
+                locale,
+            )
             # 降级：选择前N个
             selected = profiles[:max_agents]
             indices = list(range(min(max_agents, len(profiles))))
-            return selected, indices, "使用默认选择策略"
+            return selected, indices, default_fallback_reasoning
     
     def _generate_interview_questions(
         self,
@@ -1638,10 +2540,40 @@ class ZepToolsService:
         selected_agents: List[Dict[str, Any]]
     ) -> List[str]:
         """使用LLM生成采访问题"""
-        
-        agent_roles = [a.get("profession", "未知") for a in selected_agents]
-        
-        system_prompt = """你是一个专业的记者/采访者。根据采访需求，生成3-5个深度采访问题。
+        locale = self._locale()
+        agent_roles = [
+            a.get("profession") or self._text("未知", "Unknown", locale)
+            for a in selected_agents
+        ]
+
+        if locale == "en":
+            system_prompt = """You are a professional interviewer. Generate 3-5 in-depth interview questions for this request.
+
+Question requirements:
+1. Use open-ended questions that encourage detailed answers
+2. Allow different roles to answer differently
+3. Cover facts, opinions, and emotions from multiple angles
+4. Keep the wording natural, like a real interview
+5. Keep each question concise
+6. Ask the question directly without extra framing text
+7. Write every question in natural English, even if the source materials are in another language
+
+Return JSON: {"questions": ["Question 1", "Question 2", ...]}"""
+            simulation_background = simulation_requirement or "Not provided"
+            user_prompt = f"""Interview requirement: {interview_requirement}
+
+Simulation background: {simulation_background}
+
+Interviewee roles: {', '.join(agent_roles)}
+
+Generate 3-5 interview questions."""
+            default_questions = [
+                f"What is your perspective on {interview_requirement}?",
+                "How does this affect you or the group you represent?",
+                "What should be changed or improved in response?",
+            ]
+        else:
+            system_prompt = """你是一个专业的记者/采访者。根据采访需求，生成3-5个深度采访问题。
 
 问题要求：
 1. 开放性问题，鼓励详细回答
@@ -1652,14 +2584,18 @@ class ZepToolsService:
 6. 直接提问，不要包含背景说明或前缀
 
 返回JSON格式：{"questions": ["问题1", "问题2", ...]}"""
-
-        user_prompt = f"""采访需求：{interview_requirement}
+            user_prompt = f"""采访需求：{interview_requirement}
 
 模拟背景：{simulation_requirement if simulation_requirement else "未提供"}
 
 采访对象角色：{', '.join(agent_roles)}
 
 请生成3-5个采访问题。"""
+            default_questions = [
+                f"关于{interview_requirement}，您的观点是什么？",
+                "这件事对您或您所代表的群体有什么影响？",
+                "您认为应该如何解决或改进这个问题？"
+            ]
 
         try:
             response = self.llm.chat_json(
@@ -1670,15 +2606,19 @@ class ZepToolsService:
                 temperature=0.5
             )
             
-            return response.get("questions", [f"关于{interview_requirement}，您有什么看法？"])
+            return response.get(
+                "questions",
+                [default_questions[0]],
+            )
             
         except Exception as e:
-            logger.warning(f"生成采访问题失败: {e}")
-            return [
-                f"关于{interview_requirement}，您的观点是什么？",
-                "这件事对您或您所代表的群体有什么影响？",
-                "您认为应该如何解决或改进这个问题？"
-            ]
+            self._log(
+                "warning",
+                f"生成采访问题失败: {e}",
+                f"Failed to generate interview questions: {e}",
+                locale,
+            )
+            return default_questions
     
     def _generate_interview_summary(
         self,
@@ -1686,16 +2626,47 @@ class ZepToolsService:
         interview_requirement: str
     ) -> str:
         """生成采访摘要"""
-        
+        locale = self._locale()
         if not interviews:
-            return "未完成任何采访"
+            return self._text("未完成任何采访", "No interviews were completed", locale)
         
         # 收集所有采访内容
         interview_texts = []
         for interview in interviews:
-            interview_texts.append(f"【{interview.agent_name}（{interview.agent_role}）】\n{interview.response[:500]}")
-        
-        system_prompt = """你是一个专业的新闻编辑。请根据多位受访者的回答，生成一份采访摘要。
+            interview_texts.append(
+                self._text(
+                    f"【{interview.agent_name}（{interview.agent_role}）】\n{interview.response[:500]}",
+                    f"[{interview.agent_name} ({interview.agent_role})]\n{interview.response[:500]}",
+                    locale,
+                )
+            )
+
+        if locale == "en":
+            system_prompt = """You are a professional news editor. Summarize the interview responses from multiple participants.
+
+Summary requirements:
+1. Distill each participant's main viewpoint
+2. Highlight consensus and disagreement
+3. Surface the most valuable quotations
+4. Stay objective and neutral
+5. Keep the summary under 1000 words
+6. Write the summary entirely in natural English
+7. If interview content contains Chinese or mixed-language text, translate it into fluent English before quoting or summarizing it
+
+Formatting constraints:
+- Use plain-text paragraphs separated by blank lines
+- Do not use Markdown headings (such as #, ##, ###)
+- Do not use divider lines (such as ---, ***)
+- Use standard English quotation marks when quoting interviewees directly
+- You may use **bold** for key phrases, but avoid other Markdown syntax"""
+            user_prompt = f"""Interview topic: {interview_requirement}
+
+Interview content:
+{"".join(interview_texts)}
+
+Generate the interview summary."""
+        else:
+            system_prompt = """你是一个专业的新闻编辑。请根据多位受访者的回答，生成一份采访摘要。
 
 摘要要求：
 1. 提炼各方主要观点
@@ -1711,7 +2682,7 @@ class ZepToolsService:
 - 引用受访者原话时使用中文引号「」
 - 可以使用**加粗**标记关键词，但不要使用其他Markdown语法"""
 
-        user_prompt = f"""采访主题：{interview_requirement}
+            user_prompt = f"""采访主题：{interview_requirement}
 
 采访内容：
 {"".join(interview_texts)}
@@ -1730,6 +2701,15 @@ class ZepToolsService:
             return summary
             
         except Exception as e:
-            logger.warning(f"生成采访摘要失败: {e}")
+            self._log(
+                "warning",
+                f"生成采访摘要失败: {e}",
+                f"Failed to generate the interview summary: {e}",
+                locale,
+            )
             # 降级：简单拼接
+            if locale == "en":
+                return f"Interviewed {len(interviews)} participants, including: " + ", ".join(
+                    [i.agent_name for i in interviews]
+                )
             return f"共采访了{len(interviews)}位受访者，包括：" + "、".join([i.agent_name for i in interviews])

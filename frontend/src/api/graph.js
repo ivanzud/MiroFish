@@ -68,3 +68,14 @@ export function getProject(projectId) {
     method: 'get'
   })
 }
+
+/**
+ * 获取后端配置状态，便于在前端快速诊断缺失的服务端配置
+ * @returns {Promise}
+ */
+export function getBackendConfigStatus() {
+  return service({
+    url: '/api/graph/config/status',
+    method: 'get'
+  })
+}

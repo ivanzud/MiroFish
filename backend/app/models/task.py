@@ -3,12 +3,18 @@
 用于跟踪长时间运行的任务（如图谱构建）
 """
 
+import json
+import os
+import tempfile
 import uuid
 import threading
 from datetime import datetime
 from enum import Enum
 from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
+
+from ..config import Config
+from ..i18n import tr
 
 
 class TaskStatus(str, Enum):
@@ -50,6 +56,23 @@ class Task:
             "metadata": self.metadata,
         }
 
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Task":
+        """从持久化字典恢复任务。"""
+        return cls(
+            task_id=data["task_id"],
+            task_type=data["task_type"],
+            status=TaskStatus(data["status"]),
+            created_at=datetime.fromisoformat(data["created_at"]),
+            updated_at=datetime.fromisoformat(data["updated_at"]),
+            progress=data.get("progress", 0),
+            message=data.get("message", ""),
+            progress_detail=data.get("progress_detail") or {},
+            result=data.get("result"),
+            error=data.get("error"),
+            metadata=data.get("metadata") or {},
+        )
+
 
 class TaskManager:
     """
@@ -68,7 +91,60 @@ class TaskManager:
                     cls._instance = super().__new__(cls)
                     cls._instance._tasks: Dict[str, Task] = {}
                     cls._instance._task_lock = threading.Lock()
+                    cls._instance._load_tasks()
         return cls._instance
+
+    @staticmethod
+    def _get_state_path() -> str:
+        return os.path.join(Config.UPLOAD_FOLDER, "tasks", "task_state.json")
+
+    def _load_tasks(self) -> None:
+        state_path = self._get_state_path()
+        if not os.path.exists(state_path):
+            return
+
+        try:
+            with open(state_path, "r", encoding="utf-8") as fh:
+                payload = json.load(fh)
+        except (OSError, json.JSONDecodeError, ValueError):
+            self._tasks = {}
+            return
+
+        tasks = payload.get("tasks", [])
+        if not isinstance(tasks, list):
+            self._tasks = {}
+            return
+
+        loaded_tasks: Dict[str, Task] = {}
+        for item in tasks:
+            if not isinstance(item, dict):
+                continue
+            try:
+                task = Task.from_dict(item)
+            except (KeyError, TypeError, ValueError):
+                continue
+            loaded_tasks[task.task_id] = task
+        self._tasks = loaded_tasks
+
+    def _persist_tasks(self) -> None:
+        state_path = self._get_state_path()
+        state_dir = os.path.dirname(state_path)
+        os.makedirs(state_dir, exist_ok=True)
+
+        payload = {
+            "tasks": [
+                task.to_dict()
+                for task in sorted(self._tasks.values(), key=lambda item: item.created_at, reverse=True)
+            ]
+        }
+        fd, temp_path = tempfile.mkstemp(prefix="task-state-", suffix=".json", dir=state_dir)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                json.dump(payload, fh, ensure_ascii=False, indent=2)
+            os.replace(temp_path, state_path)
+        finally:
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
     
     def create_task(self, task_type: str, metadata: Optional[Dict] = None) -> str:
         """
@@ -95,7 +171,8 @@ class TaskManager:
         
         with self._task_lock:
             self._tasks[task_id] = task
-        
+            self._persist_tasks()
+
         return task_id
     
     def get_task(self, task_id: str) -> Optional[Task]:
@@ -141,23 +218,24 @@ class TaskManager:
                     task.error = error
                 if progress_detail is not None:
                     task.progress_detail = progress_detail
+                self._persist_tasks()
     
-    def complete_task(self, task_id: str, result: Dict):
+    def complete_task(self, task_id: str, result: Dict, locale: str | None = None):
         """标记任务完成"""
         self.update_task(
             task_id,
             status=TaskStatus.COMPLETED,
             progress=100,
-            message="任务完成",
+            message=tr("task.completed", locale),
             result=result
         )
     
-    def fail_task(self, task_id: str, error: str):
+    def fail_task(self, task_id: str, error: str, locale: str | None = None):
         """标记任务失败"""
         self.update_task(
             task_id,
             status=TaskStatus.FAILED,
-            message="任务失败",
+            message=tr("task.failed", locale),
             error=error
         )
     
@@ -181,4 +259,5 @@ class TaskManager:
             ]
             for tid in old_ids:
                 del self._tasks[tid]
-
+            if old_ids:
+                self._persist_tasks()

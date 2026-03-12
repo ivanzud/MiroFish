@@ -35,19 +35,21 @@ export const getSimulation = (simulationId) => {
 /**
  * 获取模拟的 Agent Profiles
  * @param {string} simulationId
- * @param {string} platform - 'reddit' | 'twitter'
+ * @param {string} [platform] - 'reddit' | 'twitter'（省略时由后端根据模拟配置自动选择）
  */
-export const getSimulationProfiles = (simulationId, platform = 'reddit') => {
-  return service.get(`/api/simulation/${simulationId}/profiles`, { params: { platform } })
+export const getSimulationProfiles = (simulationId, platform) => {
+  const params = platform ? { platform } : {}
+  return service.get(`/api/simulation/${simulationId}/profiles`, { params })
 }
 
 /**
  * 实时获取生成中的 Agent Profiles
  * @param {string} simulationId
- * @param {string} platform - 'reddit' | 'twitter'
+ * @param {string} [platform] - 'reddit' | 'twitter'（省略时由后端根据模拟配置自动选择）
  */
-export const getSimulationProfilesRealtime = (simulationId, platform = 'reddit') => {
-  return service.get(`/api/simulation/${simulationId}/profiles/realtime`, { params: { platform } })
+export const getSimulationProfilesRealtime = (simulationId, platform) => {
+  const params = platform ? { platform } : {}
+  return service.get(`/api/simulation/${simulationId}/profiles/realtime`, { params })
 }
 
 /**
@@ -103,22 +105,23 @@ export const getRunStatus = (simulationId) => {
 /**
  * 获取模拟运行详细状态（包含最近动作）
  * @param {string} simulationId
+ * @param {Object} params - { platform?, since?, limit? }
  */
-export const getRunStatusDetail = (simulationId) => {
-  return service.get(`/api/simulation/${simulationId}/run-status/detail`)
+export const getRunStatusDetail = (simulationId, params = {}) => {
+  return service.get(`/api/simulation/${simulationId}/run-status/detail`, { params })
 }
 
 /**
  * 获取模拟中的帖子
  * @param {string} simulationId
- * @param {string} platform - 'reddit' | 'twitter'
+ * @param {string} [platform] - 'reddit' | 'twitter'（省略时由后端根据模拟配置自动选择）
  * @param {number} limit - 返回数量
  * @param {number} offset - 偏移量
  */
-export const getSimulationPosts = (simulationId, platform = 'reddit', limit = 50, offset = 0) => {
-  return service.get(`/api/simulation/${simulationId}/posts`, {
-    params: { platform, limit, offset }
-  })
+export const getSimulationPosts = (simulationId, platform, limit = 50, offset = 0) => {
+  const params = { limit, offset }
+  if (platform) params.platform = platform
+  return service.get(`/api/simulation/${simulationId}/posts`, { params })
 }
 
 /**
@@ -185,3 +188,10 @@ export const getSimulationHistory = (limit = 20) => {
   return service.get('/api/simulation/history', { params: { limit } })
 }
 
+/**
+ * 删除历史模拟记录及其本地关联资产
+ * @param {string} simulationId
+ */
+export const deleteSimulationHistory = (simulationId) => {
+  return service.delete(`/api/simulation/history/${simulationId}`)
+}

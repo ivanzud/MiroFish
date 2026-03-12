@@ -3,13 +3,16 @@ Zep实体读取与过滤服务
 从Zep图谱中读取节点，筛选出符合预定义实体类型的节点
 """
 
+import re
 import time
+import unicodedata
 from typing import Dict, Any, List, Optional, Set, Callable, TypeVar
 from dataclasses import dataclass, field
 
 from zep_cloud.client import Zep
 
 from ..config import Config
+from ..i18n import get_locale, tr
 from ..utils.logger import get_logger
 from ..utils.zep_paging import fetch_all_nodes, fetch_all_edges
 
@@ -17,6 +20,77 @@ logger = get_logger('mirofish.zep_entity_reader')
 
 # 用于泛型返回类型
 T = TypeVar('T')
+
+
+def _fetch_with_optional_locale(fetcher: Callable[..., T], client: Zep, graph_id: str, locale: str) -> T:
+    try:
+        return fetcher(client, graph_id, locale=locale)
+    except TypeError as exc:
+        if "unexpected keyword argument 'locale'" not in str(exc):
+            raise
+        return fetcher(client, graph_id)
+
+_NON_WORD_RE = re.compile(r"[\W_]+", re.UNICODE)
+_PERSON_PREFIXES = (
+    "美国总统",
+    "总统",
+    "president",
+    "formerpresident",
+    "currentpresident",
+    "ceo",
+    "founder",
+    "cofounder",
+    "professor",
+    "doctor",
+    "dr",
+    "mr",
+    "mrs",
+    "ms",
+    "sir",
+)
+_ORG_SUFFIXES = (
+    "有限责任公司",
+    "股份有限公司",
+    "有限公司",
+    "集团",
+    "公司",
+    "corporation",
+    "corp",
+    "inc",
+    "ltd",
+    "llc",
+    "university",
+)
+_PERSON_TYPE_HINTS = (
+    "person",
+    "student",
+    "alumni",
+    "player",
+    "leader",
+    "figure",
+    "expert",
+    "human",
+    "人物",
+    "学生",
+    "校友",
+    "个人",
+    "公众人物",
+)
+_ORG_TYPE_HINTS = (
+    "organization",
+    "company",
+    "institution",
+    "agency",
+    "university",
+    "media",
+    "group",
+    "企业",
+    "机构",
+    "组织",
+    "公司",
+    "媒体",
+    "大学",
+)
 
 
 @dataclass
@@ -78,12 +152,16 @@ class ZepEntityReader:
     3. 获取每个实体的相关边和关联节点信息
     """
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, locale: Optional[str] = None):
         self.api_key = api_key or Config.ZEP_API_KEY
+        self.locale = locale or get_locale()
         if not self.api_key:
-            raise ValueError("ZEP_API_KEY 未配置")
-        
+            raise ValueError(tr("config.key_missing", self._get_locale(), name="ZEP_API_KEY"))
+
         self.client = Zep(api_key=self.api_key)
+
+    def _get_locale(self) -> str:
+        return getattr(self, "locale", None) or get_locale()
     
     def _call_with_retry(
         self, 
@@ -114,13 +192,27 @@ class ZepEntityReader:
                 last_exception = e
                 if attempt < max_retries - 1:
                     logger.warning(
-                        f"Zep {operation_name} 第 {attempt + 1} 次尝试失败: {str(e)[:100]}, "
-                        f"{delay:.1f}秒后重试..."
+                        tr(
+                            "zep.reader_retry_failed_attempt",
+                            self._get_locale(),
+                            operation_name=operation_name,
+                            attempt=attempt + 1,
+                            error=str(e)[:100],
+                            delay=delay,
+                        )
                     )
                     time.sleep(delay)
                     delay *= 2  # 指数退避
                 else:
-                    logger.error(f"Zep {operation_name} 在 {max_retries} 次尝试后仍失败: {str(e)}")
+                    logger.error(
+                        tr(
+                            "zep.reader_retry_failed_final",
+                            self._get_locale(),
+                            operation_name=operation_name,
+                            max_retries=max_retries,
+                            error=str(e),
+                        )
+                    )
         
         raise last_exception
     
@@ -134,9 +226,9 @@ class ZepEntityReader:
         Returns:
             节点列表
         """
-        logger.info(f"获取图谱 {graph_id} 的所有节点...")
+        logger.info(tr("zep.reader_get_all_nodes_start", self._get_locale(), graph_id=graph_id))
 
-        nodes = fetch_all_nodes(self.client, graph_id)
+        nodes = _fetch_with_optional_locale(fetch_all_nodes, self.client, graph_id, self._get_locale())
 
         nodes_data = []
         for node in nodes:
@@ -148,7 +240,7 @@ class ZepEntityReader:
                 "attributes": node.attributes or {},
             })
 
-        logger.info(f"共获取 {len(nodes_data)} 个节点")
+        logger.info(tr("zep.reader_get_all_nodes_done", self._get_locale(), count=len(nodes_data)))
         return nodes_data
 
     def get_all_edges(self, graph_id: str) -> List[Dict[str, Any]]:
@@ -161,9 +253,9 @@ class ZepEntityReader:
         Returns:
             边列表
         """
-        logger.info(f"获取图谱 {graph_id} 的所有边...")
+        logger.info(tr("zep.reader_get_all_edges_start", self._get_locale(), graph_id=graph_id))
 
-        edges = fetch_all_edges(self.client, graph_id)
+        edges = _fetch_with_optional_locale(fetch_all_edges, self.client, graph_id, self._get_locale())
 
         edges_data = []
         for edge in edges:
@@ -176,7 +268,7 @@ class ZepEntityReader:
                 "attributes": edge.attributes or {},
             })
 
-        logger.info(f"共获取 {len(edges_data)} 条边")
+        logger.info(tr("zep.reader_get_all_edges_done", self._get_locale(), count=len(edges_data)))
         return edges_data
     
     def get_node_edges(self, node_uuid: str) -> List[Dict[str, Any]]:
@@ -193,7 +285,11 @@ class ZepEntityReader:
             # 使用重试机制调用Zep API
             edges = self._call_with_retry(
                 func=lambda: self.client.graph.node.get_entity_edges(node_uuid=node_uuid),
-                operation_name=f"获取节点边(node={node_uuid[:8]}...)"
+                operation_name=tr(
+                    "zep.reader_get_node_edges_operation",
+                    self._get_locale(),
+                    node_uuid=f"{node_uuid[:8]}...",
+                ),
             )
             
             edges_data = []
@@ -209,8 +305,193 @@ class ZepEntityReader:
             
             return edges_data
         except Exception as e:
-            logger.warning(f"获取节点 {node_uuid} 的边失败: {str(e)}")
+            logger.warning(
+                tr(
+                    "zep.reader_get_node_edges_failed",
+                    self._get_locale(),
+                    node_uuid=node_uuid,
+                    error=str(e),
+                )
+            )
             return []
+
+    @staticmethod
+    def _normalize_entity_name(name: str) -> str:
+        normalized = unicodedata.normalize("NFKC", name or "").strip().lower()
+        return _NON_WORD_RE.sub("", normalized)
+
+    @staticmethod
+    def _strip_known_affixes(normalized_name: str, entity_type: str) -> str:
+        entity_type_normalized = (entity_type or "").strip().lower()
+        stripped = normalized_name
+
+        if any(hint in entity_type_normalized for hint in _PERSON_TYPE_HINTS):
+            for prefix in _PERSON_PREFIXES:
+                if stripped.startswith(prefix) and len(stripped) > len(prefix) + 1:
+                    stripped = stripped[len(prefix):]
+                    break
+
+        if any(hint in entity_type_normalized for hint in _ORG_TYPE_HINTS):
+            for suffix in _ORG_SUFFIXES:
+                if stripped.endswith(suffix) and len(stripped) > len(suffix) + 1:
+                    stripped = stripped[: -len(suffix)]
+                    break
+
+        return stripped or normalized_name
+
+    @classmethod
+    def _entity_alias_key(cls, entity: EntityNode) -> str:
+        normalized_name = cls._normalize_entity_name(entity.name)
+        if not normalized_name:
+            return ""
+        entity_type = entity.get_entity_type() or ""
+        return cls._strip_known_affixes(normalized_name, entity_type)
+
+    @classmethod
+    def _are_duplicate_entities(cls, left: EntityNode, right: EntityNode) -> bool:
+        left_type = left.get_entity_type() or ""
+        right_type = right.get_entity_type() or ""
+        if not left_type or left_type != right_type:
+            return False
+
+        left_name = cls._normalize_entity_name(left.name)
+        right_name = cls._normalize_entity_name(right.name)
+        if not left_name or not right_name:
+            return False
+
+        if left_name == right_name:
+            return True
+
+        left_key = cls._entity_alias_key(left)
+        right_key = cls._entity_alias_key(right)
+        if not left_key or left_key != right_key or len(left_key) < 2:
+            return False
+
+        shorter, longer = sorted((left_name, right_name), key=len)
+        return len(shorter) >= 2 and shorter in longer
+
+    @staticmethod
+    def _merge_entity_lists(*entity_lists: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        merged: List[Dict[str, Any]] = []
+        seen_keys: Set[tuple[str, str, str]] = set()
+
+        for entities in entity_lists:
+            for item in entities:
+                if not isinstance(item, dict):
+                    continue
+                key = (
+                    str(item.get("uuid", "")),
+                    str(item.get("name", "")),
+                    str(item.get("edge_name", item.get("labels", ""))),
+                )
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                merged.append(item)
+
+        return merged
+
+    @staticmethod
+    def _deduplicate_related_edges(related_edges: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        deduplicated: List[Dict[str, Any]] = []
+        seen_keys: Set[tuple[str, str, str, str]] = set()
+
+        for edge in related_edges:
+            if not isinstance(edge, dict):
+                continue
+
+            counterpart_uuid = str(
+                edge.get("target_node_uuid")
+                or edge.get("source_node_uuid")
+                or ""
+            )
+            key = (
+                str(edge.get("direction", "")),
+                str(edge.get("edge_name", "")),
+                str(edge.get("fact", "")),
+                counterpart_uuid,
+            )
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            deduplicated.append(edge)
+
+        return deduplicated
+
+    @classmethod
+    def _deduplicate_related_nodes(cls, related_nodes: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        entities = [
+            EntityNode(
+                uuid=str(node.get("uuid", "")),
+                name=str(node.get("name", "")),
+                labels=list(node.get("labels", []) or []),
+                summary=str(node.get("summary", "") or ""),
+                attributes={},
+            )
+            for node in related_nodes
+            if isinstance(node, dict)
+        ]
+        deduplicated_entities = cls._merge_duplicate_entities(entities)
+        return [
+            {
+                "uuid": entity.uuid,
+                "name": entity.name,
+                "labels": entity.labels,
+                "summary": entity.summary,
+            }
+            for entity in deduplicated_entities
+        ]
+
+    @classmethod
+    def _merge_duplicate_entities(cls, entities: List[EntityNode]) -> List[EntityNode]:
+        merged_entities: List[EntityNode] = []
+
+        for entity in entities:
+            duplicate_index = next(
+                (idx for idx, existing in enumerate(merged_entities) if cls._are_duplicate_entities(existing, entity)),
+                None,
+            )
+            if duplicate_index is None:
+                merged_entities.append(entity)
+                continue
+
+            existing = merged_entities[duplicate_index]
+            existing_score = (
+                len(existing.related_edges),
+                len(existing.related_nodes),
+                len(existing.summary or ""),
+            )
+            candidate_score = (
+                len(entity.related_edges),
+                len(entity.related_nodes),
+                len(entity.summary or ""),
+            )
+
+            primary = existing
+            secondary = entity
+            if candidate_score > existing_score:
+                primary = entity
+                secondary = existing
+
+            summary_parts = [part for part in (primary.summary, secondary.summary) if part]
+            primary.summary = max(summary_parts, key=len) if summary_parts else ""
+
+            merged_attributes = dict(secondary.attributes or {})
+            merged_attributes.update(primary.attributes or {})
+            primary.attributes = merged_attributes
+            primary.related_edges = cls._merge_entity_lists(primary.related_edges, secondary.related_edges)
+            primary.related_nodes = cls._merge_entity_lists(primary.related_nodes, secondary.related_nodes)
+
+            if duplicate_index is not None:
+                merged_entities[duplicate_index] = primary
+
+            logger.info(
+                "Collapsing duplicate entity aliases for simulation input: %s <-> %s",
+                existing.name,
+                entity.name,
+            )
+
+        return merged_entities
     
     def filter_defined_entities(
         self, 
@@ -233,7 +514,7 @@ class ZepEntityReader:
         Returns:
             FilteredEntities: 过滤后的实体集合
         """
-        logger.info(f"开始筛选图谱 {graph_id} 的实体...")
+        logger.info(tr("zep.reader_filter_start", self._get_locale(), graph_id=graph_id))
         
         # 获取所有节点
         all_nodes = self.get_all_nodes(graph_id)
@@ -320,14 +601,26 @@ class ZepEntityReader:
             
             filtered_entities.append(entity)
         
-        logger.info(f"筛选完成: 总节点 {total_count}, 符合条件 {len(filtered_entities)}, "
-                   f"实体类型: {entity_types_found}")
-        
+        deduplicated_entities = self._merge_duplicate_entities(filtered_entities)
+        deduped_count = len(filtered_entities) - len(deduplicated_entities)
+        if deduped_count:
+            logger.info(tr("zep.reader_filter_deduped", self._get_locale(), count=deduped_count))
+
+        logger.info(
+            tr(
+                "zep.reader_filter_done",
+                self._get_locale(),
+                total_count=total_count,
+                filtered_count=len(deduplicated_entities),
+                entity_types=entity_types_found,
+            )
+        )
+
         return FilteredEntities(
-            entities=filtered_entities,
+            entities=deduplicated_entities,
             entity_types=entity_types_found,
             total_count=total_count,
-            filtered_count=len(filtered_entities),
+            filtered_count=len(deduplicated_entities),
         )
     
     def get_entity_with_context(
@@ -346,68 +639,104 @@ class ZepEntityReader:
             EntityNode或None
         """
         try:
+            all_nodes = self.get_all_nodes(graph_id)
+            all_edges = self.get_all_edges(graph_id)
+            node_map = {n["uuid"]: n for n in all_nodes}
+
             # 使用重试机制获取节点
             node = self._call_with_retry(
                 func=lambda: self.client.graph.node.get(uuid_=entity_uuid),
-                operation_name=f"获取节点详情(uuid={entity_uuid[:8]}...)"
+                operation_name=tr(
+                    "zep.reader_get_node_detail_operation",
+                    self._get_locale(),
+                    entity_uuid=f"{entity_uuid[:8]}...",
+                ),
             )
             
             if not node:
                 return None
-            
-            # 获取节点的边
-            edges = self.get_node_edges(entity_uuid)
-            
-            # 获取所有节点用于关联查找
-            all_nodes = self.get_all_nodes(graph_id)
-            node_map = {n["uuid"]: n for n in all_nodes}
-            
-            # 处理相关边和节点
-            related_edges = []
-            related_node_uuids = set()
-            
-            for edge in edges:
-                if edge["source_node_uuid"] == entity_uuid:
-                    related_edges.append({
-                        "direction": "outgoing",
-                        "edge_name": edge["name"],
-                        "fact": edge["fact"],
-                        "target_node_uuid": edge["target_node_uuid"],
-                    })
-                    related_node_uuids.add(edge["target_node_uuid"])
-                else:
-                    related_edges.append({
-                        "direction": "incoming",
-                        "edge_name": edge["name"],
-                        "fact": edge["fact"],
-                        "source_node_uuid": edge["source_node_uuid"],
-                    })
-                    related_node_uuids.add(edge["source_node_uuid"])
-            
-            # 获取关联节点信息
-            related_nodes = []
-            for related_uuid in related_node_uuids:
-                if related_uuid in node_map:
-                    related_node = node_map[related_uuid]
-                    related_nodes.append({
-                        "uuid": related_node["uuid"],
-                        "name": related_node["name"],
-                        "labels": related_node["labels"],
-                        "summary": related_node.get("summary", ""),
-                    })
-            
-            return EntityNode(
+
+            requested_node = EntityNode(
                 uuid=getattr(node, 'uuid_', None) or getattr(node, 'uuid', ''),
                 name=node.name or "",
                 labels=node.labels or [],
                 summary=node.summary or "",
                 attributes=node.attributes or {},
-                related_edges=related_edges,
-                related_nodes=related_nodes,
             )
+
+            alias_entities: List[EntityNode] = []
+            for raw_node in all_nodes:
+                candidate = EntityNode(
+                    uuid=raw_node["uuid"],
+                    name=raw_node["name"],
+                    labels=raw_node["labels"],
+                    summary=raw_node.get("summary", ""),
+                    attributes=raw_node.get("attributes", {}),
+                )
+                if candidate.uuid == requested_node.uuid or self._are_duplicate_entities(requested_node, candidate):
+                    alias_entities.append(candidate)
+
+            if not alias_entities:
+                alias_entities.append(requested_node)
+
+            merged_entity = self._merge_duplicate_entities(alias_entities)[0]
+            alias_uuids = {entity.uuid for entity in alias_entities}
+
+            related_edges = []
+            related_node_uuids = set()
+            for edge in all_edges:
+                source_uuid = edge["source_node_uuid"]
+                target_uuid = edge["target_node_uuid"]
+                source_in_alias = source_uuid in alias_uuids
+                target_in_alias = target_uuid in alias_uuids
+
+                if not source_in_alias and not target_in_alias:
+                    continue
+                if source_in_alias and target_in_alias:
+                    continue
+
+                if source_in_alias:
+                    related_edges.append({
+                        "direction": "outgoing",
+                        "edge_name": edge["name"],
+                        "fact": edge["fact"],
+                        "target_node_uuid": target_uuid,
+                    })
+                    related_node_uuids.add(target_uuid)
+                else:
+                    related_edges.append({
+                        "direction": "incoming",
+                        "edge_name": edge["name"],
+                        "fact": edge["fact"],
+                        "source_node_uuid": source_uuid,
+                    })
+                    related_node_uuids.add(source_uuid)
+
+            related_nodes = self._deduplicate_related_nodes(
+                [
+                    {
+                        "uuid": node_map[related_uuid]["uuid"],
+                        "name": node_map[related_uuid]["name"],
+                        "labels": node_map[related_uuid]["labels"],
+                        "summary": node_map[related_uuid].get("summary", ""),
+                    }
+                    for related_uuid in related_node_uuids
+                    if related_uuid in node_map and related_uuid not in alias_uuids
+                ]
+            )
+            merged_entity.related_edges = self._deduplicate_related_edges(related_edges)
+            merged_entity.related_nodes = related_nodes
+            return merged_entity
             
         except Exception as e:
-            logger.error(f"获取实体 {entity_uuid} 失败: {str(e)}")
+            logger.error(
+                tr(
+                    "zep.reader_get_entity_failed",
+                    self._get_locale(),
+                    entity_uuid=entity_uuid,
+                    error=str(e),
+                )
+            )
             return None
     
     def get_entities_by_type(
@@ -433,5 +762,3 @@ class ZepEntityReader:
             enrich_with_edges=enrich_with_edges
         )
         return result.entities
-
-

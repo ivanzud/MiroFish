@@ -13,6 +13,7 @@ from flask import Flask, request
 from flask_cors import CORS
 
 from .config import Config
+from .i18n import get_locale, tr
 from .utils.logger import setup_logger, get_logger
 
 
@@ -33,33 +34,39 @@ def create_app(config_class=Config):
     is_reloader_process = os.environ.get('WERKZEUG_RUN_MAIN') == 'true'
     debug_mode = app.config.get('DEBUG', False)
     should_log_startup = not debug_mode or is_reloader_process
+    startup_locale = get_locale(os.environ.get("MIROFISH_LOCALE"))
     
     if should_log_startup:
         logger.info("=" * 50)
-        logger.info("MiroFish Backend 启动中...")
+        logger.info(tr("app.starting", startup_locale))
         logger.info("=" * 50)
     
     # 启用CORS
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(app, resources={r"/api/*": config_class.get_cors_resources()})
     
     # 注册模拟进程清理函数（确保服务器关闭时终止所有模拟进程）
     from .services.simulation_runner import SimulationRunner
     SimulationRunner.register_cleanup()
     if should_log_startup:
-        logger.info("已注册模拟进程清理函数")
+        logger.info(tr("app.cleanup_registered", startup_locale))
     
     # 请求日志中间件
     @app.before_request
     def log_request():
         logger = get_logger('mirofish.request')
-        logger.debug(f"请求: {request.method} {request.path}")
+        logger.debug(tr("app.request", method=request.method, path=request.path))
         if request.content_type and 'json' in request.content_type:
-            logger.debug(f"请求体: {request.get_json(silent=True)}")
+            logger.debug(
+                tr(
+                    "app.request_body",
+                    body=request.get_json(silent=True),
+                )
+            )
     
     @app.after_request
     def log_response(response):
         logger = get_logger('mirofish.request')
-        logger.debug(f"响应: {response.status_code}")
+        logger.debug(tr("app.response", status_code=response.status_code))
         return response
     
     # 注册蓝图
@@ -68,13 +75,32 @@ def create_app(config_class=Config):
     app.register_blueprint(simulation_bp, url_prefix='/api/simulation')
     app.register_blueprint(report_bp, url_prefix='/api/report')
     
+    def backend_status_payload():
+        return {
+            'status': 'ok',
+            'service': 'MiroFish Backend',
+            'api_prefixes': [
+                '/api/graph',
+                '/api/simulation',
+                '/api/report',
+            ],
+            'health_endpoint': '/health',
+        }
+
+    @app.route('/')
+    def index():
+        return backend_status_payload()
+
     # 健康检查
     @app.route('/health')
     def health():
-        return {'status': 'ok', 'service': 'MiroFish Backend'}
-    
+        return backend_status_payload()
+
+    @app.route('/healthz')
+    def healthz():
+        return backend_status_payload()
+
     if should_log_startup:
-        logger.info("MiroFish Backend 启动完成")
+        logger.info(tr("app.started", startup_locale))
     
     return app
-

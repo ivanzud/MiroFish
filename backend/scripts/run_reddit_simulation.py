@@ -36,18 +36,36 @@ _project_root = os.path.abspath(os.path.join(_backend_dir, '..'))
 sys.path.insert(0, _scripts_dir)
 sys.path.insert(0, _backend_dir)
 
-# 加载项目根目录的 .env 文件（包含 LLM_API_KEY 等配置）
-from dotenv import load_dotenv
-_env_file = os.path.join(_project_root, '.env')
-if os.path.exists(_env_file):
-    load_dotenv(_env_file)
-else:
-    _backend_env = os.path.join(_backend_dir, '.env')
-    if os.path.exists(_backend_env):
-        load_dotenv(_backend_env)
+SCRIPT_LOCALE = "en" if os.environ.get("MIROFISH_LOCALE", "").lower().startswith("en") else "zh"
+
+
+def _t(zh: str, en: str) -> str:
+    return en if SCRIPT_LOCALE == "en" else zh
 
 
 import re
+from llm_env import (
+    apply_openai_compat_env,
+    load_dotenv_if_available,
+    missing_api_key_message,
+    resolve_standard_llm_env,
+    script_message,
+)
+
+
+def _load_env_file() -> None:
+    """Load a repo .env file when python-dotenv is available."""
+    env_file = os.path.join(_project_root, ".env")
+    if os.path.exists(env_file):
+        load_dotenv_if_available(env_file)
+        return
+
+    backend_env = os.path.join(_backend_dir, ".env")
+    if os.path.exists(backend_env):
+        load_dotenv_if_available(backend_env)
+
+
+_load_env_file()
 
 
 class UnicodeFormatter(logging.Formatter):
@@ -115,20 +133,45 @@ def setup_oasis_logging(log_dir: str):
         logger.propagate = False
 
 
-try:
-    from camel.models import ModelFactory
-    from camel.types import ModelPlatformType
-    import oasis
-    from oasis import (
-        ActionType,
-        LLMAction,
-        ManualAction,
-        generate_reddit_agent_graph
-    )
-except ImportError as e:
-    print(f"错误: 缺少依赖 {e}")
-    print("请先安装: pip install oasis-ai camel-ai")
-    sys.exit(1)
+ModelFactory = None
+ModelPlatformType = None
+ActionType = None
+LLMAction = None
+ManualAction = None
+generate_reddit_agent_graph = None
+oasis = None
+
+
+def _load_simulation_dependencies() -> None:
+    global ModelFactory, ModelPlatformType, ActionType, LLMAction, ManualAction
+    global generate_reddit_agent_graph, oasis
+
+    if ModelFactory is not None:
+        return
+
+    try:
+        from camel.models import ModelFactory as _ModelFactory
+        from camel.types import ModelPlatformType as _ModelPlatformType
+        import oasis as _oasis
+        from oasis import (
+            ActionType as _ActionType,
+            LLMAction as _LLMAction,
+            ManualAction as _ManualAction,
+            generate_reddit_agent_graph as _generate_reddit_agent_graph,
+        )
+    except ImportError as e:
+        print(script_message("missing_dependency", SCRIPT_LOCALE, dependency=e))
+        print(script_message("install_simulation_deps_npm", SCRIPT_LOCALE))
+        print(script_message("install_simulation_deps_uv", SCRIPT_LOCALE))
+        sys.exit(1)
+
+    ModelFactory = _ModelFactory
+    ModelPlatformType = _ModelPlatformType
+    ActionType = _ActionType
+    LLMAction = _LLMAction
+    ManualAction = _ManualAction
+    generate_reddit_agent_graph = _generate_reddit_agent_graph
+    oasis = _oasis
 
 
 # IPC相关常量
@@ -236,12 +279,19 @@ class IPCHandler:
             result = self._get_interview_result(agent_id)
             
             self.send_response(command_id, "completed", result=result)
-            print(f"  Interview完成: agent_id={agent_id}")
+            print(script_message("interview_completed", SCRIPT_LOCALE, agent_id=agent_id))
             return True
             
         except Exception as e:
             error_msg = str(e)
-            print(f"  Interview失败: agent_id={agent_id}, error={error_msg}")
+            print(
+                script_message(
+                    "interview_failed",
+                    SCRIPT_LOCALE,
+                    agent_id=agent_id,
+                    error=error_msg,
+                )
+            )
             self.send_response(command_id, "failed", error=error_msg)
             return False
     
@@ -269,10 +319,14 @@ class IPCHandler:
                     )
                     agent_prompts[agent_id] = prompt
                 except Exception as e:
-                    print(f"  警告: 无法获取Agent {agent_id}: {e}")
+                    print(script_message("agent_lookup_warning", SCRIPT_LOCALE, agent_id=agent_id, error=e))
             
             if not actions:
-                self.send_response(command_id, "failed", error="没有有效的Agent")
+                self.send_response(
+                    command_id,
+                    "failed",
+                    error=script_message("no_valid_agents", SCRIPT_LOCALE),
+                )
                 return False
             
             # 执行批量Interview
@@ -288,12 +342,12 @@ class IPCHandler:
                 "interviews_count": len(results),
                 "results": results
             })
-            print(f"  批量Interview完成: {len(results)} 个Agent")
+            print(script_message("batch_interview_completed", SCRIPT_LOCALE, count=len(results)))
             return True
             
         except Exception as e:
             error_msg = str(e)
-            print(f"  批量Interview失败: {error_msg}")
+            print(script_message("batch_interview_failed", SCRIPT_LOCALE, error=error_msg))
             self.send_response(command_id, "failed", error=error_msg)
             return False
     
@@ -336,7 +390,7 @@ class IPCHandler:
             conn.close()
             
         except Exception as e:
-            print(f"  读取Interview结果失败: {e}")
+            print(script_message("interview_result_read_failed", SCRIPT_LOCALE, error=e))
         
         return result
     
@@ -355,7 +409,7 @@ class IPCHandler:
         command_type = command.get("command_type")
         args = command.get("args", {})
         
-        print(f"\n收到IPC命令: {command_type}, id={command_id}")
+        print(script_message("ipc_command_received", SCRIPT_LOCALE, command_type=command_type, command_id=command_id))
         
         if command_type == CommandType.INTERVIEW:
             await self.handle_interview(
@@ -373,35 +427,30 @@ class IPCHandler:
             return True
             
         elif command_type == CommandType.CLOSE_ENV:
-            print("收到关闭环境命令")
-            self.send_response(command_id, "completed", result={"message": "环境即将关闭"})
+            print(script_message("close_command_received", SCRIPT_LOCALE))
+            self.send_response(
+                command_id,
+                "completed",
+                result={"message": script_message("close_command_ack", SCRIPT_LOCALE)},
+            )
             return False
-        
+
         else:
-            self.send_response(command_id, "failed", error=f"未知命令类型: {command_type}")
+            self.send_response(
+                command_id,
+                "failed",
+                error=script_message(
+                    "unknown_command",
+                    SCRIPT_LOCALE,
+                    command_type=command_type,
+                ),
+            )
             return True
 
 
 class RedditSimulationRunner:
     """Reddit模拟运行器"""
-    
-    # Reddit可用动作（不包含INTERVIEW，INTERVIEW只能通过ManualAction手动触发）
-    AVAILABLE_ACTIONS = [
-        ActionType.LIKE_POST,
-        ActionType.DISLIKE_POST,
-        ActionType.CREATE_POST,
-        ActionType.CREATE_COMMENT,
-        ActionType.LIKE_COMMENT,
-        ActionType.DISLIKE_COMMENT,
-        ActionType.SEARCH_POSTS,
-        ActionType.SEARCH_USER,
-        ActionType.TREND,
-        ActionType.REFRESH,
-        ActionType.DO_NOTHING,
-        ActionType.FOLLOW,
-        ActionType.MUTE,
-    ]
-    
+
     def __init__(self, config_path: str, wait_for_commands: bool = True):
         """
         初始化模拟运行器
@@ -410,6 +459,7 @@ class RedditSimulationRunner:
             config_path: 配置文件路径 (simulation_config.json)
             wait_for_commands: 模拟完成后是否等待命令（默认True）
         """
+        _load_simulation_dependencies()
         self.config_path = config_path
         self.config = self._load_config()
         self.simulation_dir = os.path.dirname(config_path)
@@ -430,36 +480,55 @@ class RedditSimulationRunner:
     def _get_db_path(self) -> str:
         """获取数据库路径"""
         return os.path.join(self.simulation_dir, "reddit_simulation.db")
+
+    @staticmethod
+    def available_actions():
+        return [
+            ActionType.LIKE_POST,
+            ActionType.DISLIKE_POST,
+            ActionType.CREATE_POST,
+            ActionType.CREATE_COMMENT,
+            ActionType.LIKE_COMMENT,
+            ActionType.DISLIKE_COMMENT,
+            ActionType.SEARCH_POSTS,
+            ActionType.SEARCH_USER,
+            ActionType.TREND,
+            ActionType.REFRESH,
+            ActionType.DO_NOTHING,
+            ActionType.FOLLOW,
+            ActionType.MUTE,
+        ]
     
     def _create_model(self):
         """
         创建LLM模型
         
         统一使用项目根目录 .env 文件中的配置（优先级最高）：
-        - LLM_API_KEY: API密钥
-        - LLM_BASE_URL: API基础URL
-        - LLM_MODEL_NAME: 模型名称
+        - LLM_API_KEY / OPENAI_API_KEY: API密钥
+        - LLM_BASE_URL / OPENAI_BASE_URL / OPENAI_API_BASE_URL: API基础URL
+        - LLM_MODEL_NAME / OPENAI_MODEL: 模型名称
         """
         # 优先从 .env 读取配置
-        llm_api_key = os.environ.get("LLM_API_KEY", "")
-        llm_base_url = os.environ.get("LLM_BASE_URL", "")
-        llm_model = os.environ.get("LLM_MODEL_NAME", "")
+        llm_api_key, llm_base_url, llm_model = resolve_standard_llm_env()
         
         # 如果 .env 中没有，则使用 config 作为备用
         if not llm_model:
             llm_model = self.config.get("llm_model", "gpt-4o-mini")
         
         # 设置 camel-ai 所需的环境变量
-        if llm_api_key:
-            os.environ["OPENAI_API_KEY"] = llm_api_key
+        apply_openai_compat_env(llm_api_key, llm_base_url, llm_model)
         
         if not os.environ.get("OPENAI_API_KEY"):
-            raise ValueError("缺少 API Key 配置，请在项目根目录 .env 文件中设置 LLM_API_KEY")
-        
-        if llm_base_url:
-            os.environ["OPENAI_API_BASE_URL"] = llm_base_url
-        
-        print(f"LLM配置: model={llm_model}, base_url={llm_base_url[:40] if llm_base_url else '默认'}...")
+            raise ValueError(missing_api_key_message(SCRIPT_LOCALE))
+
+        print(
+            script_message(
+                "llm_config",
+                SCRIPT_LOCALE,
+                model=llm_model,
+                base_url=llm_base_url[:40] if llm_base_url else script_message("default_base_url", SCRIPT_LOCALE),
+            )
+        )
         
         return ModelFactory.create(
             model_platform=ModelPlatformType.OPENAI,
@@ -527,10 +596,16 @@ class RedditSimulationRunner:
             max_rounds: 最大模拟轮数（可选，用于截断过长的模拟）
         """
         print("=" * 60)
-        print("OASIS Reddit模拟")
-        print(f"配置文件: {self.config_path}")
-        print(f"模拟ID: {self.config.get('simulation_id', 'unknown')}")
-        print(f"等待命令模式: {'启用' if self.wait_for_commands else '禁用'}")
+        print(script_message("runner_title", SCRIPT_LOCALE, platform="Reddit"))
+        print(script_message("config_path", SCRIPT_LOCALE, path=self.config_path))
+        print(script_message("simulation_id", SCRIPT_LOCALE, simulation_id=self.config.get('simulation_id', 'unknown')))
+        print(
+            script_message(
+                "wait_mode",
+                SCRIPT_LOCALE,
+                state=script_message("enabled" if self.wait_for_commands else "disabled", SCRIPT_LOCALE),
+            )
+        )
         print("=" * 60)
         
         time_config = self.config.get("time_config", {})
@@ -543,37 +618,37 @@ class RedditSimulationRunner:
             original_rounds = total_rounds
             total_rounds = min(total_rounds, max_rounds)
             if total_rounds < original_rounds:
-                print(f"\n轮数已截断: {original_rounds} -> {total_rounds} (max_rounds={max_rounds})")
-        
-        print(f"\n模拟参数:")
-        print(f"  - 总模拟时长: {total_hours}小时")
-        print(f"  - 每轮时间: {minutes_per_round}分钟")
-        print(f"  - 总轮数: {total_rounds}")
+                print(script_message("rounds_truncated", SCRIPT_LOCALE, original=original_rounds, current=total_rounds, max_rounds=max_rounds))
+
+        print(script_message("simulation_params", SCRIPT_LOCALE))
+        print(script_message("total_hours", SCRIPT_LOCALE, hours=total_hours))
+        print(script_message("minutes_per_round", SCRIPT_LOCALE, minutes=minutes_per_round))
+        print(script_message("total_rounds", SCRIPT_LOCALE, rounds=total_rounds))
         if max_rounds:
-            print(f"  - 最大轮数限制: {max_rounds}")
-        print(f"  - Agent数量: {len(self.config.get('agent_configs', []))}")
+            print(script_message("max_rounds_limit", SCRIPT_LOCALE, max_rounds=max_rounds))
+        print(script_message("agent_count", SCRIPT_LOCALE, count=len(self.config.get('agent_configs', []))))
         
-        print("\n初始化LLM模型...")
+        print(script_message("init_model", SCRIPT_LOCALE))
         model = self._create_model()
         
-        print("加载Agent Profile...")
+        print(script_message("load_profiles", SCRIPT_LOCALE))
         profile_path = self._get_profile_path()
         if not os.path.exists(profile_path):
-            print(f"错误: Profile文件不存在: {profile_path}")
+            print(script_message("profile_missing", SCRIPT_LOCALE, path=profile_path))
             return
         
         self.agent_graph = await generate_reddit_agent_graph(
             profile_path=profile_path,
             model=model,
-            available_actions=self.AVAILABLE_ACTIONS,
+            available_actions=self.available_actions(),
         )
         
         db_path = self._get_db_path()
         if os.path.exists(db_path):
             os.remove(db_path)
-            print(f"已删除旧数据库: {db_path}")
-        
-        print("创建OASIS环境...")
+            print(script_message("old_db_removed", SCRIPT_LOCALE, path=db_path))
+
+        print(script_message("creating_oasis_env", SCRIPT_LOCALE))
         self.env = oasis.make(
             agent_graph=self.agent_graph,
             platform=oasis.DefaultPlatformType.REDDIT,
@@ -582,7 +657,7 @@ class RedditSimulationRunner:
         )
         
         await self.env.reset()
-        print("环境初始化完成\n")
+        print(script_message("env_initialized", SCRIPT_LOCALE))
         
         # 初始化IPC处理器
         self.ipc_handler = IPCHandler(self.simulation_dir, self.env, self.agent_graph)
@@ -591,9 +666,9 @@ class RedditSimulationRunner:
         # 执行初始事件
         event_config = self.config.get("event_config", {})
         initial_posts = event_config.get("initial_posts", [])
-        
+
         if initial_posts:
-            print(f"执行初始事件 ({len(initial_posts)}条初始帖子)...")
+            print(script_message("initial_events_start", SCRIPT_LOCALE, count=len(initial_posts)))
             initial_actions = {}
             for post in initial_posts:
                 agent_id = post.get("poster_agent_id", 0)
@@ -613,14 +688,14 @@ class RedditSimulationRunner:
                             action_args={"content": content}
                         )
                 except Exception as e:
-                    print(f"  警告: 无法为Agent {agent_id}创建初始帖子: {e}")
-            
+                    print(script_message("initial_post_warning", SCRIPT_LOCALE, agent_id=agent_id, error=e))
+
             if initial_actions:
                 await self.env.step(initial_actions)
-                print(f"  已发布 {len(initial_actions)} 条初始帖子")
-        
+                print(script_message("initial_posts_published", SCRIPT_LOCALE, count=len(initial_actions)))
+
         # 主模拟循环
-        print("\n开始模拟循环...")
+        print(script_message("simulation_loop_start", SCRIPT_LOCALE))
         start_time = datetime.now()
         
         for round_num in range(total_rounds):
@@ -645,21 +720,30 @@ class RedditSimulationRunner:
             if (round_num + 1) % 10 == 0 or round_num == 0:
                 elapsed = (datetime.now() - start_time).total_seconds()
                 progress = (round_num + 1) / total_rounds * 100
-                print(f"  [Day {simulated_day}, {simulated_hour:02d}:00] "
-                      f"Round {round_num + 1}/{total_rounds} ({progress:.1f}%) "
-                      f"- {len(active_agents)} agents active "
-                      f"- elapsed: {elapsed:.1f}s")
+                print(
+                    script_message(
+                        "round_progress",
+                        SCRIPT_LOCALE,
+                        day=simulated_day,
+                        hour=simulated_hour,
+                        round=round_num + 1,
+                        total_rounds=total_rounds,
+                        progress=progress,
+                        agent_count=len(active_agents),
+                        elapsed=elapsed,
+                    )
+                )
         
         total_elapsed = (datetime.now() - start_time).total_seconds()
-        print(f"\n模拟循环完成!")
-        print(f"  - 总耗时: {total_elapsed:.1f}秒")
-        print(f"  - 数据库: {db_path}")
+        print(script_message("simulation_loop_complete", SCRIPT_LOCALE))
+        print(script_message("total_elapsed", SCRIPT_LOCALE, seconds=total_elapsed))
+        print(script_message("database_path", SCRIPT_LOCALE, path=db_path))
         
         # 是否进入等待命令模式
         if self.wait_for_commands:
             print("\n" + "=" * 60)
-            print("进入等待命令模式 - 环境保持运行")
-            print("支持的命令: interview, batch_interview, close_env")
+            print(script_message("wait_mode_banner", SCRIPT_LOCALE))
+            print(script_message("supported_commands", SCRIPT_LOCALE))
             print("=" * 60)
             
             self.ipc_handler.update_status("alive")
@@ -676,41 +760,43 @@ class RedditSimulationRunner:
                     except asyncio.TimeoutError:
                         pass
             except KeyboardInterrupt:
-                print("\n收到中断信号")
+                print(script_message("interrupt_received", SCRIPT_LOCALE))
             except asyncio.CancelledError:
-                print("\n任务被取消")
+                print(script_message("task_cancelled", SCRIPT_LOCALE))
             except Exception as e:
-                print(f"\n命令处理出错: {e}")
-            
-            print("\n关闭环境...")
+                print(script_message("command_processing_failed", SCRIPT_LOCALE, error=e))
+
+            print(script_message("closing_env", SCRIPT_LOCALE))
         
         # 关闭环境
         self.ipc_handler.update_status("stopped")
         await self.env.close()
         
-        print("环境已关闭")
+        print(script_message("env_closed", SCRIPT_LOCALE))
         print("=" * 60)
 
 
 async def main():
-    parser = argparse.ArgumentParser(description='OASIS Reddit模拟')
+    parser = argparse.ArgumentParser(
+        description=script_message("runner_title", SCRIPT_LOCALE, platform="Reddit")
+    )
     parser.add_argument(
         '--config', 
         type=str, 
         required=True,
-        help='配置文件路径 (simulation_config.json)'
+        help=script_message("cli_config_help", SCRIPT_LOCALE)
     )
     parser.add_argument(
         '--max-rounds',
         type=int,
         default=None,
-        help='最大模拟轮数（可选，用于截断过长的模拟）'
+        help=script_message("cli_max_rounds_help", SCRIPT_LOCALE)
     )
     parser.add_argument(
         '--no-wait',
         action='store_true',
         default=False,
-        help='模拟完成后立即关闭环境，不进入等待命令模式'
+        help=script_message("cli_no_wait_help", SCRIPT_LOCALE)
     )
     
     args = parser.parse_args()
@@ -720,7 +806,7 @@ async def main():
     _shutdown_event = asyncio.Event()
     
     if not os.path.exists(args.config):
-        print(f"错误: 配置文件不存在: {args.config}")
+        print(script_message("config_missing", SCRIPT_LOCALE, path=args.config))
         sys.exit(1)
     
     # 初始化日志配置（使用固定文件名，清理旧日志）
@@ -742,14 +828,14 @@ def setup_signal_handlers():
     def signal_handler(signum, frame):
         global _cleanup_done
         sig_name = "SIGTERM" if signum == signal.SIGTERM else "SIGINT"
-        print(f"\n收到 {sig_name} 信号，正在退出...")
+        print(script_message("signal_received", SCRIPT_LOCALE, signal_name=sig_name))
         if not _cleanup_done:
             _cleanup_done = True
             if _shutdown_event:
                 _shutdown_event.set()
         else:
             # 重复收到信号才强制退出
-            print("强制退出...")
+            print(script_message("force_exit", SCRIPT_LOCALE))
             sys.exit(1)
     
     signal.signal(signal.SIGTERM, signal_handler)
@@ -758,12 +844,14 @@ def setup_signal_handlers():
 
 if __name__ == "__main__":
     setup_signal_handlers()
+    should_print_exit_message = True
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\n程序被中断")
-    except SystemExit:
+        print(script_message("program_interrupted", SCRIPT_LOCALE))
+    except SystemExit as exc:
+        should_print_exit_message = exc.code not in (0, None)
         pass
     finally:
-        print("模拟进程已退出")
-
+        if should_print_exit_message:
+            print(script_message("process_exited", SCRIPT_LOCALE))

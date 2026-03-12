@@ -4,8 +4,13 @@
 """
 
 import os
+import logging
 from pathlib import Path
 from typing import List, Optional
+
+from ..i18n import tr
+
+logger = logging.getLogger(__name__)
 
 
 def _read_text_with_fallback(file_path: str) -> str:
@@ -39,8 +44,8 @@ def _read_text_with_fallback(file_path: str) -> str:
         best = from_bytes(data).best()
         if best and best.encoding:
             encoding = best.encoding
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("charset_normalizer detection failed: %s", e)
     
     # 回退到 chardet
     if not encoding:
@@ -48,8 +53,8 @@ def _read_text_with_fallback(file_path: str) -> str:
             import chardet
             result = chardet.detect(data)
             encoding = result.get('encoding') if result else None
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("chardet detection failed: %s", e)
     
     # 最终兜底：使用 UTF-8 + replace
     if not encoding:
@@ -64,7 +69,7 @@ class FileParser:
     SUPPORTED_EXTENSIONS = {'.pdf', '.md', '.markdown', '.txt'}
     
     @classmethod
-    def extract_text(cls, file_path: str) -> str:
+    def extract_text(cls, file_path: str, locale: Optional[str] = None) -> str:
         """
         从文件中提取文本
         
@@ -77,29 +82,29 @@ class FileParser:
         path = Path(file_path)
         
         if not path.exists():
-            raise FileNotFoundError(f"文件不存在: {file_path}")
+            raise FileNotFoundError(tr("file.not_found", locale, path=file_path))
         
         suffix = path.suffix.lower()
         
         if suffix not in cls.SUPPORTED_EXTENSIONS:
-            raise ValueError(f"不支持的文件格式: {suffix}")
+            raise ValueError(tr("file.unsupported_type", locale, suffix=suffix))
         
         if suffix == '.pdf':
-            return cls._extract_from_pdf(file_path)
+            return cls._extract_from_pdf(file_path, locale=locale)
         elif suffix in {'.md', '.markdown'}:
             return cls._extract_from_md(file_path)
         elif suffix == '.txt':
             return cls._extract_from_txt(file_path)
         
-        raise ValueError(f"无法处理的文件格式: {suffix}")
+        raise ValueError(tr("file.unhandled_type", locale, suffix=suffix))
     
     @staticmethod
-    def _extract_from_pdf(file_path: str) -> str:
+    def _extract_from_pdf(file_path: str, locale: Optional[str] = None) -> str:
         """从PDF提取文本"""
         try:
             import fitz  # PyMuPDF
         except ImportError:
-            raise ImportError("需要安装PyMuPDF: pip install PyMuPDF")
+            raise ImportError(tr("file.pdf_dependency_missing", locale))
         
         text_parts = []
         with fitz.open(file_path) as doc:
@@ -121,12 +126,13 @@ class FileParser:
         return _read_text_with_fallback(file_path)
     
     @classmethod
-    def extract_from_multiple(cls, file_paths: List[str]) -> str:
+    def extract_from_multiple(cls, file_paths: List[str], locale: Optional[str] = None) -> str:
         """
         从多个文件提取文本并合并
         
         Args:
             file_paths: 文件路径列表
+            locale: 可选的语言代码，默认使用请求上下文
             
         Returns:
             合并后的文本
@@ -135,11 +141,20 @@ class FileParser:
         
         for i, file_path in enumerate(file_paths, 1):
             try:
-                text = cls.extract_text(file_path)
+                text = cls.extract_text(file_path, locale=locale)
                 filename = Path(file_path).name
-                all_texts.append(f"=== 文档 {i}: {filename} ===\n{text}")
+                all_texts.append(tr("file.multi_doc_header", locale, index=i, filename=filename) + f"\n{text}")
             except Exception as e:
-                all_texts.append(f"=== 文档 {i}: {file_path} (提取失败: {str(e)}) ===")
+                filename = Path(file_path).name or file_path
+                all_texts.append(
+                    tr(
+                        "file.multi_doc_failed_header",
+                        locale,
+                        index=i,
+                        filename=filename,
+                        details=str(e),
+                    )
+                )
         
         return "\n\n".join(all_texts)
 
@@ -186,4 +201,3 @@ def split_text_into_chunks(
         start = end - overlap if end < len(text) else len(text)
     
     return chunks
-

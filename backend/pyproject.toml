@@ -3,7 +3,7 @@ name = "mirofish-backend"
 version = "0.1.0"
 description = "MiroFish - 简洁通用的群体智能引擎，预测万物"
 requires-python = ">=3.11"
-license = { text = "AGPL-3.0" }
+license = "AGPL-3.0"
 authors = [
     { name = "MiroFish Team" }
 ]
@@ -19,10 +19,6 @@ dependencies = [
     # Zep Cloud
     "zep-cloud==3.13.0",
     
-    # OASIS 社交媒体模拟
-    "camel-oasis==0.2.5",
-    "camel-ai==0.2.78",
-    
     # 文件处理
     "PyMuPDF>=1.24.0",
     # 编码检测（支持非UTF-8编码的文本文件）
@@ -35,6 +31,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+simulation = [
+    "camel-ai==0.2.78",
+    "igraph==0.11.6",
+    "neo4j==5.23.0",
+    "pandas==2.2.2",
+    "sentence-transformers==3.0.0",
+]
 dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
@@ -52,4 +55,4 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["app"]
+packages = ["app", "oasis"]

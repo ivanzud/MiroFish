@@ -20,17 +20,19 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app import create_app
 from app.config import Config
+from app.i18n import get_locale, tr
 
 
 def main():
     """主函数"""
     # 验证配置
-    errors = Config.validate()
+    locale = get_locale(os.environ.get("MIROFISH_LOCALE"))
+    errors = Config.validate(locale=locale)
     if errors:
-        print("配置错误:")
+        print(tr("startup.config_error_header", locale))
         for err in errors:
             print(f"  - {err}")
-        print("\n请检查 .env 文件中的配置")
+        print(f"\n{tr('startup.config_hint', locale)}")
         sys.exit(1)
     
     # 创建应用
@@ -47,4 +49,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

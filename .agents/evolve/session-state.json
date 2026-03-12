@@ -1,0 +1,26 @@
+{
+  "cycle": 20,
+  "mode": "standard",
+  "test_first": true,
+  "repo_profile_path": null,
+  "generator_empty_streak": 0,
+  "last_selected_source": "beads",
+  "claimed_work": null,
+  "queue_refresh_count": 20,
+  "pinned_queue": null,
+  "pinned_queue_file": null,
+  "pinned_queue_index": 0,
+  "pinned_queue_completed": [],
+  "pinned_queue_escalated": [],
+  "unblock_depth": 0,
+  "unblock_failures": 0,
+  "unblock_chain": [],
+  "last_completed_issue": "mirofish-ke3l",
+  "last_validation_commands": [
+    "env -i PATH=\"$PATH\" HOME=\"$HOME\" OPENAI_API_KEY=test-key OPENAI_API_BASE_URL=https://codex.example.test/v1 OPENAI_MODEL=gpt-4.1-mini ZEP_API_KEY=test-zep SECRET_KEY=test-secret npm run check:backend-config -- --compact",
+    "bash ./scripts/test_backend_lite.sh"
+  ],
+  "last_upstream_snapshot": "docs/upstream-all-state.json",
+  "last_cycle_timestamp": "2026-03-12T02:01:27Z",
+  "last_cycle_head": "425f6c967950e01412e4df745991e6aaa6fd98d7"
+}
