@@ -27,17 +27,19 @@
     },
     {
       "number": 158,
-      "status": "tracked",
-      "summary": "Tracked under beads issue `mirofish-gytl`: upstream is asking for a way to verify whether forecasted outcomes were later confirmed by real events, but the repo does not yet expose an explicit forecast-verification workflow or examples.",
+      "status": "partial",
+      "summary": "README.md and README-EN.md now document a repo-native forecast verification workflow: keep the stable `simulation_id` / `report_id`, export the Step 4 Markdown report or reuse the files under `backend/uploads/reports/<report_id>/`, and compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
       "local_refs": [
         ".beads/issues.jsonl",
+        "README.md",
+        "README-EN.md",
         "docs/upstream-triage.md",
         "https://github.com/ivanzud/MiroFish/issues/95"
       ],
       "validation": [
-        "tracking only"
+        "README verification"
       ],
-      "notes": "Mirrored into fork issue #95 on March 12, 2026 so the request stays visible while the right follow-up is narrowed."
+      "notes": "Mirrored into fork issue #95 on March 12, 2026. The repo now documents how to preserve and revisit forecast evidence, but it still does not automate outcome ingestion or accuracy scoring."
     },
     {
       "number": 156,

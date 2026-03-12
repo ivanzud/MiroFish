@@ -334,6 +334,14 @@ If you use the default dual-port layout, the frontend auto-targets backend port 
 - Persisted data remains under `backend/uploads/`, and the homepage history view can reopen Step 1 (Graph Build), Step 2 (Environment Setup), and Step 4 (Report).
 - Step 3 and Step 5 still depend on a live OASIS runtime session. If the backend process, container, or simulation environment has already been shut down, those live runtime stages cannot be replayed seamlessly and must be prepared or started again.
 
+**How can I verify later whether a forecast matched real-world outcomes?**
+
+- MiroFish does not yet ship an automatic ground-truth ingester or accuracy scorer, but it already preserves a stable manual verification trail.
+- In Step 4, keep the `report_id`, and use the homepage history entry to preserve the matching `simulation_id`. Those IDs anchor later review to the same graph, environment, and report artifacts.
+- For offline evidence, export the Markdown report from Step 4 or keep the generated files under `backend/uploads/reports/<report_id>/full_report.md` and the sibling JSON metadata.
+- Once the real event has evolved, reopen Step 4 from history and compare the report's main judgments, timelines, and assumptions against what actually happened. Reopen Step 1 / Step 2 as needed to inspect the original source material and setup.
+- If the simulation runtime is still online, Step 5 can be used to ask the Report Agent or individual roles which assumptions were validated or invalidated. If the runtime session is gone, the current workflow is Step 4 evidence retention plus manual comparison rather than true automated backtesting.
+
 **Start Individually:**
 
 ```bash

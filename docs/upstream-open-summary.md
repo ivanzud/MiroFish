@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-12T02:00:36.852174+00:00`
+- Captured: `2026-03-12T02:04:52.264003+00:00`
 - Issues: `45` total (`open=45`, `closed=0`)
 - Pull requests: `40` total (`open=40`, `closed=0`)
 - Mirrored in `origin`: `40` of `40` PR refs
@@ -12,7 +12,7 @@
 ## Recently Updated Issues
 
 - #158 [open, mirror=#95] Are there any predictions that have been verified by subsequent events? (question)
-  - local coverage [tracked]: Tracked under beads issue `mirofish-gytl`: upstream is asking for a way to verify whether forecasted outcomes were later confirmed by real events, but the repo does not yet expose an explicit forecast-verification workflow or examples.
+  - local coverage [partial]: README.md and README-EN.md now document a repo-native forecast verification workflow: keep the stable `simulation_id` / `report_id`, export the Step 4 Markdown report or reuse the files under `backend/uploads/reports/<report_id>/`, and compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.
   - Awesome idea! I am wondering are there any predictions that have been verified by subsequent events?
 - #157 [open, mirror=#96] 如何删除不想要的记录 (question)
   - local coverage [covered]: Homepage history now supports repo-native deletion of unwanted local records. The backend exposes `DELETE /api/simulation/history/<simulation_id>` to remove a simulation's persisted local directory, cascade-delete its attached local reports, and prune the project metadata when no sibling simulations remain, while refusing deletion for active runs. The history modal now exposes a localized delete action that calls that endpoint directly.
