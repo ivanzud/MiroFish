@@ -24,21 +24,21 @@
 
 </div>
 
-## Overview
+## Обзор
 
-**MiroFish** is a multi-agent prediction engine that builds a high-fidelity digital world from seed materials such as news, policy drafts, research, or long-form narratives. Inside that world, many agents with memory and behavioral rules interact, evolve, and produce a simulation that can be inspected through reports and direct chat.
+**MiroFish** — это мультиагентный движок прогнозирования, который строит высокодетализированный цифровой мир из исходных материалов: новостей, проектов политик, исследований или длинных текстов. Внутри этого мира множество агентов с памятью и поведенческими правилами взаимодействуют, развиваются и создают симуляцию, которую затем можно изучать через отчёты и прямой чат.
 
-This Russian README is a safe repo-native documentation subset extracted from upstream PR `#147`. It documents the current branch without importing that PR's large frontend/backend rewrite.
+Этот `README` на русском языке — безопасный репо-нативный поднабор документации, выделенный из upstream PR `#147`. Он описывает текущее состояние этой ветки без переноса крупной переработки фронтенда и бэкенда из того PR.
 
-## What You Need
+## Что потребуется
 
 - Node.js `18+`
 - Python `3.11+`
 - `uv`
-- A Zep API key
-- An OpenAI-compatible LLM endpoint
+- API-ключ Zep
+- OpenAI-compatible LLM endpoint
 
-## Quick Start
+## Быстрый старт
 
 ```bash
 cp .env.example .env
@@ -46,20 +46,20 @@ npm run setup:core
 npm run dev
 ```
 
-`npm run setup:all` remains available as a backward-compatible alias for the same core install path. Install `npm run setup:backend:simulation` only when you need the optional Step 3 / Step 5 simulation runtime.
+`npm run setup:all` по-прежнему доступен как обратно совместимый алиас для того же базового пути установки. `npm run setup:backend:simulation` нужен только тогда, когда вам действительно требуется опциональный рантайм симуляции для Step 3 / Step 5.
 
-If you want the backend-only path with the same config preflight, run `npm run backend:local`. It executes `npm run check:backend-config` first and starts Flask only after the current `LLM_*` / `OPENAI_*` aliases resolve cleanly.
+Если нужен самый прямой путь запуска только бэкенда с тем же предварительным config-check, используйте `npm run backend:local`. Эта команда сначала выполняет `npm run check:backend-config` и запускает Flask только после того, как текущие алиасы `LLM_*` / `OPENAI_*` успешно разобраны.
 
-Services:
+Сервисы:
 
 - Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:5001`
 
-## OpenAI-Compatible Backends
+## OpenAI-Compatible Бэкенды
 
-MiroFish can use any backend that speaks the OpenAI-compatible chat/completions API. You can configure it with either the repo-native `LLM_*` variables or the alias `OPENAI_*` variables.
+MiroFish может работать с любым бэкендом, который поддерживает OpenAI-compatible API `chat/completions`. Для настройки можно использовать либо репо-нативные переменные `LLM_*`, либо стандартные алиасы `OPENAI_*`.
 
-Example:
+Пример:
 
 ```env
 OPENAI_API_KEY=your_api_key
@@ -70,7 +70,7 @@ OPENAI_MODEL=gpt-4.1-mini
 ZEP_API_KEY=your_zep_key
 ```
 
-Equivalent `LLM_*` form:
+Эквивалентный вариант через `LLM_*`:
 
 ```env
 LLM_API_KEY=your_api_key
@@ -78,12 +78,12 @@ LLM_BASE_URL=https://api.openai.com/v1
 LLM_MODEL_NAME=gpt-4.1
 ```
 
-The backend accepts both the project-specific `LLM_*` variables and the standard `OPENAI_*` aliases, so you can point MiroFish directly at OpenAI, Codex-compatible gateways, LM Studio, Ollama, DashScope, or any other OpenAI-compatible backend without extra code changes or a separate `LLM_PROVIDER` flag.
+Бэкенд принимает как проектные переменные `LLM_*`, так и стандартные алиасы `OPENAI_*`, поэтому MiroFish можно напрямую подключить к OpenAI, Codex-compatible шлюзам, LM Studio, Ollama, DashScope или любому другому OpenAI-compatible бэкенду без дополнительных изменений кода и без отдельного флага `LLM_PROVIDER`.
 
-Common compatible backend examples:
+Часто используемые примеры совместимых бэкендов:
 
 ```env
-# OpenAI / Codex-compatible gateway
+# OpenAI / Codex-compatible шлюз
 OPENAI_API_KEY=your_api_key
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_API_BASE_URL=https://api.openai.com/v1
@@ -95,34 +95,34 @@ OPENAI_API_BASE_URL=https://coding.dashscope.aliyuncs.com/v1
 OPENAI_MODEL=qwen3.5-plus
 ```
 
-How to verify that MiroFish detected the direct OpenAI-compatible path:
+Как проверить, что MiroFish распознал прямой OpenAI-compatible путь:
 
-- Visit `http://localhost:5001/health` to confirm the backend is running.
-- Or run `npm run check:backend-config` to print the same non-sensitive config-status JSON without starting the server.
-- For the most direct backend-only startup path, run `npm run backend:local`. It uses the same preflight first, so MiroFish does not start Flask with a broken `LLM_*` / `OPENAI_*` configuration.
-- Then open `http://localhost:5001/api/graph/config/status`. The JSON payload should report `llm.backend_mode = openai_compatible`.
-- `summary.llm.sources` shows whether MiroFish resolved `LLM_*` or `OPENAI_*` variables and whether the active base URL came from `OPENAI_BASE_URL` or `OPENAI_API_BASE_URL`, so you can confirm that a Codex/OpenAI-compatible gateway is wired correctly without adding `LLM_PROVIDER`.
-- If the same config-status payload still reports `ZEP_API_KEY is not configured`, the direct OpenAI-compatible LLM path is still fine; it only means Step 1 graph build continues to require Zep until a repo-native alternative backend lands.
-- If `SECRET_KEY` is unset during a local verification run, a warning about using a temporary generated key is expected and does not mean the direct `OPENAI_*` path failed.
+- Откройте `http://localhost:5001/health`, чтобы убедиться, что бэкенд запущен.
+- Или выполните `npm run check:backend-config`, чтобы вывести тот же не содержащий секретов JSON `config-status`, не поднимая сервер.
+- Если нужен самый прямой путь запуска только бэкенда, используйте `npm run backend:local`. Он применяет тот же preflight, поэтому MiroFish не запустит Flask с некорректной конфигурацией `LLM_*` / `OPENAI_*`.
+- Затем откройте `http://localhost:5001/api/graph/config/status`. В JSON-ответе значение `llm.backend_mode` должно быть `openai_compatible`.
+- Поле `summary.llm.sources` показывает, были ли использованы переменные `LLM_*` или `OPENAI_*`, а также какой именно base URL победил: `OPENAI_BASE_URL` или `OPENAI_API_BASE_URL`. Это самый быстрый способ проверить, что Codex/OpenAI-compatible шлюз определился корректно без добавления `LLM_PROVIDER`.
+- Если в том же `config-status` всё ещё указано `ZEP_API_KEY is not configured`, это не означает, что прямое OpenAI-compatible LLM-подключение сломано. Это лишь означает, что Step 1 по-прежнему требует Zep, пока в репозитории не появился альтернативный графовый бэкенд.
+- Если во время локальной проверки `SECRET_KEY` не задан, предупреждение о временно сгенерированном ключе ожидаемо и не означает, что прямой путь через `OPENAI_*` не работает.
 
-If `http://localhost:5001` returns `404`, that usually does not mean the backend failed to start. The backend root is API-only; use `http://localhost:5001/health` for a health check instead.
+Если `http://localhost:5001` возвращает `404`, это обычно не означает, что бэкенд не запустился. Корневой путь бэкенда обслуживает только API, поэтому для проверки состояния используйте `http://localhost:5001/health`.
 
-## Workflow
+## Рабочий процесс
 
-1. Build the graph from source material.
-2. Generate environment/persona configuration.
-3. Run the simulation.
-4. Generate the report.
-5. Interact with the simulated world.
+1. Построить граф из исходного материала.
+2. Сгенерировать конфигурацию окружения и персон.
+3. Запустить симуляцию.
+4. Сгенерировать отчёт.
+5. Взаимодействовать с симулированным миром.
 
-## Full Documentation
+## Полная документация
 
-- English guide: [README-EN.md](./README-EN.md)
-- Chinese guide: [README.md](./README.md)
-- Environment template: [`.env.example`](./.env.example)
-- Contribution guide: [CONTRIBUTING.md](./CONTRIBUTING.md)
+- Руководство на английском: [README-EN.md](./README-EN.md)
+- Руководство на китайском: [README.md](./README.md)
+- Шаблон переменных окружения: [`.env.example`](./.env.example)
+- Руководство по внесению изменений: [CONTRIBUTING.md](./CONTRIBUTING.md)
 
-## Notes
+## Примечания
 
-- The current product UI is still primarily Chinese/English on this branch.
-- Upstream PR `#147` contains a much larger Russian localization attempt, but that branch is not safe to cherry-pick wholesale because it replaces large parts of the repo and removes current local validation/tooling work.
+- Интерфейс продукта в этой ветке по-прежнему в основном остаётся китайско-английским.
+- Upstream PR `#147` содержит гораздо более крупную попытку русской локализации, но безопасно cherry-pick'нуть его целиком нельзя: он заменяет большие части репозитория и удаляет текущие локальные проверки и tooling.
