@@ -1,6 +1,6 @@
 # Upstream Triage
 
-Last refreshed: `2026-03-11`
+Last refreshed: `2026-03-12`
 
 ## Current focus
 
@@ -12,6 +12,11 @@ Last refreshed: `2026-03-11`
 - Keep the remaining clean PR queue pruned by recording when a candidate is already superseded locally or no longer safe after later backend/runtime changes.
 
 ## Reviewed This Pass
+
+- Upstream intake refreshed again on March 12, 2026 at `2026-03-12T00:05:31.453610+00:00` for the open queue and `2026-03-12T00:05:40.777595+00:00` for the full history snapshot. The machine-readable summaries remain current at `41` open issues / `39` open PRs and `91` total issues / `53` total PRs, with all open PR refs still mirrored into `origin` and all upstream issue mirrors still current in the fork visibility artifacts.
+- Another safe-merge review after that refresh still did not expose a new clean upstream PR to adopt. The remaining non-landed open PR queue is unchanged: intentionally partial localization branches (`#119`, `#147`) plus broader unsafe or superseded branches (`#141`, `#144`, `#118`, `#114`, `#108`, `#102`, `#101`, `#100`, `#87`, `#86`, `#70`, `#38`, `#49`, `#72`).
+- Revalidated the two currently relevant low-risk seams instead of forcing another stale merge: ontology/schema normalization still passes targeted regression coverage (`cd backend && uv run pytest -q tests/test_ontology_generator.py tests/test_graph_builder.py tests/test_llm_client.py`), and the direct OpenAI-compatible backend path still reports `llm.backend_mode = openai_compatible` with only `OPENAI_API_KEY`, `OPENAI_API_BASE_URL=https://codex.example.test/v1`, `OPENAI_MODEL=gpt-4.1-mini`, and `ZEP_API_KEY` set.
+- Full lightweight backend validation also passed in this pass with `bash ./scripts/test_backend_lite.sh`, so there is no newly exposed reproducible low-risk upstream defect on the current branch after the latest forced refresh.
 
 - Upstream intake refreshed again on March 11, 2026 at `2026-03-11T23:59:10.108114+00:00` for the open queue and `2026-03-11T23:59:20.828413+00:00` for the full history snapshot. The machine-readable summaries remain current at `41` open issues / `39` open PRs and `91` total issues / `53` total PRs, with all open PR refs mirrored into `origin` and all upstream issue mirrors still current in the fork visibility artifacts.
 - Another safe-merge review after that refresh still did not expose a new clean upstream PR to adopt. The remaining non-landed open PR queue is unchanged: intentionally partial localization branches (`#119`, `#147`) plus broader unsafe or superseded branches (`#141`, `#144`, `#118`, `#114`, `#108`, `#102`, `#101`, `#100`, `#87`, `#86`, `#70`, `#38`, `#49`, `#72`).
