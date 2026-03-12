@@ -830,6 +830,7 @@ export default {
       loadedAgents: '加载了 {count} 个模拟个体',
       loadAgentsFailed: '加载模拟个体失败: {message}',
       envStatusFailed: '刷新采访环境状态失败: {message}',
+      reopenStep3: '打开已保存的 Step 3 恢复入口',
       init: 'Step5 深度互动初始化',
     },
   },

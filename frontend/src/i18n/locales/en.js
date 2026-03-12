@@ -830,6 +830,7 @@ export default {
       loadedAgents: 'Loaded {count} simulated agents',
       loadAgentsFailed: 'Failed to load simulated agents: {message}',
       envStatusFailed: 'Failed to refresh interview environment status: {message}',
+      reopenStep3: 'Opening the saved Step 3 recovery route',
       init: 'Step 5 deep interaction initialized',
     },
   },

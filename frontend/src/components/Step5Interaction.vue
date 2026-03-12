@@ -96,6 +96,15 @@
         >
           {{ getInterviewStatusMessage() }}
         </div>
+        <div v-if="step3RecoveryState" class="step3-recovery-card">
+          <div class="step3-recovery-copy">
+            <span class="step3-recovery-label">{{ t('step2.savedRunLabel') }}</span>
+            <p class="step3-recovery-text">{{ t(step3RecoveryState.noticeKey) }}</p>
+          </div>
+          <button class="step3-recovery-btn" type="button" @click="openSavedStep3Run">
+            {{ t(step3RecoveryState.actionKey) }}
+          </button>
+        </div>
         <div class="interview-timeout-hint">
           {{ getInterviewTimeoutHint() }}
         </div>
@@ -423,6 +432,7 @@
 <script setup>
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { chatWithReport, getReport, getAgentLog } from '../api/report'
 import { interviewAgents, getEnvStatus, getSimulation, getSimulationProfilesRealtime } from '../api/simulation'
 import { deriveInterviewTimeoutSeconds, resolveTimeoutMs } from '../api/timeout'
@@ -438,6 +448,7 @@ import {
   summarizeInterviewEnvStatus,
 } from './step5Profiles'
 import { resolveReportReferenceValue } from './reportReferences.js'
+import { getStep5RecoveryState } from './step5Recovery.js'
 
 const props = defineProps({
   reportId: String,
@@ -446,6 +457,7 @@ const props = defineProps({
 
 const emit = defineEmits(['add-log', 'update-status'])
 const { t, locale } = useI18n()
+const router = useRouter()
 
 const resolvedReportReference = computed(() =>
   resolveReportReferenceValue(props.reportId, t('step4.unavailableId'))
@@ -475,6 +487,7 @@ const surveyResults = ref([])
 const isSurveying = ref(false)
 const configuredApiTimeoutMs = resolveTimeoutMs(import.meta.env.VITE_API_TIMEOUT)
 const interviewEnvStatus = ref(null)
+const simulationData = ref(null)
 
 // Report Data
 const reportOutline = ref(null)
@@ -582,6 +595,12 @@ const getInterviewTimeoutHint = () =>
     selectedCount: activeTab.value === 'survey' ? selectedAgents.value.size : 0,
     t,
   })
+const step3RecoveryState = computed(() =>
+  getStep5RecoveryState({
+    simulation: simulationData.value,
+    envStatus: interviewEnvStatus.value,
+  })
+)
 
 const refreshInterviewEnvStatus = async () => {
   if (!props.simulationId) {
@@ -604,6 +623,15 @@ const ensureInterviewReady = async (profilesToCheck = []) => {
   if (guardMessage) {
     throw new Error(guardMessage)
   }
+}
+
+const openSavedStep3Run = () => {
+  if (!step3RecoveryState.value) {
+    return
+  }
+
+  addLog(t('step5.logs.reopenStep3'))
+  router.push(step3RecoveryState.value.route)
 }
 
 const formatTime = (timestamp) => {
@@ -945,6 +973,7 @@ const loadProfiles = async () => {
   
   try {
     const simulationResponse = await getSimulation(props.simulationId)
+    simulationData.value = simulationResponse?.success ? (simulationResponse.data || null) : null
     const platforms = simulationResponse?.success
       ? getEnabledProfilePlatforms(simulationResponse.data)
       : ['reddit', 'twitter']
@@ -967,6 +996,7 @@ const loadProfiles = async () => {
     profiles.value = mergeInteractionProfiles(availableProfiles)
     addLog(t('step5.logs.loadedAgents', { count: profiles.value.length }))
   } catch (err) {
+    simulationData.value = null
     addLog(t('step5.logs.loadAgentsFailed', { message: err.message }))
   }
 }
@@ -1430,6 +1460,58 @@ watch(() => props.simulationId, (newId) => {
   background: #FEF3C7;
   border-color: #FCD34D;
   color: #92400E;
+}
+
+.step3-recovery-card {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: -6px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #FFF7ED;
+  border: 1px solid #FDBA74;
+}
+
+.step3-recovery-copy {
+  min-width: 0;
+}
+
+.step3-recovery-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9A3412;
+}
+
+.step3-recovery-text {
+  margin: 0;
+  color: #7C2D12;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.step3-recovery-btn {
+  flex-shrink: 0;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 999px;
+  background: #1F2937;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.step3-recovery-btn:hover {
+  background: #111827;
+  transform: translateY(-1px);
 }
 
 .interview-timeout-hint {

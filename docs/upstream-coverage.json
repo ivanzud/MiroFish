@@ -404,10 +404,12 @@
     {
       "number": 9,
       "status": "partial",
-      "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, the history modal exposes a replay-only Step 3 route that loads an existing timeline without accidentally auto-starting a fresh run, the Step 3 panel now makes the same-simulation restart path explicit after quota/API-key failures, and Step 2 now surfaces a direct recovery card that reopens the saved Step 3 replay/restart route without making users hunt through history first. True mid-run checkpoint/resume is still deferred.",
+      "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, the history modal exposes a replay-only Step 3 route that loads an existing timeline without accidentally auto-starting a fresh run, the Step 3 panel now makes the same-simulation restart path explicit after quota/API-key failures, Step 2 now surfaces a direct recovery card that reopens the saved Step 3 replay/restart route without making users hunt through history first, and Step 5 now exposes that same direct Step 3 recovery route whenever the interview environment is offline but the prepared simulation still has replayable state. True mid-run checkpoint/resume is still deferred.",
       "local_refs": [
         "frontend/src/components/Step2EnvSetup.vue",
+        "frontend/src/components/Step5Interaction.vue",
         "frontend/src/components/step2Recovery.js",
+        "frontend/src/components/step5Recovery.js",
         "frontend/src/components/HistoryDatabase.vue",
         "frontend/src/views/SimulationRunView.vue",
         "frontend/src/views/SimulationView.vue",
@@ -415,13 +417,14 @@
         "frontend/src/components/historyPlayback.js",
         "frontend/src/components/simulationReplay.js",
         "frontend/tests/historyPlayback.test.mjs",
-        "frontend/tests/step2Recovery.test.mjs"
+        "frontend/tests/step2Recovery.test.mjs",
+        "frontend/tests/step5Recovery.test.mjs"
       ],
       "validation": [
         "frontend: npm test",
         "frontend: npm run build"
       ],
-      "notes": "The repo still cannot checkpoint and continue from the exact failure point after a provider outage, but the prepared-environment recovery path is now available from both history and the Step 2 screen."
+      "notes": "The repo still cannot checkpoint and continue from the exact failure point after a provider outage, but the prepared-environment recovery path is now available from history, the Step 2 screen, and the Step 5 offline-interview workspace."
     },
     {
       "number": 21,
