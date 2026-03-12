@@ -2,7 +2,13 @@
 
 from __future__ import annotations
 
-from flask import has_request_context, request
+try:
+    from flask import has_request_context, request
+except ImportError:  # pragma: no cover - allows config preflight without Flask installed
+    def has_request_context() -> bool:
+        return False
+
+    request = None
 
 
 DEFAULT_LOCALE = "zh"

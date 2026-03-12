@@ -4,15 +4,39 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import sys
+import types
 from pathlib import Path
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
-if str(BACKEND_DIR) not in sys.path:
-    sys.path.insert(0, str(BACKEND_DIR))
+APP_DIR = BACKEND_DIR / "app"
+SCRIPT_APP_PACKAGE = "_mirofish_script_app"
 
-from app.config import Config
+
+def load_config_class():
+    """Load app.config without executing app/__init__.py and its Flask imports."""
+    package = sys.modules.get(SCRIPT_APP_PACKAGE)
+    if package is None:
+        package = types.ModuleType(SCRIPT_APP_PACKAGE)
+        package.__path__ = [str(APP_DIR)]
+        sys.modules[SCRIPT_APP_PACKAGE] = package
+
+    config_module_name = f"{SCRIPT_APP_PACKAGE}.config"
+    config_module = sys.modules.get(config_module_name)
+    if config_module is None:
+        spec = importlib.util.spec_from_file_location(config_module_name, APP_DIR / "config.py")
+        if spec is None or spec.loader is None:
+            raise ImportError(f"Unable to load config module from {APP_DIR / 'config.py'}")
+        config_module = importlib.util.module_from_spec(spec)
+        sys.modules[config_module_name] = config_module
+        spec.loader.exec_module(config_module)
+
+    return config_module.Config
+
+
+Config = load_config_class()
 
 
 def build_payload(locale: str) -> dict[str, object]:

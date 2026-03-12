@@ -9,7 +9,11 @@ from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urlparse
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - allows config preflight in minimal shells
+    def load_dotenv(*_args, **_kwargs):
+        return False
 
 try:
     from .i18n import tr

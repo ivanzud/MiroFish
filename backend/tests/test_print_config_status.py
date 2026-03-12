@@ -75,6 +75,18 @@ def test_build_payload_matches_backend_config_status_shape(monkeypatch):
     }
 
 
+def test_load_config_class_avoids_importing_flask_app_package():
+    original_app = sys.modules.pop("app", None)
+    try:
+        module = load_module()
+
+        assert module.Config.__module__ == "_mirofish_script_app.config"
+        assert "app" not in sys.modules
+    finally:
+        if original_app is not None:
+            sys.modules["app"] = original_app
+
+
 def test_main_returns_nonzero_when_config_is_invalid(monkeypatch, capsys):
     module = load_module()
     fake_validation = _validation_payload(
