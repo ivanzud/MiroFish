@@ -2,15 +2,18 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-12T00:23:48.100376+00:00`
-- Issues: `91` total (`open=41`, `closed=50`)
+- Captured: `2026-03-12T00:30:04.088929+00:00`
+- Issues: `92` total (`open=42`, `closed=50`)
 - Pull requests: `53` total (`open=39`, `closed=14`)
 - Mirrored in `origin`: `53` of `53` PR refs
-- Mirrored in `ivanzud/MiroFish`: `91` of `91` issues
+- Mirrored in `ivanzud/MiroFish`: `92` of `92` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
+- #154 [open, mirror=#93] Profile serialization crashes when LLM returns structured bio/persona fields (no labels)
+  - local coverage [covered]: Profile serialization now tolerates structured LLM output instead of crashing when `bio`, `persona`, `country`, `profession`, or `interested_topics` arrive as dict/list values. `OasisAgentProfile` normalizes those mixed types at construction time and the Reddit/Twitter serializers defensively coerce them again before slicing or string replacement, so simulation preparation no longer fails during profile save with `KeyError: slice(None, 150, None)`.
+  - ## Summary When profile generation returns structured JSON objects for fields like `bio`, `persona`, or `country`, MiroFish can fail during profile serialization before config generation starts. ## Reproduction context Observed on a live run with: - simulation_id: `sim_e69a946b6158` - graph_id: `mirofish_a39b5f10127f4744` - entities_count: `91` - status in state file: `failed` - error in state fi…
 - #153 [open, mirror=#92] npm run setup:all安装时一直报 pillow` (v10.3.0) 的错 (question)
   - local coverage [covered]: The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all.
   - Resolved 188 packages in 5.27s Built mirofish-backend @ file:///D:/MiroFish/backend x Failed to build `pillow==10.3.0` |-> The build backend returned an error `-> Call to `backend.build_wheel` failed (exit code: 1) [stderr] Traceback (most recent call last): File "<string>", line 14, in <module> requires = get_requires_for_build({}) File "C:\Users\Administrator\AppData\Local\uv\cache\builds-v0\.t…
@@ -41,8 +44,6 @@
   - local coverage [covered]: Graph-build task failures now classify Zep 401/unauthorized responses into a concise ZEP_API_KEY guidance message and strip embedded traceback noise before returning task payload errors.
   - Graph build task failed: Traceback (most recent call last): File "/app/backend/.venv/lib/python3.11/site-packages/zep_cloud/graph/raw_client.py", line 713, in create _response_json = _response.json() ^^^^^^^^^^^^^^^^ File "/app/backend/.venv/lib/python3.11/site-packages/httpx/_models.py", line 832, in json return jsonlib.loads(self.content, **kwargs) ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ File "/u…
   - latest comment by `dosubot[bot]`: <!-- Answer --> The `401 unauthorized` error indicates a Zep Cloud API authentication issue. Here are the most likely causes and solutions: **1. Version Bug** — If you're using MiroFish v0.1.0, there's a [known authentication bug](https://…
-- #140 [open, mirror=#5] 让我想到了刘慈欣的一个小说，要是把真实世界放进去，得多大的算力啊 (no labels)
-  - local coverage [no_action]: Upstream issue #140 is general project commentary rather than an actionable defect report or scoped feature request, so it does not require local implementation work.
 
 ## Recently Updated Pull Requests
 

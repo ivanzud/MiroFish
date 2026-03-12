@@ -2,15 +2,18 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-12T00:23:38.604808+00:00`
-- Issues: `41` total (`open=41`, `closed=0`)
+- Captured: `2026-03-12T00:29:54.389378+00:00`
+- Issues: `42` total (`open=42`, `closed=0`)
 - Pull requests: `39` total (`open=39`, `closed=0`)
 - Mirrored in `origin`: `39` of `39` PR refs
-- Mirrored in `ivanzud/MiroFish`: `41` of `41` issues
+- Mirrored in `ivanzud/MiroFish`: `42` of `42` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
+- #154 [open, mirror=#93] Profile serialization crashes when LLM returns structured bio/persona fields (no labels)
+  - local coverage [covered]: Profile serialization now tolerates structured LLM output instead of crashing when `bio`, `persona`, `country`, `profession`, or `interested_topics` arrive as dict/list values. `OasisAgentProfile` normalizes those mixed types at construction time and the Reddit/Twitter serializers defensively coerce them again before slicing or string replacement, so simulation preparation no longer fails during profile save with `KeyError: slice(None, 150, None)`.
+  - ## Summary When profile generation returns structured JSON objects for fields like `bio`, `persona`, or `country`, MiroFish can fail during profile serialization before config generation starts. ## Reproduction context Observed on a live run with: - simulation_id: `sim_e69a946b6158` - graph_id: `mirofish_a39b5f10127f4744` - entities_count: `91` - status in state file: `failed` - error in state fi…
 - #153 [open, mirror=#92] npm run setup:all安装时一直报 pillow` (v10.3.0) 的错 (question)
   - local coverage [covered]: The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all.
   - Resolved 188 packages in 5.27s Built mirofish-backend @ file:///D:/MiroFish/backend x Failed to build `pillow==10.3.0` |-> The build backend returned an error `-> Call to `backend.build_wheel` failed (exit code: 1) [stderr] Traceback (most recent call last): File "<string>", line 14, in <module> requires = get_requires_for_build({}) File "C:\Users\Administrator\AppData\Local\uv\cache\builds-v0\.t…
@@ -39,10 +42,6 @@
   - local coverage [covered]: Graph ontology ingestion now accepts string-valued attribute definitions for entity and edge schemas, so malformed LLM ontology output no longer crashes graph builds with `TypeError: string indices must be integers`.
   - Graph build task failed: Traceback (most recent call last): File "/app/backend/app/api/graph.py", line 418, in build_task builder.set_ontology(graph_id, ontology) File "/app/backend/app/services/graph_builder.py", line 230, in set_ontology attr_name = safe_attr_name(attr_def["name"]) # 使用安全名称 ~~~~~~~~^^^^^^^^ TypeError: string indices must be integers, not 'str'
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @rheeh! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这个错误是因为 `attr_def` 应该是字典格式 `{"name": "attr_name", ...}`，但实际收到的是字符串。 **根本原因**：LLM 生成的 ontology 中，`attributes` 字段可能返回了简单的…
-- #133 [open, mirror=#7] 本地部署，启动已经显示成功了，访问却失败 (question)
-  - local coverage [covered]: The backend root path `/` plus `/health` and `/healthz` now return a small JSON status payload with the live API prefixes, so local or Docker users no longer need to infer backend health from a bare 404.
-  - 前后端启动都显示成功了，0.0.0.0:5001无法访问，提示404。前端0.0.0.0:3000虽然可以访问，但是一到这个界面就会报错 <img width="2550" height="1233" alt="Image" src="https://github.com/user-attachments/assets/032cf0ac-78ae-406d-831d-da5b9a28d5a0" />，看了项目也没有报错日志，请问这是什么问题呢
-  - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @Axing93! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这是一个常见的前后端连接配置问题。 **后端 5001 返回 404 是正常的** — [根路径 `/` 未定义端点](https://github.com/666ghj/MiroFish/issues/68)，实际 API 通过具体…
 
 ## Recently Updated Pull Requests
 

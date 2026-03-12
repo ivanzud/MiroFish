@@ -27,6 +27,42 @@ from .zep_entity_reader import EntityNode, ZepEntityReader
 logger = get_logger('mirofish.oasis_profile')
 
 
+def _stringify_profile_value(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, dict):
+        parts = []
+        for key, nested_value in value.items():
+            normalized = _stringify_profile_value(nested_value)
+            if normalized:
+                parts.append(f"{key}: {normalized}")
+        if parts:
+            return "; ".join(parts)
+        return json.dumps(value, ensure_ascii=False)
+    if isinstance(value, (list, tuple, set)):
+        parts = [_stringify_profile_value(item) for item in value]
+        collapsed = [item for item in parts if item]
+        return ", ".join(collapsed)
+    return str(value).strip()
+
+
+def _coerce_profile_text(value: Any, fallback: str = "") -> str:
+    normalized = _stringify_profile_value(value)
+    return normalized or fallback
+
+
+def _coerce_profile_topics(value: Any) -> List[str]:
+    if value is None:
+        return []
+    if isinstance(value, (list, tuple, set)):
+        normalized = [_stringify_profile_value(item) for item in value]
+        return [item for item in normalized if item]
+    normalized = _stringify_profile_value(value)
+    return [normalized] if normalized else []
+
+
 def _supports_json_mode_error(exc: Exception) -> bool:
     text = str(exc).lower()
     markers = (
@@ -70,6 +106,20 @@ class OasisAgentProfile:
     source_entity_type: Optional[str] = None
     
     created_at: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
+
+    def __post_init__(self) -> None:
+        self.user_name = _coerce_profile_text(self.user_name, f"user_{self.user_id}")
+        self.name = _coerce_profile_text(self.name, self.user_name)
+        self.bio = _coerce_profile_text(self.bio, self.name)
+        self.persona = _coerce_profile_text(
+            self.persona,
+            f"{self.name} is a participant in social discussions.",
+        )
+        self.gender = _coerce_profile_text(self.gender) or None
+        self.mbti = _coerce_profile_text(self.mbti) or None
+        self.country = _coerce_profile_text(self.country) or None
+        self.profession = _coerce_profile_text(self.profession) or None
+        self.interested_topics = _coerce_profile_topics(self.interested_topics)
     
     def to_reddit_format(self) -> Dict[str, Any]:
         """转换为Reddit平台格式"""
@@ -1443,15 +1493,17 @@ Important:
             
             # 写入数据行
             for idx, profile in enumerate(profiles):
+                bio = _coerce_profile_text(profile.bio, profile.name)
+                persona = _coerce_profile_text(profile.persona)
                 # user_char: 完整人设（bio + persona），用于LLM系统提示
-                user_char = profile.bio
-                if profile.persona and profile.persona != profile.bio:
-                    user_char = f"{profile.bio} {profile.persona}"
+                user_char = bio
+                if persona and persona != bio:
+                    user_char = f"{bio} {persona}"
                 # 处理换行符（CSV中用空格替代）
                 user_char = user_char.replace('\n', ' ').replace('\r', ' ')
                 
                 # description: 简短简介，用于外部显示
-                description = profile.bio.replace('\n', ' ').replace('\r', ' ')
+                description = bio.replace('\n', ' ').replace('\r', ' ')
                 
                 row = [
                     idx,                    # user_id: 从0开始的顺序ID
@@ -1477,6 +1529,11 @@ Important:
         """
         if not gender:
             return "other"
+
+        if not isinstance(gender, str):
+            gender = _coerce_profile_text(gender)
+            if not gender:
+                return "other"
         
         gender_lower = gender.lower().strip()
         
@@ -1514,27 +1571,33 @@ Important:
         """
         data = []
         for idx, profile in enumerate(profiles):
+            bio = _coerce_profile_text(profile.bio, f"{profile.name}")
+            persona = _coerce_profile_text(
+                profile.persona,
+                f"{profile.name} is a participant in social discussions.",
+            )
+            country = _coerce_profile_text(profile.country, self._default_country())
             # 使用与 to_reddit_format() 一致的格式
             item = {
                 "user_id": profile.user_id if profile.user_id is not None else idx,  # 关键：必须包含 user_id
                 "username": profile.user_name,
                 "name": profile.name,
-                "bio": profile.bio[:150] if profile.bio else f"{profile.name}",
-                "persona": profile.persona or f"{profile.name} is a participant in social discussions.",
+                "bio": bio[:150] if bio else f"{profile.name}",
+                "persona": persona,
                 "karma": profile.karma if profile.karma else 1000,
                 "created_at": profile.created_at,
                 # OASIS必需字段 - 确保都有默认值
                 "age": profile.age if profile.age else 30,
                 "gender": self._normalize_gender(profile.gender),
                 "mbti": profile.mbti if profile.mbti else "ISTJ",
-                "country": profile.country if profile.country else self._default_country(),
+                "country": country,
             }
             
             # 可选字段
             if profile.profession:
-                item["profession"] = profile.profession
+                item["profession"] = _coerce_profile_text(profile.profession)
             if profile.interested_topics:
-                item["interested_topics"] = profile.interested_topics
+                item["interested_topics"] = _coerce_profile_topics(profile.interested_topics)
             
             data.append(item)
         

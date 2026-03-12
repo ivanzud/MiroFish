@@ -244,6 +244,61 @@ def test_oasis_profile_generator_default_country_tolerates_uninitialized_locale(
     assert generator._default_country() == "中国"
 
 
+def test_oasis_profile_normalizes_structured_fields_before_serialization(tmp_path):
+    generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+    generator.locale = "en"
+    output_path = tmp_path / "profiles.json"
+
+    generator.save_profiles(
+        [
+            OasisAgentProfile(
+                user_id=1,
+                name="Alice",
+                user_name="alice",
+                bio={"summary": "Researcher", "traits": ["curious", "careful"]},
+                persona={"role": "Analyst", "focus": ["policy", "risk"]},
+                country=["United States", "Canada"],
+                profession={"title": "Engineer"},
+                interested_topics=["Games", {"topic": "Policy"}],
+            )
+        ],
+        str(output_path),
+        platform="reddit",
+    )
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload[0]["bio"] == "summary: Researcher; traits: curious, careful"
+    assert payload[0]["persona"] == "role: Analyst; focus: policy, risk"
+    assert payload[0]["country"] == "United States, Canada"
+    assert payload[0]["profession"] == "title: Engineer"
+    assert payload[0]["interested_topics"] == ["Games", "topic: Policy"]
+
+
+def test_oasis_profile_generator_save_twitter_profiles_tolerates_structured_fields(tmp_path):
+    generator = OasisProfileGenerator.__new__(OasisProfileGenerator)
+    generator.locale = "en"
+    output_path = tmp_path / "profiles.csv"
+
+    generator.save_profiles(
+        [
+            OasisAgentProfile(
+                user_id=1,
+                name="Alice",
+                user_name="alice",
+                bio={"summary": "Researcher"},
+                persona={"tone": "Measured"},
+            )
+        ],
+        str(output_path),
+        platform="twitter",
+    )
+
+    rows = output_path.read_text(encoding="utf-8").splitlines()
+    assert rows[0] == "user_id,name,username,user_char,description"
+    assert "summary: Researcher tone: Measured" in rows[1]
+    assert rows[1].endswith(",summary: Researcher")
+
+
 def test_oasis_profile_generator_english_progress_messages(monkeypatch):
     info_messages = []
     warning_messages = []

@@ -1,7 +1,23 @@
 {
   "repo": "666ghj/MiroFish",
-  "captured_at": "2026-03-11T22:03:00Z",
+  "captured_at": "2026-03-12T00:30:04Z",
   "issues": [
+    {
+      "number": 154,
+      "status": "covered",
+      "summary": "Profile serialization now tolerates structured LLM output instead of crashing when `bio`, `persona`, `country`, `profession`, or `interested_topics` arrive as dict/list values. `OasisAgentProfile` normalizes those mixed types at construction time and the Reddit/Twitter serializers defensively coerce them again before slicing or string replacement, so simulation preparation no longer fails during profile save with `KeyError: slice(None, 150, None)`.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "backend/app/services/oasis_profile_generator.py",
+        "backend/tests/test_openai_compat_services.py",
+        "https://github.com/ivanzud/MiroFish/issues/93"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_openai_compat_services.py -k \"structured_fields or save_profiles_defaults_country_by_locale or save_twitter_profiles_tolerates_structured_fields\"",
+        "bash ./scripts/test_backend_lite.sh"
+      ],
+      "notes": "Mirrored into fork issue #93 on March 12, 2026. This is a repo-native fix for the newly reported upstream serialization crash rather than a PR cherry-pick."
+    },
     {
       "number": 150,
       "status": "covered",
