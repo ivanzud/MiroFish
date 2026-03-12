@@ -35,6 +35,7 @@ export default {
       configuredOpenAI: '已检测到直接 OPENAI / Codex-compatible 接入',
       baseUrlConflictTitle: '检测到后端基础地址冲突',
       baseUrlConflictNote: '{configuredEnvNames} 设置了不同的值，当前将使用 {selectedEnv}={selectedValue}。',
+      zepMissingNote: '直接 LLM 接入已经配置完成，但 Step 1 图谱构建和依赖图谱的报告工具在仓库引入非 Zep 后端之前仍然需要 ZEP_API_KEY。',
       incomplete: '后端配置仍需处理',
       modeLabel: '后端模式',
       sourceLabel: '解析到的配置来源',

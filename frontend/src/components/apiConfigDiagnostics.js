@@ -4,11 +4,18 @@ export const buildBackendDiagnosticModel = (payload, t) => {
   const validation = payload?.validation || {}
   const llm = summary.llm || {}
   const sources = llm.sources || {}
+  const validationErrors = Array.isArray(validation.errors) ? validation.errors : []
   const usesOpenAIAliases = Boolean(sources.uses_openai_aliases)
   const usesProjectAliases = Boolean(sources.uses_project_aliases)
   const baseUrlConflict = sources.base_url_conflict || null
   const hasBaseUrlConflict = Boolean(baseUrlConflict?.has_conflict)
-  const isConfigured = llm.configured && validation.is_valid !== false && !hasBaseUrlConflict
+  const hasZepMissingError = validationErrors.some((message) =>
+    typeof message === 'string' && message.includes('ZEP_API_KEY'),
+  )
+  const llmBlockingErrors = validationErrors.filter((message) =>
+    !(typeof message === 'string' && message.includes('ZEP_API_KEY')),
+  )
+  const isConfigured = llm.configured && llmBlockingErrors.length === 0 && !hasBaseUrlConflict
 
   let resolvedSource = t('apiConfig.diagnostics.sourceUnknown')
   if (usesOpenAIAliases && usesProjectAliases) {
@@ -42,6 +49,8 @@ export const buildBackendDiagnosticModel = (payload, t) => {
           .map((entry) => entry.name)
           .join(' / ') || none,
       })
+      : isConfigured && hasZepMissingError
+      ? t('apiConfig.diagnostics.zepMissingNote')
       : '',
     rows: [
       {

@@ -35,6 +35,7 @@ export default {
       configuredOpenAI: 'Direct OPENAI/Codex-compatible path detected',
       baseUrlConflictTitle: 'Conflicting backend base URLs detected',
       baseUrlConflictNote: '{configuredEnvNames} are set to different values. MiroFish is currently using {selectedEnv}={selectedValue}.',
+      zepMissingNote: 'The direct LLM path is configured, but Step 1 graph build and graph-backed report tools still require ZEP_API_KEY until a non-Zep backend is landed.',
       incomplete: 'Backend config needs attention',
       modeLabel: 'Backend mode',
       sourceLabel: 'Resolved config source',

@@ -2,15 +2,18 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-12T01:32:49.112619+00:00`
-- Issues: `92` total (`open=42`, `closed=50`)
+- Captured: `2026-03-12T01:43:14.253745+00:00`
+- Issues: `93` total (`open=43`, `closed=50`)
 - Pull requests: `54` total (`open=40`, `closed=14`)
 - Mirrored in `origin`: `54` of `54` PR refs
-- Mirrored in `ivanzud/MiroFish`: `92` of `92` issues
+- Mirrored in `ivanzud/MiroFish`: `93` of `93` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
+- #156 [open, mirror=#94] 能不能不要画zep图？我只要推演和角色互动 (enhancement)
+  - local coverage [tracked]: Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. This pass tightened the backend diagnostics so a missing `ZEP_API_KEY` no longer masquerades as a broken direct `OPENAI_*` / Codex-compatible LLM path, but full non-Zep simulation-only execution still needs a dedicated backend-architecture change.
+  - zep免费额度轻松就用完了，然后流程卡4/5在生成报告上面
 - #154 [open, mirror=#93] Profile serialization crashes when LLM returns structured bio/persona fields (no labels)
   - local coverage [covered]: Profile serialization now tolerates structured LLM output instead of crashing when `bio`, `persona`, `country`, `profession`, or `interested_topics` arrive as dict/list values. `OasisAgentProfile` normalizes those mixed types at construction time and the Reddit/Twitter serializers defensively coerce them again before slicing or string replacement, so simulation preparation no longer fails during profile save with `KeyError: slice(None, 150, None)`.
   - ## Summary When profile generation returns structured JSON objects for fields like `bio`, `persona`, or `country`, MiroFish can fail during profile serialization before config generation starts. ## Reproduction context Observed on a live run with: - simulation_id: `sim_e69a946b6158` - graph_id: `mirofish_a39b5f10127f4744` - entities_count: `91` - status in state file: `failed` - error in state fi…
@@ -41,10 +44,6 @@
   - local coverage [covered]: Upload and graph-build failures now surface structured per-file parser/config validation errors instead of collapsing common deployment or document-ingest problems into a generic 500.
   - <img width="1206" height="1234" alt="Image" src="https://github.com/user-attachments/assets/5befa186-6f0f-493a-a6fa-7fb33940f233" /> TXT、MD、PDF文件格式都试了，内容甚至精简到就几百字，但就是卡在上传文件错误，到底什么原因？
   - latest comment by `666ghj`: 以前的代码因为编码格式的缘故会报这样的错，最新代码已经修复了。 你是把他部署在服务器上吗，那好像会有一些问题。
-- #139 [closed, mirror=#39] Graph build task failed  ：（ (no labels)
-  - local coverage [covered]: Graph-build task failures now classify Zep 401/unauthorized responses into a concise ZEP_API_KEY guidance message and strip embedded traceback noise before returning task payload errors.
-  - Graph build task failed: Traceback (most recent call last): File "/app/backend/.venv/lib/python3.11/site-packages/zep_cloud/graph/raw_client.py", line 713, in create _response_json = _response.json() ^^^^^^^^^^^^^^^^ File "/app/backend/.venv/lib/python3.11/site-packages/httpx/_models.py", line 832, in json return jsonlib.loads(self.content, **kwargs) ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ File "/u…
-  - latest comment by `dosubot[bot]`: <!-- Answer --> The `401 unauthorized` error indicates a Zep Cloud API authentication issue. Here are the most likely causes and solutions: **1. Version Bug** — If you're using MiroFish v0.1.0, there's a [known authentication bug](https://…
 
 ## Recently Updated Pull Requests
 

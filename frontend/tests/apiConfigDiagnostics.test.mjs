@@ -9,6 +9,7 @@ const t = (key, params = {}) => {
     'apiConfig.diagnostics.configured': 'Backend config detected',
     'apiConfig.diagnostics.configuredOpenAI': 'Direct OPENAI/Codex-compatible path detected',
     'apiConfig.diagnostics.baseUrlConflictTitle': 'Conflicting backend base URLs detected',
+    'apiConfig.diagnostics.zepMissingNote': 'The direct LLM path is configured, but Step 1 graph build and graph-backed report tools still require ZEP_API_KEY until a non-Zep backend is landed.',
     'apiConfig.diagnostics.incomplete': 'Backend config needs attention',
     'apiConfig.diagnostics.modeLabel': 'Backend mode',
     'apiConfig.diagnostics.sourceLabel': 'Resolved config source',
@@ -122,6 +123,38 @@ test('buildBackendDiagnosticModel flags mixed alias resolution explicitly', () =
     'OPENAI_API_KEY / LLM_BASE_URL / OPENAI_MODEL',
   )
   assert.equal(diagnostic.note, '')
+})
+
+test('buildBackendDiagnosticModel keeps the LLM path ready when only ZEP is missing', () => {
+  const diagnostic = buildBackendDiagnosticModel({
+    summary: {
+      llm: {
+        configured: true,
+        backend_mode: 'openai_compatible',
+        base_url: 'https://codex.example.test/v1',
+        model: 'gpt-4.1-mini',
+        sources: {
+          api_key_env: 'OPENAI_API_KEY',
+          base_url_env: 'OPENAI_API_BASE_URL',
+          model_env: 'OPENAI_MODEL',
+          base_url_conflict: null,
+          uses_openai_aliases: true,
+          uses_project_aliases: false,
+        },
+      },
+    },
+    validation: {
+      is_valid: false,
+      errors: ['ZEP_API_KEY is not configured'],
+    },
+  }, t)
+
+  assert.equal(diagnostic.tone, 'ready')
+  assert.equal(diagnostic.headline, 'Direct OPENAI/Codex-compatible path detected')
+  assert.equal(
+    diagnostic.note,
+    'The direct LLM path is configured, but Step 1 graph build and graph-backed report tools still require ZEP_API_KEY until a non-Zep backend is landed.',
+  )
 })
 
 test('buildBackendDiagnosticModel flags conflicting base URL aliases', () => {

@@ -2,15 +2,18 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-12T01:32:38.539214+00:00`
-- Issues: `42` total (`open=42`, `closed=0`)
+- Captured: `2026-03-12T01:43:04.544179+00:00`
+- Issues: `43` total (`open=43`, `closed=0`)
 - Pull requests: `40` total (`open=40`, `closed=0`)
 - Mirrored in `origin`: `40` of `40` PR refs
-- Mirrored in `ivanzud/MiroFish`: `42` of `42` issues
+- Mirrored in `ivanzud/MiroFish`: `43` of `43` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
+- #156 [open, mirror=#94] 能不能不要画zep图？我只要推演和角色互动 (enhancement)
+  - local coverage [tracked]: Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. This pass tightened the backend diagnostics so a missing `ZEP_API_KEY` no longer masquerades as a broken direct `OPENAI_*` / Codex-compatible LLM path, but full non-Zep simulation-only execution still needs a dedicated backend-architecture change.
+  - zep免费额度轻松就用完了，然后流程卡4/5在生成报告上面
 - #154 [open, mirror=#93] Profile serialization crashes when LLM returns structured bio/persona fields (no labels)
   - local coverage [covered]: Profile serialization now tolerates structured LLM output instead of crashing when `bio`, `persona`, `country`, `profession`, or `interested_topics` arrive as dict/list values. `OasisAgentProfile` normalizes those mixed types at construction time and the Reddit/Twitter serializers defensively coerce them again before slicing or string replacement, so simulation preparation no longer fails during profile save with `KeyError: slice(None, 150, None)`.
   - ## Summary When profile generation returns structured JSON objects for fields like `bio`, `persona`, or `country`, MiroFish can fail during profile serialization before config generation starts. ## Reproduction context Observed on a live run with: - simulation_id: `sim_e69a946b6158` - graph_id: `mirofish_a39b5f10127f4744` - entities_count: `91` - status in state file: `failed` - error in state fi…
@@ -39,10 +42,6 @@
   - latest comment by `666ghj`: 以前的代码因为编码格式的缘故会报这样的错，最新代码已经修复了。 你是把他部署在服务器上吗，那好像会有一些问题。
 - #140 [open, mirror=#5] 让我想到了刘慈欣的一个小说，要是把真实世界放进去，得多大的算力啊 (no labels)
   - local coverage [no_action]: Upstream issue #140 is general project commentary rather than an actionable defect report or scoped feature request, so it does not require local implementation work.
-- #135 [open, mirror=#6] 报错，Zep图谱构建失败 (no labels)
-  - local coverage [covered]: Graph ontology ingestion now accepts string-valued attribute definitions for entity and edge schemas, so malformed LLM ontology output no longer crashes graph builds with `TypeError: string indices must be integers`.
-  - Graph build task failed: Traceback (most recent call last): File "/app/backend/app/api/graph.py", line 418, in build_task builder.set_ontology(graph_id, ontology) File "/app/backend/app/services/graph_builder.py", line 230, in set_ontology attr_name = safe_attr_name(attr_def["name"]) # 使用安全名称 ~~~~~~~~^^^^^^^^ TypeError: string indices must be integers, not 'str'
-  - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @rheeh! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> 这个错误是因为 `attr_def` 应该是字典格式 `{"name": "attr_name", ...}`，但实际收到的是字符串。 **根本原因**：LLM 生成的 ontology 中，`attributes` 字段可能返回了简单的…
 
 ## Recently Updated Pull Requests
 
