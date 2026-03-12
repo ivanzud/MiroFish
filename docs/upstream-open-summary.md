@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-12T03:21:46.315767+00:00`
+- Captured: `2026-03-12T03:26:23.657871+00:00`
 - Issues: `46` total (`open=46`, `closed=0`)
 - Pull requests: `40` total (`open=40`, `closed=0`)
 - Mirrored in `origin`: `40` of `40` PR refs
@@ -11,12 +11,13 @@
 
 ## Recently Updated Issues
 
-- #159 [open, mirror=#97] 太消耗zep了，为啥不考虑自建库呢？ (no labels)
-  - local coverage [tracked]: Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.
-  - zep的额度太低了，要真正进行分析，需要大量的Episode。能否考虑基于其他开源方案，重写zep部分？
 - #158 [open, mirror=#95] Are there any predictions that have been verified by subsequent events? (question)
   - local coverage [partial]: README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and exported Step 4 Markdown now embeds the report/simulation/graph references directly in the file header. Users can export the Markdown report directly from both Step 4 and the saved-history modal, or reuse the files under `backend/uploads/reports/<report_id>/`, then compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.
   - Awesome idea! I am wondering are there any predictions that have been verified by subsequent events?
+  - latest comment by `codetsang`: Not yet? Maybe you should give it a try and validate the results. BTW, this is a prediction tool, so there are many uncertainties involved. It should be used more as an analysis or decision-support tool rather than a strict predictor.
+- #159 [open, mirror=#97] 太消耗zep了，为啥不考虑自建库呢？ (enhancement)
+  - local coverage [tracked]: Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.
+  - zep的额度太低了，要真正进行分析，需要大量的Episode。能否考虑基于其他开源方案，重写zep部分？
 - #157 [open, mirror=#96] 如何删除不想要的记录 (question)
   - local coverage [covered]: Homepage history now supports repo-native deletion of unwanted local records. The backend exposes `DELETE /api/simulation/history/<simulation_id>` to remove a simulation's persisted local directory, cascade-delete its attached local reports, and prune the project metadata when no sibling simulations remain, while refusing deletion for active runs. The history modal now exposes a localized delete action that calls that endpoint directly.
   - 比如我想删除 <img width="1835" height="775" alt="Image" src="https://github.com/user-attachments/assets/12332bbc-f309-497b-a352-f0d15289042e" />这两个，怎么删除呢
@@ -49,8 +50,9 @@
 - #144 [open, mergeable=clean, mirrored=yes] feat(kg): add dual-mode knowledge graph support (`feat/local-knowledge-graph` -> `main`)
   - local coverage [tracked]: Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.
   - ## Summary - Add kg_adapter for dual-mode knowledge graph (cloud/local) - Support switching between Zep Cloud and local Graphiti + Neo4j - Improve entity extraction and report agent robustness - Add test_kg_adapter.py with unit tests ## Test plan - [ ] Test cloud mode with Zep Cloud - [ ] Test local mode with Graphiti + Neo4j - [ ] Run unit tests 🤖 Generated with [Claude Code](https://claude.com/…
+  - latest comment by `huamingjie0815`: 支持图谱的local 和cloud 双模式，local 是基于graphiti 改造，需要自己配置embedding模型 ，同时该提交增加一些功能优化，包括删除推演记录、导出报告、重新生成报告等功能，调整report_agent 的tool_call 的格式，从json改为xml 。
 - #152 [open, mergeable=clean, mirrored=yes] feat(report): Zep 命名修复与导出 Markdown 功能 (`support-pascal-and-snake-case` -> `main`)
-  - local coverage [landed]: Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.
+  - local coverage [landed]: Landed locally as repo-native subsets instead of a wholesale cherry-pick: ontology generation and graph build submission now normalize type names to Zep-compatible PascalCase / SCREAMING_SNAKE_CASE conventions, and TaskManager state now persists to disk so graph/report task status survives backend restarts.
   - ## 概述 本 PR 包含以下改进： 1. **Zep 命名修复**：修复了 Zep API 实体/关系命名的格式校验错误（支持 PascalCase 和 snake_case）。 2. **新增功能**：报告生成步骤支持导出为 Markdown 格式，并采用了正式的 PDF 风格排版。 ## 修改详情 ### 后端 (Backend) - 在 `report_agent.py` 中改进了 `ReportManager.assemble_full_report` 方法，新增了包含 ID、模拟场景和时间戳的正式页眉。 - 添加了章节分隔符，显著提升了导出的 Markdown 文件的可读性。 ### 前端 (Frontend) - 在 `Step4Report.vue` 的报告页眉部分新增了“导出 MD”按钮。 - 在 `src/api/report.js` 中实现了 `downloadRe…
 - #155 [open, mergeable=clean, mirrored=yes] chore: backend, frontend, i18n (en/zh), and Docker updates (`english-trans` -> `main`)
   - local coverage [tracked]: Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work.

@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-12T03:21:56.352214+00:00",
-  "generated_at": "2026-03-12T03:21:56.352214+00:00",
+  "captured_at": "2026-03-12T03:26:34.280438+00:00",
+  "generated_at": "2026-03-12T03:26:34.280438+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -24,57 +24,28 @@
   },
   "issues": [
     {
-      "number": 159,
-      "title": "太消耗zep了，为啥不考虑自建库呢？",
-      "url": "https://github.com/666ghj/MiroFish/issues/159",
-      "state": "open",
-      "created_at": "2026-03-12T03:20:17Z",
-      "updated_at": "2026-03-12T03:20:17Z",
-      "closed_at": null,
-      "labels": [],
-      "author": "codetsang",
-      "body_excerpt": "zep的额度太低了，要真正进行分析，需要大量的Episode。能否考虑基于其他开源方案，重写zep部分？",
-      "comment_count": 0,
-      "recent_comments": [],
-      "local_coverage": {
-        "number": 159,
-        "status": "tracked",
-        "summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
-        "local_refs": [
-          ".beads/issues.jsonl",
-          "docs/upstream-triage.md",
-          "https://github.com/ivanzud/MiroFish/issues/97"
-        ],
-        "validation": [
-          "tracking only"
-        ],
-        "notes": "Mirrored into fork issue #97 on March 12, 2026. This request overlaps the existing non-Zep backend and self-hosted graph follow-ups from upstream issues #55, #76, #106, and #156."
-      },
-      "local_status": "tracked",
-      "local_summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
-      "triage_status": "tracked",
-      "summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
-      "coverage_status": "tracked",
-      "coverage_summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
-      "fork_issue_mirrored": true,
-      "fork_issue_number": 97,
-      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/97"
-    },
-    {
       "number": 158,
       "title": "Are there any predictions that have been verified by subsequent events?",
       "url": "https://github.com/666ghj/MiroFish/issues/158",
       "state": "open",
       "created_at": "2026-03-12T01:50:37Z",
-      "updated_at": "2026-03-12T01:52:42Z",
+      "updated_at": "2026-03-12T03:24:05Z",
       "closed_at": null,
       "labels": [
         "question"
       ],
       "author": "DuinoDu",
       "body_excerpt": "Awesome idea! I am wondering are there any predictions that have been verified by subsequent events?",
-      "comment_count": 0,
-      "recent_comments": [],
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "codetsang",
+          "created_at": "2026-03-12T03:24:05Z",
+          "updated_at": "2026-03-12T03:24:05Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/158#issuecomment-4043646147",
+          "body_excerpt": "Not yet? Maybe you should give it a try and validate the results. BTW, this is a prediction tool, so there are many uncertainties involved. It should be used more as an analysis or decision-support tool rather than a strict predictor."
+        }
+      ],
       "local_coverage": {
         "number": 158,
         "status": "partial",
@@ -113,6 +84,45 @@
       "fork_issue_mirrored": true,
       "fork_issue_number": 95,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/95"
+    },
+    {
+      "number": 159,
+      "title": "太消耗zep了，为啥不考虑自建库呢？",
+      "url": "https://github.com/666ghj/MiroFish/issues/159",
+      "state": "open",
+      "created_at": "2026-03-12T03:20:17Z",
+      "updated_at": "2026-03-12T03:22:32Z",
+      "closed_at": null,
+      "labels": [
+        "enhancement"
+      ],
+      "author": "codetsang",
+      "body_excerpt": "zep的额度太低了，要真正进行分析，需要大量的Episode。能否考虑基于其他开源方案，重写zep部分？",
+      "comment_count": 0,
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 159,
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "docs/upstream-triage.md",
+          "https://github.com/ivanzud/MiroFish/issues/97"
+        ],
+        "validation": [
+          "tracking only"
+        ],
+        "notes": "Mirrored into fork issue #97 on March 12, 2026. This request overlaps the existing non-Zep backend and self-hosted graph follow-ups from upstream issues #55, #76, #106, and #156."
+      },
+      "local_status": "tracked",
+      "local_summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+      "triage_status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+      "coverage_status": "tracked",
+      "coverage_summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 97,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/97"
     },
     {
       "number": 157,
@@ -3923,7 +3933,7 @@
       "url": "https://github.com/666ghj/MiroFish/pull/144",
       "state": "open",
       "created_at": "2026-03-11T14:39:08Z",
-      "updated_at": "2026-03-12T03:17:00Z",
+      "updated_at": "2026-03-12T03:22:22Z",
       "closed_at": null,
       "merged_at": null,
       "head": "feat/local-knowledge-graph",
@@ -3942,9 +3952,17 @@
       ],
       "author": "huamingjie0815",
       "body_excerpt": "## Summary - Add kg_adapter for dual-mode knowledge graph (cloud/local) - Support switching between Zep Cloud and local Graphiti + Neo4j - Improve entity extraction and report agent robustness - Add test_kg_adapter.py with unit tests ## Test plan - [ ] Test cloud mode with Zep Cloud - [ ] Test local mode with Graphiti + Neo4j - [ ] Run unit tests 🤖 Generated with [Claude Code](https://claude.com/…",
-      "comment_count": 0,
+      "comment_count": 1,
       "review_comment_count": 0,
-      "recent_comments": [],
+      "recent_comments": [
+        {
+          "author": "huamingjie0815",
+          "created_at": "2026-03-12T03:22:22Z",
+          "updated_at": "2026-03-12T03:22:22Z",
+          "url": "https://github.com/666ghj/MiroFish/pull/144#issuecomment-4043640028",
+          "body_excerpt": "支持图谱的local 和cloud 双模式，local 是基于graphiti 改造，需要自己配置embedding模型 ，同时该提交增加一些功能优化，包括删除推演记录、导出报告、重新生成报告等功能，调整report_agent 的tool_call 的格式，从json改为xml 。"
+        }
+      ],
       "fork_mirrored": true,
       "mirrored_to_origin": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-144",
@@ -4016,12 +4034,14 @@
       "local_coverage": {
         "number": 152,
         "status": "landed",
-        "summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
+        "summary": "Landed locally as repo-native subsets instead of a wholesale cherry-pick: ontology generation and graph build submission now normalize type names to Zep-compatible PascalCase / SCREAMING_SNAKE_CASE conventions, and TaskManager state now persists to disk so graph/report task status survives backend restarts.",
         "local_refs": [
           "backend/app/services/ontology_generator.py",
           "backend/tests/test_ontology_generator.py",
           "backend/app/services/graph_builder.py",
           "backend/tests/test_graph_builder.py",
+          "backend/app/models/task.py",
+          "backend/tests/test_task_manager.py",
           "origin/mirror/upstream-pr-152",
           ".beads/issues.jsonl"
         ],
@@ -4029,23 +4049,27 @@
           "cd backend && uv run pytest -q tests/test_ontology_generator.py",
           "python3 -m compileall backend/app/services/ontology_generator.py backend/tests/test_ontology_generator.py",
           "cd backend && uv run pytest -q tests/test_graph_builder.py",
-          "python3 -m compileall backend/app/services/graph_builder.py"
+          "python3 -m compileall backend/app/services/graph_builder.py",
+          "uv run --project backend pytest -q backend/tests/test_task_manager.py backend/tests/test_backend_localized_errors.py",
+          "python3 -m compileall backend/app/models/task.py backend/tests/test_task_manager.py"
         ]
       },
       "local_status": "landed",
-      "local_summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
+      "local_summary": "Landed locally as repo-native subsets instead of a wholesale cherry-pick: ontology generation and graph build submission now normalize type names to Zep-compatible PascalCase / SCREAMING_SNAKE_CASE conventions, and TaskManager state now persists to disk so graph/report task status survives backend restarts.",
       "triage_status": "landed",
-      "summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
+      "summary": "Landed locally as repo-native subsets instead of a wholesale cherry-pick: ontology generation and graph build submission now normalize type names to Zep-compatible PascalCase / SCREAMING_SNAKE_CASE conventions, and TaskManager state now persists to disk so graph/report task status survives backend restarts.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
+      "coverage_summary": "Landed locally as repo-native subsets instead of a wholesale cherry-pick: ontology generation and graph build submission now normalize type names to Zep-compatible PascalCase / SCREAMING_SNAKE_CASE conventions, and TaskManager state now persists to disk so graph/report task status survives backend restarts.",
       "local_review": {
         "status": "landed",
-        "summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
+        "summary": "Landed locally as repo-native subsets instead of a wholesale cherry-pick: ontology generation and graph build submission now normalize type names to Zep-compatible PascalCase / SCREAMING_SNAKE_CASE conventions, and TaskManager state now persists to disk so graph/report task status survives backend restarts.",
         "local_refs": [
           "backend/app/services/ontology_generator.py",
           "backend/tests/test_ontology_generator.py",
           "backend/app/services/graph_builder.py",
           "backend/tests/test_graph_builder.py",
+          "backend/app/models/task.py",
+          "backend/tests/test_task_manager.py",
           "origin/mirror/upstream-pr-152",
           ".beads/issues.jsonl"
         ],
@@ -4053,7 +4077,9 @@
           "cd backend && uv run pytest -q tests/test_ontology_generator.py",
           "python3 -m compileall backend/app/services/ontology_generator.py backend/tests/test_ontology_generator.py",
           "cd backend && uv run pytest -q tests/test_graph_builder.py",
-          "python3 -m compileall backend/app/services/graph_builder.py"
+          "python3 -m compileall backend/app/services/graph_builder.py",
+          "uv run --project backend pytest -q backend/tests/test_task_manager.py backend/tests/test_backend_localized_errors.py",
+          "python3 -m compileall backend/app/models/task.py backend/tests/test_task_manager.py"
         ],
         "notes": null
       }
