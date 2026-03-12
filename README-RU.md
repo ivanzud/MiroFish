@@ -107,6 +107,77 @@ OPENAI_MODEL=qwen3.5-plus
 
 Если `http://localhost:5001` возвращает `404`, это обычно не означает, что бэкенд не запустился. Корневой путь бэкенда обслуживает только API, поэтому для проверки состояния используйте `http://localhost:5001/health`.
 
+Если Step 5 при одиночном диалоге, пакетных опросах или интервью со всеми агентами часто упирается в timeout, увеличьте и фронтендовый таймаут `VITE_API_TIMEOUT` (миллисекунды), и backend-параметры `INTERVIEW_AGENT_TIMEOUT_SECONDS`, `INTERVIEW_BATCH_TIMEOUT_SECONDS`, `INTERVIEW_ALL_TIMEOUT_SECONDS` (секунды).
+
+Для первого запуска лучше брать PDF / Markdown / TXT примерно до 10k слов и держать симуляцию около 30 раундов. Так проще сначала подтвердить сборку графа, настройку окружения и здоровье бэкенда, не тратя лишнюю квоту Zep и не отлаживая сразу несколько масштабных переменных.
+
+## Установка зависимостей
+
+```bash
+# Рекомендуемый базовый путь для графа / отчётов / OpenAI-compatible backend
+npm run setup:core
+
+# Обратно совместимый алиас для того же базового пути
+npm run setup:all
+
+# Ставьте OASIS runtime только если нужен Step 3 / Step 5
+npm run setup:backend:simulation
+```
+
+Или по шагам:
+
+```bash
+# Node-зависимости (root + frontend)
+npm run setup
+
+# Основные Python-зависимости backend
+npm run setup:backend
+
+# Эквивалентная сокращённая команда
+npm run setup:core
+
+# Опциональный simulation runtime
+npm run setup:backend:simulation
+```
+
+`setup:core` / `setup:all` устанавливает только root-пакет, frontend и основные backend-зависимости для графа, отчётов и прямого OpenAI-compatible подключения. Vendored-код `backend/oasis` уже лежит в репозитории, а дополнительная simulation-установка подтягивает только явные runtime-зависимости.
+
+Известное ограничение: `npm run setup:backend:simulation` может завершиться ошибкой на Python `3.13+`, если в системе нет Rust, потому что текущая цепочка `camel-ai -> tiktoken==0.7.0` всё ещё иногда переходит к source build. Базовый backend-путь это не затрагивает; для реальных Step 3 / Step 5 прогонов лучше использовать Python `3.11`/`3.12` или заранее установить Rust.
+
+## Запуск сервисов
+
+```bash
+# Запустить frontend и backend вместе
+npm run dev
+
+# Или только backend с preflight-проверкой OpenAI-compatible конфигурации
+npm run backend:local
+```
+
+Если используется стандартная схема с двумя портами, frontend по умолчанию обращается к backend на `5001` на том же хосте.
+
+## FAQ
+
+**Какие модели и API поддерживаются?**
+
+- Backend принимает любой OpenAI-compatible API и не привязан к одному вендору.
+- В текущей ветке уже проверялись OpenAI, Codex-compatible шлюзы, Alibaba DashScope compatible mode, Alibaba DashScope Coding Plan, а также локальные OpenAI-compatible gateway вроде LM Studio и Ollama.
+- Можно использовать либо репо-нативные `LLM_API_KEY` / `LLM_BASE_URL` / `LLM_MODEL_NAME`, либо стандартные `OPENAI_API_KEY` / `OPENAI_API_BASE_URL` / `OPENAI_MODEL`.
+
+**Что будет, если обновить страницу или закрыть вкладку?**
+
+- Обновление страницы или закрытие вкладки не останавливает уже запущенные backend-задачи графа, симуляции или отчёта.
+- Сохранённые данные остаются в `backend/uploads/`, а история на главной странице может снова открыть Step 1, Step 2 и Step 4.
+- Step 3 и Step 5 всё ещё зависят от живой OASIS runtime-сессии. Если backend-процесс, контейнер или среда симуляции уже остановлены, эти этапы нельзя бесшовно воспроизвести, их нужно подготавливать или запускать заново.
+
+## Быстрая backend-проверка
+
+Если `uv sync` или `uv run pytest` блокируются тяжёлыми сборками вроде `tiktoken`, которым нужен Rust toolchain, используйте встроенный лёгкий backend-набор:
+
+```bash
+npm run test:backend:lite
+```
+
 ## Рабочий процесс
 
 1. Построить граф из исходного материала.
