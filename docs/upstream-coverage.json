@@ -394,7 +394,7 @@
     {
       "number": 9,
       "status": "partial",
-      "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, the history modal exposes a replay-only Step 3 route that loads an existing timeline without accidentally auto-starting a fresh run, and the Step 3 panel now shows an explicit replay-only notice when there is no saved run to reopen or only a failed state to inspect. True mid-run checkpoint/resume is still deferred.",
+      "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, the history modal exposes a replay-only Step 3 route that loads an existing timeline without accidentally auto-starting a fresh run, and the Step 3 panel now makes it explicit that after fixing quota/API-key problems users can restart the same prepared simulation from history without rebuilding Step 2. True mid-run checkpoint/resume is still deferred.",
       "local_refs": [
         "frontend/src/components/HistoryDatabase.vue",
         "frontend/src/views/SimulationRunView.vue",

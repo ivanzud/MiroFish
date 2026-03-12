@@ -92,7 +92,7 @@
           @click="handleRestartSimulation"
         >
           <span v-if="isStarting" class="loading-spinner-small"></span>
-          {{ isStarting ? t('step3.starting') : t('step3.restartSimulation') }}
+          {{ isStarting ? t('step3.starting') : t(restartButtonLabelKey) }}
         </button>
         <button 
           class="action-btn primary"
@@ -330,7 +330,11 @@ import {
   getTimelinePlatformName,
 } from './simulationTimeline'
 import { mergeLiveActions } from './liveActionBuffer'
-import { getReplayNoticeKey, shouldAutoStartSimulation } from './simulationReplay'
+import {
+  getReplayNoticeKey,
+  getRestartButtonLabelKey,
+  shouldAutoStartSimulation,
+} from './simulationReplay'
 import {
   formatSimulationPidLog,
   formatSimulationRoundLog,
@@ -405,6 +409,12 @@ const waitingStatusLabel = computed(() => {
 })
 
 const replayNoticeKey = computed(() => getReplayNoticeKey({
+  replayOnly: props.replayOnly,
+  resumed: resumedExistingRun.value,
+  runnerStatus: runStatus.value?.runner_status,
+}))
+
+const restartButtonLabelKey = computed(() => getRestartButtonLabelKey({
   replayOnly: props.replayOnly,
   resumed: resumedExistingRun.value,
   runnerStatus: runStatus.value?.runner_status,
@@ -673,13 +683,20 @@ const loadExistingRun = async () => {
       return true
     }
 
-    if (res.data.runner_status === 'completed' || res.data.runner_status === 'stopped') {
+    if (res.data.runner_status === 'completed') {
       addLog(t('step3.resumeCompletedSimulation'))
+      return true
+    }
+
+    if (res.data.runner_status === 'stopped') {
+      addLog(t('step3.resumeStoppedSimulation'))
+      addLog(t('step3.replayReuseHint'))
       return true
     }
 
     if (res.data.runner_status === 'failed') {
       addLog(t('step3.resumeFailedSimulation', { message: res.data.error || t('process.unknownError') }))
+      addLog(t('step3.replayReuseHint'))
       return true
     }
   } catch (err) {
@@ -840,6 +857,7 @@ onMounted(() => {
 
       if (props.replayOnly && !resumed) {
         addLog(t('step3.replayOnlyNoRun'))
+        addLog(t('step3.replayReuseHint'))
       }
     })
   }

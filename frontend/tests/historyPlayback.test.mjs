@@ -6,6 +6,7 @@ import {
   hasReplayableSimulationState,
 } from '../src/components/historyPlayback.js'
 import {
+  getRestartButtonLabelKey,
   isReplayOnlyRoute,
   getReplayNoticeKey,
   shouldAutoStartSimulation,
@@ -40,5 +41,14 @@ test('simulation replay helpers expose visible replay limitation notices', () =>
   assert.equal(getReplayNoticeKey({ replayOnly: false, resumed: false, runnerStatus: '' }), null)
   assert.equal(getReplayNoticeKey({ replayOnly: true, resumed: false, runnerStatus: '' }), 'step3.replayOnlyNoRunNotice')
   assert.equal(getReplayNoticeKey({ replayOnly: true, resumed: true, runnerStatus: 'failed' }), 'step3.replayOnlyFailedNotice')
+  assert.equal(getReplayNoticeKey({ replayOnly: true, resumed: true, runnerStatus: 'stopped' }), 'step3.replayOnlyStoppedNotice')
   assert.equal(getReplayNoticeKey({ replayOnly: true, resumed: true, runnerStatus: 'completed' }), null)
+})
+
+test('simulation replay helpers choose restart labels for prepared replay states', () => {
+  assert.equal(getRestartButtonLabelKey({ replayOnly: false, resumed: false, runnerStatus: '' }), 'step3.restartSimulation')
+  assert.equal(getRestartButtonLabelKey({ replayOnly: true, resumed: false, runnerStatus: '' }), 'step3.startPreparedSimulation')
+  assert.equal(getRestartButtonLabelKey({ replayOnly: true, resumed: true, runnerStatus: 'failed' }), 'step3.restartPreparedSimulation')
+  assert.equal(getRestartButtonLabelKey({ replayOnly: true, resumed: true, runnerStatus: 'stopped' }), 'step3.restartPreparedSimulation')
+  assert.equal(getRestartButtonLabelKey({ replayOnly: true, resumed: true, runnerStatus: 'completed' }), 'step3.restartSimulation')
 })
