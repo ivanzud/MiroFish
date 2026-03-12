@@ -9,8 +9,20 @@
           <div class="report-header-block">
             <div class="report-meta">
               <span class="report-tag">{{ t('step4.reportTag') }}</span>
-              <span class="report-id">{{ t('step4.reportId', { id: reportId || 'REF-2024-X92' }) }}</span>
             </div>
+            <div class="report-reference-grid">
+              <div class="report-reference-card">
+                <span class="report-reference-label">{{ t('step4.reportIdLabel') }}</span>
+                <span class="report-reference-value">{{ reportId || 'REF-2024-X92' }}</span>
+              </div>
+              <div class="report-reference-card">
+                <span class="report-reference-label">{{ t('step4.simulationIdLabel') }}</span>
+                <span class="report-reference-value">{{ simulationId || t('step4.unavailableId') }}</span>
+              </div>
+            </div>
+            <p class="report-reference-hint">
+              {{ t('step4.referenceHint') }}
+            </p>
             <h1 class="main-title">{{ reportOutline.title }}</h1>
             <p class="sub-title">{{ reportOutline.summary }}</p>
             <div class="header-divider"></div>
@@ -1935,7 +1947,7 @@ watch(() => props.reportId, (newId) => {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .report-tag {
@@ -1948,11 +1960,44 @@ watch(() => props.reportId, (newId) => {
   text-transform: uppercase;
 }
 
-.report-id {
+.report-reference-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.report-reference-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid #E5E7EB;
+  background: #F9FAFB;
+  border-radius: 10px;
+}
+
+.report-reference-label {
   font-size: 11px;
-  color: #9CA3AF;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  color: #6B7280;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.report-reference-value {
+  font-size: 12px;
+  color: #111827;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  word-break: break-word;
+}
+
+.report-reference-hint {
+  margin: 0 0 20px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #4B5563;
 }
 
 .main-title {

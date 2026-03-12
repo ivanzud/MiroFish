@@ -534,6 +534,10 @@ export default {
   step4: {
     reportTag: '预测报告',
     reportId: 'ID: {id}',
+    reportIdLabel: '报告 ID',
+    simulationIdLabel: '模拟 ID',
+    unavailableId: '暂未生成',
+    referenceHint: '请把这些 ID 与导出的 Markdown 或首页历史记录一起保存，便于后续把本次报告与现实结果做对照复核。',
     sectionGenerating: '正在生成 {title}...',
     failedTitle: '报告生成失败',
     retrying: '重试中...',

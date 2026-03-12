@@ -534,6 +534,10 @@ export default {
   step4: {
     reportTag: 'Prediction Report',
     reportId: 'ID: {id}',
+    reportIdLabel: 'Report ID',
+    simulationIdLabel: 'Simulation ID',
+    unavailableId: 'Not available yet',
+    referenceHint: 'Keep these IDs with the exported Markdown or saved history entry so you can compare this report against later real-world outcomes.',
     sectionGenerating: 'Generating {title}...',
     failedTitle: 'Report generation failed',
     retrying: 'Retrying...',

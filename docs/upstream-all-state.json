@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-12T02:05:03.988913+00:00",
-  "generated_at": "2026-03-12T02:05:03.988913+00:00",
+  "captured_at": "2026-03-12T02:08:55.367525+00:00",
+  "generated_at": "2026-03-12T02:08:55.367525+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -41,25 +41,29 @@
       "local_coverage": {
         "number": 158,
         "status": "partial",
-        "summary": "README.md and README-EN.md now document a repo-native forecast verification workflow: keep the stable `simulation_id` / `report_id`, export the Step 4 Markdown report or reuse the files under `backend/uploads/reports/<report_id>/`, and compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
+        "summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, and the Step 4 report header now surfaces both the stable `report_id` and `simulation_id` with an explicit persistence hint. Users can export the Markdown report or reuse the files under `backend/uploads/reports/<report_id>/` and compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
         "local_refs": [
           ".beads/issues.jsonl",
+          "frontend/src/components/Step4Report.vue",
+          "frontend/src/i18n/locales/en.js",
+          "frontend/src/i18n/locales/zh.js",
           "README.md",
           "README-EN.md",
           "docs/upstream-triage.md",
           "https://github.com/ivanzud/MiroFish/issues/95"
         ],
         "validation": [
+          "npm --prefix frontend run build",
           "README verification"
         ],
-        "notes": "Mirrored into fork issue #95 on March 12, 2026. The repo now documents how to preserve and revisit forecast evidence, but it still does not automate outcome ingestion or accuracy scoring."
+        "notes": "Mirrored into fork issue #95 on March 12, 2026. The repo now documents how to preserve and revisit forecast evidence and surfaces the key IDs directly in Step 4, but it still does not automate outcome ingestion or accuracy scoring."
       },
       "local_status": "partial",
-      "local_summary": "README.md and README-EN.md now document a repo-native forecast verification workflow: keep the stable `simulation_id` / `report_id`, export the Step 4 Markdown report or reuse the files under `backend/uploads/reports/<report_id>/`, and compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
+      "local_summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, and the Step 4 report header now surfaces both the stable `report_id` and `simulation_id` with an explicit persistence hint. Users can export the Markdown report or reuse the files under `backend/uploads/reports/<report_id>/` and compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
       "triage_status": "partial",
-      "summary": "README.md and README-EN.md now document a repo-native forecast verification workflow: keep the stable `simulation_id` / `report_id`, export the Step 4 Markdown report or reuse the files under `backend/uploads/reports/<report_id>/`, and compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
+      "summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, and the Step 4 report header now surfaces both the stable `report_id` and `simulation_id` with an explicit persistence hint. Users can export the Markdown report or reuse the files under `backend/uploads/reports/<report_id>/` and compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
       "coverage_status": "partial",
-      "coverage_summary": "README.md and README-EN.md now document a repo-native forecast verification workflow: keep the stable `simulation_id` / `report_id`, export the Step 4 Markdown report or reuse the files under `backend/uploads/reports/<report_id>/`, and compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
+      "coverage_summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, and the Step 4 report header now surfaces both the stable `report_id` and `simulation_id` with an explicit persistence hint. Users can export the Markdown report or reuse the files under `backend/uploads/reports/<report_id>/` and compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 95,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/95"
