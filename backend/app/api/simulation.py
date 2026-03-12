@@ -15,6 +15,7 @@ from ..services.zep_entity_reader import ZepEntityReader
 from ..services.oasis_profile_generator import OasisProfileGenerator
 from ..services.simulation_manager import SimulationManager, SimulationStatus
 from ..services.simulation_runner import SimulationRunner, RunnerStatus
+from ..services.report_agent import ReportManager
 from ..utils.error_handler import handle_api_exception
 from ..utils.logger import get_logger
 from ..models.project import ProjectManager
@@ -58,6 +59,13 @@ SIMULATION_PROGRESS_MESSAGE_MAP = {
     "正在调用LLM生成配置...": "Calling the LLM to generate the config...",
     "正在保存配置文件...": "Saving the config file...",
     "配置生成完成": "Configuration generation completed",
+}
+
+ACTIVE_RUNNER_STATUSES = {
+    RunnerStatus.STARTING,
+    RunnerStatus.RUNNING,
+    RunnerStatus.PAUSED,
+    RunnerStatus.STOPPING,
 }
 
 
@@ -1246,6 +1254,64 @@ def get_simulation_history():
             "count": len(enriched_simulations)
         })
         
+    except Exception as e:
+        return _handle_simulation_api_exception(e, get_locale(), "获取历史模拟失败")
+
+
+@simulation_bp.route('/history/<simulation_id>', methods=['DELETE'])
+def delete_simulation_history(simulation_id: str):
+    """删除首页历史记录关联的本地模拟资产。"""
+    try:
+        locale = get_locale()
+        manager = SimulationManager()
+        simulation = manager.get_simulation(simulation_id)
+
+        if not simulation:
+            return jsonify({
+                "success": False,
+                "error": tr("simulation.not_found", locale, simulation_id=simulation_id)
+            }), 404
+
+        run_state = SimulationRunner.get_run_state(simulation_id)
+        if run_state and run_state.runner_status in ACTIVE_RUNNER_STATUSES:
+            return jsonify({
+                "success": False,
+                "error": tr("simulation.delete_active", locale, simulation_id=simulation_id)
+            }), 409
+
+        reports = ReportManager.list_reports(simulation_id=simulation_id, limit=1000)
+        deleted_report_ids = []
+        for report in reports:
+            if ReportManager.delete_report(report.report_id, locale=locale):
+                deleted_report_ids.append(report.report_id)
+
+        project_deleted = False
+        project_id = simulation.project_id
+        simulation_deleted = manager.delete_simulation(simulation_id)
+        if not simulation_deleted:
+            return jsonify({
+                "success": False,
+                "error": tr("simulation.not_found", locale, simulation_id=simulation_id)
+            }), 404
+
+        SimulationRunner._run_states.pop(simulation_id, None)
+
+        if project_id:
+            remaining_project_simulations = manager.list_simulations(project_id=project_id)
+            if not remaining_project_simulations:
+                project_deleted = ProjectManager.delete_project(project_id)
+
+        return jsonify({
+            "success": True,
+            "message": tr("simulation.deleted", locale, simulation_id=simulation_id),
+            "data": {
+                "simulation_id": simulation_id,
+                "project_id": project_id,
+                "project_deleted": project_deleted,
+                "deleted_report_ids": deleted_report_ids,
+            }
+        })
+
     except Exception as e:
         return _handle_simulation_api_exception(e, get_locale(), "获取历史模拟失败")
 

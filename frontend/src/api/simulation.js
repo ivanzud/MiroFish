@@ -187,3 +187,11 @@ export const interviewAgents = (data) => {
 export const getSimulationHistory = (limit = 20) => {
   return service.get('/api/simulation/history', { params: { limit } })
 }
+
+/**
+ * 删除历史模拟记录及其本地关联资产
+ * @param {string} simulationId
+ */
+export const deleteSimulationHistory = (simulationId) => {
+  return service.delete(`/api/simulation/history/${simulationId}`)
+}

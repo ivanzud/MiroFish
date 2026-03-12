@@ -2,17 +2,23 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-12T01:44:43.316873+00:00`
-- Issues: `93` total (`open=43`, `closed=50`)
+- Captured: `2026-03-12T01:59:01.289691+00:00`
+- Issues: `95` total (`open=45`, `closed=50`)
 - Pull requests: `54` total (`open=40`, `closed=14`)
 - Mirrored in `origin`: `54` of `54` PR refs
-- Mirrored in `ivanzud/MiroFish`: `93` of `93` issues
+- Mirrored in `ivanzud/MiroFish`: `95` of `95` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
+- #158 [open, mirror=#95] Are there any predictions that have been verified by subsequent events? (question)
+  - local coverage [tracked]: Tracked under beads issue `mirofish-gytl`: upstream is asking for a way to verify whether forecasted outcomes were later confirmed by real events, but the repo does not yet expose an explicit forecast-verification workflow or examples.
+  - Awesome idea! I am wondering are there any predictions that have been verified by subsequent events?
+- #157 [open, mirror=#96] 如何删除不想要的记录 (question)
+  - local coverage [covered]: Homepage history now supports repo-native deletion of unwanted local records. The backend exposes `DELETE /api/simulation/history/<simulation_id>` to remove a simulation's persisted local directory, cascade-delete its attached local reports, and prune the project metadata when no sibling simulations remain, while refusing deletion for active runs. The history modal now exposes a localized delete action that calls that endpoint directly.
+  - 比如我想删除 <img width="1835" height="775" alt="Image" src="https://github.com/user-attachments/assets/12332bbc-f309-497b-a352-f0d15289042e" />这两个，怎么删除呢
 - #156 [open, mirror=#94] 能不能不要画zep图？我只要推演和角色互动 (enhancement)
-  - local coverage [tracked]: Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. This pass tightened the backend diagnostics so a missing `ZEP_API_KEY` no longer masquerades as a broken direct `OPENAI_*` / Codex-compatible LLM path, but full non-Zep simulation-only execution still needs a dedicated backend-architecture change.
+  - local coverage [tracked]: Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.
   - zep免费额度轻松就用完了，然后流程卡4/5在生成报告上面
 - #154 [open, mirror=#93] Profile serialization crashes when LLM returns structured bio/persona fields (no labels)
   - local coverage [covered]: Profile serialization now tolerates structured LLM output instead of crashing when `bio`, `persona`, `country`, `profession`, or `interested_topics` arrive as dict/list values. `OasisAgentProfile` normalizes those mixed types at construction time and the Reddit/Twitter serializers defensively coerce them again before slicing or string replacement, so simulation preparation no longer fails during profile save with `KeyError: slice(None, 150, None)`.
@@ -38,12 +44,6 @@
 - #145 [open, mirror=#2] 知识图谱中存在重复实体节点 (no labels)
   - local coverage [partial]: Repo-native partial mitigations are now landed locally across simulation inputs, backend graph/report/search/statistics/detail surfaces, raw graph introspection, node-edge introspection, textual tool output, both shipped graph renderers, and the visible frontend graph counters/logs: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `ZepEntityReader.get_entity_with_context()` now merges alias-linked relations and related nodes for the entity-detail API, `backend/app/services/graph_builder.py` now collapses the same conservative alias pairs when serving `/api/graph/data/<graph_id>` and remaps duplicate edges to the retained node UUID, `backend/app/services/zep_tools.py` now collapses those aliases when building typed entity lists, raw node/edge introspection payloads, Panorama output, InsightForge entity/relationship summaries, QuickSearch/general search results, graph statistics, node-edge lookups, entity summaries including relations attached only to alias UUIDs, and `NodeInfo.to_text()` output, while preserving merged `alias_names` metadata so callers and downstream prompts can still see which labels were folded together. `frontend/src/views/processGraphData.js` and the shared `frontend/src/components/GraphPanel.vue` renderer now both collapse them while rendering graph data, the Process plus GraphPanel node detail drawers expose the folded non-canonical aliases via `frontend/src/components/graphAliasDetails.js`, and `frontend/src/components/graphPanelData.js` now drives deduplicated Step 1 / Process counters plus MainView refresh logs so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear twice in the graph or its visible counts. Full graph-level persisted deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.
   - ## 问题描述 在使用 MiroFish 构建知识图谱时，Zep 会将同一现实实体识别为多个不同节点。 例如输入包含"特朗普"相关内容的文本后，图谱中会同时出现"特朗普"和 "美国总统特朗普"两个独立节点，它们各自有独立的边和关系。 这会导致： - 图谱中同一实体的信息被分散到多个节点上 - 后续的模拟推演基于不完整的实体关系进行，影响准确性 - 图谱可视化时出现冗余节点，影响可读性 ## 复现步骤 1. 准备一段包含同一人物/组织不同称呼的背景文本 2. 通过前端正常流程构建知识图谱 3. 查看生成的图谱，可以看到同一实体被拆分为多个节点 ## 截图 <img width="675" height="399" alt="Image" src="https://github.com/user-attachments/assets/593f4188-e766-46b3-9b88-25486…
-- #142 [open, mirror=#3] 这个方向最后商业化落地应用的点是什么呢 (question)
-  - local coverage [no_action]: Upstream issue #142 asks about long-term commercialization direction rather than reporting a reproducible bug or scoped feature request, so there is no local implementation task attached to it.
-- #64 [open, mirror=#4] 一直卡在上传文件错误：Request failed with status code 500 (no labels)
-  - local coverage [covered]: Upload and graph-build failures now surface structured per-file parser/config validation errors instead of collapsing common deployment or document-ingest problems into a generic 500.
-  - <img width="1206" height="1234" alt="Image" src="https://github.com/user-attachments/assets/5befa186-6f0f-493a-a6fa-7fb33940f233" /> TXT、MD、PDF文件格式都试了，内容甚至精简到就几百字，但就是卡在上传文件错误，到底什么原因？
-  - latest comment by `666ghj`: 以前的代码因为编码格式的缘故会报这样的错，最新代码已经修复了。 你是把他部署在服务器上吗，那好像会有一些问题。
 
 ## Recently Updated Pull Requests
 

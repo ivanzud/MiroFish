@@ -31,8 +31,11 @@ sys.modules.setdefault("zep_cloud.external_clients.ontology", fake_zep_ontology)
 
 from app.api import simulation_bp
 from app.api import simulation as simulation_api
+from app.models.project import ProjectManager, ProjectStatus
+from app.services.report_agent import Report, ReportManager, ReportStatus
 from app.services.simulation_manager import SimulationManager
 from app.services.simulation_manager import SimulationState, SimulationStatus
+from app.services.simulation_runner import RunnerStatus, SimulationRunState
 
 
 def create_simulation_test_app():
@@ -238,6 +241,149 @@ def test_prepare_status_translates_task_progress_payload(monkeypatch):
     assert payload["message"] == "[1/4] Reading graph entities: Connecting to the Zep graph..."
     assert payload["progress_detail"]["current_stage_name"] == "Reading graph entities"
     assert payload["progress_detail"]["item_description"] == "Connecting to the Zep graph..."
+
+
+def test_delete_history_removes_simulation_reports_and_project_when_last_simulation(tmp_path, monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    simulation_dir = tmp_path / "simulations"
+    projects_dir = tmp_path / "projects"
+    reports_dir = tmp_path / "reports"
+    projects_dir.mkdir(parents=True, exist_ok=True)
+
+    monkeypatch.setattr(SimulationManager, "SIMULATION_DATA_DIR", str(simulation_dir))
+    monkeypatch.setattr(ProjectManager, "PROJECTS_DIR", str(projects_dir))
+    monkeypatch.setattr(ReportManager, "REPORTS_DIR", str(reports_dir))
+    project = ProjectManager.create_project("Delete me")
+    project.status = ProjectStatus.GRAPH_COMPLETED
+    ProjectManager.save_project(project)
+
+    manager = SimulationManager()
+    state = SimulationState(
+        simulation_id="sim_delete",
+        project_id=project.project_id,
+        graph_id="graph_delete",
+        status=SimulationStatus.COMPLETED,
+    )
+    manager._save_simulation_state(state)
+
+    ReportManager.save_report(
+        Report(
+            report_id="report_delete",
+            simulation_id=state.simulation_id,
+            graph_id=state.graph_id,
+            simulation_requirement="cleanup",
+            status=ReportStatus.COMPLETED,
+            markdown_content="# Report",
+            created_at="2026-03-12T00:00:00",
+            completed_at="2026-03-12T00:10:00",
+        )
+    )
+
+    response = client.delete(
+        "/api/simulation/history/sim_delete",
+        headers={"X-Locale": "en"},
+    )
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["message"] == "Deleted simulation record: sim_delete"
+    assert payload["data"]["project_deleted"] is True
+    assert payload["data"]["deleted_report_ids"] == ["report_delete"]
+    assert not (simulation_dir / "sim_delete").exists()
+    assert not (projects_dir / project.project_id).exists()
+    assert not (reports_dir / "report_delete").exists()
+
+
+def test_delete_history_keeps_project_when_other_simulations_exist(tmp_path, monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    simulation_dir = tmp_path / "simulations"
+    projects_dir = tmp_path / "projects"
+    reports_dir = tmp_path / "reports"
+    projects_dir.mkdir(parents=True, exist_ok=True)
+
+    monkeypatch.setattr(SimulationManager, "SIMULATION_DATA_DIR", str(simulation_dir))
+    monkeypatch.setattr(ProjectManager, "PROJECTS_DIR", str(projects_dir))
+    monkeypatch.setattr(ReportManager, "REPORTS_DIR", str(reports_dir))
+    project = ProjectManager.create_project("Shared")
+    project.status = ProjectStatus.GRAPH_COMPLETED
+    ProjectManager.save_project(project)
+
+    manager = SimulationManager()
+    manager._save_simulation_state(
+        SimulationState(
+            simulation_id="sim_first",
+            project_id=project.project_id,
+            graph_id="graph_shared",
+            status=SimulationStatus.COMPLETED,
+        )
+    )
+    manager._save_simulation_state(
+        SimulationState(
+            simulation_id="sim_second",
+            project_id=project.project_id,
+            graph_id="graph_shared",
+            status=SimulationStatus.COMPLETED,
+        )
+    )
+
+    response = client.delete("/api/simulation/history/sim_first")
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["data"]["project_deleted"] is False
+    assert not (simulation_dir / "sim_first").exists()
+    assert (simulation_dir / "sim_second").exists()
+    assert (projects_dir / project.project_id).exists()
+
+
+def test_delete_history_rejects_active_simulations(tmp_path, monkeypatch):
+    app = create_simulation_test_app()
+    client = app.test_client()
+
+    simulation_dir = tmp_path / "simulations"
+    projects_dir = tmp_path / "projects"
+    projects_dir.mkdir(parents=True, exist_ok=True)
+
+    monkeypatch.setattr(SimulationManager, "SIMULATION_DATA_DIR", str(simulation_dir))
+    monkeypatch.setattr(ProjectManager, "PROJECTS_DIR", str(projects_dir))
+    project = ProjectManager.create_project("Active")
+    project.status = ProjectStatus.GRAPH_COMPLETED
+    ProjectManager.save_project(project)
+
+    manager = SimulationManager()
+    manager._save_simulation_state(
+        SimulationState(
+            simulation_id="sim_active",
+            project_id=project.project_id,
+            graph_id="graph_active",
+            status=SimulationStatus.RUNNING,
+        )
+    )
+    monkeypatch.setattr(
+        simulation_api.SimulationRunner,
+        "get_run_state",
+        classmethod(
+            lambda cls, simulation_id: SimulationRunState(
+                simulation_id=simulation_id,
+                runner_status=RunnerStatus.RUNNING,
+            )
+        ),
+    )
+
+    response = client.delete(
+        "/api/simulation/history/sim_active",
+        headers={"X-Locale": "en"},
+    )
+
+    assert response.status_code == 409
+    assert response.get_json()["error"] == "Cannot delete simulation while it is still active: sim_active"
+    assert (simulation_dir / "sim_active").exists()
 
 
 def test_prepare_status_keeps_english_task_progress_payload(monkeypatch):

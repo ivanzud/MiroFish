@@ -119,7 +119,16 @@
                 </span>
                 <span class="modal-create-time">{{ formatDate(selectedProject.created_at) }} {{ formatTime(selectedProject.created_at) }}</span>
               </div>
-              <button class="modal-close" @click="closeModal">×</button>
+              <div class="modal-header-actions">
+                <button
+                  class="modal-delete"
+                  :disabled="isDeletingSelectedProject"
+                  @click="handleDeleteSelectedProject"
+                >
+                  {{ isDeletingSelectedProject ? t('history.deleting') : t('history.deleteRecord') }}
+                </button>
+                <button class="modal-close" @click="closeModal">×</button>
+              </div>
             </div>
 
             <!-- 弹窗内容 -->
@@ -203,7 +212,7 @@
 import { ref, computed, onMounted, onUnmounted, onActivated, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { getSimulationHistory } from '../api/simulation'
+import { deleteSimulationHistory, getSimulationHistory } from '../api/simulation'
 import { buildSimulationReplayRoute, hasReplayableSimulationState } from './historyPlayback'
 import { truncateFilename as formatHistoryFilename } from './historyFormatters'
 
@@ -218,6 +227,7 @@ const isExpanded = ref(false)
 const hoveringCard = ref(null)
 const historyContainer = ref(null)
 const selectedProject = ref(null)  // 当前选中的项目（用于弹窗）
+const deletingSimulationId = ref('')
 let observer = null
 let isAnimating = false  // 动画锁，防止闪烁
 let expandDebounceTimer = null  // 防抖定时器
@@ -407,6 +417,10 @@ const closeModal = () => {
   selectedProject.value = null
 }
 
+const isDeletingSelectedProject = computed(
+  () => Boolean(selectedProject.value?.simulation_id) && deletingSimulationId.value === selectedProject.value.simulation_id
+)
+
 // 导航到图谱构建页面（Project）
 const goToProject = () => {
   if (selectedProject.value?.project_id) {
@@ -446,6 +460,32 @@ const goToReport = () => {
       params: { reportId: selectedProject.value.report_id }
     })
     closeModal()
+  }
+}
+
+const handleDeleteSelectedProject = async () => {
+  const simulation = selectedProject.value
+  if (!simulation?.simulation_id || deletingSimulationId.value) {
+    return
+  }
+
+  const confirmationMessage = t('history.deleteConfirm', {
+    simulationId: formatSimulationId(simulation.simulation_id)
+  })
+  if (!window.confirm(confirmationMessage)) {
+    return
+  }
+
+  deletingSimulationId.value = simulation.simulation_id
+  try {
+    await deleteSimulationHistory(simulation.simulation_id)
+    projects.value = projects.value.filter((project) => project.simulation_id !== simulation.simulation_id)
+    closeModal()
+  } catch (error) {
+    const message = error?.response?.data?.error || error?.message || t('history.deleteFailed')
+    window.alert(message)
+  } finally {
+    deletingSimulationId.value = ''
   }
 }
 
@@ -1097,6 +1137,12 @@ onUnmounted(() => {
   gap: 16px;
 }
 
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .modal-id {
   font-family: 'JetBrains Mono', monospace;
   font-size: 1rem;
@@ -1146,6 +1192,29 @@ onUnmounted(() => {
 .modal-close:hover {
   background: #F3F4F6;
   color: #111827;
+}
+
+.modal-delete {
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(254, 226, 226, 0.6);
+  color: #B91C1C;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-delete:hover:not(:disabled) {
+  background: rgba(254, 202, 202, 0.9);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.modal-delete:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 /* 弹窗内容 */

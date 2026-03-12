@@ -766,6 +766,14 @@ TRANSLATIONS = {
         "zh": "模拟不存在: {simulation_id}",
         "en": "Simulation not found: {simulation_id}",
     },
+    "simulation.delete_active": {
+        "zh": "模拟仍在运行中，无法删除: {simulation_id}",
+        "en": "Cannot delete simulation while it is still active: {simulation_id}",
+    },
+    "simulation.deleted": {
+        "zh": "模拟记录已删除: {simulation_id}",
+        "en": "Deleted simulation record: {simulation_id}",
+    },
     "simulation.project_graph_required": {
         "zh": "项目尚未构建图谱，请先调用 /api/graph/build",
         "en": "The project graph has not been built yet. Call /api/graph/build first.",

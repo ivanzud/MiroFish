@@ -1,12 +1,12 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-12T01:44:43.316873+00:00",
-  "generated_at": "2026-03-12T01:44:43.316873+00:00",
+  "captured_at": "2026-03-12T01:59:01.289691+00:00",
+  "generated_at": "2026-03-12T01:59:01.289691+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
-      "open": 43,
+      "open": 45,
       "closed": 50
     },
     "pull_requests": {
@@ -18,11 +18,98 @@
       "not_mirrored": 0
     },
     "mirrored_issues": {
-      "mirrored": 93,
+      "mirrored": 95,
       "not_mirrored": 0
     }
   },
   "issues": [
+    {
+      "number": 158,
+      "title": "Are there any predictions that have been verified by subsequent events?",
+      "url": "https://github.com/666ghj/MiroFish/issues/158",
+      "state": "open",
+      "created_at": "2026-03-12T01:50:37Z",
+      "updated_at": "2026-03-12T01:52:42Z",
+      "closed_at": null,
+      "labels": [
+        "question"
+      ],
+      "author": "DuinoDu",
+      "body_excerpt": "Awesome idea! I am wondering are there any predictions that have been verified by subsequent events?",
+      "comment_count": 0,
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 158,
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-gytl`: upstream is asking for a way to verify whether forecasted outcomes were later confirmed by real events, but the repo does not yet expose an explicit forecast-verification workflow or examples.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "docs/upstream-triage.md",
+          "https://github.com/ivanzud/MiroFish/issues/95"
+        ],
+        "validation": [
+          "tracking only"
+        ],
+        "notes": "Mirrored into fork issue #95 on March 12, 2026 so the request stays visible while the right follow-up is narrowed."
+      },
+      "local_status": "tracked",
+      "local_summary": "Tracked under beads issue `mirofish-gytl`: upstream is asking for a way to verify whether forecasted outcomes were later confirmed by real events, but the repo does not yet expose an explicit forecast-verification workflow or examples.",
+      "triage_status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-gytl`: upstream is asking for a way to verify whether forecasted outcomes were later confirmed by real events, but the repo does not yet expose an explicit forecast-verification workflow or examples.",
+      "coverage_status": "tracked",
+      "coverage_summary": "Tracked under beads issue `mirofish-gytl`: upstream is asking for a way to verify whether forecasted outcomes were later confirmed by real events, but the repo does not yet expose an explicit forecast-verification workflow or examples.",
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 95,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/95"
+    },
+    {
+      "number": 157,
+      "title": "如何删除不想要的记录",
+      "url": "https://github.com/666ghj/MiroFish/issues/157",
+      "state": "open",
+      "created_at": "2026-03-12T01:49:07Z",
+      "updated_at": "2026-03-12T01:51:15Z",
+      "closed_at": null,
+      "labels": [
+        "question"
+      ],
+      "author": "Axing93",
+      "body_excerpt": "比如我想删除 <img width=\"1835\" height=\"775\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/12332bbc-f309-497b-a352-f0d15289042e\" />这两个，怎么删除呢",
+      "comment_count": 0,
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 157,
+        "status": "covered",
+        "summary": "Homepage history now supports repo-native deletion of unwanted local records. The backend exposes `DELETE /api/simulation/history/<simulation_id>` to remove a simulation's persisted local directory, cascade-delete its attached local reports, and prune the project metadata when no sibling simulations remain, while refusing deletion for active runs. The history modal now exposes a localized delete action that calls that endpoint directly.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "backend/app/api/simulation.py",
+          "backend/app/i18n.py",
+          "backend/app/services/simulation_manager.py",
+          "backend/tests/test_simulation_api_i18n.py",
+          "frontend/src/api/simulation.js",
+          "frontend/src/components/HistoryDatabase.vue",
+          "frontend/src/i18n/locales/en.js",
+          "frontend/src/i18n/locales/zh.js",
+          "https://github.com/ivanzud/MiroFish/issues/96"
+        ],
+        "validation": [
+          "cd backend && uv run pytest -q tests/test_simulation_api_i18n.py",
+          "bash ./scripts/test_backend_lite.sh",
+          "npm --prefix frontend run build"
+        ],
+        "notes": "Mirrored into fork issue #96 on March 12, 2026. This is a repo-native local-history cleanup flow; it intentionally avoids deleting upstream or Zep-hosted graph data."
+      },
+      "local_status": "covered",
+      "local_summary": "Homepage history now supports repo-native deletion of unwanted local records. The backend exposes `DELETE /api/simulation/history/<simulation_id>` to remove a simulation's persisted local directory, cascade-delete its attached local reports, and prune the project metadata when no sibling simulations remain, while refusing deletion for active runs. The history modal now exposes a localized delete action that calls that endpoint directly.",
+      "triage_status": "covered",
+      "summary": "Homepage history now supports repo-native deletion of unwanted local records. The backend exposes `DELETE /api/simulation/history/<simulation_id>` to remove a simulation's persisted local directory, cascade-delete its attached local reports, and prune the project metadata when no sibling simulations remain, while refusing deletion for active runs. The history modal now exposes a localized delete action that calls that endpoint directly.",
+      "coverage_status": "covered",
+      "coverage_summary": "Homepage history now supports repo-native deletion of unwanted local records. The backend exposes `DELETE /api/simulation/history/<simulation_id>` to remove a simulation's persisted local directory, cascade-delete its attached local reports, and prune the project metadata when no sibling simulations remain, while refusing deletion for active runs. The history modal now exposes a localized delete action that calls that endpoint directly.",
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 96,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/96"
+    },
     {
       "number": 156,
       "title": "能不能不要画zep图？我只要推演和角色互动",
@@ -41,27 +128,36 @@
       "local_coverage": {
         "number": 156,
         "status": "tracked",
-        "summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. This pass tightened the backend diagnostics so a missing `ZEP_API_KEY` no longer masquerades as a broken direct `OPENAI_*` / Codex-compatible LLM path, but full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
+        "summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
         "local_refs": [
           ".beads/issues.jsonl",
+          "backend/app/config.py",
+          "backend/tests/test_config.py",
+          "backend/tests/test_print_config_status.py",
           "frontend/src/components/apiConfigDiagnostics.js",
           "frontend/src/i18n/locales/en.js",
           "frontend/src/i18n/locales/zh.js",
           "frontend/tests/apiConfigDiagnostics.test.mjs",
+          "README.md",
+          "README-EN.md",
           "https://github.com/ivanzud/MiroFish/issues/94"
         ],
         "validation": [
+          "cd backend && uv run pytest -q tests/test_config.py tests/test_print_config_status.py",
           "npm --prefix frontend test -- --runInBand apiConfigDiagnostics.test.mjs",
-          "npm --prefix frontend run build"
+          "npm --prefix frontend run build",
+          "env -i PATH=\"$PATH\" HOME=\"$HOME\" TERM=\"$TERM\" OPENAI_API_KEY=codex-test-key OPENAI_API_BASE_URL=https://codex.example.test/v1 OPENAI_MODEL=gpt-4.1-mini ZEP_API_KEY=zep-test-key SECRET_KEY=test-secret npm run check:backend-config -- --compact",
+          "env -i PATH=\"$PATH\" HOME=\"$HOME\" TERM=\"$TERM\" OPENAI_API_KEY=codex-test-key OPENAI_API_BASE_URL=https://codex.example.test/v1 OPENAI_MODEL=gpt-4.1-mini SECRET_KEY=test-secret npm run check:backend-config -- --compact",
+          "bash ./scripts/test_backend_lite.sh"
         ],
-        "notes": "Mirrored into fork issue #94 on March 12, 2026. The landed diagnostics clarification makes it explicit that direct OpenAI-compatible LLM wiring can still be valid even when Zep-backed graph/report capabilities are unavailable."
+        "notes": "Mirrored into fork issue #94 on March 12, 2026. The landed capability matrix makes it explicit that direct OpenAI-compatible LLM wiring can still be valid even when Step 1 / Step 4 remain blocked on Zep, and that Step 5 interaction is still available on an existing simulation environment."
       },
       "local_status": "tracked",
-      "local_summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. This pass tightened the backend diagnostics so a missing `ZEP_API_KEY` no longer masquerades as a broken direct `OPENAI_*` / Codex-compatible LLM path, but full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
+      "local_summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
       "triage_status": "tracked",
-      "summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. This pass tightened the backend diagnostics so a missing `ZEP_API_KEY` no longer masquerades as a broken direct `OPENAI_*` / Codex-compatible LLM path, but full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
+      "summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
       "coverage_status": "tracked",
-      "coverage_summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. This pass tightened the backend diagnostics so a missing `ZEP_API_KEY` no longer masquerades as a broken direct `OPENAI_*` / Codex-compatible LLM path, but full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
+      "coverage_summary": "Tracked under beads issue `mirofish-gd5z`: upstream wants a simulation/report workflow that avoids Zep graph dependency entirely. The config-status payload and frontend backend diagnostics now expose a capability matrix that separates the direct `OPENAI_*` / Codex-compatible LLM path from Zep-gated Step 1 graph build and graph-backed Step 4 tooling, while also showing that Step 5 interaction remains viable once a simulation environment already exists. Full non-Zep simulation-only execution still needs a dedicated backend-architecture change.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 94,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/94"

@@ -569,6 +569,18 @@ class SimulationManager:
                         simulations.append(state)
         
         return simulations
+
+    def delete_simulation(self, simulation_id: str) -> bool:
+        """删除模拟目录及其持久化状态。"""
+        sim_dir = os.path.join(self.SIMULATION_DATA_DIR, simulation_id)
+
+        self._simulations.pop(simulation_id, None)
+
+        if not os.path.exists(sim_dir):
+            return False
+
+        shutil.rmtree(sim_dir)
+        return True
     
     def get_profiles(self, simulation_id: str, platform: str = "reddit") -> List[Dict[str, Any]]:
         """获取模拟的Agent Profile"""
