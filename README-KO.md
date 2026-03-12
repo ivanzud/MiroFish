@@ -151,6 +151,7 @@ OpenAI-compatible 설정이 실제로 인식됐는지 확인하려면:
 
 - 먼저 `http://localhost:5001/health` 에 접속해 백엔드가 정상 기동했는지 확인합니다.
 - 또는 `npm run check:backend-config` 를 실행하면 서버를 띄우지 않고도 같은 비민감 config-status JSON 을 바로 확인할 수 있습니다.
+- 백엔드만 가장 직접적인 경로로 띄우고 싶다면 `npm run backend:local` 을 사용하세요. 동일한 설정 프리플라이트를 먼저 통과한 뒤 Flask 를 시작하므로 `LLM_*` / `OPENAI_*` 해석이 잘못된 상태로 서버가 올라가지 않습니다.
 - 다음으로 `http://localhost:5001/api/graph/config/status` 를 엽니다. 반환 JSON 의 `llm.backend_mode` 값은 `openai_compatible` 이어야 합니다.
 - `summary.llm.sources` 는 실제로 적용된 `LLM_*` 또는 `OPENAI_*` 환경 변수 이름을 보여 주므로, Codex / OpenAI / DashScope Coding Plan 같은 호환 게이트웨이가 추가 `LLM_PROVIDER` 없이 올바르게 인식됐는지 바로 확인할 수 있습니다.
 - 로컬 검증 셸에서 `SECRET_KEY` 를 설정하지 않았다면 `npm run check:backend-config` 에 임시 생성 키 warning 이 나올 수 있는데, 이는 정상이며 직접 `OPENAI_*` 경로가 실패했다는 뜻은 아닙니다.
@@ -210,6 +211,7 @@ npm run dev
 
 ```bash
 npm run backend   # 백엔드만 실행
+npm run backend:local  # 설정 프리플라이트 후 백엔드만 실행
 npm run frontend  # 프런트엔드만 실행
 ```
 

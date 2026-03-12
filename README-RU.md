@@ -48,6 +48,8 @@ npm run dev
 
 `npm run setup:all` remains available as a backward-compatible alias for the same core install path. Install `npm run setup:backend:simulation` only when you need the optional Step 3 / Step 5 simulation runtime.
 
+If you want the backend-only path with the same config preflight, run `npm run backend:local`. It executes `npm run check:backend-config` first and starts Flask only after the current `LLM_*` / `OPENAI_*` aliases resolve cleanly.
+
 Services:
 
 - Frontend: `http://localhost:3000`
@@ -97,6 +99,7 @@ How to verify that MiroFish detected the direct OpenAI-compatible path:
 
 - Visit `http://localhost:5001/health` to confirm the backend is running.
 - Or run `npm run check:backend-config` to print the same non-sensitive config-status JSON without starting the server.
+- For the most direct backend-only startup path, run `npm run backend:local`. It uses the same preflight first, so MiroFish does not start Flask with a broken `LLM_*` / `OPENAI_*` configuration.
 - Then open `http://localhost:5001/api/graph/config/status`. The JSON payload should report `llm.backend_mode = openai_compatible`.
 - `summary.llm.sources` shows whether MiroFish resolved `LLM_*` or `OPENAI_*` variables and whether the active base URL came from `OPENAI_BASE_URL` or `OPENAI_API_BASE_URL`, so you can confirm that a Codex/OpenAI-compatible gateway is wired correctly without adding `LLM_PROVIDER`.
 - If `SECRET_KEY` is unset during a local verification run, a warning about using a temporary generated key is expected and does not mean the direct `OPENAI_*` path failed.
