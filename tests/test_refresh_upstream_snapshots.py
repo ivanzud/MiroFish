@@ -81,6 +81,19 @@ class RefreshUpstreamSnapshotsTests(unittest.TestCase):
             self.assertEqual(call[call.index("--repo") + 1], "example/MiroFish")
             self.assertEqual(call[call.index("--timeout") + 1], "22")
 
+    def test_fork_mirror_overrides_are_forwarded(self):
+        calls = self._run_wrapper(
+            "--fork-remote",
+            "upstream-fork",
+            "--mirror-issues-repo",
+            "example/fork",
+        )
+
+        self.assertEqual(len(calls), 2)
+        for call in calls:
+            self.assertEqual(call[call.index("--fork-remote") + 1], "upstream-fork")
+            self.assertEqual(call[call.index("--mirror-issues-repo") + 1], "example/fork")
+
 
 if __name__ == "__main__":
     unittest.main()

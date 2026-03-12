@@ -17,6 +17,8 @@ Refresh both the open-only and full upstream GitHub snapshots using repo default
 
 Options:
   --repo <owner/repo>            Override the upstream repository to inspect.
+  --fork-remote <name>           Override the git remote used for PR mirror checks/pushes.
+  --mirror-issues-repo <repo>    Override the fork repo used for mirrored issue lookup.
   --timeout <seconds>            Per-request timeout passed to sync_upstream_github.py.
   --max-workers <count>          Limit concurrent hydration workers.
   --stale-cache-hours <hours>    Allow reuse of recent snapshots on GitHub rate limits.
@@ -42,6 +44,30 @@ while [[ $# -gt 0 ]]; do
       ;;
     --repo=*)
       REPO="${1#*=}"
+      shift
+      ;;
+    --fork-remote)
+      if [[ $# -lt 2 ]]; then
+        echo "error: --fork-remote requires a remote name" >&2
+        exit 1
+      fi
+      FORK_REMOTE="$2"
+      shift 2
+      ;;
+    --fork-remote=*)
+      FORK_REMOTE="${1#*=}"
+      shift
+      ;;
+    --mirror-issues-repo)
+      if [[ $# -lt 2 ]]; then
+        echo "error: --mirror-issues-repo requires an owner/repo value" >&2
+        exit 1
+      fi
+      MIRROR_ISSUES_REPO="$2"
+      shift 2
+      ;;
+    --mirror-issues-repo=*)
+      MIRROR_ISSUES_REPO="${1#*=}"
       shift
       ;;
     --force-refresh|--no-cache)
