@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-12T02:33:12.068430+00:00`
+- Captured: `2026-03-12T02:38:17.360486+00:00`
 - Issues: `45` total (`open=45`, `closed=0`)
 - Pull requests: `40` total (`open=40`, `closed=0`)
 - Mirrored in `origin`: `40` of `40` PR refs
@@ -25,7 +25,7 @@
   - ## Summary When profile generation returns structured JSON objects for fields like `bio`, `persona`, or `country`, MiroFish can fail during profile serialization before config generation starts. ## Reproduction context Observed on a live run with: - simulation_id: `sim_e69a946b6158` - graph_id: `mirofish_a39b5f10127f4744` - entities_count: `91` - status in state file: `failed` - error in state fi…
   - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @ygh1254! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> Your analysis is spot on. Looking at the code, the root cause is exactly as you described — the [`OasisAgentProfile`…
 - #153 [open, mirror=#92] npm run setup:all安装时一直报 pillow` (v10.3.0) 的错 (question)
-  - local coverage [covered]: The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all.
+  - local coverage [covered]: The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all, and the optional simulation lock now resolves `pillow==10.4.0` instead of `10.3.0`.
   - Resolved 188 packages in 5.27s Built mirofish-backend @ file:///D:/MiroFish/backend x Failed to build `pillow==10.3.0` |-> The build backend returned an error `-> Call to `backend.build_wheel` failed (exit code: 1) [stderr] Traceback (most recent call last): File "<string>", line 14, in <module> requires = get_requires_for_build({}) File "C:\Users\Administrator\AppData\Local\uv\cache\builds-v0\.t…
 - #150 [open, mirror=#91] Bug: Hardcoded 'reddit' platform default causes silent data loss for Twitter-only simulations (no labels)
   - local coverage [covered]: Simulation data retrieval now resolves the active platform from `SimulationState` instead of silently defaulting to Reddit when Twitter/X is the only enabled platform, and `SimulationManager.get_profiles()` now reads Twitter profile CSV files correctly as well. That prevents empty profile/post responses in Twitter-only simulations even when older callers still pass the historical `reddit` default.

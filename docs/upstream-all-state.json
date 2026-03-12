@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-12T02:33:27.052491+00:00",
-  "generated_at": "2026-03-12T02:33:27.052491+00:00",
+  "captured_at": "2026-03-12T02:38:27.636783+00:00",
+  "generated_at": "2026-03-12T02:38:27.636783+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -242,25 +242,27 @@
       "local_coverage": {
         "number": 153,
         "status": "covered",
-        "summary": "The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all.",
+        "summary": "The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all, and the optional simulation lock now resolves `pillow==10.4.0` instead of `10.3.0`.",
         "local_refs": [
           "package.json",
           "README.md",
           "README-EN.md",
-          "scripts/setup_backend_simulation.py"
+          "scripts/setup_backend_simulation.py",
+          "backend/uv.lock"
         ],
         "validation": [
           "cd backend && uv sync --frozen --python 3.13 --python-platform windows --dry-run --output-format json",
+          "cd backend && uv sync --extra simulation --frozen --dry-run",
           "triage diff review"
         ],
-        "notes": "Mirrored into fork issue #92 on March 11, 2026. If the reporter still sees `pillow==10.3.0` during `setup:all`, they are likely on an older checkout or running the optional simulation install path instead of the default core backend install."
+        "notes": "Mirrored into fork issue #92 on March 11, 2026. If the reporter still sees `pillow==10.3.0` during `setup:all`, they are likely on an older checkout. The current core path avoids Pillow entirely and the optional simulation path now locks Pillow to `10.4.0`."
       },
       "local_status": "covered",
-      "local_summary": "The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all.",
+      "local_summary": "The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all, and the optional simulation lock now resolves `pillow==10.4.0` instead of `10.3.0`.",
       "triage_status": "covered",
-      "summary": "The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all.",
+      "summary": "The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all, and the optional simulation lock now resolves `pillow==10.4.0` instead of `10.3.0`.",
       "coverage_status": "covered",
-      "coverage_summary": "The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all.",
+      "coverage_summary": "The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all, and the optional simulation lock now resolves `pillow==10.4.0` instead of `10.3.0`.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 92,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/92"
@@ -5686,14 +5688,14 @@
       "local_coverage": {
         "number": 82,
         "status": "covered",
-        "summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies."
+        "summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies, and the remaining optional simulation lock now resolves `pillow==10.4.0`."
       },
       "local_status": "covered",
-      "local_summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies.",
+      "local_summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies, and the remaining optional simulation lock now resolves `pillow==10.4.0`.",
       "triage_status": "covered",
-      "summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies.",
+      "summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies, and the remaining optional simulation lock now resolves `pillow==10.4.0`.",
       "coverage_status": "covered",
-      "coverage_summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies."
+      "coverage_summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies, and the remaining optional simulation lock now resolves `pillow==10.4.0`."
     },
     {
       "number": 81,
