@@ -108,9 +108,14 @@
           </div>
           <h2 class="failed-title">{{ t('step4.failedTitle') }}</h2>
           <p class="failed-text">{{ failureMessage }}</p>
-          <button class="retry-report-btn" :disabled="isRetrying || !simulationId" @click="retryReportGeneration">
-            <span>{{ isRetrying ? t('step4.retrying') : t('step4.retryReport') }}</span>
-          </button>
+          <div class="failed-actions">
+            <button class="retry-report-btn" :disabled="isRetrying || !simulationId" @click="retryReportGeneration">
+              <span>{{ isRetrying ? t('step4.retrying') : t('step4.retryReport') }}</span>
+            </button>
+            <button class="retry-report-btn secondary" :disabled="!simulationId" @click="goToInteraction">
+              <span>{{ t('step4.goToInteractionDirect') }}</span>
+            </button>
+          </div>
         </div>
 
         <!-- Waiting State -->
@@ -158,9 +163,14 @@
               <span class="failure-banner-title">{{ t('step4.generationStopped') }}</span>
               <span class="failure-banner-text">{{ failureMessage }}</span>
             </div>
-            <button class="failure-banner-btn" :disabled="isRetrying || !simulationId" @click="retryReportGeneration">
-              {{ isRetrying ? t('step4.retrying') : t('step4.retryShort') }}
-            </button>
+            <div class="failure-banner-actions">
+              <button class="failure-banner-btn" :disabled="isRetrying || !simulationId" @click="retryReportGeneration">
+                {{ isRetrying ? t('step4.retrying') : t('step4.retryShort') }}
+              </button>
+              <button class="failure-banner-btn secondary" :disabled="!simulationId" @click="goToInteraction">
+                {{ t('step4.interactionShort') }}
+              </button>
+            </div>
           </div>
 
           <div class="workflow-steps" v-if="workflowSteps.length > 0">
@@ -453,6 +463,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { generateReport, getAgentLog, getConsoleLog, getReport } from '../api/report'
 import { copyText } from '../utils/clipboard'
+import { buildInteractionRoute } from './interactionRoute.js'
 import { resolveReportReferenceValue } from './reportReferences.js'
 import {
   extractFinalContent,
@@ -481,8 +492,12 @@ const resolvedReportReference = computed(() =>
 
 // Navigation
 const goToInteraction = () => {
-  if (props.reportId) {
-    router.push({ name: 'Interaction', params: { reportId: props.reportId } })
+  const route = buildInteractionRoute({
+    reportId: props.reportId,
+    simulationId: props.simulationId,
+  })
+  if (route) {
+    router.push(route)
   }
 }
 
@@ -2398,6 +2413,13 @@ watch(() => props.reportId, (newId) => {
   color: #7F1D1D;
 }
 
+.failed-actions,
+.failure-banner-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .retry-report-btn,
 .failure-banner-btn {
   border: 0;
@@ -2424,6 +2446,13 @@ watch(() => props.reportId, (newId) => {
   opacity: 0.55;
   cursor: not-allowed;
   transform: none;
+}
+
+.retry-report-btn.secondary,
+.failure-banner-btn.secondary {
+  border: 1px solid #D1D5DB;
+  background: #FFFFFF;
+  color: #111827;
 }
 
 /* Right Panel */
@@ -2581,7 +2610,6 @@ watch(() => props.reportId, (newId) => {
 }
 
 .failure-banner-btn {
-  margin-left: auto;
   padding: 8px 14px;
   font-size: 12px;
   flex-shrink: 0;

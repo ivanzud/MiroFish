@@ -79,15 +79,16 @@ const { t } = useI18n()
 
 // Props
 const props = defineProps({
-  reportId: String
+  reportId: String,
+  simulationId: String
 })
 
 // Layout State - 默认切换到工作台视角
 const viewMode = ref('workbench')
 
 // Data State
-const currentReportId = ref(route.params.reportId)
-const simulationId = ref(null)
+const currentReportId = ref(route.params.reportId || props.reportId || null)
+const simulationId = ref(route.params.simulationId || props.simulationId || null)
 const projectData = ref(null)
 const graphData = ref(null)
 const graphLoading = ref(false)
@@ -142,39 +143,51 @@ const toggleMaximize = (target) => {
 }
 
 // --- Data Logic ---
-const loadReportData = async () => {
-  try {
-    addLog(t('interactionView.logs.loadingReport', { id: currentReportId.value }))
-    
-    // 获取 report 信息以获取 simulation_id
-    const reportRes = await getReport(currentReportId.value)
-    if (reportRes.success && reportRes.data) {
-      const reportData = reportRes.data
-      simulationId.value = reportData.simulation_id
-      
-      if (simulationId.value) {
-        // 获取 simulation 信息
-        const simRes = await getSimulation(simulationId.value)
-        if (simRes.success && simRes.data) {
-          const simData = simRes.data
-          
-          // 获取 project 信息
-          if (simData.project_id) {
-            const projRes = await getProject(simData.project_id)
-            if (projRes.success && projRes.data) {
-              projectData.value = projRes.data
-              addLog(t('interactionView.logs.projectLoaded', { id: projRes.data.project_id }))
-              
-              // 获取 graph 数据
-              if (projRes.data.graph_id) {
-                await loadGraph(projRes.data.graph_id)
-              }
-            }
-          }
-        }
+const loadSimulationContext = async (targetSimulationId) => {
+  if (!targetSimulationId) {
+    return
+  }
+
+  simulationId.value = targetSimulationId
+
+  const simRes = await getSimulation(targetSimulationId)
+  if (!simRes.success || !simRes.data) {
+    addLog(t('interactionView.logs.loadSimulationFailed', { message: simRes.error || t('process.unknownError') }))
+    return
+  }
+
+  const simData = simRes.data
+
+  if (simData.project_id) {
+    const projRes = await getProject(simData.project_id)
+    if (projRes.success && projRes.data) {
+      projectData.value = projRes.data
+      addLog(t('interactionView.logs.projectLoaded', { id: projRes.data.project_id }))
+
+      if (projRes.data.graph_id) {
+        await loadGraph(projRes.data.graph_id)
       }
-    } else {
-      addLog(t('interactionView.logs.reportInfoFailed', { message: reportRes.error || t('process.unknownError') }))
+    }
+  }
+}
+
+const loadInteractionData = async () => {
+  try {
+    if (currentReportId.value) {
+      addLog(t('interactionView.logs.loadingReport', { id: currentReportId.value }))
+
+      const reportRes = await getReport(currentReportId.value)
+      if (reportRes.success && reportRes.data) {
+        await loadSimulationContext(reportRes.data.simulation_id)
+      } else {
+        addLog(t('interactionView.logs.reportInfoFailed', { message: reportRes.error || t('process.unknownError') }))
+      }
+      return
+    }
+
+    if (simulationId.value) {
+      addLog(t('interactionView.logs.loadingSimulation', { id: simulationId.value }))
+      await loadSimulationContext(simulationId.value)
     }
   } catch (err) {
     addLog(t('interactionView.logs.loadException', { message: err.message }))
@@ -205,15 +218,23 @@ const refreshGraph = () => {
 
 // Watch route params
 watch(() => route.params.reportId, (newId) => {
-  if (newId && newId !== currentReportId.value) {
-    currentReportId.value = newId
-    loadReportData()
+  if (newId !== currentReportId.value) {
+    currentReportId.value = newId || props.reportId || null
+    loadInteractionData()
+  }
+}, { immediate: true })
+
+watch(() => route.params.simulationId, (newId) => {
+  if (newId !== simulationId.value) {
+    simulationId.value = newId || props.simulationId || null
+    currentReportId.value = route.params.reportId || props.reportId || null
+    loadInteractionData()
   }
 }, { immediate: true })
 
 onMounted(() => {
   addLog(t('interactionView.logs.init'))
-  loadReportData()
+  loadInteractionData()
 })
 </script>
 

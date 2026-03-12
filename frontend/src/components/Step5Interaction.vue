@@ -72,7 +72,9 @@
             <div class="waiting-ring"></div>
             <div class="waiting-ring"></div>
           </div>
-          <span class="waiting-text">{{ t('step5.waitingForAgent') }}</span>
+          <span class="waiting-text">
+            {{ props.reportId ? t('step5.waitingForAgent') : t('step5.interactionOnlyReady') }}
+          </span>
         </div>
       </div>
 
@@ -112,6 +114,7 @@
             <button 
               class="tab-pill"
               :class="{ active: activeTab === 'chat' && chatTarget === 'report_agent' }"
+              :disabled="!props.reportId"
               @click="selectReportAgentChat"
             >
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
@@ -169,7 +172,7 @@
         <div v-if="activeTab === 'chat'" class="chat-container">
 
           <!-- Report Agent Tools Card -->
-          <div v-if="chatTarget === 'report_agent'" class="report-agent-tools-card">
+          <div v-if="chatTarget === 'report_agent' && props.reportId" class="report-agent-tools-card">
             <div class="tools-card-header">
               <div class="tools-card-avatar">R</div>
               <div class="tools-card-info">
@@ -545,6 +548,10 @@ const saveChatHistory = () => {
 }
 
 const selectReportAgentChat = () => {
+  if (!props.reportId) {
+    return
+  }
+
   // 保存当前对话记录
   saveChatHistory()
   
@@ -1012,6 +1019,10 @@ const handleClickOutside = (e) => {
 // Lifecycle
 onMounted(() => {
   addLog(t('step5.logs.init'))
+  if (!props.reportId) {
+    activeTab.value = 'chat'
+    chatTarget.value = 'agent'
+  }
   loadReportData()
   loadProfiles()
   refreshInterviewEnvStatus().catch((err) => {

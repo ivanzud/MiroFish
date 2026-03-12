@@ -37,6 +37,12 @@ const routes = [
     props: true
   },
   {
+    path: '/interaction/simulation/:simulationId',
+    name: 'InteractionSimulation',
+    component: InteractionView,
+    props: true
+  },
+  {
     path: '/interaction/:reportId',
     name: 'Interaction',
     component: InteractionView,

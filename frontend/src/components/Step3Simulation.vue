@@ -111,6 +111,18 @@
       <span class="replay-notice-text">{{ t(replayNoticeKey) }}</span>
     </div>
 
+    <div v-if="interactionShortcutMessage && simulationId" class="interaction-shortcut-notice">
+      <div class="interaction-shortcut-copy">
+        <span class="interaction-shortcut-label">{{ t('step3.interactionShortcutLabel') }}</span>
+        <span class="interaction-shortcut-text">
+          {{ t('step3.interactionShortcutHint', { message: interactionShortcutMessage }) }}
+        </span>
+      </div>
+      <button class="interaction-shortcut-btn" type="button" @click="openInteractionShortcut">
+        {{ t('step3.openInteractionShortcutButton') }}
+      </button>
+    </div>
+
     <!-- Main Content: Dual Timeline -->
     <div class="main-content-area" ref="scrollContainer">
       <!-- Timeline Header -->
@@ -326,6 +338,7 @@ import {
   getRunStatusDetail
 } from '../api/simulation'
 import { generateReport } from '../api/report'
+import { buildInteractionRoute } from './interactionRoute'
 import { getReportPreflightBlockReason } from './reportCapability'
 import {
   describeTimelineAction,
@@ -367,6 +380,7 @@ const { t, locale } = useI18n()
 
 // State
 const isGeneratingReport = ref(false)
+const interactionShortcutMessage = ref('')
 const phase = ref(0) // 0: 未开始, 1: 运行中, 2: 已完成
 const isStarting = ref(false)
 const isStopping = ref(false)
@@ -826,9 +840,12 @@ const handleNextStep = async () => {
 
   const preflightBlockMessage = await getReportPreflightBlockMessage()
   if (preflightBlockMessage) {
+    interactionShortcutMessage.value = preflightBlockMessage
     addLog(`! ${t('step3.reportPreflightBlocked', { message: preflightBlockMessage })}`)
     return
   }
+
+  interactionShortcutMessage.value = ''
 
   isGeneratingReport.value = true
   addLog(t('step3.reportStarting'))
@@ -881,6 +898,7 @@ watch(() => props.systemLogs?.length, () => {
 
 onMounted(() => {
   addLog(t('step3.initLog'))
+  interactionShortcutMessage.value = ''
   if (props.simulationId) {
     loadExistingRun().then(resumed => {
       if (shouldAutoStartSimulation({ replayOnly: props.replayOnly, resumed })) {
@@ -899,6 +917,16 @@ onMounted(() => {
 onUnmounted(() => {
   stopPolling()
 })
+
+const openInteractionShortcut = () => {
+  const route = buildInteractionRoute({ simulationId: props.simulationId })
+  if (!route) {
+    return
+  }
+
+  addLog(t('step3.openInteractionShortcut'))
+  router.push(route)
+}
 </script>
 
 <style scoped>
@@ -944,6 +972,53 @@ onUnmounted(() => {
 
 .replay-notice-text {
   max-width: 980px;
+}
+
+.interaction-shortcut-notice {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid #EAEAEA;
+  background: linear-gradient(90deg, #EEF8FF 0%, #F9FCFF 100%);
+}
+
+.interaction-shortcut-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.interaction-shortcut-label {
+  color: #0F4C81;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.interaction-shortcut-text {
+  color: #26445E;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.interaction-shortcut-btn {
+  border: 1px solid #9CC7EB;
+  background: #FFFFFF;
+  color: #123A5C;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.interaction-shortcut-btn:hover {
+  background: #F2F8FD;
 }
 
 .status-group {
