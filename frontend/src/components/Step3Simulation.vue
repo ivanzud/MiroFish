@@ -316,6 +316,8 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { resolveBaseURL } from '../api/index.js'
+import { formatApiError } from '../api/errors'
 import { 
   startSimulation, 
   stopSimulation,
@@ -827,11 +829,25 @@ const handleNextStep = async () => {
       // 跳转到报告页面
       router.push({ name: 'Report', params: { reportId } })
     } else {
-      addLog(`✗ ${t('step3.reportStartFailed', { message: res.error || t('process.unknownError') })}`)
+      addLog(`✗ ${t('step3.reportStartFailed', {
+        message: formatApiError({
+          err: { response: { data: res } },
+          t,
+          resolveBaseURL,
+          locationOrigin: typeof window !== 'undefined' ? window.location.origin : '',
+        }),
+      })}`)
       isGeneratingReport.value = false
     }
   } catch (err) {
-    addLog(`✗ ${t('step3.reportStartException', { message: err.message })}`)
+    addLog(`✗ ${t('step3.reportStartException', {
+      message: formatApiError({
+        err,
+        t,
+        resolveBaseURL,
+        locationOrigin: typeof window !== 'undefined' ? window.location.origin : '',
+      }),
+    })}`)
     isGeneratingReport.value = false
   }
 }
