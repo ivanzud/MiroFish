@@ -2,15 +2,18 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-12T03:14:21.905757+00:00`
-- Issues: `95` total (`open=45`, `closed=50`)
+- Captured: `2026-03-12T03:21:56.352214+00:00`
+- Issues: `96` total (`open=46`, `closed=50`)
 - Pull requests: `54` total (`open=40`, `closed=14`)
 - Mirrored in `origin`: `54` of `54` PR refs
-- Mirrored in `ivanzud/MiroFish`: `95` of `95` issues
+- Mirrored in `ivanzud/MiroFish`: `96` of `96` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
 ## Recently Updated Issues
 
+- #159 [open, mirror=#97] 太消耗zep了，为啥不考虑自建库呢？ (no labels)
+  - local coverage [tracked]: Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.
+  - zep的额度太低了，要真正进行分析，需要大量的Episode。能否考虑基于其他开源方案，重写zep部分？
 - #158 [open, mirror=#95] Are there any predictions that have been verified by subsequent events? (question)
   - local coverage [partial]: README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and exported Step 4 Markdown now embeds the report/simulation/graph references directly in the file header. Users can export the Markdown report directly from both Step 4 and the saved-history modal, or reuse the files under `backend/uploads/reports/<report_id>/`, then compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.
   - Awesome idea! I am wondering are there any predictions that have been verified by subsequent events?
@@ -41,9 +44,6 @@
 - #146 [open, mirror=#88] [Feature Request] Add Husky for Git Hook Automated Checks (enhancement)
   - local coverage [covered]: The repo now ships an opt-in, repo-native git hook workflow: `.githooks/pre-commit` runs the shared fast validation bundle, `.githooks/pre-push` runs the full validation bundle, and `npm run hooks:install` enables them without introducing a mandatory Husky/Node-only hook dependency.
   - Background The current project lacks automated validation before code commits, which may lead to the following issues: 1. Committing non-compliant code (e.g., syntax errors, messy formatting); 2. Inconsistent commit messages, which is not conducive to subsequent maintenance and version tracking; 3. Inefficiency in team collaboration due to the need for manual reminders of specifications. Solution…
-- #145 [open, mirror=#2] 知识图谱中存在重复实体节点 (no labels)
-  - local coverage [partial]: Repo-native partial mitigations are now landed locally across simulation inputs, backend graph/report/search/statistics/detail surfaces, raw graph introspection, node-edge introspection, textual tool output, both shipped graph renderers, and the visible frontend graph counters/logs: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `ZepEntityReader.get_entity_with_context()` now merges alias-linked relations and related nodes for the entity-detail API, `backend/app/services/graph_builder.py` now collapses the same conservative alias pairs when serving `/api/graph/data/<graph_id>` and remaps duplicate edges to the retained node UUID, `backend/app/services/zep_tools.py` now collapses those aliases when building typed entity lists, raw node/edge introspection payloads, Panorama output, InsightForge entity/relationship summaries, QuickSearch/general search results, graph statistics, node-edge lookups, entity summaries including relations attached only to alias UUIDs, and `NodeInfo.to_text()` output, while preserving merged `alias_names` metadata so callers and downstream prompts can still see which labels were folded together. `frontend/src/views/processGraphData.js` and the shared `frontend/src/components/GraphPanel.vue` renderer now both collapse them while rendering graph data, the Process plus GraphPanel node detail drawers expose the folded non-canonical aliases via `frontend/src/components/graphAliasDetails.js`, and `frontend/src/components/graphPanelData.js` now drives deduplicated Step 1 / Process counters plus MainView refresh logs so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear twice in the graph or its visible counts. Full graph-level persisted deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.
-  - ## 问题描述 在使用 MiroFish 构建知识图谱时，Zep 会将同一现实实体识别为多个不同节点。 例如输入包含"特朗普"相关内容的文本后，图谱中会同时出现"特朗普"和 "美国总统特朗普"两个独立节点，它们各自有独立的边和关系。 这会导致： - 图谱中同一实体的信息被分散到多个节点上 - 后续的模拟推演基于不完整的实体关系进行，影响准确性 - 图谱可视化时出现冗余节点，影响可读性 ## 复现步骤 1. 准备一段包含同一人物/组织不同称呼的背景文本 2. 通过前端正常流程构建知识图谱 3. 查看生成的图谱，可以看到同一实体被拆分为多个节点 ## 截图 <img width="675" height="399" alt="Image" src="https://github.com/user-attachments/assets/593f4188-e766-46b3-9b88-25486…
 
 ## Recently Updated Pull Requests
 

@@ -441,6 +441,30 @@ def attach_local_coverage_fields(
     return enriched
 
 
+def attach_pr_review_fields(
+    item: dict[str, object],
+    local_coverage: dict[str, object] | None,
+) -> dict[str, object]:
+    enriched = dict(item)
+    if local_coverage:
+        enriched["local_review"] = {
+            "status": str(local_coverage.get("status") or "covered"),
+            "summary": str(local_coverage.get("summary") or "covered locally on this branch"),
+            "local_refs": list(local_coverage.get("local_refs") or []),
+            "validation": list(local_coverage.get("validation") or []),
+            "notes": local_coverage.get("notes"),
+        }
+    else:
+        enriched["local_review"] = {
+            "status": "unreviewed",
+            "summary": str(item.get("body_excerpt") or ""),
+            "local_refs": [],
+            "validation": [],
+            "notes": None,
+        }
+    return enriched
+
+
 def compact_issue(
     issue: dict[str, object],
     coverage_map: dict[int, dict[str, object]] | None = None,
@@ -793,7 +817,10 @@ def compact_pr(
         "mirror_ref": fork_mirror_ref,
     }
     local_coverage = (coverage_map or {}).get(number)
-    return attach_local_coverage_fields(compacted, local_coverage)
+    return attach_pr_review_fields(
+        attach_local_coverage_fields(compacted, local_coverage),
+        local_coverage,
+    )
 
 
 def compact_pull_requests(
@@ -900,6 +927,7 @@ def write_summary(
 def attach_local_coverage(
     items: list[dict[str, Any]],
     coverage_map: dict[int, dict[str, object]] | None,
+    item_type: str = "issue",
 ) -> list[dict[str, Any]]:
     attached: list[dict[str, Any]] = []
     for item in items:
@@ -911,7 +939,10 @@ def attach_local_coverage(
             continue
         enriched = dict(item)
         local_coverage = (coverage_map or {}).get(number)
-        attached.append(attach_local_coverage_fields(enriched, local_coverage))
+        enriched = attach_local_coverage_fields(enriched, local_coverage)
+        if item_type == "pull_request":
+            enriched = attach_pr_review_fields(enriched, local_coverage)
+        attached.append(enriched)
     return attached
 
 
@@ -970,8 +1001,8 @@ def try_reuse_cached_snapshot(
     captured_at = cached_payload.get("captured_at") or cached_payload.get("generated_at")
     if not isinstance(issues, list) or not isinstance(prs, list):
         return False
-    issues = attach_local_coverage(issues, issue_coverage_map)
-    prs = attach_local_coverage(prs, pr_coverage_map)
+    issues = attach_local_coverage(issues, issue_coverage_map, item_type="issue")
+    prs = attach_local_coverage(prs, pr_coverage_map, item_type="pull_request")
     refreshed_payload = dict(cached_payload)
     refreshed_payload["issues"] = issues
     refreshed_payload["pull_requests"] = prs

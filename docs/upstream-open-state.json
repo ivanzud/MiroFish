@@ -1,12 +1,12 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-12T03:14:11.478972+00:00",
-  "generated_at": "2026-03-12T03:14:11.478972+00:00",
+  "captured_at": "2026-03-12T03:21:46.315767+00:00",
+  "generated_at": "2026-03-12T03:21:46.315767+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
-      "open": 45
+      "open": 46
     },
     "pull_requests": {
       "open": 40
@@ -16,11 +16,48 @@
       "not_mirrored": 0
     },
     "mirrored_issues": {
-      "mirrored": 45,
+      "mirrored": 46,
       "not_mirrored": 0
     }
   },
   "issues": [
+    {
+      "number": 159,
+      "title": "太消耗zep了，为啥不考虑自建库呢？",
+      "url": "https://github.com/666ghj/MiroFish/issues/159",
+      "state": "open",
+      "created_at": "2026-03-12T03:20:17Z",
+      "updated_at": "2026-03-12T03:20:17Z",
+      "closed_at": null,
+      "labels": [],
+      "author": "codetsang",
+      "body_excerpt": "zep的额度太低了，要真正进行分析，需要大量的Episode。能否考虑基于其他开源方案，重写zep部分？",
+      "comment_count": 0,
+      "recent_comments": [],
+      "local_coverage": {
+        "number": 159,
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "docs/upstream-triage.md",
+          "https://github.com/ivanzud/MiroFish/issues/97"
+        ],
+        "validation": [
+          "tracking only"
+        ],
+        "notes": "Mirrored into fork issue #97 on March 12, 2026. This request overlaps the existing non-Zep backend and self-hosted graph follow-ups from upstream issues #55, #76, #106, and #156."
+      },
+      "local_status": "tracked",
+      "local_summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+      "triage_status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+      "coverage_status": "tracked",
+      "coverage_summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 97,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/97"
+    },
     {
       "number": 158,
       "title": "Are there any predictions that have been verified by subsequent events?",
@@ -2193,12 +2230,12 @@
       "url": "https://github.com/666ghj/MiroFish/pull/144",
       "state": "open",
       "created_at": "2026-03-11T14:39:08Z",
-      "updated_at": "2026-03-12T02:56:41Z",
+      "updated_at": "2026-03-12T03:17:00Z",
       "closed_at": null,
       "merged_at": null,
       "head": "feat/local-knowledge-graph",
       "head_ref_name": "feat/local-knowledge-graph",
-      "head_sha": "fd37d451cb41282163fe945ab0be5d2816987329",
+      "head_sha": "c3953e455227f5bc1ead6c89bb9c13aa49812d3b",
       "head_repo": "huamingjie0815/MiroFish",
       "head_clone_url": "https://github.com/huamingjie0815/MiroFish.git",
       "base": "main",
@@ -2237,7 +2274,20 @@
       "triage_status": "tracked",
       "summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
       "coverage_status": "tracked",
-      "coverage_summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage."
+      "coverage_summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
+      "local_review": {
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "origin/mirror/upstream-pr-144"
+        ],
+        "validation": [
+          "triage diff review",
+          "git diff --stat HEAD...upstream/pr-144"
+        ],
+        "notes": null
+      }
     },
     {
       "number": 152,
@@ -2294,7 +2344,26 @@
       "triage_status": "landed",
       "summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema."
+      "coverage_summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
+        "local_refs": [
+          "backend/app/services/ontology_generator.py",
+          "backend/tests/test_ontology_generator.py",
+          "backend/app/services/graph_builder.py",
+          "backend/tests/test_graph_builder.py",
+          "origin/mirror/upstream-pr-152",
+          ".beads/issues.jsonl"
+        ],
+        "validation": [
+          "cd backend && uv run pytest -q tests/test_ontology_generator.py",
+          "python3 -m compileall backend/app/services/ontology_generator.py backend/tests/test_ontology_generator.py",
+          "cd backend && uv run pytest -q tests/test_graph_builder.py",
+          "python3 -m compileall backend/app/services/graph_builder.py"
+        ],
+        "notes": null
+      }
     },
     {
       "number": 155,
@@ -2348,7 +2417,23 @@
       "triage_status": "tracked",
       "summary": "Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work.",
       "coverage_status": "tracked",
-      "coverage_summary": "Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work."
+      "coverage_summary": "Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work.",
+      "local_review": {
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "origin/mirror/upstream-pr-155",
+          "docs/upstream-triage.md",
+          "scripts/sync_upstream_github.py",
+          "tests/test_sync_upstream_github.py"
+        ],
+        "validation": [
+          "git diff --stat upstream/main...origin/mirror/upstream-pr-155",
+          "python3 -m unittest tests.test_sync_upstream_github"
+        ],
+        "notes": null
+      }
     },
     {
       "number": 151,
@@ -2402,7 +2487,23 @@
       "triage_status": "landed",
       "summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151."
+      "coverage_summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.",
+        "local_refs": [
+          "backend/app/api/simulation.py",
+          "backend/app/services/simulation_manager.py",
+          "backend/tests/test_simulation_service_i18n.py",
+          "backend/tests/test_simulation_api_i18n.py",
+          "origin/mirror/upstream-pr-151"
+        ],
+        "validation": [
+          "cd backend && uv run pytest -q tests/test_simulation_service_i18n.py tests/test_simulation_api_i18n.py",
+          "python3 -m compileall backend/app/services/simulation_manager.py backend/app/api/simulation.py"
+        ],
+        "notes": null
+      }
     },
     {
       "number": 147,
@@ -2458,7 +2559,24 @@
       "triage_status": "partial",
       "summary": "Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets.",
       "coverage_status": "partial",
-      "coverage_summary": "Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets."
+      "coverage_summary": "Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets.",
+      "local_review": {
+        "status": "partial",
+        "summary": "Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets.",
+        "local_refs": [
+          "README.md",
+          "README-EN.md",
+          "README-JA.md",
+          "README-KO.md",
+          "README-RU.md",
+          "origin/mirror/upstream-pr-147"
+        ],
+        "validation": [
+          "documentation review",
+          "git diff --stat HEAD..mirror/upstream-pr-147"
+        ],
+        "notes": null
+      }
     },
     {
       "number": 141,
@@ -2510,7 +2628,20 @@
       "triage_status": "not_safe",
       "summary": "Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.",
       "coverage_status": "not_safe",
-      "coverage_summary": "Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge."
+      "coverage_summary": "Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.",
+      "local_review": {
+        "status": "not_safe",
+        "summary": "Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.",
+        "local_refs": [
+          "origin/mirror/upstream-pr-141",
+          ".beads/issues.jsonl"
+        ],
+        "validation": [
+          "triage diff review",
+          "git diff --stat HEAD..upstream/pr/141"
+        ],
+        "notes": null
+      }
     },
     {
       "number": 143,
@@ -2565,7 +2696,23 @@
       "triage_status": "landed",
       "summary": "Landed locally as a repo-native docs cleanup: the Shanda logo alt text now uses the correct URL-encoded `666ghj%2FMiroFish` slug across all README variants, not just the primary Chinese README.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally as a repo-native docs cleanup: the Shanda logo alt text now uses the correct URL-encoded `666ghj%2FMiroFish` slug across all README variants, not just the primary Chinese README."
+      "coverage_summary": "Landed locally as a repo-native docs cleanup: the Shanda logo alt text now uses the correct URL-encoded `666ghj%2FMiroFish` slug across all README variants, not just the primary Chinese README.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally as a repo-native docs cleanup: the Shanda logo alt text now uses the correct URL-encoded `666ghj%2FMiroFish` slug across all README variants, not just the primary Chinese README.",
+        "local_refs": [
+          "README.md",
+          "README-EN.md",
+          "README-JA.md",
+          "README-KO.md",
+          "origin/mirror/upstream-pr-143"
+        ],
+        "validation": [
+          "documentation review",
+          "rg -n \"666ghj%2MiroFish|666ghj%2FMiroFish\" README.md README-EN.md README-JA.md README-KO.md"
+        ],
+        "notes": null
+      }
     },
     {
       "number": 105,
@@ -2624,7 +2771,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: backend security/config hardening now includes env-driven CORS controls with a localhost-only default allowlist, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: backend security/config hardening now includes env-driven CORS controls with a localhost-only default allowlist, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior."
+      "coverage_summary": "Landed locally: backend security/config hardening now includes env-driven CORS controls with a localhost-only default allowlist, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: backend security/config hardening now includes env-driven CORS controls with a localhost-only default allowlist, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 132,
@@ -2668,7 +2822,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: README architecture overview.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: README architecture overview."
+      "coverage_summary": "Landed locally: README architecture overview.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: README architecture overview.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 131,
@@ -2712,7 +2873,14 @@
       "triage_status": "landed",
       "summary": "Safe subset landed locally: transient Zep failures now retry with bounded backoff.",
       "coverage_status": "landed",
-      "coverage_summary": "Safe subset landed locally: transient Zep failures now retry with bounded backoff."
+      "coverage_summary": "Safe subset landed locally: transient Zep failures now retry with bounded backoff.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Safe subset landed locally: transient Zep failures now retry with bounded backoff.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 130,
@@ -2756,7 +2924,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: `CONTRIBUTING.md`.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: `CONTRIBUTING.md`."
+      "coverage_summary": "Landed locally: `CONTRIBUTING.md`.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: `CONTRIBUTING.md`.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 129,
@@ -2800,7 +2975,14 @@
       "triage_status": "landed",
       "summary": "Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning.",
       "coverage_status": "landed",
-      "coverage_summary": "Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning."
+      "coverage_summary": "Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 126,
@@ -2844,7 +3026,14 @@
       "triage_status": "landed",
       "summary": "Safe subset landed locally for structured config validation and non-sensitive config summaries.",
       "coverage_status": "landed",
-      "coverage_summary": "Safe subset landed locally for structured config validation and non-sensitive config summaries."
+      "coverage_summary": "Safe subset landed locally for structured config validation and non-sensitive config summaries.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Safe subset landed locally for structured config validation and non-sensitive config summaries.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 125,
@@ -2888,7 +3077,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: improved new-project network error diagnostics in the frontend.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: improved new-project network error diagnostics in the frontend."
+      "coverage_summary": "Landed locally: improved new-project network error diagnostics in the frontend.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: improved new-project network error diagnostics in the frontend.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 124,
@@ -2932,7 +3128,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: robust JSON extraction for mixed LLM responses.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: robust JSON extraction for mixed LLM responses."
+      "coverage_summary": "Landed locally: robust JSON extraction for mixed LLM responses.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: robust JSON extraction for mixed LLM responses.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 122,
@@ -2976,7 +3179,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: removed `response_format={type: json_object}` from `chat_json()` for LM Studio and Ollama compatibility.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: removed `response_format={type: json_object}` from `chat_json()` for LM Studio and Ollama compatibility."
+      "coverage_summary": "Landed locally: removed `response_format={type: json_object}` from `chat_json()` for LM Studio and Ollama compatibility.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: removed `response_format={type: json_object}` from `chat_json()` for LM Studio and Ollama compatibility.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 119,
@@ -3064,7 +3274,41 @@
       "triage_status": "partial",
       "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, browser-language-aware first-run locale bootstrap, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, English-localized ReportAgent tool descriptions and parameter help, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
       "coverage_status": "partial",
-      "coverage_summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, browser-language-aware first-run locale bootstrap, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, English-localized ReportAgent tool descriptions and parameter help, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge."
+      "coverage_summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, browser-language-aware first-run locale bootstrap, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, English-localized ReportAgent tool descriptions and parameter help, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
+      "local_review": {
+        "status": "partial",
+        "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, browser-language-aware first-run locale bootstrap, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, English-localized ReportAgent tool descriptions and parameter help, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
+        "local_refs": [
+          "frontend/src/views/MainView.vue",
+          "frontend/src/views/mainViewLogMessages.js",
+          "backend/app/services/graph_builder.py",
+          "frontend/src/components/Step4Report.vue",
+          "frontend/src/components/reportParsers.js",
+          "backend/app/services/report_agent.py",
+          "backend/app/services/zep_tools.py",
+          "backend/app/services/oasis_profile_generator.py",
+          "frontend/src/i18n/index.js",
+          "frontend/src/i18n/locales/en.js",
+          "frontend/src/i18n/locales/zh.js",
+          "backend/tests/test_graph_builder.py",
+          "backend/tests/test_report_agent.py",
+          "backend/tests/test_openai_compat_services.py",
+          "frontend/tests/i18n.test.mjs",
+          "frontend/tests/mainViewLogMessages.test.mjs",
+          "frontend/tests/reportParsers.test.mjs",
+          "backend/tests/test_zep_tools_i18n.py"
+        ],
+        "validation": [
+          "uv run --project backend pytest -q backend/tests/test_graph_builder.py backend/tests/test_graph_upload_api.py",
+          "uv run --project backend pytest -q backend/tests/test_report_agent.py",
+          "uv run --project backend pytest -q backend/tests/test_openai_compat_services.py",
+          "uv run --project backend pytest -q backend/tests/test_zep_tools_i18n.py",
+          "scripts/test_backend_lite.sh",
+          "frontend: npm test",
+          "frontend: npm run build"
+        ],
+        "notes": null
+      }
     },
     {
       "number": 118,
@@ -3109,7 +3353,14 @@
       "triage_status": "not_safe",
       "summary": "Not safe to cherry-pick: RAGflow support threads a second graph backend through core graph/simulation paths without the targeted regression coverage or rebasing needed on top of current local changes.",
       "coverage_status": "not_safe",
-      "coverage_summary": "Not safe to cherry-pick: RAGflow support threads a second graph backend through core graph/simulation paths without the targeted regression coverage or rebasing needed on top of current local changes."
+      "coverage_summary": "Not safe to cherry-pick: RAGflow support threads a second graph backend through core graph/simulation paths without the targeted regression coverage or rebasing needed on top of current local changes.",
+      "local_review": {
+        "status": "not_safe",
+        "summary": "Not safe to cherry-pick: RAGflow support threads a second graph backend through core graph/simulation paths without the targeted regression coverage or rebasing needed on top of current local changes.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 116,
@@ -3152,7 +3403,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: GitHub Actions dependency upgrades.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: GitHub Actions dependency upgrades."
+      "coverage_summary": "Landed locally: GitHub Actions dependency upgrades.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: GitHub Actions dependency upgrades.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 115,
@@ -3195,7 +3453,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: SPDX license string metadata cleanup.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: SPDX license string metadata cleanup."
+      "coverage_summary": "Landed locally: SPDX license string metadata cleanup.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: SPDX license string metadata cleanup.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 114,
@@ -3238,7 +3503,14 @@
       "triage_status": "superseded",
       "summary": "Superseded locally by the current frontend API client, which already falls back to the runtime origin and supports custom base URLs.",
       "coverage_status": "superseded",
-      "coverage_summary": "Superseded locally by the current frontend API client, which already falls back to the runtime origin and supports custom base URLs."
+      "coverage_summary": "Superseded locally by the current frontend API client, which already falls back to the runtime origin and supports custom base URLs.",
+      "local_review": {
+        "status": "superseded",
+        "summary": "Superseded locally by the current frontend API client, which already falls back to the runtime origin and supports custom base URLs.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 113,
@@ -3282,7 +3554,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: Japanese README added and cross-links normalized.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: Japanese README added and cross-links normalized."
+      "coverage_summary": "Landed locally: Japanese README added and cross-links normalized.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: Japanese README added and cross-links normalized.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 112,
@@ -3326,7 +3605,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: Korean README added and cross-links normalized.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: Korean README added and cross-links normalized."
+      "coverage_summary": "Landed locally: Korean README added and cross-links normalized.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: Korean README added and cross-links normalized.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 72,
@@ -3391,7 +3677,14 @@
       "triage_status": "superseded",
       "summary": "Superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`.",
       "coverage_status": "superseded",
-      "coverage_summary": "Superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`."
+      "coverage_summary": "Superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`.",
+      "local_review": {
+        "status": "superseded",
+        "summary": "Superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 108,
@@ -3435,7 +3728,14 @@
       "triage_status": "not_safe",
       "summary": "Not safe to cherry-pick: the Windows packaging flow targets the wrong runtime entrypoints, serves the frontend in dev mode, and rebundles already-landed workflow changes.",
       "coverage_status": "not_safe",
-      "coverage_summary": "Not safe to cherry-pick: the Windows packaging flow targets the wrong runtime entrypoints, serves the frontend in dev mode, and rebundles already-landed workflow changes."
+      "coverage_summary": "Not safe to cherry-pick: the Windows packaging flow targets the wrong runtime entrypoints, serves the frontend in dev mode, and rebundles already-landed workflow changes.",
+      "local_review": {
+        "status": "not_safe",
+        "summary": "Not safe to cherry-pick: the Windows packaging flow targets the wrong runtime entrypoints, serves the frontend in dev mode, and rebundles already-landed workflow changes.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 104,
@@ -3479,7 +3779,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: Vite dev proxy target is configurable via `VITE_API_BASE_URL`.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: Vite dev proxy target is configurable via `VITE_API_BASE_URL`."
+      "coverage_summary": "Landed locally: Vite dev proxy target is configurable via `VITE_API_BASE_URL`.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: Vite dev proxy target is configurable via `VITE_API_BASE_URL`.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 103,
@@ -3523,7 +3830,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: Docker workflow now builds ARM64 images and carries the related cache/buildx improvements.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: Docker workflow now builds ARM64 images and carries the related cache/buildx improvements."
+      "coverage_summary": "Landed locally: Docker workflow now builds ARM64 images and carries the related cache/buildx improvements.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: Docker workflow now builds ARM64 images and carries the related cache/buildx improvements.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 102,
@@ -3567,7 +3881,14 @@
       "triage_status": "superseded",
       "summary": "Superseded locally by the landed multi-platform Docker workflow that already builds `linux/amd64` and `linux/arm64` images.",
       "coverage_status": "superseded",
-      "coverage_summary": "Superseded locally by the landed multi-platform Docker workflow that already builds `linux/amd64` and `linux/arm64` images."
+      "coverage_summary": "Superseded locally by the landed multi-platform Docker workflow that already builds `linux/amd64` and `linux/arm64` images.",
+      "local_review": {
+        "status": "superseded",
+        "summary": "Superseded locally by the landed multi-platform Docker workflow that already builds `linux/amd64` and `linux/arm64` images.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 101,
@@ -3611,7 +3932,14 @@
       "triage_status": "superseded",
       "summary": "Superseded locally: the useful JSON-cleanup intent is already covered by the current LLM payload extraction hardening, and the branch predates substantial newer backend/frontend work.",
       "coverage_status": "superseded",
-      "coverage_summary": "Superseded locally: the useful JSON-cleanup intent is already covered by the current LLM payload extraction hardening, and the branch predates substantial newer backend/frontend work."
+      "coverage_summary": "Superseded locally: the useful JSON-cleanup intent is already covered by the current LLM payload extraction hardening, and the branch predates substantial newer backend/frontend work.",
+      "local_review": {
+        "status": "superseded",
+        "summary": "Superseded locally: the useful JSON-cleanup intent is already covered by the current LLM payload extraction hardening, and the branch predates substantial newer backend/frontend work.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 100,
@@ -3655,7 +3983,14 @@
       "triage_status": "superseded",
       "summary": "Superseded locally by the shared frontend API base-url resolver, which already uses runtime-origin fallback and repo-specific localhost handling.",
       "coverage_status": "superseded",
-      "coverage_summary": "Superseded locally by the shared frontend API base-url resolver, which already uses runtime-origin fallback and repo-specific localhost handling."
+      "coverage_summary": "Superseded locally by the shared frontend API base-url resolver, which already uses runtime-origin fallback and repo-specific localhost handling.",
+      "local_review": {
+        "status": "superseded",
+        "summary": "Superseded locally by the shared frontend API base-url resolver, which already uses runtime-origin fallback and repo-specific localhost handling.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 87,
@@ -3698,7 +4033,14 @@
       "triage_status": "superseded",
       "summary": "Superseded locally by the broader GitHub Actions upgrade sweep from upstream PR #116.",
       "coverage_status": "superseded",
-      "coverage_summary": "Superseded locally by the broader GitHub Actions upgrade sweep from upstream PR #116."
+      "coverage_summary": "Superseded locally by the broader GitHub Actions upgrade sweep from upstream PR #116.",
+      "local_review": {
+        "status": "superseded",
+        "summary": "Superseded locally by the broader GitHub Actions upgrade sweep from upstream PR #116.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 86,
@@ -3741,7 +4083,14 @@
       "triage_status": "superseded",
       "summary": "Superseded locally by the newer workflow updates already carried on this branch, including the later ARM64/cache improvements.",
       "coverage_status": "superseded",
-      "coverage_summary": "Superseded locally by the newer workflow updates already carried on this branch, including the later ARM64/cache improvements."
+      "coverage_summary": "Superseded locally by the newer workflow updates already carried on this branch, including the later ARM64/cache improvements.",
+      "local_review": {
+        "status": "superseded",
+        "summary": "Superseded locally by the newer workflow updates already carried on this branch, including the later ARM64/cache improvements.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 82,
@@ -3784,7 +4133,14 @@
       "triage_status": "covered",
       "summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies, and the remaining optional simulation lock now resolves `pillow==10.4.0`.",
       "coverage_status": "covered",
-      "coverage_summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies, and the remaining optional simulation lock now resolves `pillow==10.4.0`."
+      "coverage_summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies, and the remaining optional simulation lock now resolves `pillow==10.4.0`.",
+      "local_review": {
+        "status": "covered",
+        "summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies, and the remaining optional simulation lock now resolves `pillow==10.4.0`.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 81,
@@ -3828,7 +4184,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: frontend API timeout is configurable for slow local and OpenAI-compatible backends.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: frontend API timeout is configurable for slow local and OpenAI-compatible backends."
+      "coverage_summary": "Landed locally: frontend API timeout is configurable for slow local and OpenAI-compatible backends.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: frontend API timeout is configurable for slow local and OpenAI-compatible backends.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 74,
@@ -3871,7 +4234,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: bare `except:` clauses in the reviewed JSON/simulation paths were narrowed to `except Exception:`.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: bare `except:` clauses in the reviewed JSON/simulation paths were narrowed to `except Exception:`."
+      "coverage_summary": "Landed locally: bare `except:` clauses in the reviewed JSON/simulation paths were narrowed to `except Exception:`.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: bare `except:` clauses in the reviewed JSON/simulation paths were narrowed to `except Exception:`.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 73,
@@ -3915,7 +4285,14 @@
       "triage_status": "landed",
       "summary": "Landed locally: malformed ontology entity and edge items are sanitized before fallback injection.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: malformed ontology entity and edge items are sanitized before fallback injection."
+      "coverage_summary": "Landed locally: malformed ontology entity and edge items are sanitized before fallback injection.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: malformed ontology entity and edge items are sanitized before fallback injection.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 70,
@@ -3967,7 +4344,14 @@
       "triage_status": "not_safe",
       "summary": "Not safe to cherry-pick: the Windows installer flow assumes a repo topology that does not match the current `run.py` plus built-frontend layout.",
       "coverage_status": "not_safe",
-      "coverage_summary": "Not safe to cherry-pick: the Windows installer flow assumes a repo topology that does not match the current `run.py` plus built-frontend layout."
+      "coverage_summary": "Not safe to cherry-pick: the Windows installer flow assumes a repo topology that does not match the current `run.py` plus built-frontend layout.",
+      "local_review": {
+        "status": "not_safe",
+        "summary": "Not safe to cherry-pick: the Windows installer flow assumes a repo topology that does not match the current `run.py` plus built-frontend layout.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 38,
@@ -4023,7 +4407,14 @@
       "triage_status": "not_safe",
       "summary": "Not safe to cherry-pick: it expands the backend API surface to Anthropic-specific protocol work while this branch is intentionally standardizing on OpenAI-compatible gateways.",
       "coverage_status": "not_safe",
-      "coverage_summary": "Not safe to cherry-pick: it expands the backend API surface to Anthropic-specific protocol work while this branch is intentionally standardizing on OpenAI-compatible gateways."
+      "coverage_summary": "Not safe to cherry-pick: it expands the backend API surface to Anthropic-specific protocol work while this branch is intentionally standardizing on OpenAI-compatible gateways.",
+      "local_review": {
+        "status": "not_safe",
+        "summary": "Not safe to cherry-pick: it expands the backend API surface to Anthropic-specific protocol work while this branch is intentionally standardizing on OpenAI-compatible gateways.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 49,
@@ -4064,7 +4455,14 @@
       "triage_status": "not_safe",
       "summary": "Not safe to cherry-pick: it introduces a large local graph backend without targeted regression coverage and is superseded conceptually by the broader backend-abstraction follow-up.",
       "coverage_status": "not_safe",
-      "coverage_summary": "Not safe to cherry-pick: it introduces a large local graph backend without targeted regression coverage and is superseded conceptually by the broader backend-abstraction follow-up."
+      "coverage_summary": "Not safe to cherry-pick: it introduces a large local graph backend without targeted regression coverage and is superseded conceptually by the broader backend-abstraction follow-up.",
+      "local_review": {
+        "status": "not_safe",
+        "summary": "Not safe to cherry-pick: it introduces a large local graph backend without targeted regression coverage and is superseded conceptually by the broader backend-abstraction follow-up.",
+        "local_refs": [],
+        "validation": [],
+        "notes": null
+      }
     },
     {
       "number": 15,
@@ -4111,7 +4509,18 @@
       "triage_status": "landed",
       "summary": "Landed locally: Step 3 now surfaces failed simulation status instead of polling forever.",
       "coverage_status": "landed",
-      "coverage_summary": "Landed locally: Step 3 now surfaces failed simulation status instead of polling forever."
+      "coverage_summary": "Landed locally: Step 3 now surfaces failed simulation status instead of polling forever.",
+      "local_review": {
+        "status": "landed",
+        "summary": "Landed locally: Step 3 now surfaces failed simulation status instead of polling forever.",
+        "local_refs": [
+          "frontend/src/components/Step3Simulation.vue"
+        ],
+        "validation": [
+          "frontend: npm run build"
+        ],
+        "notes": null
+      }
     }
   ],
   "fork_remote": "origin",

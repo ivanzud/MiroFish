@@ -1,7 +1,21 @@
 {
   "repo": "666ghj/MiroFish",
-  "captured_at": "2026-03-12T02:18:00Z",
+  "captured_at": "2026-03-12T03:21:23Z",
   "issues": [
+    {
+      "number": 159,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "docs/upstream-triage.md",
+        "https://github.com/ivanzud/MiroFish/issues/97"
+      ],
+      "validation": [
+        "tracking only"
+      ],
+      "notes": "Mirrored into fork issue #97 on March 12, 2026. This request overlaps the existing non-Zep backend and self-hosted graph follow-ups from upstream issues #55, #76, #106, and #156."
+    },
     {
       "number": 157,
       "status": "covered",

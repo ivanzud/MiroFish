@@ -199,6 +199,8 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(compacted["summary"], "Diagnostics landed locally")
         self.assertEqual(compacted["coverage_status"], "landed")
         self.assertEqual(compacted["coverage_summary"], "Diagnostics landed locally")
+        self.assertEqual(compacted["local_review"]["status"], "landed")
+        self.assertEqual(compacted["local_review"]["summary"], "Diagnostics landed locally")
         self.assertEqual(compacted["head_ref_name"], "fix/issue-121")
         self.assertEqual(compacted["base_ref_name"], "main")
         self.assertTrue(compacted["mirrored_to_origin"])
@@ -217,6 +219,26 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(attached[0]["summary"], "Tracked in beads")
         self.assertEqual(attached[0]["coverage_status"], "tracked")
         self.assertEqual(attached[0]["coverage_summary"], "Tracked in beads")
+
+    def test_attach_local_coverage_adds_pr_review_fields_for_pull_requests(self):
+        attached = sync_upstream_github.attach_local_coverage(
+            [{"number": 125, "title": "Improve diagnostics", "body_excerpt": "PR body"}],
+            {125: {"number": 125, "status": "landed", "summary": "Diagnostics landed locally"}},
+            item_type="pull_request",
+        )
+
+        self.assertEqual(attached[0]["local_review"]["status"], "landed")
+        self.assertEqual(attached[0]["local_review"]["summary"], "Diagnostics landed locally")
+
+    def test_attach_local_coverage_marks_unreviewed_pull_requests_without_local_map_entry(self):
+        attached = sync_upstream_github.attach_local_coverage(
+            [{"number": 144, "title": "Dual-mode knowledge graph", "body_excerpt": "PR body"}],
+            {},
+            item_type="pull_request",
+        )
+
+        self.assertEqual(attached[0]["local_review"]["status"], "unreviewed")
+        self.assertEqual(attached[0]["local_review"]["summary"], "PR body")
 
     def test_write_summary_includes_local_coverage_notes(self):
         with tempfile.TemporaryDirectory() as tmpdir:
