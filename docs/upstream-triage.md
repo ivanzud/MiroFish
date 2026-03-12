@@ -13,6 +13,10 @@ Last refreshed: `2026-03-12`
 
 ## Reviewed This Pass
 
+- Upstream issue `#9` has another repo-native partial recovery mitigation now: `frontend/src/components/Step2EnvSetup.vue` surfaces a Step 3 recovery card whenever the current simulation already has saved run state, so after fixing quota/API-key problems users can reopen the replay-only Step 3 route directly from Step 2 instead of finding the same action through the history modal first. The state mapping lives in `frontend/src/components/step2Recovery.js`.
+- Validation for this pass passed with `npm --prefix frontend test` and `npm --prefix frontend run build`.
+- Another safe-merge review after this pass still did not expose a new clean upstream PR to adopt; the remaining non-landed open PR queue is still the tracked/unsafe/superseded set already recorded below.
+
 - Upstream issue `#156` has another repo-native partial mitigation now: `backend/app/api/report.py` reuses the same structured backend config payload as the graph endpoints, so `/api/report/generate` fails fast with a non-sensitive `503` when Step 4 is impossible under a direct `OPENAI_*` / Codex-compatible setup without `ZEP_API_KEY`, instead of launching an async report task that only fails later.
 - Validation for this pass passed with `uv run --project backend pytest -q backend/tests/test_report_api_i18n.py`, `python3 -m compileall backend/app/api/report.py backend/tests/test_report_api_i18n.py`, and `bash ./scripts/test_backend_lite.sh` (`173 passed`).
 - Another safe-merge review in this pass still did not expose a new clean upstream PR to adopt; the remaining non-landed queue is still the tracked/unsafe/superseded set already recorded below.
