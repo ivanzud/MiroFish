@@ -106,6 +106,11 @@
       </div>
     </div>
 
+    <div v-if="replayNoticeKey" class="replay-notice">
+      <span class="replay-notice-label">{{ t('step3.replayOnlyLabel') }}</span>
+      <span class="replay-notice-text">{{ t(replayNoticeKey) }}</span>
+    </div>
+
     <!-- Main Content: Dual Timeline -->
     <div class="main-content-area" ref="scrollContainer">
       <!-- Timeline Header -->
@@ -325,7 +330,7 @@ import {
   getTimelinePlatformName,
 } from './simulationTimeline'
 import { mergeLiveActions } from './liveActionBuffer'
-import { shouldAutoStartSimulation } from './simulationReplay'
+import { getReplayNoticeKey, shouldAutoStartSimulation } from './simulationReplay'
 import {
   formatSimulationPidLog,
   formatSimulationRoundLog,
@@ -363,6 +368,7 @@ const allActions = ref([]) // 所有动作（增量累积）
 const actionIds = ref(new Set()) // 用于去重的动作ID集合
 const latestActionTimestamp = ref('')
 const scrollContainer = ref(null)
+const resumedExistingRun = ref(false)
 
 // Computed
 // 按时间顺序显示动作（最新的在最后面，即底部）
@@ -397,6 +403,12 @@ const waitingStatusLabel = computed(() => {
   }
   return status || t('common.none')
 })
+
+const replayNoticeKey = computed(() => getReplayNoticeKey({
+  replayOnly: props.replayOnly,
+  resumed: resumedExistingRun.value,
+  runnerStatus: runStatus.value?.runner_status,
+}))
 
 // 格式化模拟流逝时间（根据轮次和每轮分钟数计算）
 const formatElapsedTime = (currentRound) => {
@@ -434,6 +446,7 @@ const resetAllState = () => {
   startError.value = null
   isStarting.value = false
   isStopping.value = false
+  resumedExistingRun.value = false
   stopPolling()  // 停止之前可能存在的轮询
 }
 
@@ -649,6 +662,7 @@ const loadExistingRun = async () => {
     }
 
     resetAllState()
+    resumedExistingRun.value = true
     applyRunStatus(res.data)
     await fetchRunStatusDetail()
 
@@ -856,6 +870,29 @@ onUnmounted(() => {
   border-bottom: 1px solid #EAEAEA;
   z-index: 10;
   height: 64px;
+}
+
+.replay-notice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 24px;
+  border-bottom: 1px solid #EAEAEA;
+  background: linear-gradient(90deg, #FFF7E8 0%, #FFFDF8 100%);
+  color: #5C3B00;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.replay-notice-label {
+  flex: 0 0 auto;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.replay-notice-text {
+  max-width: 980px;
 }
 
 .status-group {

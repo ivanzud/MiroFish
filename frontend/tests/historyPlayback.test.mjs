@@ -7,6 +7,7 @@ import {
 } from '../src/components/historyPlayback.js'
 import {
   isReplayOnlyRoute,
+  getReplayNoticeKey,
   shouldAutoStartSimulation,
 } from '../src/components/simulationReplay.js'
 
@@ -33,4 +34,11 @@ test('simulation replay helpers block auto-start in replay-only mode', () => {
   assert.equal(shouldAutoStartSimulation({ replayOnly: true, resumed: false }), false)
   assert.equal(shouldAutoStartSimulation({ replayOnly: false, resumed: true }), false)
   assert.equal(shouldAutoStartSimulation({ replayOnly: false, resumed: false }), true)
+})
+
+test('simulation replay helpers expose visible replay limitation notices', () => {
+  assert.equal(getReplayNoticeKey({ replayOnly: false, resumed: false, runnerStatus: '' }), null)
+  assert.equal(getReplayNoticeKey({ replayOnly: true, resumed: false, runnerStatus: '' }), 'step3.replayOnlyNoRunNotice')
+  assert.equal(getReplayNoticeKey({ replayOnly: true, resumed: true, runnerStatus: 'failed' }), 'step3.replayOnlyFailedNotice')
+  assert.equal(getReplayNoticeKey({ replayOnly: true, resumed: true, runnerStatus: 'completed' }), null)
 })
