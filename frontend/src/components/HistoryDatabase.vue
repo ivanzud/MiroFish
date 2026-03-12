@@ -135,6 +135,39 @@
             <div class="modal-body">
               <!-- 模拟需求 -->
               <div class="modal-section">
+                <div class="modal-label">{{ t('history.references') }}</div>
+                <div class="history-reference-grid">
+                  <div class="history-reference-card">
+                    <div class="history-reference-heading">
+                      <span class="history-reference-label">{{ t('history.simulationIdLabel') }}</span>
+                      <button
+                        class="history-copy-btn"
+                        type="button"
+                        @click="copyHistoryReference('simulation', selectedProject.simulation_id)"
+                      >
+                        {{ copiedHistoryField === 'simulation' ? t('history.copied') : t('history.copyId') }}
+                      </button>
+                    </div>
+                    <span class="history-reference-value">{{ selectedProject.simulation_id || t('history.unknownSimulationId') }}</span>
+                  </div>
+                  <div class="history-reference-card">
+                    <div class="history-reference-heading">
+                      <span class="history-reference-label">{{ t('history.reportIdLabel') }}</span>
+                      <button
+                        class="history-copy-btn"
+                        :disabled="!selectedProject.report_id"
+                        type="button"
+                        @click="copyHistoryReference('report', selectedProject.report_id)"
+                      >
+                        {{ copiedHistoryField === 'report' ? t('history.copied') : t('history.copyId') }}
+                      </button>
+                    </div>
+                    <span class="history-reference-value">{{ selectedProject.report_id || t('step4.unavailableId') }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-section">
                 <div class="modal-label">{{ t('history.simRequirement') }}</div>
                 <div class="modal-requirement">{{ selectedProject.simulation_requirement || t('common.none') }}</div>
               </div>
@@ -213,6 +246,7 @@ import { ref, computed, onMounted, onUnmounted, onActivated, watch, nextTick } f
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { deleteSimulationHistory, getSimulationHistory } from '../api/simulation'
+import { copyText } from '../utils/clipboard'
 import { buildSimulationReplayRoute, hasReplayableSimulationState } from './historyPlayback'
 import { truncateFilename as formatHistoryFilename } from './historyFormatters'
 
@@ -228,10 +262,12 @@ const hoveringCard = ref(null)
 const historyContainer = ref(null)
 const selectedProject = ref(null)  // 当前选中的项目（用于弹窗）
 const deletingSimulationId = ref('')
+const copiedHistoryField = ref('')
 let observer = null
 let isAnimating = false  // 动画锁，防止闪烁
 let expandDebounceTimer = null  // 防抖定时器
 let pendingState = null  // 记录待执行的目标状态
+let copiedHistoryTimer = null
 
 // 卡片布局配置 - 调整为更宽的比例
 const CARDS_PER_ROW = 4
@@ -415,6 +451,28 @@ const navigateToProject = (simulation) => {
 // 关闭弹窗
 const closeModal = () => {
   selectedProject.value = null
+  copiedHistoryField.value = ''
+}
+
+const clearCopiedHistoryTimer = () => {
+  if (copiedHistoryTimer) {
+    window.clearTimeout(copiedHistoryTimer)
+    copiedHistoryTimer = null
+  }
+}
+
+const copyHistoryReference = async (field, value) => {
+  const copied = await copyText(value)
+  if (!copied) {
+    return
+  }
+
+  copiedHistoryField.value = field
+  clearCopiedHistoryTimer()
+  copiedHistoryTimer = window.setTimeout(() => {
+    copiedHistoryField.value = ''
+    copiedHistoryTimer = null
+  }, 2000)
 }
 
 const isDeletingSelectedProject = computed(
@@ -610,6 +668,7 @@ onActivated(() => {
 })
 
 onUnmounted(() => {
+  clearCopiedHistoryTimer()
   // 清理 Intersection Observer
   if (observer) {
     observer.disconnect()
@@ -1248,6 +1307,69 @@ onUnmounted(() => {
   background: #F9FAFB;
   border: 1px solid #F3F4F6;
   border-radius: 8px;
+}
+
+.history-reference-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.history-reference-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #F9FAFB;
+}
+
+.history-reference-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.history-reference-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+}
+
+.history-reference-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: #111827;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.history-copy-btn {
+  border: 1px solid #D1D5DB;
+  background: #FFFFFF;
+  color: #374151;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.history-copy-btn:hover:not(:disabled) {
+  border-color: #111827;
+  color: #111827;
+}
+
+.history-copy-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .modal-files {

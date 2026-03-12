@@ -12,11 +12,31 @@
             </div>
             <div class="report-reference-grid">
               <div class="report-reference-card">
-                <span class="report-reference-label">{{ t('step4.reportIdLabel') }}</span>
+                <div class="report-reference-heading">
+                  <span class="report-reference-label">{{ t('step4.reportIdLabel') }}</span>
+                  <button
+                    class="report-reference-copy"
+                    :disabled="!reportId"
+                    type="button"
+                    @click="copyReference('report', reportId)"
+                  >
+                    {{ copiedReferenceKey === 'report' ? t('step4.copied') : t('step4.copyId') }}
+                  </button>
+                </div>
                 <span class="report-reference-value">{{ reportId || 'REF-2024-X92' }}</span>
               </div>
               <div class="report-reference-card">
-                <span class="report-reference-label">{{ t('step4.simulationIdLabel') }}</span>
+                <div class="report-reference-heading">
+                  <span class="report-reference-label">{{ t('step4.simulationIdLabel') }}</span>
+                  <button
+                    class="report-reference-copy"
+                    :disabled="!simulationId"
+                    type="button"
+                    @click="copyReference('simulation', simulationId)"
+                  >
+                    {{ copiedReferenceKey === 'simulation' ? t('step4.copied') : t('step4.copyId') }}
+                  </button>
+                </div>
                 <span class="report-reference-value">{{ simulationId || t('step4.unavailableId') }}</span>
               </div>
             </div>
@@ -432,6 +452,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick, h, reactive } f
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { generateReport, getAgentLog, getConsoleLog, getReport } from '../api/report'
+import { copyText } from '../utils/clipboard'
 import {
   extractFinalContent,
   getInterviewAnswerForQuestion,
@@ -532,6 +553,29 @@ const leftPanel = ref(null)
 const rightPanel = ref(null)
 const logContent = ref(null)
 const showRawResult = reactive({})
+const copiedReferenceKey = ref('')
+let copiedReferenceTimer = null
+
+const clearCopiedReferenceTimer = () => {
+  if (copiedReferenceTimer) {
+    window.clearTimeout(copiedReferenceTimer)
+    copiedReferenceTimer = null
+  }
+}
+
+const copyReference = async (key, value) => {
+  const copied = await copyText(value)
+  if (!copied) {
+    return
+  }
+
+  copiedReferenceKey.value = key
+  clearCopiedReferenceTimer()
+  copiedReferenceTimer = window.setTimeout(() => {
+    copiedReferenceKey.value = ''
+    copiedReferenceTimer = null
+  }, 2000)
+}
 
 // Toggle functions
 const toggleRawResult = (timestamp, event) => {
@@ -1759,6 +1803,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  clearCopiedReferenceTimer()
   stopPolling()
 })
 
@@ -1977,12 +2022,41 @@ watch(() => props.reportId, (newId) => {
   border-radius: 10px;
 }
 
+.report-reference-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .report-reference-label {
   font-size: 11px;
   font-weight: 700;
   color: #6B7280;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.report-reference-copy {
+  border: 1px solid #D1D5DB;
+  background: #FFFFFF;
+  color: #374151;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.report-reference-copy:hover:not(:disabled) {
+  border-color: #111827;
+  color: #111827;
+}
+
+.report-reference-copy:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .report-reference-value {
