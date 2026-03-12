@@ -175,6 +175,16 @@
                     <span class="history-reference-value">{{ selectedProject.report_id || t('step4.unavailableId') }}</span>
                   </div>
                 </div>
+                <div class="history-reference-bundle-row">
+                  <button
+                    class="history-copy-btn"
+                    :disabled="!selectedProjectVerificationBundle"
+                    type="button"
+                    @click="copyHistoryReference('bundle', selectedProjectVerificationBundle)"
+                  >
+                    {{ copiedHistoryField === 'bundle' ? t('history.copied') : t('history.copyBundle') }}
+                  </button>
+                </div>
               </div>
 
               <div class="modal-section">
@@ -271,6 +281,7 @@ import { buildSimulationReplayRoute, hasReplayableSimulationState } from './hist
 import { truncateFilename as formatHistoryFilename } from './historyFormatters'
 import { triggerHistoryReportDownload } from './historyReportDownload'
 import { buildInteractionRoute } from './interactionRoute'
+import { buildVerificationReferenceBundle } from './verificationBundle'
 
 const router = useRouter()
 const route = useRoute()
@@ -290,6 +301,13 @@ let isAnimating = false  // 动画锁，防止闪烁
 let expandDebounceTimer = null  // 防抖定时器
 let pendingState = null  // 记录待执行的目标状态
 let copiedHistoryTimer = null
+const selectedProjectVerificationBundle = computed(() =>
+  buildVerificationReferenceBundle({
+    simulationId: selectedProject.value?.simulation_id,
+    reportId: selectedProject.value?.report_id,
+    timestamp: selectedProject.value?.created_at,
+  })
+)
 
 // 卡片布局配置 - 调整为更宽的比例
 const CARDS_PER_ROW = 4
@@ -1429,6 +1447,12 @@ onUnmounted(() => {
 .history-copy-btn:disabled {
   cursor: not-allowed;
   opacity: 0.45;
+}
+
+.history-reference-bundle-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }
 
 .modal-files {

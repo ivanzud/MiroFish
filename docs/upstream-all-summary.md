@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-12T03:44:53.387816+00:00`
+- Captured: `2026-03-12T03:52:08.187925+00:00`
 - Issues: `96` total (`open=46`, `closed=50`)
 - Pull requests: `54` total (`open=40`, `closed=14`)
 - Mirrored in `origin`: `54` of `54` PR refs
@@ -16,7 +16,7 @@
   - zep的额度太低了，要真正进行分析，需要大量的Episode。能否考虑基于其他开源方案，重写zep部分？
   - latest comment by `chrischeng192`: 你暂时可以看看[这里](https://github.com/666ghj/MiroFish/issues/56)
 - #158 [open, mirror=#95] Are there any predictions that have been verified by subsequent events? (question)
-  - local coverage [partial]: README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and exported Step 4 Markdown now embeds the report/simulation/graph references directly in the file header. Users can export the Markdown report directly from both Step 4 and the saved-history modal, or reuse the files under `backend/uploads/reports/<report_id>/`, then compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.
+  - local coverage [partial]: README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and both views now also copy a single structured verification bundle so users can preserve the paired references in one paste. Exported Step 4 Markdown still embeds the report/simulation/graph references directly in the file header, and users can export that Markdown from both Step 4 and the saved-history modal or reuse the files under `backend/uploads/reports/<report_id>/` for later comparison against real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.
   - Awesome idea! I am wondering are there any predictions that have been verified by subsequent events?
   - latest comment by `codetsang`: Not yet? Maybe you should give it a try and validate the results. BTW, this is a prediction tool, so there are many uncertainties involved. It should be used more as an analysis or decision-support tool rather than a strict predictor.
 - #157 [open, mirror=#96] 如何删除不想要的记录 (question)

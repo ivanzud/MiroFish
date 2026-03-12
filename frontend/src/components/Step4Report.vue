@@ -50,6 +50,16 @@
                 <span class="report-reference-value">{{ simulationId || t('step4.unavailableId') }}</span>
               </div>
             </div>
+            <div class="report-reference-bundle-row">
+              <button
+                class="report-reference-copy"
+                :disabled="!verificationBundle"
+                type="button"
+                @click="copyReference('bundle', verificationBundle)"
+              >
+                {{ copiedReferenceKey === 'bundle' ? t('step4.copied') : t('step4.copyBundle') }}
+              </button>
+            </div>
             <p class="report-reference-hint">
               {{ t('step4.referenceHint') }}
             </p>
@@ -477,6 +487,7 @@ import { copyText } from '../utils/clipboard'
 import { triggerHistoryReportDownload } from './historyReportDownload.js'
 import { buildInteractionRoute } from './interactionRoute.js'
 import { resolveReportReferenceValue } from './reportReferences.js'
+import { buildVerificationReferenceBundle } from './verificationBundle.js'
 import {
   extractFinalContent,
   getInterviewAnswerForQuestion,
@@ -501,6 +512,14 @@ const emit = defineEmits(['add-log', 'update-status'])
 const resolvedReportReference = computed(() =>
   resolveReportReferenceValue(props.reportId, t('step4.unavailableId'))
 )
+const reportTimestamp = ref('')
+const verificationBundle = computed(() =>
+  buildVerificationReferenceBundle({
+    simulationId: props.simulationId,
+    reportId: props.reportId,
+    timestamp: reportTimestamp.value,
+  })
+)
 
 // Navigation
 const goToInteraction = () => {
@@ -522,6 +541,7 @@ const syncReportState = async () => {
 
     reportStatus.value = res.data.status || null
     reportError.value = res.data.error || ''
+    reportTimestamp.value = res.data.completed_at || res.data.created_at || ''
 
     if (reportStatus.value === 'completed') {
       isComplete.value = true
@@ -1867,6 +1887,7 @@ watch(() => props.reportId, (newId) => {
     reportError.value = ''
     isRetrying.value = false
     startTime.value = null
+    reportTimestamp.value = ''
     
     startPolling()
   }
@@ -2108,6 +2129,12 @@ watch(() => props.reportId, (newId) => {
 .report-reference-copy:disabled {
   cursor: not-allowed;
   opacity: 0.45;
+}
+
+.report-reference-bundle-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: -4px 0 12px;
 }
 
 .report-reference-value {

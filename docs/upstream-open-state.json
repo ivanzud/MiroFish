@@ -1,9 +1,9 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-12T03:44:43.420050+00:00",
-  "generated_at": "2026-03-12T03:44:43.420050+00:00",
-  "refreshed_at": "2026-03-12T03:44:43.420050+00:00",
+  "captured_at": "2026-03-12T03:51:58.146914+00:00",
+  "generated_at": "2026-03-12T03:51:58.146914+00:00",
+  "refreshed_at": "2026-03-12T03:51:58.146914+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -95,7 +95,7 @@
       "local_coverage": {
         "number": 158,
         "status": "partial",
-        "summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and exported Step 4 Markdown now embeds the report/simulation/graph references directly in the file header. Users can export the Markdown report directly from both Step 4 and the saved-history modal, or reuse the files under `backend/uploads/reports/<report_id>/`, then compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
+        "summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and both views now also copy a single structured verification bundle so users can preserve the paired references in one paste. Exported Step 4 Markdown still embeds the report/simulation/graph references directly in the file header, and users can export that Markdown from both Step 4 and the saved-history modal or reuse the files under `backend/uploads/reports/<report_id>/` for later comparison against real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
         "local_refs": [
           ".beads/issues.jsonl",
           "README-EN.md",
@@ -106,9 +106,11 @@
           "frontend/src/components/HistoryDatabase.vue",
           "frontend/src/components/historyReportDownload.js",
           "frontend/src/components/Step4Report.vue",
+          "frontend/src/components/verificationBundle.js",
           "frontend/src/i18n/locales/en.js",
           "frontend/src/i18n/locales/zh.js",
           "frontend/tests/historyReportDownload.test.mjs",
+          "frontend/tests/verificationBundle.test.mjs",
           "https://github.com/ivanzud/MiroFish/issues/95"
         ],
         "validation": [
@@ -119,14 +121,14 @@
           "npm --prefix frontend run build",
           "README verification"
         ],
-        "notes": "Mirrored into fork issue #95 on March 12, 2026. The repo now documents how to preserve and revisit forecast evidence, exposes copyable report/simulation IDs in Step 4, surfaces the same references plus a direct Markdown export action in the history modal for later reuse, and makes the exported Markdown self-identifying so the verification evidence survives outside the UI. It still does not automate outcome ingestion or accuracy scoring."
+        "notes": "Mirrored into fork issue #95 on March 12, 2026. The repo now documents how to preserve and revisit forecast evidence, exposes copyable report/simulation IDs in Step 4, surfaces the same references plus a direct Markdown export action in the history modal for later reuse, adds a one-click verification bundle copy in both Step 4 and history so those references can be preserved together, and makes the exported Markdown self-identifying so the verification evidence survives outside the UI. It still does not automate outcome ingestion or accuracy scoring."
       },
       "local_status": "partial",
-      "local_summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and exported Step 4 Markdown now embeds the report/simulation/graph references directly in the file header. Users can export the Markdown report directly from both Step 4 and the saved-history modal, or reuse the files under `backend/uploads/reports/<report_id>/`, then compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
+      "local_summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and both views now also copy a single structured verification bundle so users can preserve the paired references in one paste. Exported Step 4 Markdown still embeds the report/simulation/graph references directly in the file header, and users can export that Markdown from both Step 4 and the saved-history modal or reuse the files under `backend/uploads/reports/<report_id>/` for later comparison against real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
       "triage_status": "partial",
-      "summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and exported Step 4 Markdown now embeds the report/simulation/graph references directly in the file header. Users can export the Markdown report directly from both Step 4 and the saved-history modal, or reuse the files under `backend/uploads/reports/<report_id>/`, then compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
+      "summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and both views now also copy a single structured verification bundle so users can preserve the paired references in one paste. Exported Step 4 Markdown still embeds the report/simulation/graph references directly in the file header, and users can export that Markdown from both Step 4 and the saved-history modal or reuse the files under `backend/uploads/reports/<report_id>/` for later comparison against real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
       "coverage_status": "partial",
-      "coverage_summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and exported Step 4 Markdown now embeds the report/simulation/graph references directly in the file header. Users can export the Markdown report directly from both Step 4 and the saved-history modal, or reuse the files under `backend/uploads/reports/<report_id>/`, then compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
+      "coverage_summary": "README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and both views now also copy a single structured verification bundle so users can preserve the paired references in one paste. Exported Step 4 Markdown still embeds the report/simulation/graph references directly in the file header, and users can export that Markdown from both Step 4 and the saved-history modal or reuse the files under `backend/uploads/reports/<report_id>/` for later comparison against real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 95,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/95"
