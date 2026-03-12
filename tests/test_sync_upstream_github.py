@@ -434,6 +434,14 @@ class SyncUpstreamGithubTests(unittest.TestCase):
             mocked_datetime.fromisoformat = __import__("datetime").datetime.fromisoformat
             self.assertTrue(sync_upstream_github.snapshot_is_fresh(payload, 24))
 
+    def test_snapshot_is_fresh_accepts_refreshed_at_alias(self):
+        payload = {"refreshed_at": "2026-03-11T08:30:00+00:00"}
+
+        with patch.object(sync_upstream_github, "datetime") as mocked_datetime:
+            mocked_datetime.now.return_value = __import__("datetime").datetime(2026, 3, 11, 9, 0, tzinfo=__import__("datetime").timezone.utc)
+            mocked_datetime.fromisoformat = __import__("datetime").datetime.fromisoformat
+            self.assertTrue(sync_upstream_github.snapshot_is_fresh(payload, 24))
+
     def test_normalize_excerpt_collapses_whitespace_and_truncates(self):
         excerpt = sync_upstream_github.normalize_excerpt(" line 1\n\nline\t2  " * 20, limit=30)
 
@@ -980,6 +988,8 @@ class SyncUpstreamGithubTests(unittest.TestCase):
             self.assertIn("Mirrored in `ivanzud/MiroFish`: `1` of `1` issues", summary_text)
             refreshed_payload = json.loads(output_path.read_text(encoding="utf-8"))
             self.assertEqual(refreshed_payload["mirror_issues_repo"], "ivanzud/MiroFish")
+            self.assertEqual(refreshed_payload["refreshed_at"], "2026-03-11T08:30:00+00:00")
+            self.assertNotIn("_cache_path", refreshed_payload)
             self.assertEqual(refreshed_payload["pull_requests"][0]["local_coverage"]["status"], "landed")
 
     def test_main_writes_backward_compatible_generated_at_field(self):
@@ -1065,6 +1075,7 @@ class SyncUpstreamGithubTests(unittest.TestCase):
             payload = json.loads(output_path.read_text(encoding="utf-8"))
             self.assertEqual(payload["captured_at"], "2026-03-11T09:00:00+00:00")
             self.assertEqual(payload["generated_at"], "2026-03-11T09:00:00+00:00")
+            self.assertEqual(payload["refreshed_at"], "2026-03-11T09:00:00+00:00")
             self.assertIn("2026-03-11T09:00:00+00:00", summary_path.read_text(encoding="utf-8"))
 
     def test_main_accepts_legacy_positional_repo_argument(self):
@@ -1389,6 +1400,9 @@ class SyncUpstreamGithubTests(unittest.TestCase):
             self.assertIn("reusing fresh cached snapshot", stderr.getvalue())
             self.assertIn("Reused cached snapshot", stdout.getvalue())
             self.assertIn("captured_at=2026-03-11T08:30:00+00:00", stderr.getvalue())
+            refreshed_payload = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(refreshed_payload["refreshed_at"], "2026-03-11T08:30:00+00:00")
+            self.assertNotIn("_cache_path", refreshed_payload)
 
     def test_repo_lock_rejects_overlapping_run(self):
         with tempfile.TemporaryDirectory() as tmpdir:

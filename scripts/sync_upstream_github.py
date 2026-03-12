@@ -963,8 +963,12 @@ def load_cached_snapshot(path: Path, repo: str, state: str) -> dict[str, Any] | 
     return payload
 
 
+def snapshot_timestamp(payload: dict[str, Any]) -> Any:
+    return payload.get("captured_at") or payload.get("generated_at") or payload.get("refreshed_at")
+
+
 def snapshot_is_fresh(payload: dict[str, Any], stale_after_hours: int) -> bool:
-    captured_at = payload.get("captured_at") or payload.get("generated_at")
+    captured_at = snapshot_timestamp(payload)
     if not captured_at or stale_after_hours < 0:
         return False
 
@@ -998,14 +1002,16 @@ def try_reuse_cached_snapshot(
 
     issues = cached_payload.get("issues") or []
     prs = cached_payload.get("pull_requests") or []
-    captured_at = cached_payload.get("captured_at") or cached_payload.get("generated_at")
+    captured_at = snapshot_timestamp(cached_payload)
     if not isinstance(issues, list) or not isinstance(prs, list):
         return False
     issues = attach_local_coverage(issues, issue_coverage_map, item_type="issue")
     prs = attach_local_coverage(prs, pr_coverage_map, item_type="pull_request")
     refreshed_payload = dict(cached_payload)
+    refreshed_payload.pop("_cache_path", None)
     refreshed_payload["issues"] = issues
     refreshed_payload["pull_requests"] = prs
+    refreshed_payload["refreshed_at"] = captured_at
     refreshed_payload["coverage_map_path"] = coverage_map_path
     resolved_fork_remote = fork_remote or refreshed_payload.get("fork_remote")
     resolved_mirror_issues_repo = mirror_issues_repo or refreshed_payload.get("mirror_issues_repo")
@@ -1267,6 +1273,7 @@ def main() -> int:
             "state": args.state,
             "captured_at": captured_at,
             "generated_at": captured_at,
+            "refreshed_at": captured_at,
             "coverage_map_path": str(coverage_map_path) if coverage_map_path and coverage_map_path.exists() else None,
             "counts": {
                 "issues": summarize_counts(issues),
