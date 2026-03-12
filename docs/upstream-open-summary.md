@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-12T03:29:36.604350+00:00`
+- Captured: `2026-03-12T03:32:51.309441+00:00`
 - Issues: `46` total (`open=46`, `closed=0`)
 - Pull requests: `40` total (`open=40`, `closed=0`)
 - Mirrored in `origin`: `40` of `40` PR refs
@@ -11,13 +11,14 @@
 
 ## Recently Updated Issues
 
+- #159 [open, mirror=#97] 太消耗zep了，为啥不考虑自建库呢？ (enhancement)
+  - local coverage [tracked]: Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.
+  - zep的额度太低了，要真正进行分析，需要大量的Episode。能否考虑基于其他开源方案，重写zep部分？
+  - latest comment by `chrischeng192`: 你暂时可以看看[这里](https://github.com/666ghj/MiroFish/issues/56)
 - #158 [open, mirror=#95] Are there any predictions that have been verified by subsequent events? (question)
   - local coverage [partial]: README.md and README-EN.md now document a repo-native forecast verification workflow, Step 4 surfaces both the stable `report_id` and `simulation_id` with direct copy actions, the homepage history modal keeps those same references together for later review, and exported Step 4 Markdown now embeds the report/simulation/graph references directly in the file header. Users can export the Markdown report directly from both Step 4 and the saved-history modal, or reuse the files under `backend/uploads/reports/<report_id>/`, then compare that saved evidence against later real-world outcomes. MiroFish still does not ship an automatic ground-truth ingester or scoring pipeline, so full backtesting remains tracked under beads issue `mirofish-gytl`.
   - Awesome idea! I am wondering are there any predictions that have been verified by subsequent events?
   - latest comment by `codetsang`: Not yet? Maybe you should give it a try and validate the results. BTW, this is a prediction tool, so there are many uncertainties involved. It should be used more as an analysis or decision-support tool rather than a strict predictor.
-- #159 [open, mirror=#97] 太消耗zep了，为啥不考虑自建库呢？ (enhancement)
-  - local coverage [tracked]: Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.
-  - zep的额度太低了，要真正进行分析，需要大量的Episode。能否考虑基于其他开源方案，重写zep部分？
 - #157 [open, mirror=#96] 如何删除不想要的记录 (question)
   - local coverage [covered]: Homepage history now supports repo-native deletion of unwanted local records. The backend exposes `DELETE /api/simulation/history/<simulation_id>` to remove a simulation's persisted local directory, cascade-delete its attached local reports, and prune the project metadata when no sibling simulations remain, while refusing deletion for active runs. The history modal now exposes a localized delete action that calls that endpoint directly.
   - 比如我想删除 <img width="1835" height="775" alt="Image" src="https://github.com/user-attachments/assets/12332bbc-f309-497b-a352-f0d15289042e" />这两个，怎么删除呢

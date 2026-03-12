@@ -1,8 +1,9 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-12T03:28:20.266549+00:00",
-  "generated_at": "2026-03-12T03:28:20.266549+00:00",
+  "captured_at": "2026-03-12T03:33:01.290499+00:00",
+  "generated_at": "2026-03-12T03:33:01.290499+00:00",
+  "refreshed_at": "2026-03-12T03:33:01.290499+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -23,6 +24,53 @@
     }
   },
   "issues": [
+    {
+      "number": 159,
+      "title": "太消耗zep了，为啥不考虑自建库呢？",
+      "url": "https://github.com/666ghj/MiroFish/issues/159",
+      "state": "open",
+      "created_at": "2026-03-12T03:20:17Z",
+      "updated_at": "2026-03-12T03:30:23Z",
+      "closed_at": null,
+      "labels": [
+        "enhancement"
+      ],
+      "author": "codetsang",
+      "body_excerpt": "zep的额度太低了，要真正进行分析，需要大量的Episode。能否考虑基于其他开源方案，重写zep部分？",
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "chrischeng192",
+          "created_at": "2026-03-12T03:30:23Z",
+          "updated_at": "2026-03-12T03:30:23Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/159#issuecomment-4043666300",
+          "body_excerpt": "你暂时可以看看[这里](https://github.com/666ghj/MiroFish/issues/56)"
+        }
+      ],
+      "local_coverage": {
+        "number": 159,
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "docs/upstream-triage.md",
+          "https://github.com/ivanzud/MiroFish/issues/97"
+        ],
+        "validation": [
+          "tracking only"
+        ],
+        "notes": "Mirrored into fork issue #97 on March 12, 2026. This request overlaps the existing non-Zep backend and self-hosted graph follow-ups from upstream issues #55, #76, #106, and #156."
+      },
+      "local_status": "tracked",
+      "local_summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+      "triage_status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+      "coverage_status": "tracked",
+      "coverage_summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
+      "fork_issue_mirrored": true,
+      "fork_issue_number": 97,
+      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/97"
+    },
     {
       "number": 158,
       "title": "Are there any predictions that have been verified by subsequent events?",
@@ -84,45 +132,6 @@
       "fork_issue_mirrored": true,
       "fork_issue_number": 95,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/95"
-    },
-    {
-      "number": 159,
-      "title": "太消耗zep了，为啥不考虑自建库呢？",
-      "url": "https://github.com/666ghj/MiroFish/issues/159",
-      "state": "open",
-      "created_at": "2026-03-12T03:20:17Z",
-      "updated_at": "2026-03-12T03:22:32Z",
-      "closed_at": null,
-      "labels": [
-        "enhancement"
-      ],
-      "author": "codetsang",
-      "body_excerpt": "zep的额度太低了，要真正进行分析，需要大量的Episode。能否考虑基于其他开源方案，重写zep部分？",
-      "comment_count": 0,
-      "recent_comments": [],
-      "local_coverage": {
-        "number": 159,
-        "status": "tracked",
-        "summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
-        "local_refs": [
-          ".beads/issues.jsonl",
-          "docs/upstream-triage.md",
-          "https://github.com/ivanzud/MiroFish/issues/97"
-        ],
-        "validation": [
-          "tracking only"
-        ],
-        "notes": "Mirrored into fork issue #97 on March 12, 2026. This request overlaps the existing non-Zep backend and self-hosted graph follow-ups from upstream issues #55, #76, #106, and #156."
-      },
-      "local_status": "tracked",
-      "local_summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
-      "triage_status": "tracked",
-      "summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
-      "coverage_status": "tracked",
-      "coverage_summary": "Tracked under beads issue `mirofish-zx6p`: another upstream request for a self-hosted or non-Zep graph backend is preserved locally, but implementing it safely still requires the broader graph-backend abstraction work already tracked under `mirofish-8eg` instead of wiring an ad hoc replacement into the current graph/simulation pipeline.",
-      "fork_issue_mirrored": true,
-      "fork_issue_number": 97,
-      "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/97"
     },
     {
       "number": 157,
@@ -6945,6 +6954,5 @@
     }
   ],
   "fork_remote": "origin",
-  "mirror_issues_repo": "ivanzud/MiroFish",
-  "refreshed_at": "2026-03-12T03:28:20.266549+00:00"
+  "mirror_issues_repo": "ivanzud/MiroFish"
 }
