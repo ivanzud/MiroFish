@@ -13,6 +13,11 @@ Last refreshed: `2026-03-12`
 
 ## Reviewed This Pass
 
+- Upstream intake refreshed live again on March 12, 2026 at `2026-03-12T02:53:47.440734+00:00` for the open queue and `2026-03-12T02:53:54.941693+00:00` for the full history snapshot. The machine-readable summaries remain current at `45` open issues / `40` open PRs and `95` total issues / `54` total PRs, with all `45` upstream issues mirrored into `ivanzud/MiroFish` and all `40` open PR heads still visible in `origin`.
+- Upstream issue `#158` has another repo-native verification UX refinement now: `frontend/src/components/Step4Report.vue` and `frontend/src/components/Step5Interaction.vue` no longer show a fake placeholder report ID when no real `report_id` exists, and instead reuse the localized unavailable-reference copy so users do not preserve a bogus artifact identifier while reviewing or exporting forecasts. Focused regression coverage now lives in `frontend/tests/reportReferences.test.mjs`.
+- Validation for this pass passed with `npm --prefix frontend test` and `npm --prefix frontend run build`.
+- Another safe-merge review after this pass still did not expose a new clean upstream PR to adopt; the remaining non-landed open PR queue is still the tracked/unsafe/superseded set already recorded below.
+
 - Upstream issue `#9` has another repo-native partial recovery mitigation now: `frontend/src/components/Step2EnvSetup.vue` surfaces a Step 3 recovery card whenever the current simulation already has saved run state, so after fixing quota/API-key problems users can reopen the replay-only Step 3 route directly from Step 2 instead of finding the same action through the history modal first. The state mapping lives in `frontend/src/components/step2Recovery.js`.
 - Validation for this pass passed with `npm --prefix frontend test` and `npm --prefix frontend run build`.
 - Another safe-merge review after this pass still did not expose a new clean upstream PR to adopt; the remaining non-landed open PR queue is still the tracked/unsafe/superseded set already recorded below.

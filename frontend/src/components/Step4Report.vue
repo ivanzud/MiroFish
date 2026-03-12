@@ -23,7 +23,7 @@
                     {{ copiedReferenceKey === 'report' ? t('step4.copied') : t('step4.copyId') }}
                   </button>
                 </div>
-                <span class="report-reference-value">{{ reportId || 'REF-2024-X92' }}</span>
+                <span class="report-reference-value">{{ resolvedReportReference }}</span>
               </div>
               <div class="report-reference-card">
                 <div class="report-reference-heading">
@@ -453,6 +453,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { generateReport, getAgentLog, getConsoleLog, getReport } from '../api/report'
 import { copyText } from '../utils/clipboard'
+import { resolveReportReferenceValue } from './reportReferences.js'
 import {
   extractFinalContent,
   getInterviewAnswerForQuestion,
@@ -473,6 +474,10 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['add-log', 'update-status'])
+
+const resolvedReportReference = computed(() =>
+  resolveReportReferenceValue(props.reportId, t('step4.unavailableId'))
+)
 
 // Navigation
 const goToInteraction = () => {

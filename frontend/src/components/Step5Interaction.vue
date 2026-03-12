@@ -9,7 +9,7 @@
           <div class="report-header-block">
             <div class="report-meta">
               <span class="report-tag">{{ t('step5.predictionReport') }}</span>
-              <span class="report-id">{{ t('step5.reportId', { id: reportId || 'REF-2024-X92' }) }}</span>
+              <span class="report-id">{{ t('step5.reportId', { id: resolvedReportReference }) }}</span>
             </div>
             <h1 class="main-title">{{ reportOutline.title }}</h1>
             <p class="sub-title">{{ reportOutline.summary }}</p>
@@ -421,7 +421,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { chatWithReport, getReport, getAgentLog } from '../api/report'
 import { interviewAgents, getEnvStatus, getSimulation, getSimulationProfilesRealtime } from '../api/simulation'
@@ -437,6 +437,7 @@ import {
   summarizeInterviewTimeoutBudget,
   summarizeInterviewEnvStatus,
 } from './step5Profiles'
+import { resolveReportReferenceValue } from './reportReferences.js'
 
 const props = defineProps({
   reportId: String,
@@ -445,6 +446,10 @@ const props = defineProps({
 
 const emit = defineEmits(['add-log', 'update-status'])
 const { t, locale } = useI18n()
+
+const resolvedReportReference = computed(() =>
+  resolveReportReferenceValue(props.reportId, t('step4.unavailableId'))
+)
 
 // State
 const activeTab = ref('chat')
