@@ -993,6 +993,22 @@
       ]
     },
     {
+      "number": 155,
+      "status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work.",
+      "local_refs": [
+        ".beads/issues.jsonl",
+        "origin/mirror/upstream-pr-155",
+        "docs/upstream-triage.md",
+        "scripts/sync_upstream_github.py",
+        "tests/test_sync_upstream_github.py"
+      ],
+      "validation": [
+        "git diff --stat upstream/main...origin/mirror/upstream-pr-155",
+        "python3 -m unittest tests.test_sync_upstream_github"
+      ]
+    },
+    {
       "number": 151,
       "status": "landed",
       "summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.",

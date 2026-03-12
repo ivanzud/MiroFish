@@ -489,6 +489,67 @@ class SyncUpstreamGithubTests(unittest.TestCase):
             ],
         )
 
+    def test_mirror_pull_request_refs_fetches_and_pushes_missing_pr_heads(self):
+        pull_requests = [
+            {"number": 155},
+            {"number": 151},
+        ]
+
+        with patch.object(sync_upstream_github, "run_git_command", return_value="") as mocked:
+            mirrored = sync_upstream_github.mirror_pull_request_refs(
+                "666ghj/MiroFish",
+                "origin",
+                pull_requests,
+                mirrored_pr_numbers={151},
+            )
+
+        self.assertEqual(mirrored, {151, 155})
+        self.assertEqual(
+            mocked.call_args_list[0].args[0],
+            [
+                "git",
+                "fetch",
+                "--force",
+                "https://github.com/666ghj/MiroFish.git",
+                "pull/155/head:refs/remotes/upstream-sync/pr-155",
+            ],
+        )
+        self.assertEqual(
+            mocked.call_args_list[1].args[0],
+            [
+                "git",
+                "push",
+                "origin",
+                "refs/remotes/upstream-sync/pr-155:refs/heads/mirror/upstream-pr-155",
+            ],
+        )
+        self.assertEqual(len(mocked.call_args_list), 2)
+
+    def test_mirror_pull_request_refs_warns_and_continues_when_push_fails(self):
+        pull_requests = [{"number": 155}, {"number": 156}]
+
+        with (
+            patch.object(
+                sync_upstream_github,
+                "run_git_command",
+                side_effect=[
+                    "",
+                    RuntimeError("push failed"),
+                    "",
+                    "",
+                ],
+            ),
+            patch("sys.stderr", new_callable=io.StringIO) as stderr,
+        ):
+            mirrored = sync_upstream_github.mirror_pull_request_refs(
+                "666ghj/MiroFish",
+                "origin",
+                pull_requests,
+            )
+
+        self.assertEqual(mirrored, {156})
+        self.assertIn("unable to mirror upstream PR #155", stderr.getvalue())
+
     def test_fetch_json_prefers_authenticated_gh_cli_when_no_token(self):
         with (
             patch.object(sync_upstream_github, "has_github_token", return_value=False),
@@ -1053,6 +1114,104 @@ class SyncUpstreamGithubTests(unittest.TestCase):
             self.assertEqual(result, 0)
             payload = json.loads(output_path.read_text(encoding="utf-8"))
             self.assertEqual(payload["repo"], "666ghj/MiroFish")
+
+    def test_main_mirrors_missing_pr_refs_before_compaction(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir) / "state.json"
+            summary_path = Path(tmpdir) / "summary.md"
+            pr_payload = {
+                "number": 155,
+                "title": "PR",
+                "html_url": "https://example.test/pull/155",
+                "state": "open",
+                "created_at": "2026-03-10T00:00:00Z",
+                "updated_at": "2026-03-11T00:00:00Z",
+                "closed_at": None,
+                "merged_at": None,
+                "head": {
+                    "ref": "feature",
+                    "sha": "abc123",
+                    "repo": {
+                        "full_name": "fork/repo",
+                        "clone_url": "https://example.test/fork/repo.git",
+                    },
+                },
+                "base": {
+                    "ref": "main",
+                    "repo": {"full_name": "666ghj/MiroFish"},
+                },
+                "draft": False,
+                "mergeable_state": "clean",
+                "labels": [],
+                "user": {"login": "bob"},
+                "body": "PR body",
+                "comments": 0,
+                "review_comments": 0,
+            }
+
+            with (
+                patch.object(
+                    sync_upstream_github.sys,
+                    "argv",
+                    [
+                        "sync_upstream_github.py",
+                        "--repo",
+                        "666ghj/MiroFish",
+                        "--state",
+                        "open",
+                        "--output",
+                        str(output_path),
+                        "--summary",
+                        str(summary_path),
+                        "--fork-remote",
+                        "origin",
+                    ],
+                ),
+                patch.object(
+                    sync_upstream_github,
+                    "github_api_paginated",
+                    side_effect=[
+                        [
+                            {
+                                "number": 1,
+                                "title": "Issue",
+                                "html_url": "https://example.test/issues/1",
+                                "state": "open",
+                                "created_at": "2026-03-10T00:00:00Z",
+                                "updated_at": "2026-03-11T00:00:00Z",
+                                "closed_at": None,
+                                "labels": [],
+                                "user": {"login": "alice"},
+                                "body": "Issue body",
+                                "comments": 0,
+                            }
+                        ],
+                        [pr_payload],
+                    ],
+                ),
+                patch.object(sync_upstream_github, "hydrate_pull_requests", return_value=[pr_payload]),
+                patch.object(sync_upstream_github, "list_mirrored_pull_request_numbers", return_value=set()),
+                patch.object(sync_upstream_github, "mirror_pull_request_refs", return_value={155}) as mirrored,
+                patch.object(sync_upstream_github, "compact_pull_requests", return_value=[]) as compacted,
+                patch.object(sync_upstream_github, "datetime") as mocked_datetime,
+            ):
+                mocked_datetime.now.return_value = __import__("datetime").datetime(
+                    2026, 3, 11, 9, 0, tzinfo=__import__("datetime").timezone.utc
+                )
+                mocked_datetime.fromisoformat = __import__("datetime").datetime.fromisoformat
+                result = sync_upstream_github.main()
+
+        self.assertEqual(result, 0)
+        mirrored.assert_called_once_with("666ghj/MiroFish", "origin", [pr_payload], set())
+        compacted_args = compacted.call_args
+        self.assertEqual(compacted_args.args[0], [pr_payload])
+        self.assertEqual(compacted_args.args[1], {155})
+        self.assertEqual(compacted_args.args[2], "origin")
+        self.assertEqual(
+            compacted_args.kwargs["max_workers"],
+            sync_upstream_github.DEFAULT_MAX_WORKERS,
+        )
+        self.assertIsInstance(compacted_args.kwargs["coverage_map"], dict)
 
     def test_main_reuses_recent_cached_snapshot_when_pr_hydration_rate_limited(self):
         with tempfile.TemporaryDirectory() as tmpdir:

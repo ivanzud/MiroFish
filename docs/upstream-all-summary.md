@@ -2,10 +2,10 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-12T00:44:30.484008+00:00`
+- Captured: `2026-03-12T00:51:28.654090+00:00`
 - Issues: `92` total (`open=42`, `closed=50`)
-- Pull requests: `53` total (`open=39`, `closed=14`)
-- Mirrored in `origin`: `53` of `53` PR refs
+- Pull requests: `54` total (`open=40`, `closed=14`)
+- Mirrored in `origin`: `54` of `54` PR refs
 - Mirrored in `ivanzud/MiroFish`: `92` of `92` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
@@ -48,6 +48,9 @@
 
 ## Recently Updated Pull Requests
 
+- #155 [open, mergeable=clean, mirrored=yes] chore: backend, frontend, i18n (en/zh), and Docker updates (`english-trans` -> `main`)
+  - local coverage [tracked]: Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work.
+  - Made-with: Cursor
 - #152 [open, mergeable=clean, mirrored=yes] fix(backend): 修复Zep API本体命名格式校验错误 (`support-pascal-and-snake-case` -> `main`)
   - local coverage [landed]: Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.
   - ## 变更内容 ### 问题 调用 Zep API 构建图谱时返回 400 错误： - 实体类型名称必须为 **PascalCase** 格式（如 `UniversityStudent`） - 关系类型名称必须为 **SCREAMING_SNAKE_CASE** 格式（如 `WORKS_FOR`） - 关系的 source/target 引用也必须为 **PascalCase** ### 修复方案 在 `ontology_generator.py` 的 `_validate_and_process` 方法中新增两个格式化工具函数： - `to_pascal_case()`：将实体类型名称强制转为 PascalCase（如 `university_student` → `UniversityStudent`） - `to_screaming_snake_case()`：将关系类型名称强制转…
@@ -76,6 +79,3 @@
   - local coverage [landed]: Landed locally: backend security/config hardening now includes env-driven CORS controls with a localhost-only default allowlist, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior.
   - ## 问题概述 这个PR修复了项目中发现的多个安全问题和代码质量问题。 ## 安全修复 1. **硬编码的SECRET_KEY** - `backend/app/config.py` - 之前：使用硬编码的`'mirofish-secret-key'`作为默认值 - 现在：如果未设置环境变量，会生成随机密钥并发出警告 2. **DEBUG模式默认为True** - `backend/app/config.py` - 之前：`DEBUG`默认为`True` - 现在：`DEBUG`默认为`False`，生产环境更安全 3. **CORS配置允许所有来源** - `backend/app/__init__.py` - 之前：`CORS(app, resources={r"/api/*": {"origins": "*"}})` - 现在：通过环境变量`CORS_ALLOWED_ORIGINS…
   - latest comment by `JasonOA888`: ## 代码审查反馈 优秀的PR！这些安全修复非常关键，特别是生产环境部署时。 ### 几个建议： 1. **SECRET_KEY随机生成** - 建议添加日志记录生成的key，方便调试但不要泄露到错误响应中 2. **CORS配置** - 考虑添加`CORS_ALLOW_METHODS`和`CORS_ALLOW_HEADERS`配置，提供更细粒度的控制 3. **error_handler.py** - 建议添加自定义异常类型，让API可以抛出特定错误而不是通用Except…
-- #132 [open, mergeable=clean, mirrored=yes] docs:add simple system architecture part for README-EN.md & README.md (`docs/add-sys-architecture-part` -> `main`)
-  - local coverage [landed]: Landed locally: README architecture overview.
-  - ## PR Title docs(readme): simplify system architecture section to Layer Breakdown + Project Code Structure Tree only ## Summary This PR simplifies the **System Architecture** section in both Chinese and English README files by keeping only two high-signal sections: - **Layer Breakdown** - **Project Code Structure Tree** The previously added overall architecture diagram and related agent-intro blo…

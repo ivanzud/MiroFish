@@ -2,10 +2,10 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-12T00:44:15.147088+00:00`
+- Captured: `2026-03-12T00:51:18.880452+00:00`
 - Issues: `42` total (`open=42`, `closed=0`)
-- Pull requests: `39` total (`open=39`, `closed=0`)
-- Mirrored in `origin`: `39` of `39` PR refs
+- Pull requests: `40` total (`open=40`, `closed=0`)
+- Mirrored in `origin`: `40` of `40` PR refs
 - Mirrored in `ivanzud/MiroFish`: `42` of `42` issues
 - Local issue coverage map: `docs/upstream-coverage.json`
 
@@ -46,6 +46,9 @@
 
 ## Recently Updated Pull Requests
 
+- #155 [open, mergeable=clean, mirrored=yes] chore: backend, frontend, i18n (en/zh), and Docker updates (`english-trans` -> `main`)
+  - local coverage [tracked]: Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work.
+  - Made-with: Cursor
 - #152 [open, mergeable=clean, mirrored=yes] fix(backend): 修复Zep API本体命名格式校验错误 (`support-pascal-and-snake-case` -> `main`)
   - local coverage [landed]: Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.
   - ## 变更内容 ### 问题 调用 Zep API 构建图谱时返回 400 错误： - 实体类型名称必须为 **PascalCase** 格式（如 `UniversityStudent`） - 关系类型名称必须为 **SCREAMING_SNAKE_CASE** 格式（如 `WORKS_FOR`） - 关系的 source/target 引用也必须为 **PascalCase** ### 修复方案 在 `ontology_generator.py` 的 `_validate_and_process` 方法中新增两个格式化工具函数： - `to_pascal_case()`：将实体类型名称强制转为 PascalCase（如 `university_student` → `UniversityStudent`） - `to_screaming_snake_case()`：将关系类型名称强制转…
@@ -74,5 +77,3 @@
 - #131 [open, mergeable=clean, mirrored=yes] feat(graph_builder): add retry mechanism for Zep Cloud connection failures (`feat/zep-retry-mechanism` -> `main`)
   - local coverage [landed]: Safe subset landed locally: transient Zep failures now retry with bounded backoff.
   - ## Description Adds automatic retry mechanism to handle transient network errors when connecting to Zep Cloud API. This prevents graph build failures caused by temporary connection issues such as "Connection reset by peer" (errno 54). The retry logic uses exponential backoff (2s, 4s, 6s) and provides detailed progress feedback to users. ## Changes - Added retry logic (max 3 attempts) to `create_g…
-- #130 [open, mergeable=clean, mirrored=yes] docs: 添加贡献指南文档 (`docs/add-pr-guide` -> `main`)
-  - local coverage [landed]: Landed locally: `CONTRIBUTING.md`.

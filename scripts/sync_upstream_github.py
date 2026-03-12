@@ -324,6 +324,68 @@ def list_mirrored_pull_request_numbers(remote: str) -> set[int]:
     return mirrored
 
 
+def run_git_command(args: list[str]) -> str:
+    try:
+        result = subprocess.run(
+            args,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=REQUEST_TIMEOUT,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise RuntimeError(f"{' '.join(args)} failed") from exc
+    except subprocess.CalledProcessError as exc:
+        details = (exc.stderr or exc.stdout or "").strip() or f"exit status {exc.returncode}"
+        raise RuntimeError(f"{' '.join(args)} failed: {details}") from exc
+
+    return result.stdout
+
+
+def mirror_pull_request_refs(
+    upstream_repo: str,
+    fork_remote: str,
+    pull_requests: list[dict[str, Any]],
+    mirrored_pr_numbers: set[int] | None = None,
+) -> set[int]:
+    mirrored = set(mirrored_pr_numbers or set())
+    upstream_url = f"https://github.com/{upstream_repo}.git"
+
+    for pr in pull_requests:
+        number = int(pr["number"])
+        if number in mirrored:
+            continue
+
+        cache_ref = f"refs/remotes/upstream-sync/pr-{number}"
+        mirror_ref = f"refs/heads/mirror/upstream-pr-{number}"
+        try:
+            run_git_command(
+                [
+                    "git",
+                    "fetch",
+                    "--force",
+                    upstream_url,
+                    f"pull/{number}/head:{cache_ref}",
+                ]
+            )
+            run_git_command(
+                [
+                    "git",
+                    "push",
+                    fork_remote,
+                    f"{cache_ref}:{mirror_ref}",
+                ]
+            )
+            mirrored.add(number)
+        except RuntimeError as exc:
+            print(
+                f"warning: unable to mirror upstream PR #{number} into {fork_remote}: {exc}",
+                file=sys.stderr,
+            )
+
+    return mirrored
+
+
 def load_local_coverage_entries(path: Path | None, key: str) -> dict[int, dict[str, object]]:
     if path is None or not path.exists():
         return {}
@@ -1123,6 +1185,13 @@ def main() -> int:
             mirrored_pr_numbers = (
                 list_mirrored_pull_request_numbers(args.fork_remote) if args.fork_remote else None
             )
+            if args.fork_remote:
+                mirrored_pr_numbers = mirror_pull_request_refs(
+                    args.repo,
+                    args.fork_remote,
+                    pr_details,
+                    mirrored_pr_numbers,
+                )
             prs = compact_pull_requests(
                 pr_details,
                 mirrored_pr_numbers,

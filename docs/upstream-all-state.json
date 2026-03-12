@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-12T00:44:30.484008+00:00",
-  "generated_at": "2026-03-12T00:44:30.484008+00:00",
+  "captured_at": "2026-03-12T00:51:28.654090+00:00",
+  "generated_at": "2026-03-12T00:51:28.654090+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -10,11 +10,11 @@
       "closed": 50
     },
     "pull_requests": {
-      "open": 39,
+      "open": 40,
       "closed": 14
     },
     "mirrored_pull_requests": {
-      "mirrored": 53,
+      "mirrored": 54,
       "not_mirrored": 0
     },
     "mirrored_issues": {
@@ -3520,6 +3520,58 @@
     }
   ],
   "pull_requests": [
+    {
+      "number": 155,
+      "title": "chore: backend, frontend, i18n (en/zh), and Docker updates",
+      "url": "https://github.com/666ghj/MiroFish/pull/155",
+      "state": "open",
+      "created_at": "2026-03-12T00:47:20Z",
+      "updated_at": "2026-03-12T00:47:26Z",
+      "closed_at": null,
+      "merged_at": null,
+      "head": "english-trans",
+      "head_ref_name": "english-trans",
+      "head_sha": "dac678d45f3a3f7b167c6b22f22bf5d21dda1cab",
+      "head_repo": "kaeli-byte/MiroFish",
+      "head_clone_url": "https://github.com/kaeli-byte/MiroFish.git",
+      "base": "main",
+      "base_ref_name": "main",
+      "base_repo": "666ghj/MiroFish",
+      "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:XXL"
+      ],
+      "author": "kaeli-byte",
+      "body_excerpt": "Made-with: Cursor",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
+      "fork_mirrored": true,
+      "mirrored_to_origin": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-155",
+      "mirror_ref": "origin/mirror/upstream-pr-155",
+      "local_coverage": {
+        "number": 155,
+        "status": "tracked",
+        "summary": "Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work.",
+        "local_refs": [
+          ".beads/issues.jsonl",
+          "origin/mirror/upstream-pr-155",
+          "docs/upstream-triage.md",
+          "scripts/sync_upstream_github.py",
+          "tests/test_sync_upstream_github.py"
+        ],
+        "validation": [
+          "git diff --stat upstream/main...origin/mirror/upstream-pr-155",
+          "python3 -m unittest tests.test_sync_upstream_github"
+        ]
+      },
+      "local_status": "tracked",
+      "local_summary": "Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work.",
+      "triage_status": "tracked",
+      "summary": "Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work."
+    },
     {
       "number": 152,
       "title": "fix(backend): 修复Zep API本体命名格式校验错误",
