@@ -1,9 +1,9 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-12T03:33:01.290499+00:00",
-  "generated_at": "2026-03-12T03:33:01.290499+00:00",
-  "refreshed_at": "2026-03-12T03:33:01.290499+00:00",
+  "captured_at": "2026-03-12T03:36:47.487957+00:00",
+  "generated_at": "2026-03-12T03:36:47.487957+00:00",
+  "refreshed_at": "2026-03-12T03:36:47.487957+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {

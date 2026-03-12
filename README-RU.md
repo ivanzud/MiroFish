@@ -102,6 +102,7 @@ OPENAI_MODEL=qwen3.5-plus
 - Если нужен самый прямой путь запуска только бэкенда, используйте `npm run backend:local`. Он применяет тот же preflight, поэтому MiroFish не запустит Flask с некорректной конфигурацией `LLM_*` / `OPENAI_*`.
 - Затем откройте `http://localhost:5001/api/graph/config/status`. В JSON-ответе значение `llm.backend_mode` должно быть `openai_compatible`.
 - Поле `summary.llm.sources` показывает, были ли использованы переменные `LLM_*` или `OPENAI_*`, а также какой именно base URL победил: `OPENAI_BASE_URL` или `OPENAI_API_BASE_URL`. Это самый быстрый способ проверить, что Codex/OpenAI-compatible шлюз определился корректно без добавления `LLM_PROVIDER`.
+- То же `config-status` теперь содержит `summary.capabilities`, где явно разделены состояния «прямой LLM уже готов» и «какие шаги всё ещё зависят от Zep»: `direct_llm` отвечает за прямой путь Codex/OpenAI-compatible, `graph_build` и `graph_report_tools` соответствуют Step 1 / Step 4, а `existing_simulation_interaction` показывает, можно ли продолжить Step 5, если окружение симуляции из Step 2/3 уже существует.
 - Если в том же `config-status` всё ещё указано `ZEP_API_KEY is not configured`, это не означает, что прямое OpenAI-compatible LLM-подключение сломано. Это лишь означает, что Step 1 по-прежнему требует Zep, пока в репозитории не появился альтернативный графовый бэкенд.
 - Если во время локальной проверки `SECRET_KEY` не задан, предупреждение о временно сгенерированном ключе ожидаемо и не означает, что прямой путь через `OPENAI_*` не работает.
 

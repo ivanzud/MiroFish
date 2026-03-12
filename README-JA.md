@@ -152,6 +152,7 @@ OpenAI-compatible 設定として認識されたかを確認するには:
 - バックエンドだけを最短経路で起動したい場合は `npm run backend:local` を使います。同じ設定プリフライトを通してから Flask を起動するため、`LLM_*` / `OPENAI_*` の解決に失敗した状態で立ち上がりません。
 - 次に `http://localhost:5001/api/graph/config/status` を開きます。返却 JSON の `llm.backend_mode` は `openai_compatible` である必要があります。
 - `summary.llm.sources` には実際に採用された `LLM_*` または `OPENAI_*` 環境変数名が表示されるため、Codex / OpenAI / DashScope Coding Plan のような互換ゲートウェイを追加の `LLM_PROVIDER` なしで正しく認識できているか確認できます。
+- 同じ `config-status` には `summary.capabilities` も含まれ、「直接 LLM は利用可能」と「どの工程がまだ Zep を必要とするか」を分けて確認できます。`direct_llm` は Codex/OpenAI-compatible 直結経路、`graph_build` と `graph_report_tools` は Step 1 / Step 4、`existing_simulation_interaction` は Step 2/3 のシミュレーション環境が既にある場合に Step 5 を継続できるかを示します。
 - 同じ config-status に `ZEP_API_KEY is not configured` が残っていても、直接の `OPENAI_*` / Codex 互換 LLM 経路が壊れているわけではありません。現時点では Step 1 のグラフ構築がまだ Zep 依存で、リポジトリ標準の代替グラフバックエンドは未導入です。
 - ローカル検証で `SECRET_KEY` を設定していない場合、`npm run check:backend-config` に一時的な生成キーの warning が出ることがありますが、これは想定内であり、直接の `OPENAI_*` 接続失敗を意味しません。
 

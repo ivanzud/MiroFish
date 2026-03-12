@@ -154,6 +154,7 @@ OpenAI-compatible 설정이 실제로 인식됐는지 확인하려면:
 - 백엔드만 가장 직접적인 경로로 띄우고 싶다면 `npm run backend:local` 을 사용하세요. 동일한 설정 프리플라이트를 먼저 통과한 뒤 Flask 를 시작하므로 `LLM_*` / `OPENAI_*` 해석이 잘못된 상태로 서버가 올라가지 않습니다.
 - 다음으로 `http://localhost:5001/api/graph/config/status` 를 엽니다. 반환 JSON 의 `llm.backend_mode` 값은 `openai_compatible` 이어야 합니다.
 - `summary.llm.sources` 는 실제로 적용된 `LLM_*` 또는 `OPENAI_*` 환경 변수 이름을 보여 주므로, Codex / OpenAI / DashScope Coding Plan 같은 호환 게이트웨이가 추가 `LLM_PROVIDER` 없이 올바르게 인식됐는지 바로 확인할 수 있습니다.
+- 같은 config-status 에는 이제 `summary.capabilities` 도 포함되어, "직접 LLM 경로는 준비됨" 과 "어떤 워크플로 단계가 아직 Zep 을 필요로 하는지" 를 분리해서 보여 줍니다. `direct_llm` 은 Codex/OpenAI-compatible 직결 경로를 뜻하고, `graph_build` 와 `graph_report_tools` 는 Step 1 / Step 4 를 가리키며, `existing_simulation_interaction` 은 Step 2/3 시뮬레이션 환경이 이미 있으면 Step 5 를 계속 진행할 수 있는지 보여 줍니다.
 - 같은 config-status 에서 `ZEP_API_KEY is not configured` 경고가 남아 있어도 직접 `OPENAI_*` / Codex 호환 LLM 연결이 실패했다는 뜻은 아닙니다. 현재 Step 1 그래프 빌드는 아직 Zep 에 의존하며, 저장소 기본 대체 그래프 백엔드는 아직 미도입 상태입니다.
 - 로컬 검증 셸에서 `SECRET_KEY` 를 설정하지 않았다면 `npm run check:backend-config` 에 임시 생성 키 warning 이 나올 수 있는데, 이는 정상이며 직접 `OPENAI_*` 경로가 실패했다는 뜻은 아닙니다.
 
