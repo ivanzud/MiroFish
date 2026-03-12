@@ -239,6 +239,15 @@
                 <span class="btn-icon">◆</span>
                 <span class="btn-text">{{ t('history.reportBtn') }}</span>
               </button>
+              <button
+                class="modal-btn btn-interaction"
+                @click="goToInteraction"
+                :disabled="!canOpenInteraction(selectedProject)"
+              >
+                <span class="btn-step">Step5</span>
+                <span class="btn-icon">✦</span>
+                <span class="btn-text">{{ t('history.interactionBtn') }}</span>
+              </button>
             </div>
             <!-- 不可回放提示 -->
             <div class="modal-playback-hint">
@@ -261,6 +270,7 @@ import { copyText } from '../utils/clipboard'
 import { buildSimulationReplayRoute, hasReplayableSimulationState } from './historyPlayback'
 import { truncateFilename as formatHistoryFilename } from './historyFormatters'
 import { triggerHistoryReportDownload } from './historyReportDownload'
+import { buildInteractionRoute } from './interactionRoute'
 
 const router = useRouter()
 const route = useRoute()
@@ -524,6 +534,14 @@ const goToSimulation = () => {
 
 const canReplaySimulation = (simulation) => hasReplayableSimulationState(simulation)
 
+const getInteractionRoute = (simulation) =>
+  buildInteractionRoute({
+    reportId: simulation?.report_id,
+    simulationId: simulation?.simulation_id,
+  })
+
+const canOpenInteraction = (simulation) => Boolean(getInteractionRoute(simulation))
+
 const goToSimulationReplay = () => {
   if (selectedProject.value?.simulation_id && canReplaySimulation(selectedProject.value)) {
     router.push(buildSimulationReplayRoute(selectedProject.value.simulation_id))
@@ -540,6 +558,16 @@ const goToReport = () => {
     })
     closeModal()
   }
+}
+
+const goToInteraction = () => {
+  const interactionRoute = getInteractionRoute(selectedProject.value)
+  if (!interactionRoute) {
+    return
+  }
+
+  router.push(interactionRoute)
+  closeModal()
 }
 
 const handleDeleteSelectedProject = async () => {
@@ -1551,6 +1579,7 @@ onUnmounted(() => {
 .modal-btn.btn-simulation .btn-icon { color: #F59E0B; }
 .modal-btn.btn-simulation-run .btn-icon { color: #EF4444; }
 .modal-btn.btn-report .btn-icon { color: #10B981; }
+.modal-btn.btn-interaction .btn-icon { color: #8B5CF6; }
 
 .modal-btn:hover:not(:disabled) .btn-text {
   color: #111827;
