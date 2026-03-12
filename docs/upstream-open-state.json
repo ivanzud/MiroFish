@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "open",
-  "captured_at": "2026-03-12T01:15:10.701153+00:00",
-  "generated_at": "2026-03-12T01:15:10.701153+00:00",
+  "captured_at": "2026-03-12T01:20:46.945441+00:00",
+  "generated_at": "2026-03-12T01:20:46.945441+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -62,6 +62,8 @@
       "local_summary": "Profile serialization now tolerates structured LLM output instead of crashing when `bio`, `persona`, `country`, `profession`, or `interested_topics` arrive as dict/list values. `OasisAgentProfile` normalizes those mixed types at construction time and the Reddit/Twitter serializers defensively coerce them again before slicing or string replacement, so simulation preparation no longer fails during profile save with `KeyError: slice(None, 150, None)`.",
       "triage_status": "covered",
       "summary": "Profile serialization now tolerates structured LLM output instead of crashing when `bio`, `persona`, `country`, `profession`, or `interested_topics` arrive as dict/list values. `OasisAgentProfile` normalizes those mixed types at construction time and the Reddit/Twitter serializers defensively coerce them again before slicing or string replacement, so simulation preparation no longer fails during profile save with `KeyError: slice(None, 150, None)`.",
+      "coverage_status": "covered",
+      "coverage_summary": "Profile serialization now tolerates structured LLM output instead of crashing when `bio`, `persona`, `country`, `profession`, or `interested_topics` arrive as dict/list values. `OasisAgentProfile` normalizes those mixed types at construction time and the Reddit/Twitter serializers defensively coerce them again before slicing or string replacement, so simulation preparation no longer fails during profile save with `KeyError: slice(None, 150, None)`.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 93,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/93"
@@ -101,6 +103,8 @@
       "local_summary": "The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all.",
       "triage_status": "covered",
       "summary": "The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all.",
+      "coverage_status": "covered",
+      "coverage_summary": "The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 92,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/92"
@@ -140,6 +144,8 @@
       "local_summary": "Simulation data retrieval now resolves the active platform from `SimulationState` instead of silently defaulting to Reddit when Twitter/X is the only enabled platform, and `SimulationManager.get_profiles()` now reads Twitter profile CSV files correctly as well. That prevents empty profile/post responses in Twitter-only simulations even when older callers still pass the historical `reddit` default.",
       "triage_status": "covered",
       "summary": "Simulation data retrieval now resolves the active platform from `SimulationState` instead of silently defaulting to Reddit when Twitter/X is the only enabled platform, and `SimulationManager.get_profiles()` now reads Twitter profile CSV files correctly as well. That prevents empty profile/post responses in Twitter-only simulations even when older callers still pass the historical `reddit` default.",
+      "coverage_status": "covered",
+      "coverage_summary": "Simulation data retrieval now resolves the active platform from `SimulationState` instead of silently defaulting to Reddit when Twitter/X is the only enabled platform, and `SimulationManager.get_profiles()` now reads Twitter profile CSV files correctly as well. That prevents empty profile/post responses in Twitter-only simulations even when older callers still pass the historical `reddit` default.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 91,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/91"
@@ -188,6 +194,8 @@
       "local_summary": "Step 3 now reconciles stale persisted `running` states when the worker PID is gone, and the detailed status payload exposes compact simulation-log diagnostics while waiting for the first actions. That prevents indefinite \"Waiting for agent actions\" polling after a dead worker and makes true startup stalls visible in the UI.",
       "triage_status": "covered",
       "summary": "Step 3 now reconciles stale persisted `running` states when the worker PID is gone, and the detailed status payload exposes compact simulation-log diagnostics while waiting for the first actions. That prevents indefinite \"Waiting for agent actions\" polling after a dead worker and makes true startup stalls visible in the UI.",
+      "coverage_status": "covered",
+      "coverage_summary": "Step 3 now reconciles stale persisted `running` states when the worker PID is gone, and the detailed status payload exposes compact simulation-log diagnostics while waiting for the first actions. That prevents indefinite \"Waiting for agent actions\" polling after a dead worker and makes true startup stalls visible in the UI.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 90,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/90"
@@ -231,6 +239,8 @@
       "local_summary": "The repo now ships an opt-in, repo-native git hook workflow: `.githooks/pre-commit` runs the shared fast validation bundle, `.githooks/pre-push` runs the full validation bundle, and `npm run hooks:install` enables them without introducing a mandatory Husky/Node-only hook dependency.",
       "triage_status": "covered",
       "summary": "The repo now ships an opt-in, repo-native git hook workflow: `.githooks/pre-commit` runs the shared fast validation bundle, `.githooks/pre-push` runs the full validation bundle, and `npm run hooks:install` enables them without introducing a mandatory Husky/Node-only hook dependency.",
+      "coverage_status": "covered",
+      "coverage_summary": "The repo now ships an opt-in, repo-native git hook workflow: `.githooks/pre-commit` runs the shared fast validation bundle, `.githooks/pre-push` runs the full validation bundle, and `npm run hooks:install` enables them without introducing a mandatory Husky/Node-only hook dependency.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 88,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/88"
@@ -288,6 +298,8 @@
       "local_summary": "Repo-native partial mitigations are now landed locally across simulation inputs, backend graph/report/search/statistics/detail surfaces, raw graph introspection, node-edge introspection, textual tool output, both shipped graph renderers, and the visible frontend graph counters/logs: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `ZepEntityReader.get_entity_with_context()` now merges alias-linked relations and related nodes for the entity-detail API, `backend/app/services/graph_builder.py` now collapses the same conservative alias pairs when serving `/api/graph/data/<graph_id>` and remaps duplicate edges to the retained node UUID, `backend/app/services/zep_tools.py` now collapses those aliases when building typed entity lists, raw node/edge introspection payloads, Panorama output, InsightForge entity/relationship summaries, QuickSearch/general search results, graph statistics, node-edge lookups, entity summaries including relations attached only to alias UUIDs, and `NodeInfo.to_text()` output, while preserving merged `alias_names` metadata so callers and downstream prompts can still see which labels were folded together. `frontend/src/views/processGraphData.js` and the shared `frontend/src/components/GraphPanel.vue` renderer now both collapse them while rendering graph data, the Process plus GraphPanel node detail drawers expose the folded non-canonical aliases via `frontend/src/components/graphAliasDetails.js`, and `frontend/src/components/graphPanelData.js` now drives deduplicated Step 1 / Process counters plus MainView refresh logs so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear twice in the graph or its visible counts. Full graph-level persisted deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
       "triage_status": "partial",
       "summary": "Repo-native partial mitigations are now landed locally across simulation inputs, backend graph/report/search/statistics/detail surfaces, raw graph introspection, node-edge introspection, textual tool output, both shipped graph renderers, and the visible frontend graph counters/logs: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `ZepEntityReader.get_entity_with_context()` now merges alias-linked relations and related nodes for the entity-detail API, `backend/app/services/graph_builder.py` now collapses the same conservative alias pairs when serving `/api/graph/data/<graph_id>` and remaps duplicate edges to the retained node UUID, `backend/app/services/zep_tools.py` now collapses those aliases when building typed entity lists, raw node/edge introspection payloads, Panorama output, InsightForge entity/relationship summaries, QuickSearch/general search results, graph statistics, node-edge lookups, entity summaries including relations attached only to alias UUIDs, and `NodeInfo.to_text()` output, while preserving merged `alias_names` metadata so callers and downstream prompts can still see which labels were folded together. `frontend/src/views/processGraphData.js` and the shared `frontend/src/components/GraphPanel.vue` renderer now both collapse them while rendering graph data, the Process plus GraphPanel node detail drawers expose the folded non-canonical aliases via `frontend/src/components/graphAliasDetails.js`, and `frontend/src/components/graphPanelData.js` now drives deduplicated Step 1 / Process counters plus MainView refresh logs so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear twice in the graph or its visible counts. Full graph-level persisted deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
+      "coverage_status": "partial",
+      "coverage_summary": "Repo-native partial mitigations are now landed locally across simulation inputs, backend graph/report/search/statistics/detail surfaces, raw graph introspection, node-edge introspection, textual tool output, both shipped graph renderers, and the visible frontend graph counters/logs: `ZepEntityReader.filter_defined_entities()` collapses obvious same-entity alias variants before simulation/profile generation, `ZepEntityReader.get_entity_with_context()` now merges alias-linked relations and related nodes for the entity-detail API, `backend/app/services/graph_builder.py` now collapses the same conservative alias pairs when serving `/api/graph/data/<graph_id>` and remaps duplicate edges to the retained node UUID, `backend/app/services/zep_tools.py` now collapses those aliases when building typed entity lists, raw node/edge introspection payloads, Panorama output, InsightForge entity/relationship summaries, QuickSearch/general search results, graph statistics, node-edge lookups, entity summaries including relations attached only to alias UUIDs, and `NodeInfo.to_text()` output, while preserving merged `alias_names` metadata so callers and downstream prompts can still see which labels were folded together. `frontend/src/views/processGraphData.js` and the shared `frontend/src/components/GraphPanel.vue` renderer now both collapse them while rendering graph data, the Process plus GraphPanel node detail drawers expose the folded non-canonical aliases via `frontend/src/components/graphAliasDetails.js`, and `frontend/src/components/graphPanelData.js` now drives deduplicated Step 1 / Process counters plus MainView refresh logs so title-prefixed duplicates such as `美国总统特朗普` vs `特朗普` no longer appear twice in the graph or its visible counts. Full graph-level persisted deduplication still remains tracked under beads issue `mirofish-975` because upstream PR #141 is not safe to cherry-pick wholesale.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 2,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/2"
@@ -322,6 +334,8 @@
       "local_summary": "Upstream issue #142 asks about long-term commercialization direction rather than reporting a reproducible bug or scoped feature request, so there is no local implementation task attached to it.",
       "triage_status": "no_action",
       "summary": "Upstream issue #142 asks about long-term commercialization direction rather than reporting a reproducible bug or scoped feature request, so there is no local implementation task attached to it.",
+      "coverage_status": "no_action",
+      "coverage_summary": "Upstream issue #142 asks about long-term commercialization direction rather than reporting a reproducible bug or scoped feature request, so there is no local implementation task attached to it.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 3,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/3"
@@ -381,6 +395,8 @@
       "local_summary": "Upload and graph-build failures now surface structured per-file parser/config validation errors instead of collapsing common deployment or document-ingest problems into a generic 500.",
       "triage_status": "covered",
       "summary": "Upload and graph-build failures now surface structured per-file parser/config validation errors instead of collapsing common deployment or document-ingest problems into a generic 500.",
+      "coverage_status": "covered",
+      "coverage_summary": "Upload and graph-build failures now surface structured per-file parser/config validation errors instead of collapsing common deployment or document-ingest problems into a generic 500.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 4,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/4"
@@ -413,6 +429,8 @@
       "local_summary": "Upstream issue #140 is general project commentary rather than an actionable defect report or scoped feature request, so it does not require local implementation work.",
       "triage_status": "no_action",
       "summary": "Upstream issue #140 is general project commentary rather than an actionable defect report or scoped feature request, so it does not require local implementation work.",
+      "coverage_status": "no_action",
+      "coverage_summary": "Upstream issue #140 is general project commentary rather than an actionable defect report or scoped feature request, so it does not require local implementation work.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 5,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/5"
@@ -455,6 +473,8 @@
       "local_summary": "Graph ontology ingestion now accepts string-valued attribute definitions for entity and edge schemas, so malformed LLM ontology output no longer crashes graph builds with `TypeError: string indices must be integers`.",
       "triage_status": "covered",
       "summary": "Graph ontology ingestion now accepts string-valued attribute definitions for entity and edge schemas, so malformed LLM ontology output no longer crashes graph builds with `TypeError: string indices must be integers`.",
+      "coverage_status": "covered",
+      "coverage_summary": "Graph ontology ingestion now accepts string-valued attribute definitions for entity and edge schemas, so malformed LLM ontology output no longer crashes graph builds with `TypeError: string indices must be integers`.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 6,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/6"
@@ -499,6 +519,8 @@
       "local_summary": "The backend root path `/` plus `/health` and `/healthz` now return a small JSON status payload with the live API prefixes, so local or Docker users no longer need to infer backend health from a bare 404.",
       "triage_status": "covered",
       "summary": "The backend root path `/` plus `/health` and `/healthz` now return a small JSON status payload with the live API prefixes, so local or Docker users no longer need to infer backend health from a bare 404.",
+      "coverage_status": "covered",
+      "coverage_summary": "The backend root path `/` plus `/health` and `/healthz` now return a small JSON status payload with the live API prefixes, so local or Docker users no longer need to infer backend health from a bare 404.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 7,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/7"
@@ -559,6 +581,8 @@
       "local_summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, graph-build worker progress, report/interview parsing, Step 5 interview fallbacks, and simulation-config placeholder labels: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, GraphBuilderService now persists English task-status strings for its initial worker milestones, Step 4 tool-output parsers accept both Chinese and English markers, zep_tools localizes deterministic interview-selection/question/summary fallback copy in English mode, and SimulationConfigGenerator now routes unknown entity/poster fallback labels through the active locale instead of leaking hardcoded English `Unknown` into zh-mode config output.",
       "triage_status": "covered",
       "summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, graph-build worker progress, report/interview parsing, Step 5 interview fallbacks, and simulation-config placeholder labels: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, GraphBuilderService now persists English task-status strings for its initial worker milestones, Step 4 tool-output parsers accept both Chinese and English markers, zep_tools localizes deterministic interview-selection/question/summary fallback copy in English mode, and SimulationConfigGenerator now routes unknown entity/poster fallback labels through the active locale instead of leaking hardcoded English `Unknown` into zh-mode config output.",
+      "coverage_status": "covered",
+      "coverage_summary": "The English support sweep now covers workflow chrome, deterministic Step 2/3 system-log copy, graph-build worker progress, report/interview parsing, Step 5 interview fallbacks, and simulation-config placeholder labels: Step 3/5 labels flow through shared i18n dictionaries, Step 2 prepare-stage progress and Step 3 round/PID logs localize through shared helpers, GraphBuilderService now persists English task-status strings for its initial worker milestones, Step 4 tool-output parsers accept both Chinese and English markers, zep_tools localizes deterministic interview-selection/question/summary fallback copy in English mode, and SimulationConfigGenerator now routes unknown entity/poster fallback labels through the active locale instead of leaking hardcoded English `Unknown` into zh-mode config output.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 8,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/8"
@@ -608,6 +632,8 @@
       "local_summary": "The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.",
       "triage_status": "covered",
       "summary": "The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.",
+      "coverage_status": "covered",
+      "coverage_summary": "The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 9,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/9"
@@ -656,6 +682,8 @@
       "local_summary": "Tracked under beads issue `mirofish-8eg`: requests for non-Zep graph backends are preserved locally, but implementing them safely requires a fresh graph-backend abstraction instead of wiring another provider into current graph/simulation flows ad hoc.",
       "triage_status": "tracked",
       "summary": "Tracked under beads issue `mirofish-8eg`: requests for non-Zep graph backends are preserved locally, but implementing them safely requires a fresh graph-backend abstraction instead of wiring another provider into current graph/simulation flows ad hoc.",
+      "coverage_status": "tracked",
+      "coverage_summary": "Tracked under beads issue `mirofish-8eg`: requests for non-Zep graph backends are preserved locally, but implementing them safely requires a fresh graph-backend abstraction instead of wiring another provider into current graph/simulation flows ad hoc.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 10,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/10"
@@ -707,6 +735,8 @@
       "local_summary": "Step 3 detailed run polling is now incremental and bounded, so the frontend no longer re-downloads the entire simulation timeline every few seconds as a run grows.",
       "triage_status": "covered",
       "summary": "Step 3 detailed run polling is now incremental and bounded, so the frontend no longer re-downloads the entire simulation timeline every few seconds as a run grows.",
+      "coverage_status": "covered",
+      "coverage_summary": "Step 3 detailed run polling is now incremental and bounded, so the frontend no longer re-downloads the entire simulation timeline every few seconds as a run grows.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 11,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/11"
@@ -757,6 +787,8 @@
       "local_summary": "Failed report generation can now be retried directly from Step 4 with persisted status polling, backend error text, and a `force_regenerate` retry path.",
       "triage_status": "covered",
       "summary": "Failed report generation can now be retried directly from Step 4 with persisted status polling, backend error text, and a `force_regenerate` retry path.",
+      "coverage_status": "covered",
+      "coverage_summary": "Failed report generation can now be retried directly from Step 4 with persisted status polling, backend error text, and a `force_regenerate` retry path.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 12,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/12"
@@ -795,6 +827,8 @@
       "local_summary": "Docker deployment now reads `MIROFISH_IMAGE` from `.env` or the shell, so GHCR pull failures can be worked around with a mirror/private registry override instead of editing `docker-compose.yml`.",
       "triage_status": "covered",
       "summary": "Docker deployment now reads `MIROFISH_IMAGE` from `.env` or the shell, so GHCR pull failures can be worked around with a mirror/private registry override instead of editing `docker-compose.yml`.",
+      "coverage_status": "covered",
+      "coverage_summary": "Docker deployment now reads `MIROFISH_IMAGE` from `.env` or the shell, so GHCR pull failures can be worked around with a mirror/private registry override instead of editing `docker-compose.yml`.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 13,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/13"
@@ -837,6 +871,8 @@
       "local_summary": "Docker image publishing now builds both `linux/amd64` and `linux/arm64`, so the missing ARM image issue is already resolved locally.",
       "triage_status": "covered",
       "summary": "Docker image publishing now builds both `linux/amd64` and `linux/arm64`, so the missing ARM image issue is already resolved locally.",
+      "coverage_status": "covered",
+      "coverage_summary": "Docker image publishing now builds both `linux/amd64` and `linux/arm64`, so the missing ARM image issue is already resolved locally.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 14,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/14"
@@ -881,6 +917,8 @@
       "local_summary": "The frontend no longer hardcodes `http://localhost:5001` in project-init messaging and instead uses the shared API base-url resolver.",
       "triage_status": "covered",
       "summary": "The frontend no longer hardcodes `http://localhost:5001` in project-init messaging and instead uses the shared API base-url resolver.",
+      "coverage_status": "covered",
+      "coverage_summary": "The frontend no longer hardcodes `http://localhost:5001` in project-init messaging and instead uses the shared API base-url resolver.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 15,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/15"
@@ -915,6 +953,8 @@
       "local_summary": "The current GitHub Actions workflow already includes the later upgrade sweep from upstream PR #116, so this issue is stale on this branch.",
       "triage_status": "covered",
       "summary": "The current GitHub Actions workflow already includes the later upgrade sweep from upstream PR #116, so this issue is stale on this branch.",
+      "coverage_status": "covered",
+      "coverage_summary": "The current GitHub Actions workflow already includes the later upgrade sweep from upstream PR #116, so this issue is stale on this branch.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 16,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/16"
@@ -970,6 +1010,8 @@
       "local_summary": "Upstream issue #56 is a community discussion thread collecting localized Zep alternatives. It is retained as reference material while any concrete backend-abstraction work stays tracked under `mirofish-8eg`.",
       "triage_status": "reference",
       "summary": "Upstream issue #56 is a community discussion thread collecting localized Zep alternatives. It is retained as reference material while any concrete backend-abstraction work stays tracked under `mirofish-8eg`.",
+      "coverage_status": "reference",
+      "coverage_summary": "Upstream issue #56 is a community discussion thread collecting localized Zep alternatives. It is retained as reference material while any concrete backend-abstraction work stays tracked under `mirofish-8eg`.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 17,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/17"
@@ -1023,6 +1065,8 @@
       "local_summary": "Simulation process-exit errors now classify common HuggingFace download/proxy failures into a concise retry/proxy guidance message instead of dumping raw log tails into Step 3.",
       "triage_status": "covered",
       "summary": "Simulation process-exit errors now classify common HuggingFace download/proxy failures into a concise retry/proxy guidance message instead of dumping raw log tails into Step 3.",
+      "coverage_status": "covered",
+      "coverage_summary": "Simulation process-exit errors now classify common HuggingFace download/proxy failures into a concise retry/proxy guidance message instead of dumping raw log tails into Step 3.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 18,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/18"
@@ -1076,6 +1120,8 @@
       "local_summary": "Graph-builder retries now honor bounded Zep `Retry-After` guidance from `429` responses instead of always using the default backoff schedule, reducing the stuck-at-99% failure mode when Zep free-plan throttling delays graph processing.",
       "triage_status": "covered",
       "summary": "Graph-builder retries now honor bounded Zep `Retry-After` guidance from `429` responses instead of always using the default backoff schedule, reducing the stuck-at-99% failure mode when Zep free-plan throttling delays graph processing.",
+      "coverage_status": "covered",
+      "coverage_summary": "Graph-builder retries now honor bounded Zep `Retry-After` guidance from `429` responses instead of always using the default backoff schedule, reducing the stuck-at-99% failure mode when Zep free-plan throttling delays graph processing.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 19,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/19"
@@ -1119,6 +1165,8 @@
       "local_summary": "Tracked under beads issue `mirofish-8eg`: RAGflow support remains a backend-abstraction/rebase task and is not safe to land via the stale upstream branch without targeted regression coverage.",
       "triage_status": "tracked",
       "summary": "Tracked under beads issue `mirofish-8eg`: RAGflow support remains a backend-abstraction/rebase task and is not safe to land via the stale upstream branch without targeted regression coverage.",
+      "coverage_status": "tracked",
+      "coverage_summary": "Tracked under beads issue `mirofish-8eg`: RAGflow support remains a backend-abstraction/rebase task and is not safe to land via the stale upstream branch without targeted regression coverage.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 20,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/20"
@@ -1178,6 +1226,8 @@
       "local_summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, and the history modal now exposes a replay-only Step 3 route that loads an existing timeline without accidentally auto-starting a fresh run. True mid-run checkpoint/resume is still deferred.",
       "triage_status": "partial",
       "summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, and the history modal now exposes a replay-only Step 3 route that loads an existing timeline without accidentally auto-starting a fresh run. True mid-run checkpoint/resume is still deferred.",
+      "coverage_status": "partial",
+      "coverage_summary": "Refresh/navigation is safer locally because Step 3 reattaches to existing simulation state instead of force-restarting, and the history modal now exposes a replay-only Step 3 route that loads an existing timeline without accidentally auto-starting a fresh run. True mid-run checkpoint/resume is still deferred.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 21,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/21"
@@ -1222,6 +1272,8 @@
       "local_summary": "Both READMEs now explicitly document direct OpenAI-compatible usage through either `LLM_*` or `OPENAI_*` environment variables, with examples for Codex/OpenAI-compatible gateways, DashScope, LM Studio, and Ollama.",
       "triage_status": "covered",
       "summary": "Both READMEs now explicitly document direct OpenAI-compatible usage through either `LLM_*` or `OPENAI_*` environment variables, with examples for Codex/OpenAI-compatible gateways, DashScope, LM Studio, and Ollama.",
+      "coverage_status": "covered",
+      "coverage_summary": "Both READMEs now explicitly document direct OpenAI-compatible usage through either `LLM_*` or `OPENAI_*` environment variables, with examples for Codex/OpenAI-compatible gateways, DashScope, LM Studio, and Ollama.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 22,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/22"
@@ -1264,6 +1316,8 @@
       "local_summary": "Step 5 now preflights simulation environment status and blocks interview requests against closed or unavailable backends before they fail.",
       "triage_status": "covered",
       "summary": "Step 5 now preflights simulation environment status and blocks interview requests against closed or unavailable backends before they fail.",
+      "coverage_status": "covered",
+      "coverage_summary": "Step 5 now preflights simulation environment status and blocks interview requests against closed or unavailable backends before they fail.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 23,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/23"
@@ -1324,6 +1378,8 @@
       "local_summary": "Graph-builder retries now honor bounded Zep `Retry-After` guidance from `429` responses instead of always using the default backoff schedule, reducing premature failures when Zep throttles graph creation or uploads.",
       "triage_status": "covered",
       "summary": "Graph-builder retries now honor bounded Zep `Retry-After` guidance from `429` responses instead of always using the default backoff schedule, reducing premature failures when Zep throttles graph creation or uploads.",
+      "coverage_status": "covered",
+      "coverage_summary": "Graph-builder retries now honor bounded Zep `Retry-After` guidance from `429` responses instead of always using the default backoff schedule, reducing premature failures when Zep throttles graph creation or uploads.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 24,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/24"
@@ -1371,6 +1427,8 @@
       "local_summary": "The frontend now exposes a persisted runtime backend API override panel on the home screen and Step 1 / Step 2 workbench, so users can repoint the UI to another backend without rebuilding.",
       "triage_status": "covered",
       "summary": "The frontend now exposes a persisted runtime backend API override panel on the home screen and Step 1 / Step 2 workbench, so users can repoint the UI to another backend without rebuilding.",
+      "coverage_status": "covered",
+      "coverage_summary": "The frontend now exposes a persisted runtime backend API override panel on the home screen and Step 1 / Step 2 workbench, so users can repoint the UI to another backend without rebuilding.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 25,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/25"
@@ -1421,6 +1479,8 @@
       "local_summary": "The Step 5 timeout complaint now has explicit local mitigations across both UI-driven and report-agent-driven interviews: frontend Step 5 requests derive adaptive timeout budgets from the request window, the UI shows the effective single-agent and current survey-batch budget, the docs/env template expose timeout knobs for slower local models, and backend/app/services/zep_tools.py now honors INTERVIEW_BATCH_TIMEOUT_SECONDS instead of forcing a fixed 180-second timeout for live report-agent batch interviews. The broader issue's remaining workflow requests are now tracked separately in beads as `mirofish-as6`.",
       "triage_status": "partial",
       "summary": "The Step 5 timeout complaint now has explicit local mitigations across both UI-driven and report-agent-driven interviews: frontend Step 5 requests derive adaptive timeout budgets from the request window, the UI shows the effective single-agent and current survey-batch budget, the docs/env template expose timeout knobs for slower local models, and backend/app/services/zep_tools.py now honors INTERVIEW_BATCH_TIMEOUT_SECONDS instead of forcing a fixed 180-second timeout for live report-agent batch interviews. The broader issue's remaining workflow requests are now tracked separately in beads as `mirofish-as6`.",
+      "coverage_status": "partial",
+      "coverage_summary": "The Step 5 timeout complaint now has explicit local mitigations across both UI-driven and report-agent-driven interviews: frontend Step 5 requests derive adaptive timeout budgets from the request window, the UI shows the effective single-agent and current survey-batch budget, the docs/env template expose timeout knobs for slower local models, and backend/app/services/zep_tools.py now honors INTERVIEW_BATCH_TIMEOUT_SECONDS instead of forcing a fixed 180-second timeout for live report-agent batch interviews. The broader issue's remaining workflow requests are now tracked separately in beads as `mirofish-as6`.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 26,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/26"
@@ -1478,6 +1538,8 @@
       "local_summary": "Step 5 interviews now derive timeout overrides from the configured frontend request window, and the backend/docs expose dedicated interview timeout settings for slower local models.",
       "triage_status": "covered",
       "summary": "Step 5 interviews now derive timeout overrides from the configured frontend request window, and the backend/docs expose dedicated interview timeout settings for slower local models.",
+      "coverage_status": "covered",
+      "coverage_summary": "Step 5 interviews now derive timeout overrides from the configured frontend request window, and the backend/docs expose dedicated interview timeout settings for slower local models.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 27,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/27"
@@ -1525,6 +1587,8 @@
       "local_summary": "The setuptools `project.license` warning path is gone because the repo now uses an SPDX license string.",
       "triage_status": "covered",
       "summary": "The setuptools `project.license` warning path is gone because the repo now uses an SPDX license string.",
+      "coverage_status": "covered",
+      "coverage_summary": "The setuptools `project.license` warning path is gone because the repo now uses an SPDX license string.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 28,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/28"
@@ -1566,6 +1630,8 @@
       "local_summary": "Tracked under beads issue `mirofish-8eg`: local graph backend alternatives such as Neo4j support need a deliberate backend-abstraction design pass instead of a blind merge of third-party code.",
       "triage_status": "tracked",
       "summary": "Tracked under beads issue `mirofish-8eg`: local graph backend alternatives such as Neo4j support need a deliberate backend-abstraction design pass instead of a blind merge of third-party code.",
+      "coverage_status": "tracked",
+      "coverage_summary": "Tracked under beads issue `mirofish-8eg`: local graph backend alternatives such as Neo4j support need a deliberate backend-abstraction design pass instead of a blind merge of third-party code.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 29,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/29"
@@ -1598,6 +1664,8 @@
       "local_summary": "Upstream issue #54 is positive feedback rather than a reproducible bug or scoped feature request, so there is no local implementation task attached to it.",
       "triage_status": "no_action",
       "summary": "Upstream issue #54 is positive feedback rather than a reproducible bug or scoped feature request, so there is no local implementation task attached to it.",
+      "coverage_status": "no_action",
+      "coverage_summary": "Upstream issue #54 is positive feedback rather than a reproducible bug or scoped feature request, so there is no local implementation task attached to it.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 30,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/30"
@@ -1634,6 +1702,8 @@
       "local_summary": "Report generation now trims oversized message history, retries after context-length failures, and exposes configurable `LLM_MAX_TOKENS` for smaller-context models.",
       "triage_status": "covered",
       "summary": "Report generation now trims oversized message history, retries after context-length failures, and exposes configurable `LLM_MAX_TOKENS` for smaller-context models.",
+      "coverage_status": "covered",
+      "coverage_summary": "Report generation now trims oversized message history, retries after context-length failures, and exposes configurable `LLM_MAX_TOKENS` for smaller-context models.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 31,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/31"
@@ -1682,6 +1752,8 @@
       "local_summary": "Report generation now tolerates empty LLM section responses by retrying, then falling back to a per-section placeholder instead of crashing the whole report flow with a `NoneType` subscript error.",
       "triage_status": "covered",
       "summary": "Report generation now tolerates empty LLM section responses by retrying, then falling back to a per-section placeholder instead of crashing the whole report flow with a `NoneType` subscript error.",
+      "coverage_status": "covered",
+      "coverage_summary": "Report generation now tolerates empty LLM section responses by retrying, then falling back to a per-section placeholder instead of crashing the whole report flow with a `NoneType` subscript error.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 32,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/32"
@@ -1725,6 +1797,8 @@
       "local_summary": "Step 5 now preserves platform metadata and targets Reddit/Twitter interviews against the matching backend instead of assuming a Reddit-only profile list.",
       "triage_status": "covered",
       "summary": "Step 5 now preserves platform metadata and targets Reddit/Twitter interviews against the matching backend instead of assuming a Reddit-only profile list.",
+      "coverage_status": "covered",
+      "coverage_summary": "Step 5 now preserves platform metadata and targets Reddit/Twitter interviews against the matching backend instead of assuming a Reddit-only profile list.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 33,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/33"
@@ -1768,6 +1842,8 @@
       "local_summary": "Step 5 now rewrites timeout and environment-closed failures into actionable guidance, and the backend/frontend timeout knobs give slow local models an explicit supported path.",
       "triage_status": "covered",
       "summary": "Step 5 now rewrites timeout and environment-closed failures into actionable guidance, and the backend/frontend timeout knobs give slow local models an explicit supported path.",
+      "coverage_status": "covered",
+      "coverage_summary": "Step 5 now rewrites timeout and environment-closed failures into actionable guidance, and the backend/frontend timeout knobs give slow local models an explicit supported path.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 34,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/34"
@@ -1812,6 +1888,8 @@
       "local_summary": "The home upload flow and quick-start docs now explicitly recommend starting with smaller source material (roughly 10k words) and about 30 simulation rounds on a first run, reducing avoidable quota burn and onboarding confusion.",
       "triage_status": "covered",
       "summary": "The home upload flow and quick-start docs now explicitly recommend starting with smaller source material (roughly 10k words) and about 30 simulation rounds on a first run, reducing avoidable quota burn and onboarding confusion.",
+      "coverage_status": "covered",
+      "coverage_summary": "The home upload flow and quick-start docs now explicitly recommend starting with smaller source material (roughly 10k words) and about 30 simulation rounds on a first run, reducing avoidable quota burn and onboarding confusion.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 35,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/35"
@@ -1846,6 +1924,8 @@
       "local_summary": "The docs/UI now clarify that refreshing the browser does not stop backend jobs, persisted runs remain reopenable from history, and Step 3/5 still require a live runtime session.",
       "triage_status": "covered",
       "summary": "The docs/UI now clarify that refreshing the browser does not stop backend jobs, persisted runs remain reopenable from history, and Step 3/5 still require a live runtime session.",
+      "coverage_status": "covered",
+      "coverage_summary": "The docs/UI now clarify that refreshing the browser does not stop backend jobs, persisted runs remain reopenable from history, and Step 3/5 still require a live runtime session.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 36,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/36"
@@ -1879,6 +1959,8 @@
       "local_summary": "Tracked locally in beads as `mirofish-77h`: a future multi-run consensus workflow should reuse a shared Step 1/2 setup, orchestrate repeated Step 3 runs, and synthesize a consensus/divergence report in Step 4.",
       "triage_status": "tracked",
       "summary": "Tracked locally in beads as `mirofish-77h`: a future multi-run consensus workflow should reuse a shared Step 1/2 setup, orchestrate repeated Step 3 runs, and synthesize a consensus/divergence report in Step 4.",
+      "coverage_status": "tracked",
+      "coverage_summary": "Tracked locally in beads as `mirofish-77h`: a future multi-run consensus workflow should reuse a shared Step 1/2 setup, orchestrate repeated Step 3 runs, and synthesize a consensus/divergence report in Step 4.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 37,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/37"
@@ -1921,12 +2003,71 @@
       "local_summary": "Step 3 now stops polling and surfaces backend failure text when the simulation runner reports `failed`, so the UI no longer hangs indefinitely.",
       "triage_status": "covered",
       "summary": "Step 3 now stops polling and surfaces backend failure text when the simulation runner reports `failed`, so the UI no longer hangs indefinitely.",
+      "coverage_status": "covered",
+      "coverage_summary": "Step 3 now stops polling and surfaces backend failure text when the simulation runner reports `failed`, so the UI no longer hangs indefinitely.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 38,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/38"
     }
   ],
   "pull_requests": [
+    {
+      "number": 152,
+      "title": "feat(report): Zep 命名修复与导出 Markdown 功能",
+      "url": "https://github.com/666ghj/MiroFish/pull/152",
+      "state": "open",
+      "created_at": "2026-03-11T18:09:38Z",
+      "updated_at": "2026-03-12T01:19:05Z",
+      "closed_at": null,
+      "merged_at": null,
+      "head": "support-pascal-and-snake-case",
+      "head_ref_name": "support-pascal-and-snake-case",
+      "head_sha": "ffffad0c463a93fb29e5d5f5e60cb868ab1dec37",
+      "head_repo": "sx-tane/MiroFish",
+      "head_clone_url": "https://github.com/sx-tane/MiroFish.git",
+      "base": "main",
+      "base_ref_name": "main",
+      "base_repo": "666ghj/MiroFish",
+      "draft": false,
+      "mergeable_state": "clean",
+      "labels": [
+        "size:L"
+      ],
+      "author": "sx-tane",
+      "body_excerpt": "## 概述 本 PR 包含以下改进： 1. **Zep 命名修复**：修复了 Zep API 实体/关系命名的格式校验错误（支持 PascalCase 和 snake_case）。 2. **新增功能**：报告生成步骤支持导出为 Markdown 格式，并采用了正式的 PDF 风格排版。 ## 修改详情 ### 后端 (Backend) - 在 `report_agent.py` 中改进了 `ReportManager.assemble_full_report` 方法，新增了包含 ID、模拟场景和时间戳的正式页眉。 - 添加了章节分隔符，显著提升了导出的 Markdown 文件的可读性。 ### 前端 (Frontend) - 在 `Step4Report.vue` 的报告页眉部分新增了“导出 MD”按钮。 - 在 `src/api/report.js` 中实现了 `downloadRe…",
+      "comment_count": 0,
+      "review_comment_count": 0,
+      "recent_comments": [],
+      "fork_mirrored": true,
+      "mirrored_to_origin": true,
+      "fork_mirror_ref": "origin/mirror/upstream-pr-152",
+      "mirror_ref": "origin/mirror/upstream-pr-152",
+      "local_coverage": {
+        "number": 152,
+        "status": "landed",
+        "summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
+        "local_refs": [
+          "backend/app/services/ontology_generator.py",
+          "backend/tests/test_ontology_generator.py",
+          "backend/app/services/graph_builder.py",
+          "backend/tests/test_graph_builder.py",
+          "origin/mirror/upstream-pr-152",
+          ".beads/issues.jsonl"
+        ],
+        "validation": [
+          "cd backend && uv run pytest -q tests/test_ontology_generator.py",
+          "python3 -m compileall backend/app/services/ontology_generator.py backend/tests/test_ontology_generator.py",
+          "cd backend && uv run pytest -q tests/test_graph_builder.py",
+          "python3 -m compileall backend/app/services/graph_builder.py"
+        ]
+      },
+      "local_status": "landed",
+      "local_summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
+      "triage_status": "landed",
+      "summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema."
+    },
     {
       "number": 155,
       "title": "chore: backend, frontend, i18n (en/zh), and Docker updates",
@@ -1977,62 +2118,9 @@
       "local_status": "tracked",
       "local_summary": "Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work.",
       "triage_status": "tracked",
-      "summary": "Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work."
-    },
-    {
-      "number": 152,
-      "title": "fix(backend): 修复Zep API本体命名格式校验错误",
-      "url": "https://github.com/666ghj/MiroFish/pull/152",
-      "state": "open",
-      "created_at": "2026-03-11T18:09:38Z",
-      "updated_at": "2026-03-11T18:12:24Z",
-      "closed_at": null,
-      "merged_at": null,
-      "head": "support-pascal-and-snake-case",
-      "head_ref_name": "support-pascal-and-snake-case",
-      "head_sha": "928b668183146c2d24208b20312f62e1d2a1c4d5",
-      "head_repo": "sx-tane/MiroFish",
-      "head_clone_url": "https://github.com/sx-tane/MiroFish.git",
-      "base": "main",
-      "base_ref_name": "main",
-      "base_repo": "666ghj/MiroFish",
-      "draft": false,
-      "mergeable_state": "clean",
-      "labels": [
-        "size:S"
-      ],
-      "author": "sx-tane",
-      "body_excerpt": "## 变更内容 ### 问题 调用 Zep API 构建图谱时返回 400 错误： - 实体类型名称必须为 **PascalCase** 格式（如 `UniversityStudent`） - 关系类型名称必须为 **SCREAMING_SNAKE_CASE** 格式（如 `WORKS_FOR`） - 关系的 source/target 引用也必须为 **PascalCase** ### 修复方案 在 `ontology_generator.py` 的 `_validate_and_process` 方法中新增两个格式化工具函数： - `to_pascal_case()`：将实体类型名称强制转为 PascalCase（如 `university_student` → `UniversityStudent`） - `to_screaming_snake_case()`：将关系类型名称强制转…",
-      "comment_count": 0,
-      "review_comment_count": 0,
-      "recent_comments": [],
-      "fork_mirrored": true,
-      "mirrored_to_origin": true,
-      "fork_mirror_ref": "origin/mirror/upstream-pr-152",
-      "mirror_ref": "origin/mirror/upstream-pr-152",
-      "local_coverage": {
-        "number": 152,
-        "status": "landed",
-        "summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
-        "local_refs": [
-          "backend/app/services/ontology_generator.py",
-          "backend/tests/test_ontology_generator.py",
-          "backend/app/services/graph_builder.py",
-          "backend/tests/test_graph_builder.py",
-          "origin/mirror/upstream-pr-152",
-          ".beads/issues.jsonl"
-        ],
-        "validation": [
-          "cd backend && uv run pytest -q tests/test_ontology_generator.py",
-          "python3 -m compileall backend/app/services/ontology_generator.py backend/tests/test_ontology_generator.py",
-          "cd backend && uv run pytest -q tests/test_graph_builder.py",
-          "python3 -m compileall backend/app/services/graph_builder.py"
-        ]
-      },
-      "local_status": "landed",
-      "local_summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.",
-      "triage_status": "landed",
-      "summary": "Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema."
+      "summary": "Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work.",
+      "coverage_status": "tracked",
+      "coverage_summary": "Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work."
     },
     {
       "number": 151,
@@ -2084,7 +2172,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.",
       "triage_status": "landed",
-      "summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151."
+      "summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151."
     },
     {
       "number": 147,
@@ -2138,7 +2228,9 @@
       "local_status": "partial",
       "local_summary": "Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets.",
       "triage_status": "partial",
-      "summary": "Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets."
+      "summary": "Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets.",
+      "coverage_status": "partial",
+      "coverage_summary": "Safe subset landed locally: added a repo-native `README-RU.md` plus language cross-links, but the full branch is not safe to cherry-pick because it replaces large frontend/backend sections and drops current local tooling, tests, and upstream-triage assets."
     },
     {
       "number": 141,
@@ -2188,7 +2280,9 @@
       "local_status": "not_safe",
       "local_summary": "Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.",
       "triage_status": "not_safe",
-      "summary": "Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge."
+      "summary": "Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge.",
+      "coverage_status": "not_safe",
+      "coverage_summary": "Not safe to cherry-pick: the entity-deduplication branch rewinds large portions of the current tree (tooling, tests, i18n, OpenAI-compatible docs/config) while adding a large graph mutation feature, so it needs a repo-native reimplementation with targeted regression coverage instead of a blind merge."
     },
     {
       "number": 144,
@@ -2238,7 +2332,9 @@
       "local_status": "tracked",
       "local_summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
       "triage_status": "tracked",
-      "summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage."
+      "summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage.",
+      "coverage_status": "tracked",
+      "coverage_summary": "Tracked under beads issue `mirofish-8eg`: the dual-mode local knowledge graph branch is directionally aligned with the non-Zep backend request, but it is not safe to cherry-pick wholesale because it adds a large new adapter plus dependency stack on top of an older tree without current graph/simulation regression coverage."
     },
     {
       "number": 143,
@@ -2291,7 +2387,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally as a repo-native docs cleanup: the Shanda logo alt text now uses the correct URL-encoded `666ghj%2FMiroFish` slug across all README variants, not just the primary Chinese README.",
       "triage_status": "landed",
-      "summary": "Landed locally as a repo-native docs cleanup: the Shanda logo alt text now uses the correct URL-encoded `666ghj%2FMiroFish` slug across all README variants, not just the primary Chinese README."
+      "summary": "Landed locally as a repo-native docs cleanup: the Shanda logo alt text now uses the correct URL-encoded `666ghj%2FMiroFish` slug across all README variants, not just the primary Chinese README.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally as a repo-native docs cleanup: the Shanda logo alt text now uses the correct URL-encoded `666ghj%2FMiroFish` slug across all README variants, not just the primary Chinese README."
     },
     {
       "number": 105,
@@ -2348,7 +2446,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: backend security/config hardening now includes env-driven CORS controls with a localhost-only default allowlist, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior.",
       "triage_status": "landed",
-      "summary": "Landed locally: backend security/config hardening now includes env-driven CORS controls with a localhost-only default allowlist, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior."
+      "summary": "Landed locally: backend security/config hardening now includes env-driven CORS controls with a localhost-only default allowlist, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: backend security/config hardening now includes env-driven CORS controls with a localhost-only default allowlist, `DEBUG=False` by default, and generated fallback `SECRET_KEY` behavior."
     },
     {
       "number": 132,
@@ -2390,7 +2490,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: README architecture overview.",
       "triage_status": "landed",
-      "summary": "Landed locally: README architecture overview."
+      "summary": "Landed locally: README architecture overview.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: README architecture overview."
     },
     {
       "number": 131,
@@ -2432,7 +2534,9 @@
       "local_status": "landed",
       "local_summary": "Safe subset landed locally: transient Zep failures now retry with bounded backoff.",
       "triage_status": "landed",
-      "summary": "Safe subset landed locally: transient Zep failures now retry with bounded backoff."
+      "summary": "Safe subset landed locally: transient Zep failures now retry with bounded backoff.",
+      "coverage_status": "landed",
+      "coverage_summary": "Safe subset landed locally: transient Zep failures now retry with bounded backoff."
     },
     {
       "number": 130,
@@ -2474,7 +2578,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: `CONTRIBUTING.md`.",
       "triage_status": "landed",
-      "summary": "Landed locally: `CONTRIBUTING.md`."
+      "summary": "Landed locally: `CONTRIBUTING.md`.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: `CONTRIBUTING.md`."
     },
     {
       "number": 129,
@@ -2516,7 +2622,9 @@
       "local_status": "landed",
       "local_summary": "Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning.",
       "triage_status": "landed",
-      "summary": "Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning."
+      "summary": "Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning.",
+      "coverage_status": "landed",
+      "coverage_summary": "Safe subset landed locally for context-length retry, configurable `LLM_MAX_TOKENS`, and report-agent history pruning."
     },
     {
       "number": 126,
@@ -2558,7 +2666,9 @@
       "local_status": "landed",
       "local_summary": "Safe subset landed locally for structured config validation and non-sensitive config summaries.",
       "triage_status": "landed",
-      "summary": "Safe subset landed locally for structured config validation and non-sensitive config summaries."
+      "summary": "Safe subset landed locally for structured config validation and non-sensitive config summaries.",
+      "coverage_status": "landed",
+      "coverage_summary": "Safe subset landed locally for structured config validation and non-sensitive config summaries."
     },
     {
       "number": 125,
@@ -2600,7 +2710,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: improved new-project network error diagnostics in the frontend.",
       "triage_status": "landed",
-      "summary": "Landed locally: improved new-project network error diagnostics in the frontend."
+      "summary": "Landed locally: improved new-project network error diagnostics in the frontend.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: improved new-project network error diagnostics in the frontend."
     },
     {
       "number": 124,
@@ -2642,7 +2754,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: robust JSON extraction for mixed LLM responses.",
       "triage_status": "landed",
-      "summary": "Landed locally: robust JSON extraction for mixed LLM responses."
+      "summary": "Landed locally: robust JSON extraction for mixed LLM responses.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: robust JSON extraction for mixed LLM responses."
     },
     {
       "number": 122,
@@ -2684,7 +2798,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: removed `response_format={type: json_object}` from `chat_json()` for LM Studio and Ollama compatibility.",
       "triage_status": "landed",
-      "summary": "Landed locally: removed `response_format={type: json_object}` from `chat_json()` for LM Studio and Ollama compatibility."
+      "summary": "Landed locally: removed `response_format={type: json_object}` from `chat_json()` for LM Studio and Ollama compatibility.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: removed `response_format={type: json_object}` from `chat_json()` for LM Studio and Ollama compatibility."
     },
     {
       "number": 119,
@@ -2768,7 +2884,9 @@
       "local_status": "partial",
       "local_summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, English-localized ReportAgent tool descriptions and parameter help, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
       "triage_status": "partial",
-      "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, English-localized ReportAgent tool descriptions and parameter help, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge."
+      "summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, English-localized ReportAgent tool descriptions and parameter help, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge.",
+      "coverage_status": "partial",
+      "coverage_summary": "Safe subset landed locally for persisted EN/ZH UI chrome, locale headers, deterministic Step 2/3 workflow logs, MainView workflow/build logs, locale-aware report and InsightForge sub-query prompt scaffolding, English-localized ReportAgent tool descriptions and parameter help, bilingual Step 4 Insight/Panorama parsing, deterministic Step 5 interview helper fallbacks/prompts, English-mode Oasis profile prompt empty-state fallbacks, English-localized GraphBuilderService worker progress strings, and English fallback labels in `zep_tools` Panorama/InsightForge report output, but broader backend/runtime localization remains a follow-up instead of a blind merge."
     },
     {
       "number": 118,
@@ -2811,7 +2929,9 @@
       "local_status": "not_safe",
       "local_summary": "Not safe to cherry-pick: RAGflow support threads a second graph backend through core graph/simulation paths without the targeted regression coverage or rebasing needed on top of current local changes.",
       "triage_status": "not_safe",
-      "summary": "Not safe to cherry-pick: RAGflow support threads a second graph backend through core graph/simulation paths without the targeted regression coverage or rebasing needed on top of current local changes."
+      "summary": "Not safe to cherry-pick: RAGflow support threads a second graph backend through core graph/simulation paths without the targeted regression coverage or rebasing needed on top of current local changes.",
+      "coverage_status": "not_safe",
+      "coverage_summary": "Not safe to cherry-pick: RAGflow support threads a second graph backend through core graph/simulation paths without the targeted regression coverage or rebasing needed on top of current local changes."
     },
     {
       "number": 116,
@@ -2852,7 +2972,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: GitHub Actions dependency upgrades.",
       "triage_status": "landed",
-      "summary": "Landed locally: GitHub Actions dependency upgrades."
+      "summary": "Landed locally: GitHub Actions dependency upgrades.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: GitHub Actions dependency upgrades."
     },
     {
       "number": 115,
@@ -2893,7 +3015,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: SPDX license string metadata cleanup.",
       "triage_status": "landed",
-      "summary": "Landed locally: SPDX license string metadata cleanup."
+      "summary": "Landed locally: SPDX license string metadata cleanup.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: SPDX license string metadata cleanup."
     },
     {
       "number": 114,
@@ -2934,7 +3058,9 @@
       "local_status": "superseded",
       "local_summary": "Superseded locally by the current frontend API client, which already falls back to the runtime origin and supports custom base URLs.",
       "triage_status": "superseded",
-      "summary": "Superseded locally by the current frontend API client, which already falls back to the runtime origin and supports custom base URLs."
+      "summary": "Superseded locally by the current frontend API client, which already falls back to the runtime origin and supports custom base URLs.",
+      "coverage_status": "superseded",
+      "coverage_summary": "Superseded locally by the current frontend API client, which already falls back to the runtime origin and supports custom base URLs."
     },
     {
       "number": 113,
@@ -2976,7 +3102,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: Japanese README added and cross-links normalized.",
       "triage_status": "landed",
-      "summary": "Landed locally: Japanese README added and cross-links normalized."
+      "summary": "Landed locally: Japanese README added and cross-links normalized.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: Japanese README added and cross-links normalized."
     },
     {
       "number": 112,
@@ -3018,7 +3146,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: Korean README added and cross-links normalized.",
       "triage_status": "landed",
-      "summary": "Landed locally: Korean README added and cross-links normalized."
+      "summary": "Landed locally: Korean README added and cross-links normalized.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: Korean README added and cross-links normalized."
     },
     {
       "number": 72,
@@ -3081,7 +3211,9 @@
       "local_status": "superseded",
       "local_summary": "Superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`.",
       "triage_status": "superseded",
-      "summary": "Superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`."
+      "summary": "Superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`.",
+      "coverage_status": "superseded",
+      "coverage_summary": "Superseded locally by the broader `_extract_json_payload()` handling in `backend/app/utils/llm_client.py`."
     },
     {
       "number": 108,
@@ -3123,7 +3255,9 @@
       "local_status": "not_safe",
       "local_summary": "Not safe to cherry-pick: the Windows packaging flow targets the wrong runtime entrypoints, serves the frontend in dev mode, and rebundles already-landed workflow changes.",
       "triage_status": "not_safe",
-      "summary": "Not safe to cherry-pick: the Windows packaging flow targets the wrong runtime entrypoints, serves the frontend in dev mode, and rebundles already-landed workflow changes."
+      "summary": "Not safe to cherry-pick: the Windows packaging flow targets the wrong runtime entrypoints, serves the frontend in dev mode, and rebundles already-landed workflow changes.",
+      "coverage_status": "not_safe",
+      "coverage_summary": "Not safe to cherry-pick: the Windows packaging flow targets the wrong runtime entrypoints, serves the frontend in dev mode, and rebundles already-landed workflow changes."
     },
     {
       "number": 104,
@@ -3165,7 +3299,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: Vite dev proxy target is configurable via `VITE_API_BASE_URL`.",
       "triage_status": "landed",
-      "summary": "Landed locally: Vite dev proxy target is configurable via `VITE_API_BASE_URL`."
+      "summary": "Landed locally: Vite dev proxy target is configurable via `VITE_API_BASE_URL`.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: Vite dev proxy target is configurable via `VITE_API_BASE_URL`."
     },
     {
       "number": 103,
@@ -3207,7 +3343,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: Docker workflow now builds ARM64 images and carries the related cache/buildx improvements.",
       "triage_status": "landed",
-      "summary": "Landed locally: Docker workflow now builds ARM64 images and carries the related cache/buildx improvements."
+      "summary": "Landed locally: Docker workflow now builds ARM64 images and carries the related cache/buildx improvements.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: Docker workflow now builds ARM64 images and carries the related cache/buildx improvements."
     },
     {
       "number": 102,
@@ -3249,7 +3387,9 @@
       "local_status": "superseded",
       "local_summary": "Superseded locally by the landed multi-platform Docker workflow that already builds `linux/amd64` and `linux/arm64` images.",
       "triage_status": "superseded",
-      "summary": "Superseded locally by the landed multi-platform Docker workflow that already builds `linux/amd64` and `linux/arm64` images."
+      "summary": "Superseded locally by the landed multi-platform Docker workflow that already builds `linux/amd64` and `linux/arm64` images.",
+      "coverage_status": "superseded",
+      "coverage_summary": "Superseded locally by the landed multi-platform Docker workflow that already builds `linux/amd64` and `linux/arm64` images."
     },
     {
       "number": 101,
@@ -3291,7 +3431,9 @@
       "local_status": "superseded",
       "local_summary": "Superseded locally: the useful JSON-cleanup intent is already covered by the current LLM payload extraction hardening, and the branch predates substantial newer backend/frontend work.",
       "triage_status": "superseded",
-      "summary": "Superseded locally: the useful JSON-cleanup intent is already covered by the current LLM payload extraction hardening, and the branch predates substantial newer backend/frontend work."
+      "summary": "Superseded locally: the useful JSON-cleanup intent is already covered by the current LLM payload extraction hardening, and the branch predates substantial newer backend/frontend work.",
+      "coverage_status": "superseded",
+      "coverage_summary": "Superseded locally: the useful JSON-cleanup intent is already covered by the current LLM payload extraction hardening, and the branch predates substantial newer backend/frontend work."
     },
     {
       "number": 100,
@@ -3333,7 +3475,9 @@
       "local_status": "superseded",
       "local_summary": "Superseded locally by the shared frontend API base-url resolver, which already uses runtime-origin fallback and repo-specific localhost handling.",
       "triage_status": "superseded",
-      "summary": "Superseded locally by the shared frontend API base-url resolver, which already uses runtime-origin fallback and repo-specific localhost handling."
+      "summary": "Superseded locally by the shared frontend API base-url resolver, which already uses runtime-origin fallback and repo-specific localhost handling.",
+      "coverage_status": "superseded",
+      "coverage_summary": "Superseded locally by the shared frontend API base-url resolver, which already uses runtime-origin fallback and repo-specific localhost handling."
     },
     {
       "number": 87,
@@ -3374,7 +3518,9 @@
       "local_status": "superseded",
       "local_summary": "Superseded locally by the broader GitHub Actions upgrade sweep from upstream PR #116.",
       "triage_status": "superseded",
-      "summary": "Superseded locally by the broader GitHub Actions upgrade sweep from upstream PR #116."
+      "summary": "Superseded locally by the broader GitHub Actions upgrade sweep from upstream PR #116.",
+      "coverage_status": "superseded",
+      "coverage_summary": "Superseded locally by the broader GitHub Actions upgrade sweep from upstream PR #116."
     },
     {
       "number": 86,
@@ -3415,7 +3561,9 @@
       "local_status": "superseded",
       "local_summary": "Superseded locally by the newer workflow updates already carried on this branch, including the later ARM64/cache improvements.",
       "triage_status": "superseded",
-      "summary": "Superseded locally by the newer workflow updates already carried on this branch, including the later ARM64/cache improvements."
+      "summary": "Superseded locally by the newer workflow updates already carried on this branch, including the later ARM64/cache improvements.",
+      "coverage_status": "superseded",
+      "coverage_summary": "Superseded locally by the newer workflow updates already carried on this branch, including the later ARM64/cache improvements."
     },
     {
       "number": 82,
@@ -3456,7 +3604,9 @@
       "local_status": "covered",
       "local_summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies.",
       "triage_status": "covered",
-      "summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies."
+      "summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies.",
+      "coverage_status": "covered",
+      "coverage_summary": "The underlying dependency-risk issue is addressed locally without cherry-picking: simulation/runtime packages moved behind an explicit optional install path instead of re-adding `unstructured` to the default backend dependencies."
     },
     {
       "number": 81,
@@ -3498,7 +3648,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: frontend API timeout is configurable for slow local and OpenAI-compatible backends.",
       "triage_status": "landed",
-      "summary": "Landed locally: frontend API timeout is configurable for slow local and OpenAI-compatible backends."
+      "summary": "Landed locally: frontend API timeout is configurable for slow local and OpenAI-compatible backends.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: frontend API timeout is configurable for slow local and OpenAI-compatible backends."
     },
     {
       "number": 74,
@@ -3539,7 +3691,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: bare `except:` clauses in the reviewed JSON/simulation paths were narrowed to `except Exception:`.",
       "triage_status": "landed",
-      "summary": "Landed locally: bare `except:` clauses in the reviewed JSON/simulation paths were narrowed to `except Exception:`."
+      "summary": "Landed locally: bare `except:` clauses in the reviewed JSON/simulation paths were narrowed to `except Exception:`.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: bare `except:` clauses in the reviewed JSON/simulation paths were narrowed to `except Exception:`."
     },
     {
       "number": 73,
@@ -3581,7 +3735,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: malformed ontology entity and edge items are sanitized before fallback injection.",
       "triage_status": "landed",
-      "summary": "Landed locally: malformed ontology entity and edge items are sanitized before fallback injection."
+      "summary": "Landed locally: malformed ontology entity and edge items are sanitized before fallback injection.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: malformed ontology entity and edge items are sanitized before fallback injection."
     },
     {
       "number": 70,
@@ -3631,7 +3787,9 @@
       "local_status": "not_safe",
       "local_summary": "Not safe to cherry-pick: the Windows installer flow assumes a repo topology that does not match the current `run.py` plus built-frontend layout.",
       "triage_status": "not_safe",
-      "summary": "Not safe to cherry-pick: the Windows installer flow assumes a repo topology that does not match the current `run.py` plus built-frontend layout."
+      "summary": "Not safe to cherry-pick: the Windows installer flow assumes a repo topology that does not match the current `run.py` plus built-frontend layout.",
+      "coverage_status": "not_safe",
+      "coverage_summary": "Not safe to cherry-pick: the Windows installer flow assumes a repo topology that does not match the current `run.py` plus built-frontend layout."
     },
     {
       "number": 38,
@@ -3685,7 +3843,9 @@
       "local_status": "not_safe",
       "local_summary": "Not safe to cherry-pick: it expands the backend API surface to Anthropic-specific protocol work while this branch is intentionally standardizing on OpenAI-compatible gateways.",
       "triage_status": "not_safe",
-      "summary": "Not safe to cherry-pick: it expands the backend API surface to Anthropic-specific protocol work while this branch is intentionally standardizing on OpenAI-compatible gateways."
+      "summary": "Not safe to cherry-pick: it expands the backend API surface to Anthropic-specific protocol work while this branch is intentionally standardizing on OpenAI-compatible gateways.",
+      "coverage_status": "not_safe",
+      "coverage_summary": "Not safe to cherry-pick: it expands the backend API surface to Anthropic-specific protocol work while this branch is intentionally standardizing on OpenAI-compatible gateways."
     },
     {
       "number": 49,
@@ -3724,7 +3884,9 @@
       "local_status": "not_safe",
       "local_summary": "Not safe to cherry-pick: it introduces a large local graph backend without targeted regression coverage and is superseded conceptually by the broader backend-abstraction follow-up.",
       "triage_status": "not_safe",
-      "summary": "Not safe to cherry-pick: it introduces a large local graph backend without targeted regression coverage and is superseded conceptually by the broader backend-abstraction follow-up."
+      "summary": "Not safe to cherry-pick: it introduces a large local graph backend without targeted regression coverage and is superseded conceptually by the broader backend-abstraction follow-up.",
+      "coverage_status": "not_safe",
+      "coverage_summary": "Not safe to cherry-pick: it introduces a large local graph backend without targeted regression coverage and is superseded conceptually by the broader backend-abstraction follow-up."
     },
     {
       "number": 15,
@@ -3769,7 +3931,9 @@
       "local_status": "landed",
       "local_summary": "Landed locally: Step 3 now surfaces failed simulation status instead of polling forever.",
       "triage_status": "landed",
-      "summary": "Landed locally: Step 3 now surfaces failed simulation status instead of polling forever."
+      "summary": "Landed locally: Step 3 now surfaces failed simulation status instead of polling forever.",
+      "coverage_status": "landed",
+      "coverage_summary": "Landed locally: Step 3 now surfaces failed simulation status instead of polling forever."
     }
   ],
   "fork_remote": "origin",

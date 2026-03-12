@@ -435,6 +435,9 @@ def attach_local_coverage_fields(
     # Promote stable top-level fields for downstream machine-readable consumers.
     enriched["triage_status"] = triage_status
     enriched["summary"] = triage_summary
+    # Backward-compatible aliases retained for older downstream consumers.
+    enriched["coverage_status"] = triage_status
+    enriched["coverage_summary"] = triage_summary
     return enriched
 
 

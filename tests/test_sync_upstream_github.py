@@ -74,6 +74,8 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(compacted["local_summary"], "Auth failures are sanitized")
         self.assertEqual(compacted["triage_status"], "covered")
         self.assertEqual(compacted["summary"], "Auth failures are sanitized")
+        self.assertEqual(compacted["coverage_status"], "covered")
+        self.assertEqual(compacted["coverage_summary"], "Auth failures are sanitized")
 
     def test_compact_issue_promotes_body_excerpt_when_untracked(self):
         issue = {
@@ -195,6 +197,8 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(compacted["local_summary"], "Diagnostics landed locally")
         self.assertEqual(compacted["triage_status"], "landed")
         self.assertEqual(compacted["summary"], "Diagnostics landed locally")
+        self.assertEqual(compacted["coverage_status"], "landed")
+        self.assertEqual(compacted["coverage_summary"], "Diagnostics landed locally")
         self.assertEqual(compacted["head_ref_name"], "fix/issue-121")
         self.assertEqual(compacted["base_ref_name"], "main")
         self.assertTrue(compacted["mirrored_to_origin"])
@@ -211,6 +215,8 @@ class SyncUpstreamGithubTests(unittest.TestCase):
         self.assertEqual(attached[0]["local_summary"], "Tracked in beads")
         self.assertEqual(attached[0]["triage_status"], "tracked")
         self.assertEqual(attached[0]["summary"], "Tracked in beads")
+        self.assertEqual(attached[0]["coverage_status"], "tracked")
+        self.assertEqual(attached[0]["coverage_summary"], "Tracked in beads")
 
     def test_write_summary_includes_local_coverage_notes(self):
         with tempfile.TemporaryDirectory() as tmpdir:

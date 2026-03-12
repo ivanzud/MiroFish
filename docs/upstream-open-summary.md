@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `open`
-- Captured: `2026-03-12T01:15:10.701153+00:00`
+- Captured: `2026-03-12T01:20:46.945441+00:00`
 - Issues: `42` total (`open=42`, `closed=0`)
 - Pull requests: `40` total (`open=40`, `closed=0`)
 - Mirrored in `origin`: `40` of `40` PR refs
@@ -46,12 +46,12 @@
 
 ## Recently Updated Pull Requests
 
+- #152 [open, mergeable=clean, mirrored=yes] feat(report): Zep 命名修复与导出 Markdown 功能 (`support-pascal-and-snake-case` -> `main`)
+  - local coverage [landed]: Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.
+  - ## 概述 本 PR 包含以下改进： 1. **Zep 命名修复**：修复了 Zep API 实体/关系命名的格式校验错误（支持 PascalCase 和 snake_case）。 2. **新增功能**：报告生成步骤支持导出为 Markdown 格式，并采用了正式的 PDF 风格排版。 ## 修改详情 ### 后端 (Backend) - 在 `report_agent.py` 中改进了 `ReportManager.assemble_full_report` 方法，新增了包含 ID、模拟场景和时间戳的正式页眉。 - 添加了章节分隔符，显著提升了导出的 Markdown 文件的可读性。 ### 前端 (Frontend) - 在 `Step4Report.vue` 的报告页眉部分新增了“导出 MD”按钮。 - 在 `src/api/report.js` 中实现了 `downloadRe…
 - #155 [open, mergeable=clean, mirrored=yes] chore: backend, frontend, i18n (en/zh), and Docker updates (`english-trans` -> `main`)
   - local coverage [tracked]: Tracked under beads issue `mirofish-2ul1`: the combined backend/frontend/i18n/docker sweep is mirrored into `origin/mirror/upstream-pr-155`, but it rewrites 59 files on an older tree and is not safe to cherry-pick wholesale on top of the current repo-native OpenAI-compat, tests, docs, and partial i18n work.
   - Made-with: Cursor
-- #152 [open, mergeable=clean, mirrored=yes] fix(backend): 修复Zep API本体命名格式校验错误 (`support-pascal-and-snake-case` -> `main`)
-  - local coverage [landed]: Landed locally as a repo-native schema-normalization fix across ontology generation and graph build submission: ontology entity type names normalize to PascalCase, edge type names normalize to SCREAMING_SNAKE_CASE, and edge source_targets are remapped to the normalized entity names before Zep receives the schema.
-  - ## 变更内容 ### 问题 调用 Zep API 构建图谱时返回 400 错误： - 实体类型名称必须为 **PascalCase** 格式（如 `UniversityStudent`） - 关系类型名称必须为 **SCREAMING_SNAKE_CASE** 格式（如 `WORKS_FOR`） - 关系的 source/target 引用也必须为 **PascalCase** ### 修复方案 在 `ontology_generator.py` 的 `_validate_and_process` 方法中新增两个格式化工具函数： - `to_pascal_case()`：将实体类型名称强制转为 PascalCase（如 `university_student` → `UniversityStudent`） - `to_screaming_snake_case()`：将关系类型名称强制转…
 - #151 [open, mergeable=clean, mirrored=yes] Fix silent data loss when platform defaults to reddit for Twitter-only simulations (`fix/platform-default-reddit-silent-failure` -> `main`)
   - local coverage [landed]: Landed locally before the upstream PR opened: Twitter-only simulations now infer the active platform instead of silently defaulting to Reddit in retrieval APIs and profile loading, matching the intent of upstream PR #151.
   - ## Summary - API retrieval endpoints (`/profiles`, `/profiles/realtime`, `/posts`, `/comments`) hardcoded `'reddit'` as the default platform - When a Twitter-only simulation was run (`enable_reddit=false`), these APIs silently returned empty results because they looked for `reddit_simulation.db` / `reddit_profiles.json` which did not exist - Frontend also hardcoded `'reddit'` in Vue components an…
