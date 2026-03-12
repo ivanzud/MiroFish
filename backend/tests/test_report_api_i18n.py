@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 import sys
+import tempfile
 from types import SimpleNamespace
 from types import ModuleType
 
@@ -502,3 +504,31 @@ def test_report_chat_request_parse_failure_keeps_english_error_context(monkeypat
     assert response.get_json()["error"] == "bad chat json"
     assert logger.errors == ["Report chat failed: bad chat json"]
     assert logger.debugs
+
+
+def test_download_report_uses_verification_friendly_filename(monkeypatch):
+    app = create_report_test_app()
+    client = app.test_client()
+
+    report = SimpleNamespace(
+        report_id="report_123",
+        simulation_id="sim:456/test",
+        markdown_content="# test report\n",
+    )
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as handle:
+        handle.write(report.markdown_content)
+        temp_path = handle.name
+
+    monkeypatch.setattr(report_api.ReportManager, "get_report", lambda report_id: report)
+    monkeypatch.setattr(report_api.ReportManager, "_get_report_markdown_path", lambda report_id: temp_path)
+
+    try:
+        response = client.get("/api/report/report_123/download", headers={"X-Locale": "en"})
+    finally:
+        os.unlink(temp_path)
+
+    assert response.status_code == 200
+    assert (
+        'filename=mirofish-report-report_123--simulation-sim-456-test.md'
+        in response.headers["Content-Disposition"]
+    )

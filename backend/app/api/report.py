@@ -107,6 +107,24 @@ def _translate_report_progress_payload(locale: str, payload: dict | None) -> dic
     return translated_payload
 
 
+def _sanitize_download_name_part(value: str | None) -> str:
+    sanitized = re.sub(r"[^a-zA-Z0-9._-]+", "-", (value or "").strip())
+    sanitized = re.sub(r"-+", "-", sanitized)
+    return sanitized.strip("-")
+
+
+def _build_report_download_name(report) -> str:
+    report_part = _sanitize_download_name_part(getattr(report, "report_id", ""))
+    simulation_part = _sanitize_download_name_part(getattr(report, "simulation_id", ""))
+
+    if not report_part:
+        report_part = "report"
+
+    if simulation_part:
+        return f"mirofish-report-{report_part}--simulation-{simulation_part}.md"
+    return f"mirofish-report-{report_part}.md"
+
+
 # ============== 报告生成接口 ==============
 
 @report_bp.route('/generate', methods=['POST'])
@@ -491,6 +509,7 @@ def download_report(report_id: str):
             }), 404
         
         md_path = ReportManager._get_report_markdown_path(report_id)
+        download_name = _build_report_download_name(report)
         
         if not os.path.exists(md_path):
             # 如果MD文件不存在，生成一个临时文件
@@ -502,13 +521,13 @@ def download_report(report_id: str):
             return send_file(
                 temp_path,
                 as_attachment=True,
-                download_name=f"{report_id}.md"
+                download_name=download_name
             )
         
         return send_file(
             md_path,
             as_attachment=True,
-            download_name=f"{report_id}.md"
+            download_name=download_name
         )
         
     except Exception as e:
