@@ -360,8 +360,13 @@ def test_assemble_full_report_embeds_localized_reference_block(tmp_path, monkeyp
     assert "| Simulation ID | sim_refs |" in markdown
     assert "| Graph ID | graph_refs |" in markdown
     assert "| Generated At | 2026-03-12T02:05:00 |" in markdown
+    assert f"| Report Folder | {tmp_path / 'reports' / report_id} |" in markdown
+    assert f"| Markdown Path | {tmp_path / 'reports' / report_id / 'full_report.md'} |" in markdown
     assert "**Simulation Requirement**" in markdown
     assert "Predict the likely audience for this game" in markdown
+    assert "**Manual Verification Checklist**" in markdown
+    assert "Keep this file plus the report and simulation IDs above as the stable forecast reference." in markdown
+    assert "When real-world outcomes are available, compare them against the key forecast claims in this report." in markdown
 
 
 def test_generate_report_embeds_reference_block_in_markdown(tmp_path, monkeypatch):
@@ -382,6 +387,10 @@ def test_generate_report_embeds_reference_block_in_markdown(tmp_path, monkeypatc
     assert "| 报告 ID | report_with_refs |" in report.markdown_content
     assert "| 模拟 ID | sim-test |" in report.markdown_content
     assert "| 图谱 ID | graph-test |" in report.markdown_content
+    assert f"| 报告目录 | {tmp_path / 'reports' / 'report_with_refs'} |" in report.markdown_content
+    assert f"| Markdown 路径 | {tmp_path / 'reports' / 'report_with_refs' / 'full_report.md'} |" in report.markdown_content
+    assert "**手动复核清单**" in report.markdown_content
+    assert "保留本文件以及上面的报告 ID / 模拟 ID 作为后续复核锚点。" in report.markdown_content
 
 
 def test_generate_section_localizes_english_react_loop_messages(monkeypatch):

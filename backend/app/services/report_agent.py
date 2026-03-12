@@ -3191,6 +3191,12 @@ class ReportManager:
                 "graph_id": "图谱 ID",
                 "generated_at": "生成时间",
                 "requirement": "模拟需求",
+                "report_folder": "报告目录",
+                "markdown_path": "Markdown 路径",
+                "checklist": "手动复核清单",
+                "checklist_keep": "保留本文件以及上面的报告 ID / 模拟 ID 作为后续复核锚点。",
+                "checklist_compare": "当真实世界结果出现后，对照本报告中的关键预测结论逐项比对。",
+                "checklist_notes": "记录复核结论时沿用相同 ID 与生成时间，避免混淆不同批次的预测。",
                 "missing": "暂无",
             },
             "en": {
@@ -3202,18 +3208,28 @@ class ReportManager:
                 "graph_id": "Graph ID",
                 "generated_at": "Generated At",
                 "requirement": "Simulation Requirement",
+                "report_folder": "Report Folder",
+                "markdown_path": "Markdown Path",
+                "checklist": "Manual Verification Checklist",
+                "checklist_keep": "Keep this file plus the report and simulation IDs above as the stable forecast reference.",
+                "checklist_compare": "When real-world outcomes are available, compare them against the key forecast claims in this report.",
+                "checklist_notes": "Reuse the same IDs and generated timestamp when recording verification notes so different forecast runs do not get mixed together.",
                 "missing": "Unavailable",
             },
         }
         copy = labels["en"] if locale == "en" else labels["zh"]
         fallback = copy["missing"]
         generated_at = report.completed_at or report.created_at or fallback
+        report_folder = cls._get_report_folder(report.report_id)
+        markdown_path = cls._get_report_markdown_path(report.report_id)
 
         rows = [
             (copy["report_id"], report.report_id or fallback),
             (copy["simulation_id"], report.simulation_id or fallback),
             (copy["graph_id"], report.graph_id or fallback),
             (copy["generated_at"], generated_at),
+            (copy["report_folder"], report_folder),
+            (copy["markdown_path"], markdown_path),
         ]
 
         lines = [
@@ -3235,6 +3251,16 @@ class ReportManager:
                 ]
             )
 
+        lines.extend(
+            [
+                "",
+                f"### {copy['checklist']}",
+                "",
+                f"- {copy['checklist_keep']}",
+                f"- {copy['checklist_compare']}",
+                f"- {copy['checklist_notes']}",
+            ]
+        )
         lines.extend(["", "---", ""])
         return "\n".join(lines)
 
