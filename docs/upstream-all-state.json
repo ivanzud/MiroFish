@@ -1,8 +1,8 @@
 {
   "repo": "666ghj/MiroFish",
   "state": "all",
-  "captured_at": "2026-03-12T00:30:04.088929+00:00",
-  "generated_at": "2026-03-12T00:30:04.088929+00:00",
+  "captured_at": "2026-03-12T00:35:48.270178+00:00",
+  "generated_at": "2026-03-12T00:35:48.270178+00:00",
   "coverage_map_path": "docs/upstream-coverage.json",
   "counts": {
     "issues": {
@@ -29,13 +29,21 @@
       "url": "https://github.com/666ghj/MiroFish/issues/154",
       "state": "open",
       "created_at": "2026-03-12T00:26:01Z",
-      "updated_at": "2026-03-12T00:26:01Z",
+      "updated_at": "2026-03-12T00:32:38Z",
       "closed_at": null,
       "labels": [],
       "author": "ygh1254",
       "body_excerpt": "## Summary When profile generation returns structured JSON objects for fields like `bio`, `persona`, or `country`, MiroFish can fail during profile serialization before config generation starts. ## Reproduction context Observed on a live run with: - simulation_id: `sim_e69a946b6158` - graph_id: `mirofish_a39b5f10127f4744` - entities_count: `91` - status in state file: `failed` - error in state fi…",
-      "comment_count": 0,
-      "recent_comments": [],
+      "comment_count": 1,
+      "recent_comments": [
+        {
+          "author": "dosubot[bot]",
+          "created_at": "2026-03-12T00:32:38Z",
+          "updated_at": "2026-03-12T00:32:38Z",
+          "url": "https://github.com/666ghj/MiroFish/issues/154#issuecomment-4043093778",
+          "body_excerpt": "<!-- Greeting --> Hi @ygh1254! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> Your analysis is spot on. Looking at the code, the root cause is exactly as you described — the [`OasisAgentProfile`…"
+        }
+      ],
       "local_coverage": {
         "number": 154,
         "status": "covered",
@@ -662,8 +670,25 @@
           "body_excerpt": "## ✅ 已解决 感谢Dosu的帮助和启发 ### 问题描述 使用 Docker 部署时，前端调用 `/api/graph/ontology/generate` 接口报 `Network Error`，后端日志中完全没有收到任何请求。 ### 根本原因 前端代码默认将后端地址写死为 `http://localhost:5001`。在 Docker 容器内部这没有问题，但当你通过 NAS 或服务器的 IP 地址（如 `http://192.168.x.x:3000`）访问前端…"
         }
       ],
-      "triage_status": "untracked",
-      "summary": "<img width=\"859\" height=\"151\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/1a41f8a5-2cff-40a3-837b-f4955cc7b9b7\" />",
+      "local_coverage": {
+        "number": 121,
+        "status": "covered",
+        "summary": "New-project startup errors now resolve raw frontend `Network Error` failures into an actionable backend URL and proxy/CORS hint instead of leaving users at a generic `handleNewProject` failure banner.",
+        "local_refs": [
+          "frontend/src/api/errors.js",
+          "frontend/tests/errors.test.mjs",
+          "https://github.com/ivanzud/MiroFish/issues/41"
+        ],
+        "validation": [
+          "npm --prefix frontend test -- errors.test.mjs",
+          "npm --prefix frontend run build"
+        ],
+        "notes": "Mirrored into fork issue #41 on March 11, 2026. This backfills the landed frontend error-diagnostics work already represented by upstream PR #125."
+      },
+      "local_status": "covered",
+      "local_summary": "New-project startup errors now resolve raw frontend `Network Error` failures into an actionable backend URL and proxy/CORS hint instead of leaving users at a generic `handleNewProject` failure banner.",
+      "triage_status": "covered",
+      "summary": "New-project startup errors now resolve raw frontend `Network Error` failures into an actionable backend URL and proxy/CORS hint instead of leaving users at a generic `handleNewProject` failure banner.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 41,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/41"
@@ -881,8 +906,28 @@
           "body_excerpt": "重新修改新的API泡一下 谢谢"
         }
       ],
-      "triage_status": "untracked",
-      "summary": "<img width=\"1242\" height=\"707\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/c3322506-4644-4194-bf60-760ba929d415\" /> 作者你好，看到你的新闻之后，怀着巨大的好奇心本地部署了一下。 用的 Google 反重力很快就部署成功，完全是代码小白。 我只是把自己公众号和 AI 对话的几个 MD 文件传上去，然后 Zep API 在第三轮开始模拟阶段很快就报错，如截图所示。 请问我是升级付费Zep呢，还是等3月底重置，不想再来一次呀，的确某个环节内存飙升在Win系统下，起初就是感兴趣想体验下投喂自己的资料后（写了十多年的公众号和AI对话后梳理的一些MD文档），预测下你的系统和我今年会做的事会不会有一些预测的重合，感觉值得一试，但是碰到这个问题，期待回复解决…",
+      "local_coverage": {
+        "number": 109,
+        "status": "covered",
+        "summary": "The home upload flow and quick-start docs now explicitly recommend starting with smaller source material (roughly 10k words) and about 30 simulation rounds on a first run, giving new local users a lower-cost way to verify the graph and runtime chain before they burn through Zep free-plan quota.",
+        "local_refs": [
+          "frontend/src/views/Home.vue",
+          "frontend/src/i18n/locales/zh.js",
+          "frontend/src/i18n/locales/en.js",
+          "README.md",
+          "README-EN.md",
+          "https://github.com/ivanzud/MiroFish/issues/43"
+        ],
+        "validation": [
+          "npm --prefix frontend run build",
+          "rg -n \"10k words|30 rounds|1 万字以内|30 轮左右\" frontend/src/views/Home.vue frontend/src/i18n/locales/zh.js frontend/src/i18n/locales/en.js README.md README-EN.md"
+        ],
+        "notes": "Mirrored into fork issue #43 on March 11, 2026. This backfills the same first-run quota guidance already tracked under upstream issue #19."
+      },
+      "local_status": "covered",
+      "local_summary": "The home upload flow and quick-start docs now explicitly recommend starting with smaller source material (roughly 10k words) and about 30 simulation rounds on a first run, giving new local users a lower-cost way to verify the graph and runtime chain before they burn through Zep free-plan quota.",
+      "triage_status": "covered",
+      "summary": "The home upload flow and quick-start docs now explicitly recommend starting with smaller source material (roughly 10k words) and about 30 simulation rounds on a first run, giving new local users a lower-cost way to verify the graph and runtime chain before they burn through Zep free-plan quota.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 43,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/43"
@@ -1513,8 +1558,25 @@
           "body_excerpt": "我这边最新版本代码国内环境是可以正常使用zep的"
         }
       ],
-      "triage_status": "untracked",
-      "summary": "环境： - 服务器：中国北京（京东云） - MiroFish 版本：v0.1.0（源码部署） - Zep Key 格式：JWT Token (z_xxx.yyy.zzz) - 测试结果：所有 Key 返回 \"unauthorized\" 国内访问 Zep Cloud 是否有代理要求？ <img width=\"808\" height=\"314\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/97190efc-6559-43ca-87e9-304bda3ddafd\" />",
+      "local_coverage": {
+        "number": 77,
+        "status": "covered",
+        "summary": "Graph-build task failures now classify Zep 401/unauthorized responses into a concise ZEP_API_KEY guidance message and strip embedded traceback noise before returning task payload errors, so deployments behind domestic proxies or with invalid Zep credentials no longer fail with an opaque auth dump.",
+        "local_refs": [
+          "backend/app/services/graph_builder.py",
+          "backend/tests/test_graph_builder.py",
+          "backend/tests/test_graph_upload_api.py",
+          "https://github.com/ivanzud/MiroFish/issues/54"
+        ],
+        "validation": [
+          "cd backend && uv run pytest -q tests/test_graph_builder.py tests/test_graph_upload_api.py -k \"auth_error or unauthorized\""
+        ],
+        "notes": "Mirrored into fork issue #54 on March 11, 2026. This backfills the same repo-native Zep auth hardening already captured for upstream issue #139."
+      },
+      "local_status": "covered",
+      "local_summary": "Graph-build task failures now classify Zep 401/unauthorized responses into a concise ZEP_API_KEY guidance message and strip embedded traceback noise before returning task payload errors, so deployments behind domestic proxies or with invalid Zep credentials no longer fail with an opaque auth dump.",
+      "triage_status": "covered",
+      "summary": "Graph-build task failures now classify Zep 401/unauthorized responses into a concise ZEP_API_KEY guidance message and strip embedded traceback noise before returning task payload errors, so deployments behind domestic proxies or with invalid Zep credentials no longer fail with an opaque auth dump.",
       "fork_issue_mirrored": true,
       "fork_issue_number": 54,
       "fork_issue_url": "https://github.com/ivanzud/MiroFish/issues/54"
@@ -3819,8 +3881,23 @@
       "mirrored_to_origin": true,
       "fork_mirror_ref": "origin/mirror/upstream-pr-127",
       "mirror_ref": "origin/mirror/upstream-pr-127",
-      "triage_status": "untracked",
-      "summary": "Added `if content is None: return \"\"` in `backend/app/utils/llm_client.py` to prevent `re.sub` TypeError. --- *Automated PR created by OpenClaw daily-pr routine.*"
+      "local_coverage": {
+        "number": 127,
+        "status": "landed",
+        "summary": "Landed locally: `LLMClient.chat()` already coerces `None` completion content to an empty string before post-processing, and `backend/tests/test_llm_client.py` covers the regression explicitly.",
+        "local_refs": [
+          "backend/app/utils/llm_client.py",
+          "backend/tests/test_llm_client.py",
+          "origin/mirror/upstream-pr-127"
+        ],
+        "validation": [
+          "cd backend && uv run pytest -q tests/test_llm_client.py -k none"
+        ]
+      },
+      "local_status": "landed",
+      "local_summary": "Landed locally: `LLMClient.chat()` already coerces `None` completion content to an empty string before post-processing, and `backend/tests/test_llm_client.py` covers the regression explicitly.",
+      "triage_status": "landed",
+      "summary": "Landed locally: `LLMClient.chat()` already coerces `None` completion content to an empty string before post-processing, and `backend/tests/test_llm_client.py` covers the regression explicitly."
     },
     {
       "number": 120,

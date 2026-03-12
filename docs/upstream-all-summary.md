@@ -2,7 +2,7 @@
 
 - Repository: `666ghj/MiroFish`
 - State filter: `all`
-- Captured: `2026-03-12T00:30:04.088929+00:00`
+- Captured: `2026-03-12T00:35:48.270178+00:00`
 - Issues: `92` total (`open=42`, `closed=50`)
 - Pull requests: `53` total (`open=39`, `closed=14`)
 - Mirrored in `origin`: `53` of `53` PR refs
@@ -14,6 +14,7 @@
 - #154 [open, mirror=#93] Profile serialization crashes when LLM returns structured bio/persona fields (no labels)
   - local coverage [covered]: Profile serialization now tolerates structured LLM output instead of crashing when `bio`, `persona`, `country`, `profession`, or `interested_topics` arrive as dict/list values. `OasisAgentProfile` normalizes those mixed types at construction time and the Reddit/Twitter serializers defensively coerce them again before slicing or string replacement, so simulation preparation no longer fails during profile save with `KeyError: slice(None, 150, None)`.
   - ## Summary When profile generation returns structured JSON objects for fields like `bio`, `persona`, or `country`, MiroFish can fail during profile serialization before config generation starts. ## Reproduction context Observed on a live run with: - simulation_id: `sim_e69a946b6158` - graph_id: `mirofish_a39b5f10127f4744` - entities_count: `91` - status in state file: `failed` - error in state fi…
+  - latest comment by `dosubot[bot]`: <!-- Greeting --> Hi @ygh1254! I'm [Dosu](https://go.dosu.dev/dosubot) and I’m helping the MiroFish team. <!-- Answer --> Your analysis is spot on. Looking at the code, the root cause is exactly as you described — the [`OasisAgentProfile`…
 - #153 [open, mirror=#92] npm run setup:all安装时一直报 pillow` (v10.3.0) 的错 (question)
   - local coverage [covered]: The current branch no longer reproduces a `pillow` build during the default `npm run setup:all` core install path. `setup:backend` now maps to a plain `uv sync` of the core graph/report/OpenAI-compatible backend dependencies, while the heavyweight simulation runtime remains behind the separate `setup:backend:simulation` entrypoint. A Windows + Python 3.13 dry-run of `uv sync --frozen` against the current lockfile does not attempt to install `pillow` at all.
   - Resolved 188 packages in 5.27s Built mirofish-backend @ file:///D:/MiroFish/backend x Failed to build `pillow==10.3.0` |-> The build backend returned an error `-> Call to `backend.build_wheel` failed (exit code: 1) [stderr] Traceback (most recent call last): File "<string>", line 14, in <module> requires = get_requires_for_build({}) File "C:\Users\Administrator\AppData\Local\uv\cache\builds-v0\.t…
@@ -66,6 +67,7 @@
   - local coverage [landed]: Landed locally as a repo-native docs cleanup: the Shanda logo alt text now uses the correct URL-encoded `666ghj%2FMiroFish` slug across all README variants, not just the primary Chinese README.
   - ## Summary Fix the Shanda image alt text in README.md by changing 666ghj%2MiroFish to 666ghj%2FMiroFish. ## Details 666ghj%2MiroFish is not a valid URL-encoded representation, so it cannot be decoded correctly. Using 666ghj%2FMiroFish correctly encodes the slash and can be properly decoded to 666ghj/ MiroFish. ## Impact Documentation-only change. No code or runtime behavior is affected.
 - #127 [closed, mergeable=clean, mirrored=yes] Fix potential crash in LLMClient when content is None (`fix/llm-client-none-content` -> `main`)
+  - local coverage [landed]: Landed locally: `LLMClient.chat()` already coerces `None` completion content to an empty string before post-processing, and `backend/tests/test_llm_client.py` covers the regression explicitly.
   - Added `if content is None: return ""` in `backend/app/utils/llm_client.py` to prevent `re.sub` TypeError. --- *Automated PR created by OpenClaw daily-pr routine.*
   - latest comment by `sjhddh`: Closing this PR as it was submitted with an incorrect Git author configuration. Apologies for the noise!
 - #120 [closed, mergeable=clean, mirrored=yes] fix: 修复subsystems目录下neo4j_client导入路径错误; feat: 添加TODO.md开发规划文档 (`main` -> `main`)

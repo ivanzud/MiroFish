@@ -241,6 +241,21 @@
       ]
     },
     {
+      "number": 77,
+      "status": "covered",
+      "summary": "Graph-build task failures now classify Zep 401/unauthorized responses into a concise ZEP_API_KEY guidance message and strip embedded traceback noise before returning task payload errors, so deployments behind domestic proxies or with invalid Zep credentials no longer fail with an opaque auth dump.",
+      "local_refs": [
+        "backend/app/services/graph_builder.py",
+        "backend/tests/test_graph_builder.py",
+        "backend/tests/test_graph_upload_api.py",
+        "https://github.com/ivanzud/MiroFish/issues/54"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_graph_builder.py tests/test_graph_upload_api.py -k \"auth_error or unauthorized\""
+      ],
+      "notes": "Mirrored into fork issue #54 on March 11, 2026. This backfills the same repo-native Zep auth hardening already captured for upstream issue #139."
+    },
+    {
       "number": 68,
       "status": "covered",
       "summary": "Simulation process-exit errors now classify common HuggingFace download/proxy failures into a concise retry/proxy guidance message instead of dumping raw log tails into Step 3.",
@@ -484,6 +499,24 @@
       ]
     },
     {
+      "number": 109,
+      "status": "covered",
+      "summary": "The home upload flow and quick-start docs now explicitly recommend starting with smaller source material (roughly 10k words) and about 30 simulation rounds on a first run, giving new local users a lower-cost way to verify the graph and runtime chain before they burn through Zep free-plan quota.",
+      "local_refs": [
+        "frontend/src/views/Home.vue",
+        "frontend/src/i18n/locales/zh.js",
+        "frontend/src/i18n/locales/en.js",
+        "README.md",
+        "README-EN.md",
+        "https://github.com/ivanzud/MiroFish/issues/43"
+      ],
+      "validation": [
+        "npm --prefix frontend run build",
+        "rg -n \"10k words|30 rounds|1 万字以内|30 轮左右\" frontend/src/views/Home.vue frontend/src/i18n/locales/zh.js frontend/src/i18n/locales/en.js README.md README-EN.md"
+      ],
+      "notes": "Mirrored into fork issue #43 on March 11, 2026. This backfills the same first-run quota guidance already tracked under upstream issue #19."
+    },
+    {
       "number": 110,
       "status": "covered",
       "summary": "The backend and docs now support direct OpenAI-compatible gateways plus OPENAI_* aliases, including a documented DashScope Coding Plan example, so users no longer need a provider-specific raw LLM setup path.",
@@ -537,6 +570,21 @@
         "scripts/test_backend_lite.sh"
       ],
       "notes": "Mirrored into fork issue tracking on March 11, 2026 after enabling issues on ivanzud/MiroFish."
+    },
+    {
+      "number": 121,
+      "status": "covered",
+      "summary": "New-project startup errors now resolve raw frontend `Network Error` failures into an actionable backend URL and proxy/CORS hint instead of leaving users at a generic `handleNewProject` failure banner.",
+      "local_refs": [
+        "frontend/src/api/errors.js",
+        "frontend/tests/errors.test.mjs",
+        "https://github.com/ivanzud/MiroFish/issues/41"
+      ],
+      "validation": [
+        "npm --prefix frontend test -- errors.test.mjs",
+        "npm --prefix frontend run build"
+      ],
+      "notes": "Mirrored into fork issue #41 on March 11, 2026. This backfills the landed frontend error-diagnostics work already represented by upstream PR #125."
     },
     {
       "number": 133,
@@ -849,6 +897,19 @@
       "number": 126,
       "status": "landed",
       "summary": "Safe subset landed locally for structured config validation and non-sensitive config summaries."
+    },
+    {
+      "number": 127,
+      "status": "landed",
+      "summary": "Landed locally: `LLMClient.chat()` already coerces `None` completion content to an empty string before post-processing, and `backend/tests/test_llm_client.py` covers the regression explicitly.",
+      "local_refs": [
+        "backend/app/utils/llm_client.py",
+        "backend/tests/test_llm_client.py",
+        "origin/mirror/upstream-pr-127"
+      ],
+      "validation": [
+        "cd backend && uv run pytest -q tests/test_llm_client.py -k none"
+      ]
     },
     {
       "number": 129,
